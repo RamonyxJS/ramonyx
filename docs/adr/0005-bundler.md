@@ -1,6 +1,6 @@
 # ADR-0005: Bundler Awal
 
-- Status: **Proposed** — menunggu keputusan pemilik
+- Status: Accepted (2026-10-18)
 - Tanggal: 2026-10-18
 - Sumber: `docs/BLUEPRINT.md` §6 (catatan compiler), §9 Phase 1–2
 
@@ -26,8 +26,10 @@ tooling yang ada; compiler khusus hanya jika ada kebutuhan terukur.
 - **Rspack/Turbopack** — ekosistem plugin berbeda; belum terbukti untuk kebutuhan ini.
 - **Compiler sendiri** — ditolak sesuai Blueprint §6.
 
-## Konsekuensi jika diterima
+## Konsekuensi
 
 - `packages/bundler` menjadi pembungkus tipis di atas Vite, bukan implementasi bundler baru.
 - Kebutuhan transform khas framework (route, server/client boundary) wajib dinyatakan sebagai
   plugin dengan test tersendiri.
+- Terealisasi Phase 1: paket source-first (`.ts` dijalankan Node type stripping), tanpa bundler;
+  Vite menyusul di Phase 2.

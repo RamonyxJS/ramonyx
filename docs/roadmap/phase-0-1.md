@@ -1,54 +1,57 @@
 # Roadmap Phase 0–1
 
-- Status per 2026-10-18. Sumber: `docs/BLUEPRINT.md` §9 dan §12.
+- Status per 2026-10-18: **Phase 0 selesai; Phase 1 inti selesai** (menunggu review pemilik).
+- Sumber: `docs/BLUEPRINT.md` §9 dan §12.
 
-## Phase 0 — Foundation & RFC
+## Phase 0 — Foundation & RFC ✅
 
 Exit criteria: keputusan arsitektur terdokumentasi dan dapat diuji.
 
 - [x] Bootstrap repo (README, `.gitignore`, git `main`)
 - [x] ADR-0001 strategi runtime (Accepted)
 - [x] ADR-0002 baseline tooling & CI (Accepted)
-- [x] ADR-0003 adapter UI React (Accepted — keputusan pemilik)
-- [ ] ADR-0004 kontrak schema — **Proposed**, menunggu keputusan pemilik
-- [ ] ADR-0005 bundler awal — **Proposed**, menunggu keputusan pemilik
-- [x] `docs/architecture.md` (peta package, batas, kontrak runtime draft)
-- [x] `docs/api/core-contract.md` v0
-- [x] `docs/security/threat-model.md`
-- [x] `docs/benchmark-protocol.md`
-- [x] `docs/coding-standards.md`
-- [ ] Keputusan terbuka: scope npm & lisensi; matrix browser; rekonsiliasi PRD (template "mobile",
-      metrik docs 90%, forum/support)
-- [ ] Review pemilik atas dokumen Phase 0 (khususnya kontrak API v0 + ADR Proposed)
+- [x] ADR-0003 adapter UI React (Accepted)
+- [x] ADR-0004 kontrak schema Standard Schema (Accepted; diimplementasikan di `packages/schema`)
+- [x] ADR-0005 bundler (Accepted; Phase 1 source-first tanpa bundler)
+- [x] `docs/architecture.md`, `docs/api/core-contract.md` v0, threat model, benchmark protocol,
+      coding standards
+- [ ] Keputusan terbuka pemilik: scope npm & lisensi; matrix browser; rekonsiliasi PRD
+      (template "mobile", metrik docs 90%, forum/support)
 
-Setelah semua tertutup → Phase 1. **Jangan mulai scaffold Phase 1 sebelum kontrak inti & ADR
-diterima.**
-
-## Phase 1 — Framework MVP
+## Phase 1 — Framework MVP (inti selesai di mesin dev) ✅
 
 Exit criteria: demo app berjalan di Node.js, integration test lulus, baseline performa tercatat.
 
-1. Prasyarat: pasang pnpm (`corepack enable pnpm`); pin Node LTS.
-2. Scaffold workspace: root `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`;
-   `apps/playground` + `packages/{core,router,server,schema,adapter-runtime,testing}`.
-3. CI awal dengan urutan wajib: lint → typecheck → test → build → security checks.
-4. `adapter-runtime`: kontrak + adapter in-memory + adapter Node (serve).
-5. `core`: context, lifecycle, middleware, error handling + `HttpError`.
-6. `router`: route statis + parameter + 404/405.
-7. `schema`: integrasi Standard Schema (jika ADR-0004 diterima) + pemetaan error; uji 2 implementasi.
-8. `server`: wiring HTTP → middleware → router → handler; loader config `ramonyx.config.ts`.
-9. `testing`: `createTestServer` + helper fixture.
-10. Demo app di `apps/playground` sesuai kontrak; integration tests.
-11. Benchmark baseline (autocannon, routing + middleware minimal) + artefak sesuai protokol.
-12. Sinkronisasi dokumen: kontrak ↔ implementasi.
+1. [x] Prasyarat: pnpm (shim corepack `~/.local/bin`), Node 24
+2. [x] Workspace: `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`; `apps/playground`;
+      `packages/{core,router,server,schema,adapter-runtime,testing,ramonyx}`
+3. [x] CI: lint → typecheck → test → security checks (build menyusul Phase 2 — ADR-0005)
+4. [x] `adapter-runtime`: kontrak `RuntimeHost` + adapter in-memory + Node
+5. [x] `core`: context, middleware, error handling + `HttpError`
+6. [x] `router`: statis + parameter, 404/405, normalisasi trailing slash
+7. [x] `schema`: Standard Schema + normalisasi issues (diuji zod 4 & valibot 1)
+8. [x] `server`: HTTP → middleware → router → handler + validasi input/output; loader config
+9. [x] `testing`: `createTestServer`
+10. [x] Demo `apps/playground` + integration test — **46 tes hijau**
+11. [x] Baseline benchmark: `benchmarks/results/phase1-baseline.json` (mesin dev: ±1.200–1.300 req/s,
+    p50 ±35 ms, p99 81–123 ms, 0 error dari dua run; **bukan klaim publik**)
+12. [x] Dokumen disinkronkan (catatan semantik di `core-contract.md` §10)
 
-Catatan risiko:
-- Interface `RuntimeHost` akan bergerak saat implementasi — perubahan signifikan dicatat ADR.
-- Jangan menambah fitur di luar kontrak v0 (server actions, SSR, dev server) di Phase 1.
+Catatan implementasi Phase 1:
 
-## Phase 2–5 (ringkas — detail di BLUEPRINT §9)
+- Source-first: paket mengekspor `.ts`, dijalankan Node type stripping; syntax non-erasable dilarang.
+- Handler menerima output hasil validasi schema (transform/strip diterapkan), bukan input mentah.
+- Manifest route eksplisit; file-based routing menyusul Phase 2.
 
-- **Phase 2:** file routing, adapter React, SSR + loader + error boundary, dev server/HMR, browser tests.
-- **Phase 3:** fuzzing, abuse-case, load test, resource limits, dependency audit, security regression suite.
+## Phase 2 — Full-stack (berikutnya)
+
+- File routing otomatis, adapter React, SSR + loader + error boundary, dev server/HMR, browser test.
+- Build/bundler (Vite) masuk di fase ini sesuai ADR-0005.
+
+## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
+
+- **Phase 3:** fuzzing, abuse-case, load test, resource limits, dependency audit, security
+  regression suite.
 - **Phase 4:** runtime alpha (Rust + V8): executable, module loader, permission & API sistem dasar.
-- **Phase 5:** runtime beta: HTTP/streaming/shutdown/cancellation, isolasi, profiling, compatibility suite, rilis.
+- **Phase 5:** runtime beta: HTTP/streaming/shutdown/cancellation, isolasi, profiling,
+  compatibility suite, rilis.

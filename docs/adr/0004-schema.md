@@ -1,6 +1,6 @@
 # ADR-0004: Kontrak Schema Validasi — Standard Schema
 
-- Status: **Proposed** — menunggu keputusan pemilik
+- Status: Accepted (2026-10-18)
 - Tanggal: 2026-10-18
 - Sumber: `docs/BLUEPRINT.md` §4 (validation), §6 (schema adapter)
 
@@ -24,11 +24,12 @@ sudah punya interface bersama (Standard Schema) yang diimplementasikan zod, vali
 - **Engine schema sendiri** — di luar fokus awal; risiko keamanan dan biaya besar.
 - **JSON Schema murni** — inferensi TypeScript lebih lemah untuk DX "type inference end-to-end".
 
-## Konsekuensi jika diterima
+## Konsekuensi
 
 - Core hanya bergantung pada tipe `~standard`; test matrix minimal 2 implementasi schema.
 - Pembungkus ergonomis (opsional) boleh menyusul tanpa mengubah kontrak.
 
 ## Cara membuktikan
 
-- Phase 1: test validasi input/output dengan 2 pustaka berbeda + pesan error stabil di snapshot test.
+- Terealisasi Phase 1: `packages/schema/test/adapters.test.ts` — zod 4 & valibot 1 lolos lewat
+  kontrak `~standard`, error terstruktur `{ path, message }`.

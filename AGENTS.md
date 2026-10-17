@@ -1,58 +1,66 @@
 # AGENTS.md — Ramonyx
 
-Rencana proyek: framework full-stack TypeScript + runtime eksperimental (Rust + V8) —
-dua proyek yang terintegrasi tetapi terpisah. Repositori saat ini **docs-only** (git aktif sejak
-18 Okt 2026; belum ada kode, manifest, lockfile, test, atau CI). Jangan mengarang perintah
-build/test — periksa dulu apa yang benar-benar ada.
+Framework full-stack TypeScript + runtime eksperimental (Rust + V8) — dua proyek yang terintegrasi
+tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V8 baru Phase 4+
+(ADR-0001).
 
 ## Baca dulu, berurutan
 
-1. `docs/BLUEPRINT.md` — sumber kebenaran teknis: arsitektur, batas komponen, stack, threat model, benchmark, roadmap.
-2. `docs/architecture.md` — ringkasan arsitektur, peta package, kontrak framework ↔ runtime.
-3. `docs/api/core-contract.md` — kontrak API v0 (target Phase 1); `docs/roadmap/phase-0-1.md` — status kerja saat ini.
-4. `docs/PRD.md` — level produk. Bagian "Pertanyaan Terbuka" belum diputuskan; jangan perlakukan sebagai keputusan.
+1. `docs/BLUEPRINT.md` — sumber kebenaran teknis: arsitektur, stack, threat model, roadmap fase.
+2. `docs/architecture.md` — ringkasan arsitektur, peta package, kontrak `RuntimeHost`.
+3. `docs/api/core-contract.md` — kontrak API v0 + catatan implementasi (§10).
+4. `docs/roadmap/phase-0-1.md` — status kerja & langkah berikutnya.
+5. `docs/PRD.md` — level produk; "Pertanyaan Terbuka" belum diputuskan.
+
+## Perintah
+
+- `pnpm lint` — Biome; antara lain melarang impor `node:*` di luar `packages/adapter-runtime`.
+- `pnpm typecheck` — `tsc --noEmit` (TypeScript 7: `baseUrl` dihapus, `paths` wajib relatif `./`).
+- `pnpm test` — `node --test` menjalankan `.ts` langsung; butuh Node ≥24 (type stripping).
+- `pnpm bench` — autocannon; hasil ditulis ke `benchmarks/results/`.
+- Demo: `node apps/playground/src/main.ts` (default `http://localhost:3000`).
+- pnpm hanya tersedia lewat shim corepack di `~/.local/bin`
+  (`corepack enable --install-directory ~/.local/bin pnpm`).
 
 ## Jebakan yang paling mudah kena
 
-- **Blueprint adalah rencana, bukan implementasi.** Pohon monorepo §5, API contoh (`defineConfig`,
-  `route`, `schema`), konvensi `src/routes/`, dan nama paket hanyalah rancangan — dokumennya
-  sendiri menyatakan itu. Jangan merujuk seolah fasilitas tersebut sudah ada.
-- **Nama proyek: `ramonyx` (final).** Dipakai untuk framework dan folder monorepo; contoh kode
-  dan pohon di blueprint memakai nama ini.
-- **Disiplin klaim (§10).** Pisahkan fakta, hipotesis desain, dan klaim yang belum terbukti.
-  Jangan menulis klaim performa/keamanan ("lebih cepat dari ...", "production-ready", "aman")
-  tanpa bukti yang bisa dijalankan.
-- **Bahasa.** Narasi/dokumen internal berbahasa Indonesia (ikut dokumen yang ada); teks yang
-  dilihat publik (README npm, docs situs, pesan error, landing) berbahasa Inggris.
-- **Jangan lompat fase.** Ikuti urutan §9: Phase 0–3 (framework di runtime yang ada) lebih dulu;
-  runtime Rust + V8 baru Phase 4–5. Jangan membangun runtime sebelum framework core berjalan.
+- **Blueprint §4/§5 masih rancangan, belum semuanya diimplementasikan.** Yang nyata:
+  `packages/*`, `apps/playground`, `benchmarks/*`. Fitur Phase 2+ (file routing otomatis, SSR,
+  dev server/HMR, adapter React) belum ada — cek kode, jangan asumsikan.
+- **Syntax harus erasable.** Paket diekspor sebagai `.ts` dan dijalankan Node type stripping:
+  dilarang `enum`, `namespace`, parameter property; `erasableSyntaxOnly` + `verbatimModuleSyntax`
+  menegakkannya. Impor relatif wajib berekstensi `.ts`.
+- **`node:*` hanya di `packages/adapter-runtime`** (plus test/benchmark/playground); ditegakkan lint.
+- **Nama proyek: `ramonyx` (final).**
+- **Disiplin klaim (BLUEPRINT §10).** Jangan menulis klaim performa/keamanan tanpa bukti yang bisa
+  dijalankan.
+- **Bahasa.** Dokumen internal Bahasa Indonesia; teks publik (README npm, docs situs, pesan error) Inggris.
+- **Jangan lompat fase.** Phase 2 dulu (framework di Node), runtime Rust+V8 baru Phase 4–5.
 
 ## Batas arsitektur yang harus dijaga
 
 - Framework core tidak bergantung pada internal runtime, dan sebaliknya; keduanya harus dapat diuji terpisah.
-- Runtime MVP = Node.js. Runtime sendiri = host Rust + engine V8 (bukan menulis engine JS dari nol; itu di luar roadmap awal).
+- Runtime MVP = Node.js. Runtime sendiri = host Rust + engine V8 (bukan menulis engine JS dari nol).
 - Compiler menghasilkan artefak eksplisit: client bundle, server bundle, route manifest, metadata build.
 - FFI adalah batas yang diaudit: minimalkan `unsafe`, dokumentasikan invariant.
-- Jangan bangun sistem reactive UI, compiler frontend, ORM, dan package manager sekaligus; UI lewat adapter
-  yang dapat diganti. Mulai dari compiler/bundler yang ada, pin versi compiler.
-- Keamanan: validasi schema runtime di trust boundary; permission berbasis capability yang eksplisit
-  (kapan diperiksa, bagaimana dicabut, apa yang terjadi saat ditolak). JS context terpisah bukan sandbox;
-  isolasi plugin tidak tepercaya harus di level proses/OS. SSR butuh timeout, kanselasi, dan limit output.
-- Hanya `packages/adapter-runtime` yang boleh mengimpor `node:*`; paket lain memakai kontrak `RuntimeHost`.
+- Jangan bangun sistem reactive UI, compiler frontend, ORM, dan package manager sekaligus; UI lewat
+  adapter yang dapat diganti (pertama: React, ADR-0003).
+- Keamanan: validasi schema runtime di trust boundary; permission berbasis capability eksplisit;
+  JS context terpisah bukan sandbox; isolasi plugin di level proses/OS; SSR butuh timeout/kanselasi/limit.
 
 ## Baseline teknis (blueprint §6, ADR-0002)
 
-TypeScript strict · ESM-only · pnpm workspaces · adapter UI pertama: React (ADR-0003) · host runtime Rust ·
-engine V8 · test: unit + integrasi + property-based + fuzz · CI: lint → typecheck → test → build →
-security checks · observability: log terstruktur, metrics, tracing.
+TypeScript strict · ESM-only · source-first (exports `.ts`) · pnpm workspaces · Node ≥24 ·
+adapter UI pertama React (ADR-0003) · host runtime Rust + V8 (Phase 4+) · CI:
+lint → typecheck → test → security checks (build menyusul Phase 2, ADR-0005).
 
 ## Benchmark (blueprint §8)
 
-Kondisi hardware/OS/versi yang sama, warm-up + beberapa ulangan, laporkan distribusi (p95/p99), bukan rata-rata;
-simpan hasil sebagai artefak CI. Angka target di §8 adalah target eksperimen, bukan hasil.
+Baseline Phase 1: `benchmarks/results/phase1-baseline.json` (mesin dev; bukan klaim publik).
+Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-rata.
 
 ## Status & langkah berikutnya
 
-Phase 0 hampir tuntas — checklist di `docs/roadmap/phase-0-1.md`. ADR-0004 (schema) dan ADR-0005
-(bundler) masih **Proposed**; jangan mulai scaffold Phase 1 sebelum kontrak inti & ADR diterima.
-Prasyarat Phase 1: pnpm — belum terpasang di mesin dev ini (`corepack enable pnpm`).
+Phase 0 & Phase 1 inti selesai (46 tes hijau; baseline tercatat). Berikutnya Phase 2 — file
+routing, adapter React, SSR, dev server/HMR. Keputusan terbuka: scope npm & lisensi, matrix
+browser, rekonsiliasi PRD (lihat `docs/roadmap/phase-0-1.md`).

@@ -45,6 +45,10 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `runtime/crates/*` | Host Rust + V8 (runtime-core, module-loader, permissions, net, fs, cli) | Phase 4+ | belum dibuat |
 | `benchmarks/*` | Skrip benchmark per area | Phase 1 | belum dibuat |
 
+Status Phase 1: `core`, `router`, `schema`, `adapter-runtime`, `server`, `testing`, `ramonyx`,
+`apps/playground`, dan `benchmarks/http` sudah diimplementasikan (source-first TypeScript via
+Node type stripping).
+
 Peta ini rambu, bukan larangan: jangan memecah paket lebih halus sebelum batas tanggung jawabnya
 jelas (BLUEPRINT §5 aturan 5). Nama scope npm masih keputusan terbuka (§8).
 
@@ -86,7 +90,8 @@ export interface RunningServer {
 }
 ```
 
-Perubahan kontrak ini saat implementasi Phase 1 dicatat sebagai ADR bila signifikan.
+Status: diimplementasikan (Phase 1) di `packages/adapter-runtime` — `RuntimeHost` + adapter
+`memory` (test) dan `node`. Perubahan kontrak dicatat sebagai ADR bila signifikan.
 
 ## 6. Alur request (target)
 
@@ -110,8 +115,6 @@ dan renderer UI sendiri tidak direncanakan.
 
 | Topik | Status | Lokasi |
 | --- | --- | --- |
-| Kontrak schema (Standard Schema) | Proposed | `docs/adr/0004-schema.md` |
-| Bundler awal (Vite Phase 2) | Proposed | `docs/adr/0005-bundler.md` |
 | Scope npm package (`@ramonyx/*`?) dan lisensi | belum diputuskan | roadmap Phase 0 |
 | Matrix dukungan browser | belum diputuskan | roadmap Phase 0 |
 | Rekonsiliasi PRD (template "mobile", metrik docs 90%, forum/support) | belum diputuskan | roadmap Phase 0 |

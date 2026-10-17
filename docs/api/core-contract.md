@@ -1,7 +1,7 @@
 # Kontrak API Framework Core — v0
 
-- Status: draft v0 (Phase 0) — target implementasi Phase 1. Setiap poin di kontrak ini **wajib
-  punya test** (daftar §9).
+- Status: **diimplementasikan (Phase 1, 2026-10-18)**. Setiap poin kontrak punya test (daftar §9);
+  semantik hasil implementasi dicatat di §10.
 - Sumber ide: `docs/BLUEPRINT.md` §4. Contoh di blueprint adalah rancangan; dokumen ini
   merapikannya menjadi kontrak yang bisa diuji.
 - Perubahan kontrak = ADR baru + pembaruan dokumen ini.
@@ -115,3 +115,15 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
 5. Error: `HttpError` → status + body; error tak dikenal → 500 tanpa bocor; log terisi.
 6. Adapter: in-memory serve; Node adapter smoke test.
 7. Tipe: contoh penggunaan kontrak di-compile dengan `tsc` strict (type test).
+
+## 10. Catatan implementasi (Phase 1)
+
+- Handler menerima **nilai hasil validasi schema** (output `~standard`): transform dan strip key
+  tak dikenal sudah diterapkan sebelum handler (contoh: zod men-strip query key di luar schema).
+- Query berulang (`?tag=a&tag=b`) menjadi array; trailing slash dinormalisasi; route statis menang
+  atas parameter.
+- 405 menyertakan header `Allow`; body error selalu JSON aman (detail internal tidak bocor).
+- `HttpError`: 4xx terbuka secara default; 5xx selalu `{"error":"Internal Server Error"}`.
+- `strictValidation=false` hanya melonggarkan validasi output; input tetap ketat.
+- Manifest route masih eksplisit (`apps/playground/src/manifest.ts`); file-based routing Phase 2.
+- Paket Phase 1: `@ramonyx/{core,router,schema,adapter-runtime,server,testing}` + meta `ramonyx`.

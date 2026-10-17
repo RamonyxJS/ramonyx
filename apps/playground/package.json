@@ -1,0 +1,15 @@
+{
+  "name": "playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ramonyx/adapter-runtime": "workspace:*",
+    "@ramonyx/server": "workspace:*",
+    "ramonyx": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@ramonyx/testing": "workspace:*"
+  }
+}

@@ -22,7 +22,7 @@ Exit criteria: keputusan arsitektur terdokumentasi dan dapat diuji.
 
 Exit criteria: demo app berjalan di Node.js, integration test lulus, baseline performa tercatat.
 
-1. [x] Prasyarat: pnpm (shim corepack `~/.local/bin`), Node 24
+1. [x] Prasyarat: pnpm 12 standalone (`PNPM_HOME`), Node 24
 2. [x] Workspace: `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`; `apps/playground`;
       `packages/{core,router,server,schema,adapter-runtime,testing,ramonyx}`
 3. [x] CI: lint → typecheck → test → security checks (build menyusul Phase 2 — ADR-0005)

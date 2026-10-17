@@ -11,8 +11,6 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 ## Quick start
 
 ```bash
-corepack enable --install-directory ~/.local/bin pnpm   # sekali per mesin
-export PATH="$HOME/.local/bin:$PATH"
 pnpm install
 pnpm test          # suite kontrak v0
 pnpm typecheck
@@ -39,7 +37,8 @@ pnpm bench         # baseline autocannon
 ## Prasyarat
 
 - Node.js ≥24 — menjalankan `.ts` langsung (type stripping); lihat ADR-0005.
-- pnpm — via corepack: `corepack enable --install-directory ~/.local/bin pnpm`.
+- pnpm 12 — standalone via `curl -fsSL https://get.pnpm.io/install.sh | sh -` (mesin dev:
+  `~/.local/share/pnpm/bin`); CI memakai corepack.
 - Rust toolchain — Phase 4+ (sudah terpasang di mesin dev).
 
 ## Aturan singkat

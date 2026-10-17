@@ -19,8 +19,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm test` — `node --test` menjalankan `.ts` langsung; butuh Node ≥24 (type stripping).
 - `pnpm bench` — autocannon; hasil ditulis ke `benchmarks/results/`.
 - Demo: `node apps/playground/src/main.ts` (default `http://localhost:3000`).
-- pnpm hanya tersedia lewat shim corepack di `~/.local/bin`
-  (`corepack enable --install-directory ~/.local/bin pnpm`).
+- pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
+  Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
 
 ## Jebakan yang paling mudah kena
 

@@ -1,0 +1,124 @@
+# Arsitektur Ramonyx
+
+- Status: draft v0 (Phase 0, 2026-10-18). Turunan `docs/BLUEPRINT.md` §2/§5/§6 — jika bertentangan, **blueprint menang**.
+- Semua komponen di dokumen ini **belum dibuat**.
+
+## 1. Prinsip yang mengikat
+
+- **Runtime independence** — framework tidak bergantung pada internal runtime tertentu, dan sebaliknya.
+- **Secure by default** — validasi runtime di trust boundary; permission berbasis capability (Phase 4+).
+- **Performance-conscious** — benchmark sejak awal; ukur dulu, klaim kemudian.
+- **Developer-first** — type inference end-to-end, error informatif, toolchain terintegrasi.
+
+## 2. Model layer
+
+``` text
+Layer 1 Framework : routing · SSR · server actions · API · client navigation · data loading
+Layer 2 Compiler  : TS transform · bundling · route manifest · source maps
+Layer 3 Runtime   : JS engine · module loader · permissions · HTTP · file I/O
+Layer 4 System    : OS · TCP/TLS · filesystem · process
+```
+
+Phase 1–3 hanya menyentuh Layer 1 (+ sebagian Layer 2 di Phase 2); Node.js berperan sebagai
+Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
+
+## 3. Peta package
+
+| Package | Tanggung jawab | Target fase | Status |
+| --- | --- | --- | --- |
+| `packages/core` | Request lifecycle, context, middleware, error handling | Phase 1 | belum dibuat |
+| `packages/router` | Matching route (statis, parameter; layout menyusul) | Phase 1 | belum dibuat |
+| `packages/server` | Wiring HTTP → middleware → router, serve | Phase 1 | belum dibuat |
+| `packages/adapter-runtime` | Kontrak runtime + adapter Node + adapter in-memory (test) | Phase 1 | belum dibuat |
+| `packages/schema` | Integrasi Standard Schema (ADR-0004) + pemetaan error | Phase 1 | belum dibuat |
+| `packages/testing` | `createTestServer`, fixture app, helper | Phase 1 | belum dibuat |
+| `packages/react` | Adapter UI React (ADR-0003) | Phase 2 | belum dibuat |
+| `packages/ssr` | Render halaman → HTML (+ streaming) | Phase 2 | belum dibuat |
+| `packages/client` | Hydration + client navigation | Phase 2 | belum dibuat |
+| `packages/compiler` | Transformasi route + analisis batas server/client | Phase 2 | belum dibuat |
+| `packages/bundler` | Pembungkus toolchain (ADR-0005) | Phase 2 | belum dibuat |
+| `packages/security` | Policy & audit keamanan framework | Phase 3 | belum dibuat |
+| `packages/devtools` | CLI, dev server, diagnostics | Phase 2–3 | belum dibuat |
+| `apps/playground` | App demo/uji end-to-end | Phase 1 | belum dibuat |
+| `apps/docs` | Dokumentasi publik | Phase 2 | belum dibuat |
+| `apps/create-app` | CLI scaffolding | Phase 2–3 | belum dibuat |
+| `runtime/crates/*` | Host Rust + V8 (runtime-core, module-loader, permissions, net, fs, cli) | Phase 4+ | belum dibuat |
+| `benchmarks/*` | Skrip benchmark per area | Phase 1 | belum dibuat |
+
+Peta ini rambu, bukan larangan: jangan memecah paket lebih halus sebelum batas tanggung jawabnya
+jelas (BLUEPRINT §5 aturan 5). Nama scope npm masih keputusan terbuka (§8).
+
+## 4. Aturan dependency
+
+1. Framework core tidak bergantung pada detail internal runtime.
+2. Runtime tidak bergantung pada full-stack framework.
+3. Compiler menghasilkan artefak eksplisit: client bundle, server bundle, route manifest, metadata build.
+4. FFI adalah boundary yang diaudit: `unsafe` dibatasi, invarian didokumentasikan.
+5. Hindari memecah semua fitur menjadi package terpisah sebelum batas tanggung jawab jelas.
+
+Konsekuensi operasional yang ditegakkan lint: **hanya `packages/adapter-runtime`** (dan tooling dev)
+yang boleh mengimpor `node:*`; `core`, `router`, `server`, dll. hanya memakai kontrak §5.
+
+## 5. Kontrak framework ↔ adapter-runtime (draft v0)
+
+Prinsip:
+
+- Tipe boundary memakai **standar web** (`Request`/`Response`, streams) — dapat diimplementasi
+  Node sekarang, dan runtime Rust nanti.
+- Adapter **in-memory wajib** ada sejak Phase 1 → framework dapat diuji tanpa server nyata dan
+  tanpa runtime sendiri.
+- Kemampuan fs/network/permission **belum masuk v0** — muncul saat runtime sendiri (Phase 4+),
+  sebagai capability eksplisit.
+
+``` ts
+// Kandidat lokasi: packages/adapter-runtime/src/types.ts — rancangan, akan berevolusi.
+export type FetchHandler = (request: Request) => Promise<Response>;
+
+export interface RuntimeHost {
+  readonly name: string; // "node" | "memory" | "ramonyx"
+  serve(handler: FetchHandler, options: { port: number; host?: string }): Promise<RunningServer>;
+  env: { get(name: string): string | undefined };
+}
+
+export interface RunningServer {
+  readonly url: string;
+  close(): Promise<void>;
+}
+```
+
+Perubahan kontrak ini saat implementasi Phase 1 dicatat sebagai ADR bila signifikan.
+
+## 6. Alur request (target)
+
+``` text
+Phase 1 : HTTP → adapter-runtime (Node) → server → middleware → router → handler → Response
+Phase 2 : Request → router → loader → render (adapter React) → HTML stream → Response
+```
+
+## 7. Batas MVP (Phase 1)
+
+**Masuk MVP:** config `ramonyx.config.ts`; routing HTTP statis + parameter; endpoint `api/`;
+context; middleware; error handling; validasi schema input/output; adapter Node + in-memory;
+demo app; integration tests; baseline benchmark.
+
+**Keluar dari MVP (fase lain):** SSR/hydration/navigasi client (Phase 2); dev server/HMR
+(Phase 2); security hardening, fuzz, load test (Phase 3); runtime Rust/V8 (Phase 4+);
+server actions & fitur lanjutan (setelah baseline stabil, BLUEPRINT §11). ORM, package manager,
+dan renderer UI sendiri tidak direncanakan.
+
+## 8. Keputusan terbuka
+
+| Topik | Status | Lokasi |
+| --- | --- | --- |
+| Kontrak schema (Standard Schema) | Proposed | `docs/adr/0004-schema.md` |
+| Bundler awal (Vite Phase 2) | Proposed | `docs/adr/0005-bundler.md` |
+| Scope npm package (`@ramonyx/*`?) dan lisensi | belum diputuskan | roadmap Phase 0 |
+| Matrix dukungan browser | belum diputuskan | roadmap Phase 0 |
+| Rekonsiliasi PRD (template "mobile", metrik docs 90%, forum/support) | belum diputuskan | roadmap Phase 0 |
+| Topologi rilis & versioning | belum diputuskan | setelah Phase 1 |
+
+## 9. Menguji framework tanpa runtime sendiri
+
+In-memory adapter (§5) + `createTestServer` (`packages/testing`) menjalankan integration test di
+Node tanpa port nyata. Browser test (hydration) baru relevan di Phase 2. Runtime Rust nanti cukup
+memenuhi kontrak §5 + compatibility suite — tanpa perubahan `core`.

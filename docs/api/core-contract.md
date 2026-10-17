@@ -1,0 +1,117 @@
+# Kontrak API Framework Core — v0
+
+- Status: draft v0 (Phase 0) — target implementasi Phase 1. Setiap poin di kontrak ini **wajib
+  punya test** (daftar §9).
+- Sumber ide: `docs/BLUEPRINT.md` §4. Contoh di blueprint adalah rancangan; dokumen ini
+  merapikannya menjadi kontrak yang bisa diuji.
+- Perubahan kontrak = ADR baru + pembaruan dokumen ini.
+
+## 1. Config — `ramonyx.config.ts`
+
+``` ts
+// ramonyx.config.ts
+import { defineConfig } from "ramonyx";
+
+export default defineConfig({
+  app: {
+    strictValidation: true, // default v0: true
+  },
+  server: {
+    port: 3000,
+    host: "localhost", // opsional
+  },
+});
+```
+
+- Config divalidasi saat load; config tidak valid → error jelas, proses berhenti.
+- Field baru hanya ditambah lewat perubahan kontrak (ADR).
+
+## 2. Route HTTP — `src/routes/api/**/*.ts`
+
+Satu file = satu path; export per method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, ...).
+
+``` ts
+// src/routes/api/users/[id].ts
+import { route } from "ramonyx";
+import { z } from "zod"; // contoh; pustaka apa pun yang memenuhi Standard Schema (ADR-0004)
+
+export const GET = route({
+  params: z.object({ id: z.string().uuid() }),
+  async handler({ params, json }) {
+    const user = await findUser(params.id);
+    if (!user) return json({ error: "Not found" }, 404);
+    return json({ user });
+  },
+});
+```
+
+Catatan: blueprint §4 mencontohkan `schema.object(...)` bawaan framework; kontrak v0 memilih netral
+(Standard Schema, ADR-0004 — masih **Proposed**). Bila ADR-0004 ditolak, contoh blueprint berlaku.
+
+- `route({ params?, query?, body?, output?, handler })` — semua schema opsional kecuali `handler`.
+- Handler menerima context: `{ params, query, body, request, env, log, json, text, redirect }`.
+- Return: `Response` (helper `json`/`text`/`redirect` atau `new Response`).
+- File tanpa export method → error saat startup/dev; method tak dikenal diabaikan dengan warning.
+- 404 default untuk path tak dikenal; 405 + header `Allow` untuk method tidak didukung pada path yang ada.
+
+## 3. Error handling
+
+- `HttpError` diekspor framework: `throw new HttpError(403, "Forbidden")` → response status sesuai,
+  body JSON aman.
+- Error tak tertangkap → `500` dengan body generik (`{ "error": "Internal Server Error" }`);
+  stack/detail hanya ke log, **tidak** ke response (di dev boleh lewat log/overlay, bukan body publik).
+- Error pada middleware diperlakukan sama; log wajib terisi.
+
+## 4. Validasi schema
+
+- Input (`params`/`query`/`body`) divalidasi **sebelum** handler; gagal → `400` dengan daftar
+  `issues` dengan format stabil.
+- `output` (jika ada) divalidasi sebelum response dikirim; gagal → `500` + log (indikasi bug app/framework).
+- `strictValidation: false` hanya melonggarkan validasi **output**, bukan input.
+  (Detail perilaku final dibahas saat implementasi; perubahan = ADR.)
+
+## 5. Middleware — `src/routes/middleware.ts`
+
+``` ts
+// src/routes/middleware.ts
+import type { Middleware } from "ramonyx";
+
+export default [
+  async (ctx, next) => {
+    const start = performance.now();
+    const res = await next();
+    ctx.log.info("request", { ms: performance.now() - start, status: res.status });
+    return res;
+  },
+] satisfies Middleware[];
+```
+
+- Dijalankan root → dalam (nested middleware Phase 2).
+- Boleh short-circuit dengan mengembalikan `Response` tanpa `next()`.
+- Urutan dieksekusi deterministik dan diuji.
+
+## 6. Halaman (rancangan, Phase 2 — bukan kontrak v0 yang diuji)
+
+`page.tsx` (default export komponen), `layout.tsx`, parameter `[id]`, `loader` per route,
+`error.tsx` untuk error boundary. Konvensi lengkap dibahas di Phase 2 (ADR bila perlu).
+
+## 7. Kompatibilitas & versi
+
+- Kontrak v0 berlaku sampai ada ADR yang menggantikannya; perubahan breaking butuh catatan migrasi.
+- Paket mengikuti semver setelah publikasi pertama (topologi rilis masih keputusan terbuka).
+
+## 8. Non-goal v0
+
+Server actions, streaming SSR, caching/ISR, websocket, upload file besar, middleware per-folder,
+route groups. Dievaluasi setelah baseline (Phase 2+).
+
+## 9. Test yang lahir dari kontrak (Phase 1)
+
+1. Config: default, override, config invalid → error jelas.
+2. Router: match statis, parameter, 404, 405 + `Allow`.
+3. Validasi: params/query/body invalid → 400 `issues`; output invalid → 500 + log; diuji dengan
+   2 implementasi schema berbeda (ADR-0004).
+4. Middleware: urutan, short-circuit, error di middleware → 500 aman.
+5. Error: `HttpError` → status + body; error tak dikenal → 500 tanpa bocor; log terisi.
+6. Adapter: in-memory serve; Node adapter smoke test.
+7. Tipe: contoh penggunaan kontrak di-compile dengan `tsc` strict (type test).

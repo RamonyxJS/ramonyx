@@ -1,0 +1,74 @@
+# Threat Model — Ramonyx
+
+- Status: draft v0 (Phase 0). Basis: `docs/BLUEPRINT.md` §7.
+- Asumsi: aplikasi menerima input tidak tepercaya, mengakses database, memproses session, dan
+  (mulai Phase 4) mungkin menjalankan plugin pihak ketiga.
+
+## 1. Aset yang dilindungi
+
+- Data pengguna & session; secrets/environment.
+- Integritas build: kode/secret server tidak boleh masuk client bundle.
+- Resource host (CPU/memori) dan ketersediaan layanan.
+
+## 2. Trust boundary
+
+``` text
+Kode aplikasi tak tepercaya (route handler · plugin · user script)
+        │  [B1] validasi schema input (Phase 1)
+        │  [B2] batas server/client bundle (Phase 2)
+Kode framework & aplikasi
+        │  [B3] capability API (fs · network · env · subprocess)     ← Phase 4 (runtime)
+        │  [B4] enforcement: permission check · isolasi proses · quota
+OS (proses · filesystem · jaringan)
+```
+
+- [B5] Supply chain dependency (lockfile, audit) — lintas fase.
+
+## 3. Tabel ancaman
+
+| Ancaman | Dampak | Mitigasi | Fase | Bukti/tes |
+| --- | --- | --- | --- | --- |
+| Malformed request / body raksasa | Crash, memory exhaustion | Batas ukuran, timeout, validasi protokol | 1–3 | Test limit + fuzz |
+| XSS / unsafe HTML | Eksekusi skrip di browser | Escaping kontekstual, sanitasi bila perlu, CSP | 2 | Browser test + header CSP |
+| CSRF | Aksi pengguna tanpa izin | Token CSRF / proteksi origin sesuai model auth | 2 | Test origin/token |
+| IDOR / broken authorization | Kebocoran data antar-user | Otorisasi per resource, bukan hanya validasi input; framework menyediakan hook + contoh aman | 1+ (panduan) | Test IDOR di demo app |
+| SSRF | Akses layanan internal | Validasi target, kebijakan egress, pembatasan alamat & redirect | 2–4 | Test alamat terlarang |
+| Path traversal | Akses file di luar direktori | Canonicalization + filesystem capability | 1 (static) / 4 (runtime) | Test `..` dan symlink |
+| Dependency compromise | Eksekusi kode berbahaya | Lockfile, provenance, audit, pembatasan dependency | 1+ | Security check CI per rilis |
+| Malicious plugin | Akses fs/network | Isolasi proses, permission minimization, capability boundary | 4 | Security regression suite |
+| Runtime escape | Bypass sandbox | Pemisahan privilege, OS-level isolation, security testing | 4 | Adversarial tests |
+| DoS pada SSR | Exhaustion CPU/memori | Render timeout, cancellation, limit concurrency & output | 2–3 | Soak/limit test + benchmark security |
+
+## 4. Model keamanan runtime (Phase 4+)
+
+Permission model harus menjawab eksplisit: apa yang diberikan, kapan diperiksa, bagaimana dicabut,
+dan apa yang terjadi saat operasi ditolak.
+
+- JavaScript context terpisah **bukan** sandbox keamanan yang memadai.
+- Plugin tidak tepercaya → isolasi level proses/OS, bukan hanya API JavaScript.
+- Kode native dan binding FFI termasuk threat model.
+
+## 5. Batas SSR (Phase 2–3)
+
+Render timeout, cancellation, concurrency limit, output limit; load shedding terdokumentasi.
+Angka final ditetapkan bersama `docs/benchmark-protocol.md`.
+
+## 6. Basis acceptance: OWASP ASVS
+
+Gunakan OWASP ASVS sebagai basis acceptance criteria; petakan per fase saat Phase 3 (contoh area:
+V1 arsitektur & threat modeling, V5 validasi input, V7 logging & error handling, V8 perlindungan
+data, V13 API, V14 konfigurasi). Untuk kontrol spesifik, ikuti panduan OWASP XSS dan SSRF.
+Ini **bukan** klaim kepatuhan sebelum pemetaan + tes dijalankan.
+
+## 7. Rencana tes per fase
+
+- **Phase 1:** validasi input, error aman (tanpa bocor), batas body, path traversal static.
+- **Phase 2:** XSS/CSP, CSRF helper, batas SSR.
+- **Phase 3:** fuzz (router/parser/validasi), abuse-case, load test, dependency audit, security regression suite.
+- **Phase 4+:** sandbox/isolation, permission revocation, escape testing.
+
+## 8. Aturan klaim keamanan
+
+Tanpa tes yang lulus, klaim keamanan tidak boleh dipakai di README/docs/landing — atau hanya
+boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerabilities", atau
+"aman" tanpa syarat dilarang (konsisten dengan BLUEPRINT §10).

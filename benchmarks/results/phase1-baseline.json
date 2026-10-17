@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-10-17T18:16:38.399Z",
+  "scenario": "GET /api/hello — routing statis + middleware logging (tanpa I/O)",
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v24.22.0",
+    "cpus": 8,
+    "cpuModel": "AMD Ryzen 5 7520U with Radeon Graphics"
+  },
+  "tool": "autocannon 8.0.0",
+  "connections": 50,
+  "durationSeconds": 10,
+  "result": {
+    "requestsPerSecond": 1177.5,
+    "latency": {
+      "p50": 35,
+      "p90": 62,
+      "p97_5": 91,
+      "p99": 123,
+      "max": 1404
+    },
+    "throughputBytesPerSecond": 242585.6,
+    "errors": 0,
+    "non2xx": 0
+  }
+}

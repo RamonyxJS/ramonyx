@@ -235,7 +235,7 @@ my-app/
 │   ├── services/
 │   └── schemas/
 ├── public/
-├── framework.config.ts
+├── ramonyx.config.ts
 └── package.json
 ```
 

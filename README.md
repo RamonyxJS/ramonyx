@@ -4,9 +4,9 @@ Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangka
 proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
-> **Status: Phase 1 — framework MVP inti berjalan** (routing, middleware, validasi schema,
-> error handling, adapter runtime Node & in-memory). SSR, adapter React, dan runtime Rust
-> menyusul sesuai roadmap. Klaim mengikuti aturan BLUEPRINT §10.
+> **Status: Phase 2 berjalan — file routing API sudah ada** (`src/routes/api/**`; middleware,
+> validasi schema, error handling, adapter runtime Node & in-memory). Adapter React, SSR,
+> bundler, dan runtime Rust menyusul sesuai roadmap. Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

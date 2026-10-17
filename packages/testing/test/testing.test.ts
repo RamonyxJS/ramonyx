@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { route } from "@ramonyx/core";
-import { createTestServer } from "../src/index.ts";
+import { createHandler } from "@ramonyx/server";
+import { createTestServer, createTestServerFromHandler } from "../src/index.ts";
 
 test("createTestServer: path relatif dan Request utuh", async () => {
   const server = await createTestServer({
@@ -44,5 +45,22 @@ test("createTestServer: middleware ikut berjalan", async () => {
 
   await server.fetch("/");
   assert.equal(called, true);
+  await server.close();
+});
+
+test("createTestServerFromHandler menerima handler siap pakai", async () => {
+  const handler = createHandler({
+    routes: [
+      {
+        method: "GET",
+        path: "/",
+        definition: route({ handler: ({ text }) => text("siap") }),
+      },
+    ],
+  });
+
+  const server = await createTestServerFromHandler(handler);
+  const response = await server.fetch("/");
+  assert.equal(await response.text(), "siap");
   await server.close();
 });

@@ -193,6 +193,9 @@ importers:
       '@ramonyx/adapter-runtime':
         specifier: workspace:*
         version: link:../../packages/adapter-runtime
+      '@ramonyx/compiler':
+        specifier: workspace:*
+        version: link:../../packages/compiler
       '@ramonyx/server':
         specifier: workspace:*
         version: link:../../packages/server
@@ -208,6 +211,12 @@ importers:
         version: link:../../packages/testing
 
   packages/adapter-runtime:
+    dependencies:
+      '@ramonyx/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/compiler:
     dependencies:
       '@ramonyx/core':
         specifier: workspace:*

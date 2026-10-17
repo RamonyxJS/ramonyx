@@ -1,6 +1,7 @@
 # Roadmap Phase 0–1
 
-- Status per 2026-10-18: **Phase 0 selesai; Phase 1 inti selesai** (menunggu review pemilik).
+- Status per 2026-10-18: **Phase 0 selesai; Phase 1 inti selesai; Phase 2 berjalan**
+  (file routing API selesai).
 - Sumber: `docs/BLUEPRINT.md` §9 dan §12.
 
 ## Phase 0 — Foundation & RFC ✅
@@ -43,10 +44,14 @@ Catatan implementasi Phase 1:
 - Handler menerima output hasil validasi schema (transform/strip diterapkan), bukan input mentah.
 - Manifest route eksplisit; file-based routing menyusul Phase 2.
 
-## Phase 2 — Full-stack (berikutnya)
+## Phase 2 — Full-stack (berjalan)
 
-- File routing otomatis, adapter React, SSR + loader + error boundary, dev server/HMR, browser test.
-- Build/bundler (Vite) masuk di fase ini sesuai ADR-0005.
+- [x] File routing API: `createRouteManifest` (`packages/compiler`) — pindai `src/routes/api/**`,
+      `index`/`[param]`, prefix `_` diabaikan, file tanpa method → error saat startup
+- [ ] Adapter React + SSR + loader + error boundary
+- [ ] Bundler Vite (ADR-0005): client bundle + hydration
+- [ ] Dev server/HMR
+- [ ] Browser test (hydration/navigasi)
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

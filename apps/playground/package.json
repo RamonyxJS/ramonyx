@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@ramonyx/adapter-runtime": "workspace:*",
+    "@ramonyx/compiler": "workspace:*",
     "@ramonyx/server": "workspace:*",
     "ramonyx": "workspace:*",
     "zod": "4.6.7"

@@ -125,5 +125,7 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
 - 405 menyertakan header `Allow`; body error selalu JSON aman (detail internal tidak bocor).
 - `HttpError`: 4xx terbuka secara default; 5xx selalu `{"error":"Internal Server Error"}`.
 - `strictValidation=false` hanya melonggarkan validasi output; input tetap ketat.
-- Manifest route masih eksplisit (`apps/playground/src/manifest.ts`); file-based routing Phase 2.
+- File routing: `createRouteManifest` (`@ramonyx/compiler`) memindai `src/routes/api/**` —
+  `index.ts` = direktori, `[id]` = parameter, prefix `_` diabaikan, file tanpa ekspor method =
+  error saat startup.
 - Paket Phase 1: `@ramonyx/{core,router,schema,adapter-runtime,server,testing}` + meta `ramonyx`.

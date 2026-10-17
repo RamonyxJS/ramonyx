@@ -1,4 +1,5 @@
-import { createMemoryHost } from "@ramonyx/adapter-runtime";
+import { createMemoryHost, type MemoryServer } from "@ramonyx/adapter-runtime";
+import type { FetchHandler } from "@ramonyx/core";
 import { type CreateHandlerOptions, createHandler } from "@ramonyx/server";
 
 export interface TestServer {
@@ -7,14 +8,7 @@ export interface TestServer {
   close(): Promise<void>;
 }
 
-/**
- * Server in-memory untuk test: tidak membuka port, tidak butuh runtime sendiri.
- * `fetch` menerima path relatif (digabung dengan `url`) atau `Request` utuh.
- */
-export async function createTestServer(options: CreateHandlerOptions): Promise<TestServer> {
-  const host = createMemoryHost();
-  const server = await host.serve(createHandler(options));
-
+function wrap(server: MemoryServer): TestServer {
   return {
     url: server.url,
     fetch(input, init) {
@@ -24,4 +18,18 @@ export async function createTestServer(options: CreateHandlerOptions): Promise<T
     },
     close: () => server.close(),
   };
+}
+
+/**
+ * Server in-memory dari handler siap pakai (mis. hasil `createApp`).
+ * Tidak membuka port, tidak butuh runtime sendiri.
+ */
+export async function createTestServerFromHandler(handler: FetchHandler): Promise<TestServer> {
+  const host = createMemoryHost();
+  return wrap(await host.serve(handler));
+}
+
+/** Server in-memory dari manifest route + middleware (opsi `createHandler`). */
+export async function createTestServer(options: CreateHandlerOptions): Promise<TestServer> {
+  return createTestServerFromHandler(createHandler(options));
 }

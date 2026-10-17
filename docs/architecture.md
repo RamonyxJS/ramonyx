@@ -35,7 +35,7 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `packages/react` | Adapter UI React (ADR-0003) | Phase 2 | belum dibuat |
 | `packages/ssr` | Render halaman → HTML (+ streaming) | Phase 2 | belum dibuat |
 | `packages/client` | Hydration + client navigation | Phase 2 | belum dibuat |
-| `packages/compiler` | Transformasi route + analisis batas server/client | Phase 2 | belum dibuat |
+| `packages/compiler` | Manifest route (`createRouteManifest`), transformasi & analisis batas server/client | Phase 2 | file routing selesai |
 | `packages/bundler` | Pembungkus toolchain (ADR-0005) | Phase 2 | belum dibuat |
 | `packages/security` | Policy & audit keamanan framework | Phase 3 | belum dibuat |
 | `packages/devtools` | CLI, dev server, diagnostics | Phase 2–3 | belum dibuat |
@@ -44,6 +44,9 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `apps/create-app` | CLI scaffolding | Phase 2–3 | belum dibuat |
 | `runtime/crates/*` | Host Rust + V8 (runtime-core, module-loader, permissions, net, fs, cli) | Phase 4+ | belum dibuat |
 | `benchmarks/*` | Skrip benchmark per area | Phase 1 | belum dibuat |
+
+Status Phase 2 (berjalan): file routing API (`createRouteManifest` di `packages/compiler`) memindai
+`src/routes/api/**`; adapter React, SSR, dan bundler menyusul.
 
 Status Phase 1: `core`, `router`, `schema`, `adapter-runtime`, `server`, `testing`, `ramonyx`,
 `apps/playground`, dan `benchmarks/http` sudah diimplementasikan (source-first TypeScript via
@@ -60,8 +63,9 @@ jelas (BLUEPRINT §5 aturan 5). Nama scope npm masih keputusan terbuka (§8).
 4. FFI adalah boundary yang diaudit: `unsafe` dibatasi, invarian didokumentasikan.
 5. Hindari memecah semua fitur menjadi package terpisah sebelum batas tanggung jawab jelas.
 
-Konsekuensi operasional yang ditegakkan lint: **hanya `packages/adapter-runtime`** (dan tooling dev)
-yang boleh mengimpor `node:*`; `core`, `router`, `server`, dll. hanya memakai kontrak §5.
+Konsekuensi operasional yang ditegakkan lint: hanya `packages/adapter-runtime` dan
+`packages/compiler` (build-time) yang boleh mengimpor `node:*`; paket runtime lain hanya memakai
+kontrak §5. Tooling dev (test/benchmark/playground) bebas.
 
 ## 5. Kontrak framework ↔ adapter-runtime (draft v0)
 

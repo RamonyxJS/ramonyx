@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createTestServer } from "@ramonyx/testing";
+import { createTestServerFromHandler } from "@ramonyx/testing";
 import type { Logger } from "ramonyx";
 import { resolveConfig } from "ramonyx";
 import config from "../ramonyx.config.ts";
-import { appMiddleware, routes } from "../src/manifest.ts";
+import { createApp } from "../src/app.ts";
 
 function collectingLogger(): {
   logger: Logger;
@@ -22,15 +22,11 @@ function collectingLogger(): {
 
 const knownUserId = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
 
-test("playground end-to-end lewat createTestServer", async () => {
+test("playground end-to-end lewat file routing + createTestServer", async () => {
   const { logger, lines } = collectingLogger();
   const resolved = resolveConfig(config);
-  const server = await createTestServer({
-    routes,
-    middleware: appMiddleware,
-    logger,
-    strictValidation: resolved.app.strictValidation,
-  });
+  const app = await createApp({ logger, strictValidation: resolved.app.strictValidation });
+  const server = await createTestServerFromHandler(app);
 
   try {
     const hello = await server.fetch("/api/hello");

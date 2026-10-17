@@ -3,11 +3,10 @@ import { cpus } from "node:os";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createNodeHost } from "@ramonyx/adapter-runtime";
-import { createHandler } from "@ramonyx/server";
 import autocannon from "autocannon";
-import { appMiddleware, routes } from "../../apps/playground/src/manifest.ts";
+import { createApp } from "../../apps/playground/src/app.ts";
 
-const handler = createHandler({ routes, middleware: appMiddleware });
+const handler = await createApp();
 const host = createNodeHost();
 const server = await host.serve(handler, { port: 0 });
 

@@ -25,12 +25,14 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 ## Jebakan yang paling mudah kena
 
 - **Blueprint §4/§5 masih rancangan, belum semuanya diimplementasikan.** Yang nyata:
-  `packages/*`, `apps/playground`, `benchmarks/*`. Fitur Phase 2+ (file routing otomatis, SSR,
-  dev server/HMR, adapter React) belum ada — cek kode, jangan asumsikan.
+  `packages/*`, `apps/playground`, `benchmarks/*`. File routing API sudah ada
+  (`packages/compiler`); SSR/hydration, dev server/HMR, dan adapter React belum — cek kode,
+  jangan asumsikan.
 - **Syntax harus erasable.** Paket diekspor sebagai `.ts` dan dijalankan Node type stripping:
   dilarang `enum`, `namespace`, parameter property; `erasableSyntaxOnly` + `verbatimModuleSyntax`
   menegakkannya. Impor relatif wajib berekstensi `.ts`.
-- **`node:*` hanya di `packages/adapter-runtime`** (plus test/benchmark/playground); ditegakkan lint.
+- **`node:*` hanya di `packages/adapter-runtime` dan `packages/compiler` (build-time)**, plus
+  test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
 - **Disiplin klaim (BLUEPRINT §10).** Jangan menulis klaim performa/keamanan tanpa bukti yang bisa
   dijalankan.
@@ -61,6 +63,6 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 0 & Phase 1 inti selesai (46 tes hijau; baseline tercatat). Berikutnya Phase 2 — file
-routing, adapter React, SSR, dev server/HMR. Keputusan terbuka: scope npm & lisensi, matrix
-browser, rekonsiliasi PRD (lihat `docs/roadmap/phase-0-1.md`).
+Phase 0 & Phase 1 selesai; Phase 2 berjalan — file routing API selesai (`@ramonyx/compiler`,
+55 tes hijau). Berikutnya: adapter React, SSR, bundler Vite, dev server/HMR. Keputusan terbuka:
+scope npm & lisensi, matrix browser, rekonsiliasi PRD (lihat `docs/roadmap/phase-0-1.md`).

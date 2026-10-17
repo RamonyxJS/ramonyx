@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@ramonyx/adapter-runtime": ["./packages/adapter-runtime/src/index.ts"],
+      "@ramonyx/core": ["./packages/core/src/index.ts"],
+      "@ramonyx/router": ["./packages/router/src/index.ts"],
+      "@ramonyx/schema": ["./packages/schema/src/index.ts"],
+      "@ramonyx/server": ["./packages/server/src/index.ts"],
+      "@ramonyx/testing": ["./packages/testing/src/index.ts"],
+      "ramonyx": ["./packages/ramonyx/src/index.ts"]
+    }
+  },
+  "include": ["packages/**/*.ts", "apps/**/*.ts", "benchmarks/**/*.ts"]
+}

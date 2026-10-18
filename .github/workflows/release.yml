@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       # Satu sumber versi: channel dibaca dari rust-toolchain.toml (action butuh input eksplisit).
@@ -103,7 +103,7 @@ jobs:
         with:
           name: ramonyx-release
           path: dist
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - name: Publikasi (skip bila NPM_TOKEN kosong)

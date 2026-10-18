@@ -9,3 +9,9 @@ allowBuilds:
 # Supply chain: versi rilis baru baru boleh dipakai setelah 24 jam (menahan rilis terkompromi).
 # Kebijakan lengkap: docs/security/dependency-policy.md
 minimumReleaseAge: 1440
+
+# Advisory: hyperid <4 menarik uuid <11.1.1 (moderate). autocannon 8 memakai API
+# hyperid yang sama (factory + id string); dipaksa ke 4.0.0 yang menjatuhkan uuid.
+# Verifikasi perilaku: `pnpm bench:report` (menjalankan autocannon) + `pnpm audit`.
+overrides:
+  hyperid: "4.0.0"

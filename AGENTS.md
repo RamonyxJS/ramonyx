@@ -61,6 +61,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - **JSX hanya lewat loader dev.** Node type stripping tidak memproses JSX; jalankan app/test dengan
   `node --import ./tools/register.mjs` (script `test`/`bench`/`dev` sudah begitu — ADR-0006).
   Paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
+- **Test server wajib `close()` di `finally`.** Assert yang gagal tanpa `finally` membocorkan
+  listener dan `node --test` menggantung tanpa batas (pernah terjadi di CI); script `test` memakai
+  `--test-timeout=120000` + `--test-force-exit` sebagai jaring pengaman, dan adapter menormalkan
+  loopback `::1` → `127.0.0.1`.
 - **Produksi = `NODE_ENV=production`.** Skrip `start`/`docs`/bench SSR + template `create-app`
   sudah men-set-nya; tanpa itu React berjalan build dev (pernah terjadi di server produksi —
   ADR-0048).

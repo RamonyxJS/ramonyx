@@ -14,6 +14,17 @@ export interface NodeHostOptions {
   readonly onError?: (error: unknown) => void;
 }
 
+/**
+ * Normalisasi alamat klien: `::ffff:1.2.3.4` → `1.2.3.4`; loopback IPv6 `::1` → `127.0.0.1`
+ * (identitas klien stabil untuk rate limit/logging, apa pun jalur IPv4/IPv6-nya).
+ */
+function normalizeRemoteAddress(remote: string): string {
+  if (remote === "::1") {
+    return "127.0.0.1";
+  }
+  return remote.startsWith("::ffff:") ? remote.slice("::ffff:".length) : remote;
+}
+
 async function toFetchRequest(request: IncomingMessage, origin: string): Promise<Request> {
   const method = request.method ?? "GET";
   const headers = new Headers();
@@ -39,10 +50,7 @@ async function toFetchRequest(request: IncomingMessage, origin: string): Promise
   // Alamat klien sebenarnya — ditulis SETELAH salinan header agar nilai dari klien tertimpa.
   const remote = request.socket.remoteAddress;
   if (remote !== undefined) {
-    headers.set(
-      REMOTE_ADDRESS_HEADER,
-      remote.startsWith("::ffff:") ? remote.slice("::ffff:".length) : remote,
-    );
+    headers.set(REMOTE_ADDRESS_HEADER, normalizeRemoteAddress(remote));
   }
 
   return new Request(new URL(request.url ?? "/", origin), init);

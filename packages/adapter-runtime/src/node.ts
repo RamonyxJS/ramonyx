@@ -1,6 +1,11 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { Readable } from "node:stream";
-import type { EnvReader, FetchHandler, Logger } from "@ramonyx/core";
+import {
+  type EnvReader,
+  type FetchHandler,
+  type Logger,
+  REMOTE_ADDRESS_HEADER,
+} from "@ramonyx/core";
 import type { RunningServer, RuntimeHost, ServeOptions } from "./types.ts";
 
 export interface NodeHostOptions {
@@ -29,6 +34,16 @@ async function toFetchRequest(request: IncomingMessage, origin: string): Promise
     init.body = Readable.toWeb(request) as unknown as BodyInit;
     init.duplex = "half";
   }
+
+  // Alamat klien sebenarnya — ditulis SETELAH salinan header agar nilai dari klien tertimpa.
+  const remote = request.socket.remoteAddress;
+  if (remote !== undefined) {
+    headers.set(
+      REMOTE_ADDRESS_HEADER,
+      remote.startsWith("::ffff:") ? remote.slice("::ffff:".length) : remote,
+    );
+  }
+
   return new Request(new URL(request.url ?? "/", origin), init);
 }
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { REMOTE_ADDRESS_HEADER } from "@ramonyx/core";
 import { createNodeHost } from "../src/index.ts";
 
 test("node host melayani HTTP nyata (method, body, status, set-cookie)", async () => {
@@ -20,6 +21,9 @@ test("node host melayani HTTP nyata (method, body, status, set-cookie)", async (
           ],
         });
       }
+      if (url.pathname === "/address") {
+        return new Response(request.headers.get(REMOTE_ADDRESS_HEADER) ?? "kosong");
+      }
       return new Response("tidak ada", { status: 404 });
     },
     { port: 0 },
@@ -39,6 +43,14 @@ test("node host melayani HTTP nyata (method, body, status, set-cookie)", async (
 
   const missing = await fetch(new URL("/nope", server.url));
   assert.equal(missing.status, 404);
+
+  const address = await fetch(new URL("/address", server.url));
+  assert.equal(await address.text(), "127.0.0.1", "alamat klien diisi adapter");
+
+  const spoofed = await fetch(new URL("/address", server.url), {
+    headers: { [REMOTE_ADDRESS_HEADER]: "1.2.3.4" },
+  });
+  assert.equal(await spoofed.text(), "127.0.0.1", "nilai dari klien ditimpa adapter");
 
   await server.close();
 });

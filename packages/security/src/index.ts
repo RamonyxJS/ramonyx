@@ -4,5 +4,7 @@ export type { CsrfOptions } from "./csrf.ts";
 export { csrfProtection } from "./csrf.ts";
 export type { SecurityHeadersOptions } from "./headers.ts";
 export { securityHeaders } from "./headers.ts";
+export type { RateLimitOptions } from "./rate-limit.ts";
+export { rateLimit } from "./rate-limit.ts";
 export type { GuardedFetchOptions } from "./ssrf.ts";
 export { guardedFetch, SsrfError } from "./ssrf.ts";

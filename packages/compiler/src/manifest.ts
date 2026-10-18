@@ -3,7 +3,7 @@ import { readdir } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
 import type { RouteDefinition, RouteEntry } from "@ramonyx/core";
 import { RouteManifestError } from "./errors.ts";
-import { importModule } from "./import.ts";
+import { type ModuleImporter, nativeImporter } from "./import.ts";
 
 export const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"] as const;
 
@@ -14,6 +14,8 @@ export interface CreateRouteManifestOptions {
   readonly dir: string;
   /** Subdirektori endpoint API (default "api"). File di luar ini belum dipindai. */
   readonly apiDir?: string;
+  /** Cara memuat modul route (default: import Node; dev server memakai ssrLoadModule Vite). */
+  readonly importer?: ModuleImporter;
 }
 
 interface RouteFile {
@@ -94,11 +96,12 @@ export async function createRouteManifest(
   options: CreateRouteManifestOptions,
 ): Promise<RouteEntry[]> {
   const apiDir = options.apiDir ?? "api";
+  const importer = options.importer ?? nativeImporter;
   const files = await collectRouteFiles(options.dir, apiDir);
   const entries: RouteEntry[] = [];
 
   for (const file of files) {
-    const module = await importModule(file.absolute, `route ${file.routePath}`);
+    const module = await importer(file.absolute, `route ${file.routePath}`);
     const exported = HTTP_METHODS.filter((method) => module[method] !== undefined);
     if (exported.length === 0) {
       throw new RouteManifestError(

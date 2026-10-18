@@ -1,11 +1,15 @@
 import { pathToFileURL } from "node:url";
 import { RouteManifestError } from "./errors.ts";
 
+/**
+ * Cara memuat modul route/halaman. Default: dynamic import Node (`nativeImporter`).
+ * Dev server dapat menggantinya dengan `vite.ssrLoadModule` agar modul mengikuti
+ * module graph Vite (invalidasi saat file berubah).
+ */
+export type ModuleImporter = (absolute: string, label: string) => Promise<Record<string, unknown>>;
+
 /** Dynamic import modul route/page dari file .ts/.tsx, dengan error yang menyebut file. */
-export async function importModule(
-  absolute: string,
-  label: string,
-): Promise<Record<string, unknown>> {
+export const nativeImporter: ModuleImporter = async (absolute, label) => {
   try {
     return (await import(pathToFileURL(absolute).href)) as Record<string, unknown>;
   } catch (error) {
@@ -14,4 +18,4 @@ export async function importModule(
       { cause: error },
     );
   }
-}
+};

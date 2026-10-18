@@ -99,3 +99,27 @@ test("tidak ada halaman → array kosong", async () => {
     assert.deepEqual(pages, []);
   });
 });
+
+test("importer kustom dipakai tanpa mengeksekusi file (jalur dev)", async () => {
+  await withTempRoutes(async (root) => {
+    await writeFixture(root, "page.tsx", `throw new Error("file tidak boleh dieksekusi");`);
+
+    const seen: string[] = [];
+    const pages = await loadPageRoutes({
+      dir: root,
+      importer: async (absolute) => {
+        seen.push(absolute);
+        return {
+          default: function FakePage() {
+            return null;
+          },
+        };
+      },
+    });
+
+    assert.equal(pages.length, 1);
+    assert.equal(pages[0]?.path, "/");
+    assert.equal(seen.length, 1);
+    assert.ok(seen[0]?.endsWith("page.tsx"));
+  });
+});

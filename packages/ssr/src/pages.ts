@@ -9,8 +9,10 @@ import { defaultDocument, escapeHtml } from "./document.ts";
 import type { DocumentRenderer, ElementDescriptor, Renderer } from "./types.ts";
 
 export interface ClientOptions {
-  /** URL bundle client, mis. "/assets/client.js". */
+  /** URL bundle/entry client, mis. "/assets/client.js" (produksi) atau "/.ramonyx/client-entry.ts" (dev). */
   readonly script: string;
+  /** Modul tambahan yang dimuat sebelum entry (mis. "/@vite/client" saat dev). */
+  readonly extraModules?: readonly string[];
 }
 
 export interface CreatePageRoutesOptions {
@@ -79,8 +81,14 @@ function hydrationScripts(client: ClientOptions | undefined, payload: unknown): 
   if (client === undefined) {
     return "";
   }
-  return `<script id="${PAYLOAD_SCRIPT_ID}">window.__RAMONYX__=${serializePayload(payload)}</script>
-<script type="module" src="${escapeHtml(client.script)}"></script>`;
+  const extraModules = (client.extraModules ?? []).map(
+    (url) => `<script type="module" src="${escapeHtml(url)}"></script>`,
+  );
+  return [
+    `<script id="${PAYLOAD_SCRIPT_ID}">window.__RAMONYX__=${serializePayload(payload)}</script>`,
+    ...extraModules,
+    `<script type="module" src="${escapeHtml(client.script)}"></script>`,
+  ].join("\n");
 }
 
 async function renderPage(

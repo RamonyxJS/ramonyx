@@ -249,3 +249,21 @@ test("tanpa client option: tidak ada payload/script hydration", async () => {
   assert.ok(!html.includes("window.__RAMONYX__"));
   assert.ok(!html.includes('type="module"'));
 });
+
+test("client extraModules dimuat sebelum entry (untuk HMR client dev)", async () => {
+  const page = basePage("/", { default: Page });
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: fakeRenderer(),
+      client: { script: "/.ramonyx/client-entry.ts", extraModules: ["/@vite/client"] },
+    }),
+  });
+  const html = await (await handler(new Request("http://test.local/"))).text();
+
+  const viteClient = html.indexOf('src="/@vite/client"');
+  const entry = html.indexOf('src="/.ramonyx/client-entry.ts"');
+  assert.ok(viteClient !== -1, "modul tambahan ada");
+  assert.ok(entry !== -1, "entry ada");
+  assert.ok(viteClient < entry, "modul tambahan dimuat sebelum entry");
+});

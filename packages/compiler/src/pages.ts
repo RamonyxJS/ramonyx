@@ -3,7 +3,7 @@ import { readdir } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
 import type { LoadedPage, PageModule } from "@ramonyx/core";
 import { RouteManifestError } from "./errors.ts";
-import { importModule } from "./import.ts";
+import { type ModuleImporter, nativeImporter } from "./import.ts";
 
 const PAGE_FILE = /^(page|layout|error)\.(tsx|ts)$/;
 
@@ -12,6 +12,8 @@ export interface LoadPageRoutesOptions {
   readonly dir: string;
   /** Subdirektori API yang dilewati (default "api"). */
   readonly apiDir?: string;
+  /** Cara memuat modul halaman (default: import Node; dev server memakai ssrLoadModule Vite). */
+  readonly importer?: ModuleImporter;
 }
 
 type FileKind = "page" | "layout" | "error";
@@ -82,8 +84,12 @@ async function scanDirectories(dir: string, apiDir: string): Promise<Map<string,
   return directories;
 }
 
-async function loadPageModule(absolute: string, label: string): Promise<PageModule> {
-  const module = await importModule(absolute, label);
+async function loadPageModule(
+  absolute: string,
+  label: string,
+  importer: ModuleImporter,
+): Promise<PageModule> {
+  const module = await importer(absolute, label);
   if (module.default === undefined) {
     throw new RouteManifestError(
       `${label} (${absolute}) tidak punya default export (komponen halaman/layout/error).`,
@@ -103,6 +109,7 @@ async function loadPageModule(absolute: string, label: string): Promise<PageModu
 export async function loadPageRoutes(options: LoadPageRoutesOptions): Promise<LoadedPage[]> {
   const dir = options.dir;
   const apiDir = options.apiDir ?? "api";
+  const importer = options.importer ?? nativeImporter;
   const directories = await scanDirectories(dir, apiDir);
 
   const pageDirs = [...directories.entries()]
@@ -116,14 +123,16 @@ export async function loadPageRoutes(options: LoadPageRoutesOptions): Promise<Lo
       continue;
     }
     const path = routePathForDir(dir, pageDir);
-    const page = await loadPageModule(pageFile, `halaman ${path}`);
+    const page = await loadPageModule(pageFile, `halaman ${path}`, importer);
 
     const layouts: PageModule[] = [];
     const layoutFiles: string[] = [];
     for (const ancestor of ancestorDirs(dir, pageDir)) {
       const layoutFile = directories.get(ancestor)?.layout;
       if (layoutFile !== undefined) {
-        layouts.push(await loadPageModule(layoutFile, `layout ${routePathForDir(dir, ancestor)}`));
+        layouts.push(
+          await loadPageModule(layoutFile, `layout ${routePathForDir(dir, ancestor)}`, importer),
+        );
         layoutFiles.push(layoutFile);
       }
     }
@@ -133,7 +142,11 @@ export async function loadPageRoutes(options: LoadPageRoutesOptions): Promise<Lo
     for (const ancestor of ancestorDirs(dir, pageDir).reverse()) {
       const candidate = directories.get(ancestor)?.error;
       if (candidate !== undefined) {
-        error = await loadPageModule(candidate, `error page ${routePathForDir(dir, ancestor)}`);
+        error = await loadPageModule(
+          candidate,
+          `error page ${routePathForDir(dir, ancestor)}`,
+          importer,
+        );
         errorFile = candidate;
         break;
       }

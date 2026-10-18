@@ -26,7 +26,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm docs` — situs dokumentasi lokal (dogfood **penuh**: SSR React + hydration/soft navigation
   atas `docs/**`) di http://127.0.0.1:4000 (build klien + start).
 - `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
-  di `dist/`); `pnpm release:verify` — verifikasi instalasi di proyek konsumen bersih (Node polos).
+  di `dist/`; **14 artefak** termasuk `create-ramonyx-app`); `pnpm release:verify` — verifikasi
+  instalasi di proyek konsumen bersih (Node polos), termasuk scaffold `create-ramonyx-app`.
+  Publikasi: `docs/releasing.md` (checklist pemilik; workflow publish dari tarball terverifikasi —
+  ADR-0049).
 - `benchmarks/runtime-startup.sh` — baseline startup runtime Rust (median wall/startup/load/eval
   dari `RUNS` eksekusi; hasil → `benchmarks/results/runtime-startup.json`; butuh build release).
 - `pnpm bench:report` — benchmark HTTP **report-only** (bandingkan vs baseline tanpa menimpanya;
@@ -166,7 +169,9 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 **scaffolder aplikasi**
 (`pnpm create:app` — template file-routing **SSR React + hydration**, ADR-0041), **SSR streaming
 Node** (`renderToReadableStream` via `react-dom/server.edge` — ADR-0047; jalur sinkron tetap
-untuk halaman error), **bench SSR + ambang Web Vitals** (report-only — ADR-0048), dan **situs
+untuk halaman error), **bench SSR + ambang Web Vitals** (report-only — ADR-0048), **pra-publikasi**
+(publish dari tarball terverifikasi + guard tag↔versi + dist-tag + `create-ramonyx-app` — ADR-0049),
+dan **situs
 dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042) —
 semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; sisa Phase 5: **publikasi npm sebenarnya** (butuh kredensial

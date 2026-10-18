@@ -55,3 +55,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0046](0046-source-maps.md) | Source map produksi (client bundle + paket npm) | Accepted |
 | [0047](0047-ssr-streaming-node.md) | SSR streaming di runtime Node (`renderToReadableStream` + `server.edge`) | Accepted |
 | [0048](0048-bench-ssr-vitals.md) | Bench SSR + ambang Web Vitals (report-only) + `NODE_ENV` produksi | Accepted |
+| [0049](0049-pra-publikasi.md) | Kesiapan pra-publikasi: publish dari artefak terverifikasi + dist-tag + `create-ramonyx-app` | Accepted |

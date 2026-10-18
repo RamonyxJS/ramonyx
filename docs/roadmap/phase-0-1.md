@@ -209,6 +209,11 @@ pekerjaan Phase 5.
       + baseline `ssr-baseline.json` + langkah CI report-only; vitals = median 3 load + ambang
       absolut (report-only, `VITALS_STRICT=1` tersedia); baseline vitals di-refresh eksplisit;
       `NODE_ENV=production` di skrip start/docs/bench + template `create-app`
+- [x] **Pra-publikasi** (ADR-0049): publish dari tarball **terverifikasi** (perbaikan job
+      `publish-npm` yang dirancang menulis ke staging yang tidak pernah dibuat → tag pertama
+      gagal), guard tag↔versi, dist-tag `alpha/beta/rc/latest`, provenance kondisional,
+      `create-ramonyx-app` ikut dirilis + scaffold terverifikasi, dry-run npm ×13 bersih,
+      README publik + `docs/releasing.md`
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
       sandbox OS (seccomp/namespace), health-check otomatis, backoff eksponensial,
       evaluasi `--strict` bench setelah beberapa invokasi tenang lagi

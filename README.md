@@ -1,81 +1,68 @@
 # Ramonyx
 
-Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangkan sebagai dua
-proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
-[docs/BLUEPRINT.md](docs/BLUEPRINT.md).
+Framework full-stack TypeScript (Node ≥ 24) + runtime Rust/V8 **eksperimental**: file routing,
+SSR React (+ streaming), hydration + soft navigation, middleware security, validasi schema di
+tepi kepercayaan, dan benchmark/gate reproducible.
 
-> **Status: exit criteria Phase 4 tercapai (2026-10-18)** — Phase 0–3 selesai dan runtime alpha
-> menjalankan **aplikasi playground subset** (halaman SSR React + API + POST + middleware
-> security) lewat `ramonyx.serveHandler`, plus subset compatibility suite di CI. Runtime Rust:
-> R0 (CLI), R1 (V8, ESM, TypeScript, `node_modules` ESM v1), R2a/b/c (HTTP server, cancellation,
-> keep-alive, streaming respons), R3a (permission model **deny-all**), `web_shim`,
-> **compatibility suite v1**, **interop CommonJS v1**, **SSR React + SSR streaming**,
-> **`fetch` + `ReadableStream`**, **builtin subset (`node:net`/`node:dns/promises`) + `crypto`**,
-> dan **subset `@ramonyx/security`** (middleware + guardedFetch/SSRF), plus **resource limits**
-> (kuota heap `--max-heap-mb`, watchdog `--timeout-ms`, `ramonyx.permissions.revoke`), plus
-> **isolasi worker** (`ramonyx.worker`: thread + isolate V8 terpisah, pesan JSON, permission
-> irisan anti-eskalasi, kill switch), **streaming request + batas body server** (body
-> pull-model, 413 dini), **`fetch` https + redirect otomatis** (TLS diverifikasi, CA kustom),
-> **profiling startup** (timings per fase + metrik op opsional), **kuota CPU per-thread +
-> RSS proses** (menutup gap memori eksternal), **pipeline rilis v1** (paket npm 0.1.0 +
-> binary runtime + verifikasi instalasi — `pnpm release` / `pnpm release:verify`), dan
-> **isolasi level proses untuk plugin** (`ramonyx.spawn` — crash plugin tidak menjatuhkan
-> induk). Framework Node tetap baseline produksi; sisa Phase 5: publikasi npm sebenarnya
-> (butuh kredensial). Klaim mengikuti aturan BLUEPRINT §10.
+> **Status: alpha 0.1.0 — belum terbit di registry npm.** Pipeline rilis sudah siap
+> (`pnpm release` → 13 tarball npm + binary runtime + `SHA256SUMS`/manifest; `pnpm release:verify`
+> menguji instalasi di proyek konsumen bersih; `npm publish --dry-run` ×13 bersih). Publikasi
+> registry menunggu keputusan pemilik — checklist: [docs/releasing.md](docs/releasing.md).
+> Framework Node adalah baseline; runtime Rust/V8 eksperimental (Phase 4 selesai, Phase 5 berjalan).
 
-## Quick start
-
-Buat aplikasi baru (di dalam repo): `pnpm create:app aplikasi-saya` — lalu `cd aplikasi-saya`,
-`pnpm install`, `pnpm build`, `pnpm start` (template sudah SSR React + hydration dengan file
-routing `src/routes`).
-
-Baca dokumentasi sebagai situs: `pnpm docs` → http://127.0.0.1:4000 (SSR React, dogfood).
-
+## Mulai cepat (dari repo)
 
 ```bash
-pnpm install
-pnpm test          # suite kontrak v0
-pnpm typecheck
-pnpm lint
-pnpm dev           # dev: Vite+HMR di 5173 → SSR di 3000 (tanpa build)
-pnpm build         # produksi: bundle client ke dist/client
-pnpm start         # produksi: SSR di http://localhost:3000 (setelah build)
-pnpm test:e2e      # e2e Playwright (hydration, navigasi, error, Web Vitals)
-pnpm bench         # baseline autocannon
-pnpm bench:security  # abuse-case + soak (6 skenario serangan + RSS server)
+corepack enable pnpm        # pnpm ≥ 10
+pnpm install                # butuh Node ≥ 24
+pnpm dev                    # http://localhost:5173 (Vite + HMR → SSR :3000)
+
+# scaffold aplikasi baru:
+pnpm create:app aplikasi-saya
+cd aplikasi-saya && pnpm install && pnpm build && pnpm start
 ```
 
-## Peta dokumen
+## Yang sudah ada (terverifikasi)
 
-| Dokumen | Isi |
+- **Framework**: file routing (`src/routes`), lifecycle loader → render → dokumen; **SSR React**
+  dengan **streaming** (opt-in, `createPageRoutes({ streaming: true })`) + payload hydration
+  `window.__RAMONYX__` + soft navigation.
+- **Server**: middleware `next(request?)`, timeout 10 dtk → 503, batas body 1 MiB → 413, load
+  shedding (concurrency 100), rate limit per klien, validasi schema (Standard Schema) di tepi.
+- **Security**: security headers, CSP nonce, CSRF double-submit, SSRF guard (`@ramonyx/security`).
+- **Benchmark**: protokol §8 (warm-up + ulangan + distribusi) dengan gate **report-only** —
+  HTTP, SSR (sinkron vs streaming + suspense), Web Vitals di e2e.
+- **Runtime Rust/V8 (eksperimental)**: ESM + TypeScript + `node_modules`, permission **deny-all**,
+  isolasi worker + plugin (proses terpisah + supervisi), HTTP streaming, resource limits —
+  lihat `runtime/` dan `docs/adr/`.
+
+## Verifikasi
+
+```bash
+pnpm lint && pnpm typecheck && pnpm test   # 156 tes Node
+pnpm build && pnpm test:e2e                # 5 e2e (Playwright)
+cargo test --workspace                     # 101 tes Rust
+pnpm audit --audit-level high              # bersih
+```
+
+## Struktur
+
+| Path | Isi |
 | --- | --- |
-| [`docs/BLUEPRINT.md`](docs/BLUEPRINT.md) | Blueprint teknis: arsitektur, stack, threat model, benchmark, roadmap fase |
-| [`docs/PRD.md`](docs/PRD.md) | Persyaratan produk (sebagian masih pertanyaan terbuka) |
-| [`docs/architecture.md`](docs/architecture.md) | Ringkasan arsitektur, peta package, kontrak framework ↔ runtime |
-| [`docs/adr/`](docs/adr/README.md) | Catatan keputusan arsitektur (ADR) |
-| [`docs/api/core-contract.md`](docs/api/core-contract.md) | Kontrak API framework core v0 + catatan implementasi |
-| [`docs/security/threat-model.md`](docs/security/threat-model.md) | Threat model + basis OWASP ASVS |
-| [`docs/benchmark-protocol.md`](docs/benchmark-protocol.md) | Protokol benchmark |
-| [`docs/coding-standards.md`](docs/coding-standards.md) | Standar kode, dependensi, testing |
-| [`docs/roadmap/phase-0-1.md`](docs/roadmap/phase-0-1.md) | Status + breakdown tugas Phase 0–1 |
-| [`AGENTS.md`](AGENTS.md) | Pintu masuk sesi agen |
+| `packages/*` | framework: `core`, `router`, `schema`, `server`, `ssr`, `react`, `compiler`, `bundler`, `security`, `adapter-runtime`, `testing`, meta `ramonyx` |
+| `apps/playground` | app demo (SSR + hydration + streaming + security) |
+| `apps/docs` | situs dokumentasi (dogfood penuh: SSR + soft navigation) |
+| `apps/create-app` | scaffolder (`create-ramonyx-app`) |
+| `runtime/` | runtime Rust + V8 — Cargo workspace (eksperimental) |
+| `benchmarks/` | protokol §8: HTTP, SSR, security/soak, startup |
+| `docs/` | blueprint, arsitektur, ADR, roadmap, audit status |
 
-## Prasyarat
+## Dokumentasi
 
-- Node.js ≥24 — menjalankan `.ts` langsung (type stripping); lihat ADR-0005.
-- pnpm 12 — standalone via `curl -fsSL https://get.pnpm.io/install.sh | sh -` (mesin dev:
-  `~/.local/share/pnpm/bin`); CI memakai corepack.
-- Rust toolchain — Phase 4+ (sudah terpasang di mesin dev).
+Mulai dari [docs/BLUEPRINT.md](docs/BLUEPRINT.md) (sumber kebenaran teknis),
+[docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) (status audit berbasis bukti),
+dan [docs/adr/README.md](docs/adr/README.md) (keputusan arsitektur 0001–0049).
 
-## Lisensi & dukungan
+## Lisensi
 
-- **Lisensi: MIT** — lihat [LICENSE](LICENSE). Scope paket: `@ramonyx/*` (meta: `ramonyx`).
-- **Browser**: Chrome/Edge/Firefox/Safari dua versi terakhir, JavaScript ES2022, tanpa polyfill
-  otomatis (ADR-0018).
-
-## Aturan singkat
-
-- Bahasa: dokumen/narasi internal Bahasa Indonesia; teks yang dilihat publik (README npm, docs
-  situs, pesan error) Bahasa Inggris.
-- Klaim performa/keamanan hanya dengan bukti yang bisa dijalankan — lihat BLUEPRINT §10 dan
-  [`docs/benchmark-protocol.md`](docs/benchmark-protocol.md).
+MIT — lihat [LICENSE](LICENSE).

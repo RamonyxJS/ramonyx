@@ -84,7 +84,7 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   (`ramonyx.spawn` + `--plugin`, protokol JSON stdin/stdout, permission irisan, kill — ADR-0040),
   **supervisi restart plugin** (`restart` + `plugin.stats()` — ADR-0043), serta **health-check
   plugin** (`healthCheck` + `ramonyx.heartbeat()` — ADR-0044) —
-  tetapi **belum**: publikasi npm sebenarnya (kredensial), sandbox OS, health-check plugin;
+  tetapi **belum**: publikasi npm sebenarnya (kredensial), sandbox OS, health-check otomatis;
   **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
   dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
   **subset** (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak

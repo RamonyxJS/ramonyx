@@ -2,7 +2,8 @@
 //!
 //! Cakupan (ADR-0027): `TextEncoder`/`TextDecoder` (UTF-8), `URL`/`URLSearchParams`
 //! (subset absolut+relatif), `Headers`/`Request`/`Response` minimal (yang dipakai framework),
-//! `setTimeout`/`clearTimeout` berbasis `op_sleep`.
+//! `setTimeout`/`clearTimeout` berbasis `op_sleep`, dan `MessageChannel` minimal
+//! (scheduler React memakainya; pengiriman pesan antrean microtask).
 //!
 //! Semua global dipasang dengan pola `?? ` (tidak menimpa bila sudah ada) supaya dapat diganti
 //! implementasi native/deno_web di masa depan.
@@ -393,6 +394,58 @@ globalThis.Request = globalThis.Request ?? RamonyxRequest;
     const entry = timers.get(id);
     if (entry !== undefined) {
       entry.cleared = true;
+    }
+  };
+})();
+
+// MessageChannel minimal: cukup untuk pola scheduler React
+// (`port1.onmessage = fn; port2.postMessage(null)`); pengiriman melalui
+// microtask antrean, bukan macrotask.
+(() => {
+  class RamonyxMessagePort {
+    constructor() {
+      this._peer = null;
+      this._listeners = new Set();
+      this.onmessage = null;
+    }
+    addEventListener(type, listener) {
+      if (type === "message" && typeof listener === "function") {
+        this._listeners.add(listener);
+      }
+    }
+    removeEventListener(type, listener) {
+      if (type === "message") {
+        this._listeners.delete(listener);
+      }
+    }
+    start() {}
+    close() {}
+    postMessage(value) {
+      const peer = this._peer;
+      if (peer === null) {
+        return;
+      }
+      const event = { type: "message", data: value, target: peer, ports: [] };
+      queueMicrotask(() => {
+        try {
+          if (typeof peer.onmessage === "function") {
+            peer.onmessage(event);
+          }
+          for (const listener of [...peer._listeners]) {
+            listener.call(peer, event);
+          }
+        } catch (error) {
+          Deno.core.ops.op_log_error("MessageChannel listener error: " + error);
+        }
+      });
+    }
+  }
+  globalThis.MessageChannel = globalThis.MessageChannel ?? class {
+    constructor() {
+      this.port1 = new RamonyxMessagePort();
+      this.port2 = new RamonyxMessagePort();
+      this.port1._peer = this.port2;
+      this.port2._peer = this.port1;
     }
   };
 })();

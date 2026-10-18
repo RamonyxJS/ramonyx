@@ -5,7 +5,8 @@
 //!   (`.js/.mjs/.ts/.tsx`, fallback ekstensi & `index`), dan transpile TypeScript via `deno_ast`.
 //! - **API runtime** (`ramonyx.*`): `sleep`, `readTextFile`/`writeTextFile`, `env.get`, dan
 //!   `serve(port, handler)` (HTTP pull-model, body di-buffer; lihat `http.rs`).
-//! - Bare specifier (paket npm) **belum didukung** — error jelas, bukan tebakan.
+//! - **Bare specifier**: resolusi `node_modules` ESM v1 (`exports`/`module`/`main`, ADR-0026).
+//! - **CommonJS**: interop v1 via pemindaian graf `require` statis (ADR-0029).
 
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -25,6 +26,7 @@ use deno_core::{
 use deno_error::JsErrorBox;
 use runtime_core::Permissions;
 
+mod cjs;
 mod http;
 mod resolve;
 mod web_shim;
@@ -369,6 +371,22 @@ impl ModuleLoader for FileModuleLoader {
                 JsErrorBox::generic(format!("hanya file:// yang didukung: {module_specifier}"))
             })?;
 
+            // Modul CommonJS → interop v1 (ADR-0029): graf `require` statis di-embed
+            // ke modul ESM sintetis; wrapper CJS dijalankan di dalam mesin.
+            if cjs::is_cjs_file(&path) {
+                let graph = cjs::build_graph(&path).map_err(JsErrorBox::generic)?;
+                let cwd = std::env::current_dir()
+                    .map(|directory| directory.display().to_string())
+                    .unwrap_or_else(|_| "/".to_string());
+                let code = cjs::generate_module(&graph, &cwd);
+                return Ok(ModuleSource::new(
+                    ModuleType::JavaScript,
+                    ModuleSourceCode::String(code.into()),
+                    module_specifier,
+                    None,
+                ));
+            }
+
             let media_type = MediaType::from_path(&path);
             let (module_type, should_transpile) = match media_type {
                 MediaType::JavaScript | MediaType::Mjs | MediaType::Cjs => {
@@ -477,11 +495,17 @@ impl Engine {
             .build()
             .map_err(|error| EngineError::new(format!("gagal membuat tokio runtime: {error}")))?;
 
-        let mut runtime = JsRuntime::new(RuntimeOptions {
-            module_loader: Some(Rc::new(FileModuleLoader::new())),
-            extensions: vec![ramonyx_engine::init()],
-            ..Default::default()
-        });
+        // Isolate HARUS dibuat di dalam konteks tokio: V8 dapat memposting delayed
+        // task kapan saja (mis. GC memory reducer); deno_core men-abort proses bila
+        // isolate terdaftar tanpa handle tokio untuk menghormati delay tersebut.
+        let mut runtime = {
+            let _guard = tokio.enter();
+            JsRuntime::new(RuntimeOptions {
+                module_loader: Some(Rc::new(FileModuleLoader::new())),
+                extensions: vec![ramonyx_engine::init()],
+                ..Default::default()
+            })
+        };
         runtime
             .execute_script("[ramonyx:bootstrap]".to_string(), BOOTSTRAP.to_string())
             .map_err(|error| EngineError::new(format!("bootstrap gagal: {error}")))?;
@@ -650,7 +674,7 @@ mod tests {
         fs::create_dir_all(&package_dir).expect("mkdir");
         fs::write(
             package_dir.join("package.json"),
-            r#"{ "name": "demo-pkg", "exports": { ".": { "import": "./esm/main.js" } } }"#,
+            r#"{ "name": "demo-pkg", "type": "module", "exports": { ".": { "import": "./esm/main.js" } } }"#,
         )
         .expect("manifest");
         fs::create_dir_all(package_dir.join("esm")).expect("mkdir esm");
@@ -1173,6 +1197,167 @@ if (hasil.requestBody !== "isi") throw new Error("body: " + hasil.requestBody);
 "##,
             )
             .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn cjs_interop_dasar_dengan_reexport_dan_json() {
+        let directory = temp_dir("cjs-dasar");
+        let package_dir = directory.join("node_modules/paket-cjs");
+        fs::create_dir_all(package_dir.join("lib")).expect("mkdir");
+        fs::write(
+            package_dir.join("package.json"),
+            r#"{ "name": "paket-cjs", "version": "1.2.3", "main": "index.js" }"#,
+        )
+        .expect("manifest");
+        fs::write(
+            package_dir.join("index.js"),
+            r#"#!/usr/bin/env node
+'use strict';
+const dalam = require('./lib/dalam.js');
+// require di komentar tidak boleh ikut dipindai: require('./hilang.js')
+module.exports = { halo: () => 'halo ' + dalam.nama, versi: dalam.versi };
+"#,
+        )
+        .expect("index");
+        fs::write(
+            package_dir.join("lib/dalam.js"),
+            "exports.nama = require('./nama.json');\nexports.versi = require('../package.json').version;\n",
+        )
+        .expect("dalam");
+        fs::write(package_dir.join("lib/nama.json"), "\"cjs\"").expect("json");
+
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r#"
+import { halo, versi } from 'paket-cjs';
+import paket from 'paket-cjs';
+if (halo() !== 'halo cjs') throw new Error('halo salah: ' + halo());
+if (versi !== '1.2.3') throw new Error('versi salah: ' + versi);
+if (paket.halo() !== 'halo cjs') throw new Error('default export salah');
+globalThis.__cjs_dasar = true;
+"#,
+        )
+        .expect("write");
+
+        let mut engine = Engine::new().expect("engine");
+        engine.execute_module(&main).expect("cjs interop");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__cjs_dasar !== true) throw new Error('cjs gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn cjs_interop_reexport_branch_dan_process_env() {
+        let directory = temp_dir("cjs-env");
+        let package_dir = directory.join("node_modules/paket-env");
+        fs::create_dir_all(&package_dir).expect("mkdir");
+        fs::write(
+            package_dir.join("package.json"),
+            r#"{ "name": "paket-env", "main": "index.js" }"#,
+        )
+        .expect("manifest");
+        fs::write(
+            package_dir.join("index.js"),
+            r#"'use strict';
+if (process.env.NODE_ENV === 'production') {
+  module.exports = require('./prod.js');
+} else {
+  module.exports = require('./dev.js');
+}
+"#,
+        )
+        .expect("index");
+        fs::write(
+            package_dir.join("prod.js"),
+            "exports.mode = 'production';\nexports.jumlah = 42;\n",
+        )
+        .expect("prod");
+        fs::write(package_dir.join("dev.js"), "exports.mode = 'dev';\n").expect("dev");
+
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r#"
+import { mode, jumlah } from 'paket-env';
+if (mode !== 'production') throw new Error('mode: ' + mode);
+if (jumlah !== 42) throw new Error('jumlah: ' + jumlah);
+globalThis.__cjs_env = mode;
+"#,
+        )
+        .expect("write");
+
+        let mut engine = Engine::new().expect("engine");
+        engine.execute_module(&main).expect("cjs env");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__cjs_env !== 'production') throw new Error('env salah');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn cjs_builtin_dan_require_dinamis_ditolak_dengan_pesan_jelas() {
+        let directory = temp_dir("cjs-error");
+
+        let builtin_dir = directory.join("node_modules/paket-fs");
+        fs::create_dir_all(&builtin_dir).expect("mkdir");
+        fs::write(
+            builtin_dir.join("package.json"),
+            r#"{ "name": "paket-fs", "main": "index.js" }"#,
+        )
+        .expect("manifest");
+        fs::write(
+            builtin_dir.join("index.js"),
+            "module.exports = require('fs');\n",
+        )
+        .expect("fs");
+
+        let dynamic_dir = directory.join("node_modules/paket-dinamis");
+        fs::create_dir_all(&dynamic_dir).expect("mkdir");
+        fs::write(
+            dynamic_dir.join("package.json"),
+            r#"{ "name": "paket-dinamis", "main": "index.js" }"#,
+        )
+        .expect("manifest");
+        fs::write(
+            dynamic_dir.join("index.js"),
+            "const nama = './x.js';\nmodule.exports = require(nama);\n",
+        )
+        .expect("dinamis");
+
+        let builtin_main = directory.join("fs.mjs");
+        fs::write(&builtin_main, "import 'paket-fs';\n").expect("write");
+        let error = Engine::new()
+            .expect("engine")
+            .execute_module(&builtin_main)
+            .expect_err("builtin harus ditolak");
+        assert!(
+            error.to_string().contains("bawaan Node"),
+            "pesan builtin: {error}"
+        );
+
+        let dynamic_main = directory.join("dinamis.mjs");
+        fs::write(&dynamic_main, "import 'paket-dinamis';\n").expect("write");
+        let error = Engine::new()
+            .expect("engine")
+            .execute_module(&dynamic_main)
+            .expect_err("require dinamis harus ditolak");
+        let message = error.to_string();
+        assert!(
+            message.contains("dinamis") && message.contains("paket-dinamis"),
+            "pesan dinamis: {message}"
+        );
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }

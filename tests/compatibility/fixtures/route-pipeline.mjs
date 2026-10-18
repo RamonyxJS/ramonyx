@@ -52,7 +52,7 @@ const table = createRouteTable([
 ]);
 const match = matchRoute(table, "GET", "/users/42");
 if (match.kind !== "match" || match.params.id !== "42") {
-  throw new Error("router mismatch: " + JSON.stringify(match));
+  throw new Error(`router mismatch: ${JSON.stringify(match)}`);
 }
 const statis = matchRoute(table, "GET", "/tetap");
 if (statis.kind !== "match" || statis.entry.path !== "/tetap") {
@@ -101,25 +101,25 @@ const handler = createHandler({
 const okRes = await handler(new Request("http://runtime.test/api/users/42"));
 const okBody = await okRes.json();
 if (okRes.status !== 200 || okBody.id !== "42" || okBody.dari !== "runtime") {
-  throw new Error("pipeline 200 gagal: " + JSON.stringify(okBody));
+  throw new Error(`pipeline 200 gagal: ${JSON.stringify(okBody)}`);
 }
 
 const badRes = await handler(new Request("http://runtime.test/api/users/abc"));
 const badBody = await badRes.json();
 if (badRes.status !== 400 || badBody.error !== "Validation failed") {
-  throw new Error("validasi 400 gagal: " + badRes.status + " " + JSON.stringify(badBody));
+  throw new Error(`validasi 400 gagal: ${badRes.status} ${JSON.stringify(badBody)}`);
 }
 
 const outputRes = await handler(new Request("http://runtime.test/api/output"));
-if (outputRes.status !== 200) throw new Error("output validasi gagal: " + outputRes.status);
+if (outputRes.status !== 200) throw new Error(`output validasi gagal: ${outputRes.status}`);
 
 const boomRes = await handler(new Request("http://runtime.test/api/boom"));
 if (boomRes.status !== 403 || (await boomRes.json()).error !== "Forbidden") {
-  throw new Error("HttpError gagal: " + boomRes.status);
+  throw new Error(`HttpError gagal: ${boomRes.status}`);
 }
 
 const notFound = await handler(new Request("http://runtime.test/tidak-ada"));
-if (notFound.status !== 404) throw new Error("404 gagal: " + notFound.status);
+if (notFound.status !== 404) throw new Error(`404 gagal: ${notFound.status}`);
 
 globalThis.__compat = {
   ok: true,

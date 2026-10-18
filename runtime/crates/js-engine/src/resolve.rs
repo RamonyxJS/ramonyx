@@ -1,9 +1,11 @@
-//! Resolusi bare specifier (`node_modules`) untuk ESM — versi 1.
+//! Resolusi bare specifier (`node_modules`) untuk loader — versi 1.
 //!
-//! Cakupan: walk-up `node_modules`, field `exports` (string, kondisi `import`/`module`/`default`,
-//! subpath + wildcard `./*`), fallback `module` → `main` → `index.js`, fallback ekstensi.
-//! Batasan dicatat: urutan key kondisi tidak penuh sesuai spesifikasi, tanpa self-reference,
-//! dan **CommonJS (.cjs) ditolak** dengan pesan jelas (lihat ADR-0026).
+//! Cakupan: walk-up `node_modules`, field `exports` (string, kondisi
+//! `import`/`module`/`browser`/`worker`/`default`, subpath + wildcard `./*`),
+//! fallback `module` → `main` → `index.js`, fallback ekstensi.
+//! Batasan dicatat: urutan key kondisi tidak penuh sesuai spesifikasi dan tanpa
+//! self-reference (ADR-0026). Entry CommonJS **tidak ditolak di sini** — loader
+//! menanganinya lewat interop CJS (ADR-0029).
 
 use std::path::{Path, PathBuf};
 
@@ -46,7 +48,9 @@ fn resolve_condition(value: &Value) -> Option<PathBuf> {
         Value::String(target) => Some(PathBuf::from(target)),
         Value::Array(items) => items.iter().find_map(resolve_condition),
         Value::Object(map) => {
-            for key in ["import", "module", "default"] {
+            // `node`/`deno`/dsb. sengaja tidak dipilih: runtime ini bukan Node dan
+            // build "browser/worker" lebih cocok (tanpa modul bawaan).
+            for key in ["import", "module", "browser", "worker", "default"] {
                 if let Some(inner) = map.get(key)
                     && let Some(path) = resolve_condition(inner)
                 {
@@ -193,12 +197,6 @@ pub fn resolve_bare(specifier: &str, referrer: &str) -> Result<ModuleSpecifier, 
                 ))
             })?;
 
-            if resolved.extension().is_some_and(|ext| ext == "cjs") {
-                return Err(JsErrorBox::generic(format!(
-                    "paket \"{package_name}\" adalah CommonJS (.cjs) — belum didukung runtime ini"
-                )));
-            }
-
             // Canonicalize agar symlink workspace (pnpm) ter-dedupe menjadi modul yang sama.
             let canonical = std::fs::canonicalize(&resolved).unwrap_or(resolved);
             return ModuleSpecifier::from_file_path(&canonical).map_err(|_| {
@@ -314,18 +312,19 @@ mod tests {
     }
 
     #[test]
-    fn paket_hilang_dan_cjs_ditolak_dengan_pesan_jelas() {
+    fn paket_hilang_error_jelas_dan_cjs_terresolve() {
         let fixture = Fixture::new("errors");
         let missing = fixture.resolved("tidak-ada").expect_err("hilang");
         assert!(missing.to_string().contains("tidak ditemukan"), "{missing}");
 
+        // CommonJS kini sah di-resolve (loader memakai interop CJS, ADR-0029).
         fixture.write(
             "app/node_modules/cjs-pkg/package.json",
             r#"{ "name": "cjs-pkg", "main": "index.cjs" }"#,
         );
         fixture.write("app/node_modules/cjs-pkg/index.cjs", "module.exports = {};");
-        let cjs = fixture.resolved("cjs-pkg").expect_err("cjs");
-        assert!(cjs.to_string().contains("CommonJS"), "{cjs}");
+        let cjs = fixture.resolved("cjs-pkg").expect("cjs terresolve");
+        assert!(cjs.path().ends_with("index.cjs"), "{cjs}");
     }
 
     #[test]

@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "biome check .",
     "typecheck": "tsc --project tsconfig.json --noEmit",
-    "test": "node --import ./tools/register.mjs --test \"packages/*/test/**/*.test.ts\" \"packages/*/test/**/*.test.tsx\" \"apps/*/test/**/*.test.ts\" \"apps/*/test/**/*.test.tsx\" \"tests/**/*.test.ts\" \"benchmarks/**/*.test.ts\"",
+    "test": "node --import ./tools/register.mjs --test --test-timeout=120000 --test-force-exit \"packages/*/test/**/*.test.ts\" \"packages/*/test/**/*.test.tsx\" \"apps/*/test/**/*.test.ts\" \"apps/*/test/**/*.test.tsx\" \"tests/**/*.test.ts\" \"benchmarks/**/*.test.ts\"",
     "build": "node --import ./tools/register.mjs apps/playground/build.ts",
     "bench": "node --import ./tools/register.mjs benchmarks/http/bench.ts",
     "bench:security": "node --import ./tools/register.mjs benchmarks/security/abuse.ts",

@@ -22,6 +22,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm build` + `pnpm start` — produksi: bundle client ke `apps/playground/dist/client/`, lalu SSR di 3000.
 - `pnpm test:e2e` — Playwright terhadap build produksi (`pnpm build` + `pnpm start`); browser:
   CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
+- `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
+  di `dist/`); `pnpm release:verify` — verifikasi instalasi di proyek konsumen bersih (Node polos).
 - `benchmarks/runtime-startup.sh` — baseline startup runtime Rust (median wall/startup/load/eval
   dari `RUNS` eksekusi; hasil → `benchmarks/results/runtime-startup.json`; butuh build release).
 - `pnpm bench` — autocannon HTTP baseline; `pnpm bench:security` — abuse-case + soak
@@ -133,9 +135,11 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 **streaming request + batas body server** (body pull-model + 413 dini — ADR-0035), dan
 **`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036), **R4 profiling startup**
 (timings per fase, metrik op, baseline; snapshot V8 ditolak dengan alasan terukur — ADR-0037),
-serta **kuota CPU per-thread + RSS proses** (ADR-0038) — semuanya diverifikasi test + smoke.
-**Exit criteria Phase 4 tercapai**; sisa menuju Phase 5: isolasi level proses untuk plugin,
-release pipeline.
+serta **kuota CPU per-thread + RSS proses** (ADR-0038), dan **release pipeline v1** (paket 0.1.0,
+tarball npm + binary runtime, verifikasi instalasi konsumen — ADR-0039) — semuanya diverifikasi
+test + smoke.
+**Exit criteria Phase 4 tercapai**; sisa Phase 5: isolasi level proses untuk plugin dan publikasi
+npm sebenarnya (butuh kredensial).
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,

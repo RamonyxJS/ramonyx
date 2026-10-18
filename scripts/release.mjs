@@ -111,6 +111,65 @@ function stagePackage(entry, releaseVersion) {
   return staging;
 }
 
+function createAppReadme(releaseVersion) {
+  return `# create-ramonyx-app
+
+Scaffolder aplikasi Ramonyx — SSR React + hydration, file routing \`src/routes\`.
+
+> **Alpha (${releaseVersion})** — butuh **Node.js ≥ 24**.
+
+## Pemakaian
+
+\`\`\`bash
+pnpm create ramonyx-app aplikasi-saya
+# atau tanpa install:
+pnpm dlx create-ramonyx-app aplikasi-saya
+\`\`\`
+
+Lanjutkan dengan \`cd aplikasi-saya && pnpm install && pnpm build && pnpm start\`.
+
+Repo: ${REPOSITORY} · Lisensi: MIT
+`;
+}
+
+/**
+ * Staging `create-ramonyx-app` (ADR-0049): cli ter-bundle (esbuild; shebang Node dipertahankan)
+ * + `template/` asli + bin — sehingga `pnpm create ramonyx-app` berfungsi dari registry.
+ */
+function stageCreateApp(releaseVersion) {
+  const sourceDir = join(root, "apps", "create-app");
+  const staging = join(npmDir, "create-ramonyx-app");
+  rmSync(staging, { recursive: true, force: true });
+  mkdirSync(join(staging, "dist"), { recursive: true });
+
+  run(join(root, "node_modules", ".bin", "esbuild"), [
+    join(sourceDir, "src", "cli.ts"),
+    "--bundle",
+    "--platform=node",
+    "--format=esm",
+    "--target=node24",
+    `--outfile=${join(staging, "dist", "cli.js")}`,
+  ]);
+  cpSync(join(sourceDir, "template"), join(staging, "template"), { recursive: true });
+  cpSync(join(root, "LICENSE"), join(staging, "LICENSE"));
+  writeFileSync(join(staging, "README.md"), createAppReadme(releaseVersion));
+
+  const staged = {
+    name: "create-ramonyx-app",
+    version: releaseVersion,
+    description: "Scaffolder aplikasi Ramonyx (SSR React + hydration, file routing src/routes).",
+    license: "MIT",
+    type: "module",
+    bin: { "create-ramonyx-app": "dist/cli.js" },
+    files: ["dist", "template", "README.md", "LICENSE"],
+    engines: { node: ">=24" },
+    publishConfig: { access: "public" },
+    repository: REPOSITORY,
+  };
+  writeFileSync(join(staging, "package.json"), `${JSON.stringify(staged, null, 2)}\n`);
+  return staging;
+}
+
 function sha256(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
@@ -140,6 +199,10 @@ function main() {
     run("pnpm", ["pack", "--pack-destination", npmDir], staging);
     console.log(`  ✓ packed ${entry.short}`);
   }
+
+  const createAppStaging = stageCreateApp(releaseVersion);
+  run("pnpm", ["pack", "--pack-destination", npmDir], createAppStaging);
+  console.log("  ✓ packed create-ramonyx-app");
 
   const artifacts = [];
   for (const file of readdirSync(npmDir).sort()) {

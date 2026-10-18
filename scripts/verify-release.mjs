@@ -47,6 +47,10 @@ function main() {
   const releaseVersion = version();
   const files = tarballs();
   if (files.length === 0) fail("tidak ada tarball npm di dist/npm");
+  // Paket scaffolder bernama `create-*` (bukan `@ramonyx/*`) → ditangani terpisah (ADR-0049).
+  const createAppTarball = files.find((file) =>
+    /create-ramonyx-app-\d+\.\d+\.\d+\.tgz$/.test(file),
+  );
 
   rmSync(workDir, { recursive: true, force: true });
   mkdirSync(workDir, { recursive: true });
@@ -54,9 +58,15 @@ function main() {
   // Proyek konsumen: dependensi paket dari tarball; react dari registry (peer @ramonyx/react).
   const dependencies = {};
   for (const file of files) {
+    if (file === createAppTarball) {
+      continue;
+    }
     const name = /^ramonyx-(.+)-\d+\.\d+\.\d+\.tgz$/.exec(file.split("/").pop() ?? "")?.[1];
     const packageName = name === undefined ? "ramonyx" : `@ramonyx/${name}`;
     dependencies[packageName] = `file:${file}`;
+  }
+  if (createAppTarball !== undefined) {
+    dependencies["create-ramonyx-app"] = `file:${createAppTarball}`;
   }
   dependencies.react = "19.3.1";
   dependencies["react-dom"] = "19.3.1";
@@ -173,6 +183,20 @@ console.log("SMOKE OK halo,dunia paket", process.versions.node);
     fail("source map paket tanpa sourcesContent");
   }
   console.log(`  ✓ npm: source map (${peta.sources.length} sumber)`);
+
+  // create-ramonyx-app (ADR-0049): scaffold nyata lewat bin dari tarball, nama placeholder terganti.
+  if (createAppTarball !== undefined) {
+    const target = join(workDir, "app-baru");
+    run("pnpm", ["exec", "create-ramonyx-app", target], { cwd: workDir });
+    const appManifest = JSON.parse(readFileSync(join(target, "package.json"), "utf8"));
+    if (appManifest.name !== "app-baru") {
+      fail(`nama app tidak terganti: ${appManifest.name}`);
+    }
+    if (!existsSync(join(target, "src", "routes", "page.tsx"))) {
+      fail("template halaman tidak tersalin oleh create-ramonyx-app");
+    }
+    console.log("  ✓ create-ramonyx-app: scaffold app-baru (placeholder nama terganti)");
+  }
 
   // Binary runtime dari tarball rilis
   if (existsSync(runtimeDir)) {

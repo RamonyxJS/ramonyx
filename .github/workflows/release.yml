@@ -1,12 +1,16 @@
 name: Release
 
-# Rilis v1 (ADR-0039): dipicu tag `v*` (mis. v0.1.0).
-# Menghasilkan artefak (tarball npm + binary runtime + SHA256SUMS + manifest),
-# menjalankan verifikasi instalasi di proyek konsumen bersih, lalu (opsional,
-# butuh rahasia NPM_TOKEN) mempublikasikan paket.
+# Rilis v1 (ADR-0039) + penyempurnaan pra-publikasi (ADR-0049): dipicu tag `v*` (mis. v0.1.0).
+# Menghasilkan artefak (tarball npm + binary runtime + SHA256SUMS + manifest), memverifikasi
+# instalasi di proyek konsumen bersih, lalu (opsional, butuh rahasia NPM_TOKEN)
+# **mempublikasikan tarball yang sudah diverifikasi itu juga** — tanpa build ulang, sehingga
+# bit yang terbit identik dengan bit yang diuji.
 #
-# Catatan jujur: alur ini belum pernah dijalankan di runner GitHub (belum ada remote/CI
-# saat dibuat); verifikasi lokal dilakukan lewat `pnpm release` + `pnpm release:verify`.
+# Dist-tag mengikuti nama tag: `-alpha` → alpha, `-beta` → beta, `-rc` → rc, selain itu latest.
+# Provenance npm aktif otomatis bila repo publik (butuh `id-token: write`).
+#
+# Catatan jujur: alur ini belum pernah dijalankan di runner GitHub (belum ada remote);
+# verifikasi lokal: `pnpm release` + `pnpm release:verify` + `npm publish --dry-run`.
 
 on:
   push:
@@ -33,6 +37,16 @@ jobs:
         run: corepack enable pnpm
       - name: Install
         run: pnpm install --frozen-lockfile
+      - name: Cek tag vs versi (Cargo.toml = sumber versi)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          expected="${GITHUB_REF_NAME#v}"
+          actual="$(node -e "const fs=require('fs');const m=/^version = \"([^\"]+)\"/m.exec(fs.readFileSync('Cargo.toml','utf8'));if(!m)process.exit(1);process.stdout.write(m[1]);")"
+          if [ "$expected" != "$actual" ]; then
+            echo "Tag ${GITHUB_REF_NAME} tidak cocok dengan versi ${actual} — samakan sebelum rilis."
+            exit 1
+          fi
+          echo "versi cocok: ${actual}"
       - name: Gate cepat (lint + typecheck + test)
         run: |
           pnpm lint
@@ -68,26 +82,56 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write # provenance npm (hanya berlaku untuk repo publik)
     steps:
-      - uses: actions/checkout@v4
+      - name: Unduh tarball hasil verifikasi
+        uses: actions/download-artifact@v4
+        with:
+          name: ramonyx-release
+          path: dist
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Aktifkan pnpm (corepack)
-        run: corepack enable pnpm
-      - name: Install
-        run: pnpm install --frozen-lockfile
-      - name: Build paket
-        run: pnpm release:build
       - name: Publikasi (skip bila NPM_TOKEN kosong)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+          PUBLIC_REPO: ${{ github.event.repository.visibility == 'public' }}
         run: |
+          set -euo pipefail
           if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
             echo "NPM_TOKEN tidak diatur — publikasi dilewati (artefak tetap diunggah ke Release)."
             exit 0
           fi
+
+          case "$TAG_NAME" in
+            *-alpha*) DIST_TAG=alpha ;;
+            *-beta*) DIST_TAG=beta ;;
+            *-rc*) DIST_TAG=rc ;;
+            *) DIST_TAG=latest ;;
+          esac
+          echo "dist-tag: ${DIST_TAG} (dari tag ${TAG_NAME})"
+
+          PROVENANCE=()
+          if [ "$PUBLIC_REPO" = "true" ]; then
+            PROVENANCE=(--provenance)
+            echo "provenance: aktif (repo publik)"
+          else
+            echo "provenance: dilewati (repo tidak publik)"
+          fi
+
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "$HOME/.npmrc"
-          for pkg in dist/npm/*/; do
-            (cd "$pkg" && pnpm publish --access public --no-git-checks)
+
+          shopt -s nullglob
+          TARBALLS=(dist/npm/*.tgz)
+          if [ ${#TARBALLS[@]} -eq 0 ]; then
+            echo "tidak ada tarball di dist/npm — periksa unduhan artefak job sebelumnya."
+            exit 1
+          fi
+          echo "mempublikasikan ${#TARBALLS[@]} tarball terverifikasi:"
+          printf '  %s\n' "${TARBALLS[@]}"
+          for tarball in "${TARBALLS[@]}"; do
+            npm publish "$tarball" --access public --tag "$DIST_TAG" "${PROVENANCE[@]}"
           done

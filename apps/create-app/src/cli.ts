@@ -1,7 +1,9 @@
+#!/usr/bin/env node
 // Scaffolder aplikasi Ramonyx (ADR-0041): salin `template/` ke direktori tujuan,
 // ganti placeholder `__APP_NAME__`, dan cetak langkah berikutnya.
 //
-// Jalankan dari root repo: `pnpm create:app <dir>` (atau langsung lewat loader dev).
+// Jalankan dari root repo: `pnpm create:app <dir>`; dari registry: `pnpm create ramonyx-app <dir>`
+// (paket `create-ramonyx-app`, ADR-0049). Shebang dipertahankan saat bundling rilis (esbuild).
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
@@ -12,7 +14,9 @@ const templateDir = join(dirname(fileURLToPath(import.meta.url)), "..", "templat
 const USAGE = `create-ramonyx-app — buat aplikasi Ramonyx baru
 
 Penggunaan:
-  pnpm create:app <dir> [--force]
+  pnpm create ramonyx-app <dir>      # dari registry (setelah publikasi)
+  pnpm dlx create-ramonyx-app <dir>  # tanpa install
+  pnpm create:app <dir>              # di dalam repo (workspace)
 
 Opsi:
   --force, -f   Timpa berkas template walau direktori tujuan tidak kosong

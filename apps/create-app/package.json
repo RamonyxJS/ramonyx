@@ -2,7 +2,7 @@
   "name": "create-ramonyx-app",
   "version": "0.1.0",
   "private": true,
-  "description": "Scaffolder aplikasi Ramonyx (workspace; publikasi npm menyusul bersama keputusan rilis).",
+  "description": "Scaffolder aplikasi Ramonyx (rilis via staging `scripts/release.mjs` → paket `create-ramonyx-app`, ADR-0049).",
   "license": "MIT",
   "type": "module",
   "scripts": {

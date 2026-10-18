@@ -31,6 +31,29 @@ impl Permission {
             Self::Allow(list) => format!("allow[{}]", list.join(",")),
         }
     }
+
+    /// Irisan dua permission — dipakai isolasi worker (ADR-0034) supaya izin anak
+    /// **tidak pernah melebihi** izin induk.
+    pub fn intersect(&self, other: &Self) -> Self {
+        match (self, other) {
+            (Self::Deny, _) | (_, Self::Deny) => Self::Deny,
+            (Self::AllowAll, other) => other.clone(),
+            (this, Self::AllowAll) => this.clone(),
+            (Self::Allow(mine), Self::Allow(theirs)) => {
+                let list: Vec<String> = theirs
+                    .iter()
+                    .filter(|item| mine.contains(item))
+                    .cloned()
+                    .collect();
+                // Daftar kosong = tidak ada yang diizinkan → `Deny` (bukan `Allow([])`).
+                if list.is_empty() {
+                    Self::Deny
+                } else {
+                    Self::Allow(list)
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -207,6 +230,28 @@ mod tests {
                 .check_env("A")
                 .expect_err("")
                 .contains("--allow-env")
+        );
+    }
+
+    #[test]
+    fn irisan_permission_untuk_worker() {
+        use Permission::{Allow, AllowAll, Deny};
+
+        assert_eq!(Deny.intersect(&AllowAll), Deny);
+        assert_eq!(AllowAll.intersect(&Deny), Deny);
+        assert_eq!(AllowAll.intersect(&AllowAll), AllowAll);
+        assert_eq!(
+            AllowAll.intersect(&Allow(vec!["a".to_string()])),
+            Allow(vec!["a".to_string()])
+        );
+        assert_eq!(
+            Allow(vec!["a".to_string()]).intersect(&AllowAll),
+            Allow(vec!["a".to_string()])
+        );
+        assert_eq!(
+            Allow(vec!["a".to_string(), "b".to_string()])
+                .intersect(&Allow(vec!["b".to_string(), "c".to_string()])),
+            Allow(vec!["b".to_string()]),
         );
     }
 }

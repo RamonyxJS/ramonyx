@@ -34,6 +34,7 @@ mod http;
 mod http_client;
 mod resolve;
 mod web_shim;
+mod worker;
 
 use resolve::resolve_bare;
 use web_shim::WEB_SHIM;
@@ -126,6 +127,33 @@ globalThis.ramonyx = {
   permissions: {
     get: () => Deno.core.ops.op_permissions_get(),
     revoke: (kind) => Deno.core.ops.op_permissions_revoke(String(kind)),
+  },
+  // Worker: isolate V8 + thread terpisah, permission diiris dengan induk (ADR-0034).
+  worker: async (entry, options) => {
+    const id = await Deno.core.ops.op_worker_spawn(String(entry), options ?? {});
+    return {
+      id,
+      send: async (value) => {
+        await Deno.core.ops.op_worker_send(id, JSON.stringify(value));
+      },
+      receive: async () => {
+        const hasil = await Deno.core.ops.op_worker_receive(id);
+        return hasil.text === null ? null : JSON.parse(hasil.text);
+      },
+      terminate: async () => {
+        await Deno.core.ops.op_worker_terminate(id);
+      },
+    };
+  },
+  // Sisi worker: bicara dengan induk.
+  parent: {
+    send: async (value) => {
+      await Deno.core.ops.op_worker_self_send(JSON.stringify(value));
+    },
+    receive: async () => {
+      const hasil = await Deno.core.ops.op_worker_self_receive();
+      return hasil.text === null ? null : JSON.parse(hasil.text);
+    },
   },
   serve: (port, handler) => {
     const [serverId, actualPort] = Deno.core.ops.op_http_listen("127.0.0.1", port);
@@ -318,10 +346,18 @@ extension!(
         builtins::op_dns_lookup,
         builtins::op_permissions_get,
         builtins::op_permissions_revoke,
+        worker::op_worker_spawn,
+        worker::op_worker_send,
+        worker::op_worker_receive,
+        worker::op_worker_terminate,
+        worker::op_worker_self_send,
+        worker::op_worker_self_receive,
     ],
     state = |state: &mut OpState| {
         state.put(http::HttpState::default());
         state.put(http_client::FetchState::new());
+        state.put(worker::WorkerRegistry::default());
+        state.put(worker::WorkerSelfChannel::default());
     },
 );
 
@@ -564,6 +600,12 @@ impl ModuleLoader for FileModuleLoader {
     }
 }
 
+/// Batas engine yang aktif (dibaca worker untuk default kuota anak).
+#[derive(Debug, Clone, Default)]
+pub struct EngineLimits {
+    pub max_heap_mb: Option<usize>,
+}
+
 /// Alasan penghentian paksa (kuota/timeout) — dibaca setelah eksekusi berakhir.
 #[derive(Default)]
 struct LimitState {
@@ -684,6 +726,9 @@ impl Engine {
             .map_err(|error| EngineError::new(format!("web shim gagal: {error}")))?;
 
         runtime.op_state().borrow_mut().put(options.permissions);
+        runtime.op_state().borrow_mut().put(EngineLimits {
+            max_heap_mb: options.max_heap_mb,
+        });
 
         Ok(Self {
             runtime,
@@ -691,6 +736,16 @@ impl Engine {
             limit_state,
             timeout: options.timeout,
         })
+    }
+
+    /// Handle isolate thread-safe (dipakai watchdog timeout & kill switch worker).
+    pub(crate) fn worker_isolate_handle(&mut self) -> v8::IsolateHandle {
+        self.runtime.v8_isolate().thread_safe_handle()
+    }
+
+    /// Pasang kanal worker (dipanggil di thread worker sebelum eksekusi).
+    pub(crate) fn put_worker_channel(&mut self, channel: worker::WorkerSelfChannel) {
+        self.runtime.op_state().borrow_mut().put(channel);
     }
 
     /// Mulai watchdog timeout (bila dikonfigurasi). Dihentikan saat nilai kembali di-drop.
@@ -2056,6 +2111,277 @@ globalThis.__perm_ok = true;
             .execute(
                 "[verify]",
                 "if (globalThis.__perm_ok !== true) throw new Error('permission gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    fn json_literal(value: &Path) -> String {
+        serde_json::to_string(value.to_str().expect("path utf8")).expect("json")
+    }
+
+    #[test]
+    fn worker_pesan_dan_selesai() {
+        let directory = temp_dir("worker-pesan");
+        let pekerja = directory.join("pekerja.mjs");
+        fs::write(
+            &pekerja,
+            r#"
+const pesan = await ramonyx.parent.receive();
+await ramonyx.parent.send({ hasil: pesan.a * 2, dari: "worker" });
+"#,
+        )
+        .expect("write");
+
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            format!(
+                r#"
+const worker = await ramonyx.worker({pekerja}, {{}});
+await worker.send({{ a: 21 }});
+const balasan = await worker.receive();
+if (balasan?.hasil !== 42 || balasan.dari !== "worker") {{
+  throw new Error("balasan salah: " + JSON.stringify(balasan));
+}}
+const berakhir = await worker.receive();
+if (berakhir !== null) throw new Error("worker seharusnya selesai: " + JSON.stringify(berakhir));
+globalThis.__worker_ok = true;
+"#,
+                pekerja = json_literal(&pekerja),
+            ),
+        )
+        .expect("write");
+
+        // Tanpa permission apa pun: ping-pong worker tidak butuh kapabilitas.
+        let mut engine = Engine::new().expect("engine");
+        engine.execute_module(&main).expect("worker ping-pong");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__worker_ok !== true) throw new Error('worker gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn worker_permission_default_deny_dan_intersection() {
+        let directory = temp_dir("worker-perm");
+        let file = directory.join("data.txt");
+        fs::write(&file, "rahasia").expect("write");
+
+        let pekerja = directory.join("pekerja-baca.mjs");
+        fs::write(
+            &pekerja,
+            format!(
+                r#"
+const hasil = {{}};
+try {{
+  const isi = await ramonyx.readTextFile({file});
+  hasil.baca = "lolos:" + isi;
+}} catch (error) {{
+  hasil.baca = String(error).includes("--allow-read") ? "ditolak" : "error-lain:" + String(error);
+}}
+await ramonyx.parent.send(hasil);
+"#,
+                file = json_literal(&file),
+            ),
+        )
+        .expect("write");
+        let pekerja_literal = json_literal(&pekerja);
+        let directory_literal = json_literal(&directory);
+
+        let main_deny = directory.join("main-deny.mjs");
+        fs::write(
+            &main_deny,
+            format!(
+                r#"
+const worker = await ramonyx.worker({pekerja}, {{}});
+await worker.send({{}});
+const hasil = await worker.receive();
+if (hasil?.baca !== "ditolak") throw new Error("worker default harus deny: " + JSON.stringify(hasil));
+globalThis.__deny_ok = true;
+"#,
+                pekerja = pekerja_literal,
+            ),
+        )
+        .expect("write");
+
+        let main_allow = directory.join("main-allow.mjs");
+        fs::write(
+            &main_allow,
+            format!(
+                r#"
+const worker = await ramonyx.worker({pekerja}, {{ allow: {{ read: [{directory}] }} }});
+await worker.send({{}});
+const hasil = await worker.receive();
+if (hasil?.baca !== "lolos:rahasia") throw new Error("worker read harus lolos: " + JSON.stringify(hasil));
+globalThis.__allow_ok = true;
+"#,
+                pekerja = pekerja_literal,
+                directory = directory_literal,
+            ),
+        )
+        .expect("write");
+
+        // deno_core mengizinkan satu modul "main" per runtime → engine terpisah per skenario.
+        let mut engine_deny = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+            ..Default::default()
+        })
+        .expect("engine");
+        engine_deny.execute_module(&main_deny).expect("deny");
+        engine_deny
+            .execute(
+                "[verify]",
+                "if (globalThis.__deny_ok !== true) throw new Error('deny gagal');",
+            )
+            .expect("verify");
+
+        let mut engine_allow = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+            ..Default::default()
+        })
+        .expect("engine");
+        engine_allow.execute_module(&main_allow).expect("allow");
+        engine_allow
+            .execute(
+                "[verify]",
+                "if (globalThis.__allow_ok !== true) throw new Error('allow gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn worker_tidak_bisa_eskalasi_permission_induk() {
+        let directory = temp_dir("worker-eskalasi");
+        let file = directory.join("data.txt");
+        fs::write(&file, "rahasia").expect("write");
+
+        let pekerja = directory.join("pekerja-baca.mjs");
+        fs::write(
+            &pekerja,
+            format!(
+                r#"
+const hasil = {{}};
+try {{
+  const isi = await ramonyx.readTextFile({file});
+  hasil.baca = "lolos:" + isi;
+}} catch (error) {{
+  hasil.baca = String(error).includes("--allow-read") ? "ditolak" : "error-lain:" + String(error);
+}}
+await ramonyx.parent.send(hasil);
+"#,
+                file = json_literal(&file),
+            ),
+        )
+        .expect("write");
+
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            format!(
+                r#"
+// Induk default deny-all: worker yang meminta read tetap tidak mendapatkannya.
+const worker = await ramonyx.worker({pekerja}, {{ allow: {{ read: true }} }});
+await worker.send({{}});
+const hasil = await worker.receive();
+if (hasil?.baca !== "ditolak") throw new Error("eskalasi harus ditolak: " + JSON.stringify(hasil));
+globalThis.__eskalasi_ok = true;
+"#,
+                pekerja = json_literal(&pekerja),
+            ),
+        )
+        .expect("write");
+
+        let mut engine = Engine::new().expect("engine");
+        engine.execute_module(&main).expect("eskalasi");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__eskalasi_ok !== true) throw new Error('eskalasi gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn worker_terminate_dan_timeout_menghentikan() {
+        let directory = temp_dir("worker-kill");
+        let lama = directory.join("pekerja-lama.mjs");
+        fs::write(&lama, "for (;;) {}\n").expect("write");
+        let lama_literal = json_literal(&lama);
+
+        let main_kill = directory.join("main-kill.mjs");
+        fs::write(
+            &main_kill,
+            format!(
+                r#"
+const worker = await ramonyx.worker({lama}, {{}});
+await ramonyx.sleep(50);
+const mulai = Date.now();
+await worker.terminate();
+const berakhir = await worker.receive();
+if (berakhir !== null) throw new Error("receive setelah terminate harus null");
+if (Date.now() - mulai > 3000) throw new Error("terminate terlalu lambat");
+let pesanError = null;
+try {{
+  await worker.send({{ x: 1 }});
+}} catch (error) {{
+  pesanError = String(error);
+}}
+if (pesanError === null || !pesanError.includes("sudah berhenti")) {{
+  throw new Error("send setelah terminate harus error: " + pesanError);
+}}
+globalThis.__kill_ok = true;
+"#,
+                lama = lama_literal,
+            ),
+        )
+        .expect("write");
+
+        let main_timeout = directory.join("main-timeout.mjs");
+        fs::write(
+            &main_timeout,
+            format!(
+                r#"
+const worker = await ramonyx.worker({lama}, {{ timeoutMs: 300 }});
+const mulai = Date.now();
+const berakhir = await worker.receive();
+if (berakhir !== null) throw new Error("worker timeout harus berakhir null");
+const durasi = Date.now() - mulai;
+if (durasi > 5000) throw new Error("timeout worker terlalu lambat: " + durasi);
+globalThis.__timeout_ok = true;
+"#,
+                lama = lama_literal,
+            ),
+        )
+        .expect("write");
+
+        // deno_core mengizinkan satu modul "main" per runtime → engine terpisah per skenario.
+        let mut engine_kill = Engine::new().expect("engine");
+        engine_kill.execute_module(&main_kill).expect("kill");
+        engine_kill
+            .execute(
+                "[verify]",
+                "if (globalThis.__kill_ok !== true) throw new Error('kill gagal');",
+            )
+            .expect("verify");
+
+        let mut engine_timeout = Engine::new().expect("engine");
+        engine_timeout
+            .execute_module(&main_timeout)
+            .expect("timeout");
+        engine_timeout
+            .execute(
+                "[verify]",
+                "if (globalThis.__timeout_ok !== true) throw new Error('timeout gagal');",
             )
             .expect("verify");
 

@@ -30,6 +30,11 @@ export default function IndexPage({
         Blueprint, arsitektur, kontrak API, ADR, dan roadmap — dirender langsung dari berkas
         markdown di repo.
       </p>
+      <p className="pengantar">
+        Untuk agen AI: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a> ·{" "}
+        <a href="machine/features.json">machine/features.json</a> (status fitur + bukti) ·{" "}
+        <a href="sitemap.md">sitemap.md</a>
+      </p>
 
       <input
         className="cari"

@@ -18,7 +18,11 @@ export function renderMarkdown(source: string, options: { slug?: string } = {}):
   return marked.parse(denganTautan, { async: false, gfm: true }) as string;
 }
 
-function rewriteDocLinks(markdown: string, slug: string): string {
+/**
+ * Tulis ulang tautan dokumen relatif agar benar dari halaman mana pun (dipakai render HTML dan
+ * ekspor markdown per halaman — ADR-0054).
+ */
+export function rewriteDocLinks(markdown: string, slug: string): string {
   const baseDir = slug.includes("/") ? slug.slice(0, slug.lastIndexOf("/")) : "";
 
   return markdown.replace(

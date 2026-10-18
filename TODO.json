@@ -16,15 +16,8 @@
         "Revalidasi loader setelah mutasi sukses",
         "Test unit + e2e (dengan dan tanpa JS) + halaman docs"
       ],
-      "areas": [
-        "packages/core",
-        "packages/server",
-        "packages/ssr",
-        "packages/react"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/core", "packages/server", "packages/ssr", "packages/react"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js Server Actions; Remix/React Router `action` per route; SvelteKit form actions; Nuxt server routes + $fetch.",
       "source": "gap §3 (mutations) — selesai ADR-0057",
       "strategic": true
@@ -44,15 +37,8 @@
         "Situs docs memakai fitur framework ini (dogfood), e2e terhadap output statis",
         "Halaman docs + benchmark ukuran/waktu build"
       ],
-      "areas": [
-        "packages/ssr",
-        "packages/compiler",
-        "packages/devtools",
-        "packages/bundler"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/ssr", "packages/compiler", "packages/devtools", "packages/bundler"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js `output: export`; SvelteKit adapter-static; Astro (default statis); Nuxt `nuxt generate`.",
       "source": "gap §3 (SSG) — selesai ADR-0056",
       "strategic": true
@@ -71,14 +57,8 @@
         "`ramonyx build --target <platform>` menghasilkan artefak yang benar",
         "Dokumentasi deploy per platform + contoh"
       ],
-      "areas": [
-        "packages/adapter-runtime",
-        "packages/devtools",
-        "packages/bundler"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/adapter-runtime", "packages/devtools", "packages/bundler"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js (Vercel/self-host); SvelteKit adapters (node/cloudflare/vercel); Nuxt Nitro presets; Astro adapters.",
       "source": "gap §3 (adapters)",
       "strategic": true
@@ -98,14 +78,8 @@
         "Aset build ber-hash dan disajikan `immutable` (template ikut diperbarui)",
         "Benchmark Web Vitals/HTTP sebelum-sesudah dicatat"
       ],
-      "areas": [
-        "packages/adapter-runtime",
-        "packages/bundler",
-        "packages/core"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/adapter-runtime", "packages/bundler", "packages/core"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js/SvelteKit/Astro/Nuxt: aset ber-hash + cache immutable dan kompresi di produksi secara default.",
       "source": "gap §3 (compression/asset) — selesai ADR-0055",
       "quickWin": true
@@ -125,13 +99,8 @@
         "Route group `(grup)` tidak muncul di URL + test",
         "Halaman docs"
       ],
-      "areas": [
-        "packages/compiler",
-        "packages/server"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/compiler", "packages/server"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js middleware (per-project + matcher); SvelteKit hooks + layout server load; Nuxt route rules/middleware.",
       "source": "gap §3 (middleware)",
       "strategic": false
@@ -151,14 +120,8 @@
         "Test typecheck negatif (rute/params salah = error compile)",
         "Halaman docs"
       ],
-      "areas": [
-        "packages/compiler",
-        "packages/react",
-        "packages/router"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/compiler", "packages/react", "packages/router"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js typedRoutes; Nuxt typedPages; SvelteKit $types.",
       "source": "gap §3 (typed routes)"
     },
@@ -177,14 +140,8 @@
         "Helper sitemap/robots memakai manifest rute + test",
         "Halaman docs SEO"
       ],
-      "areas": [
-        "packages/core",
-        "packages/ssr",
-        "packages/react"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/core", "packages/ssr", "packages/react"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js Metadata API; Nuxt useSeoMeta; SvelteKit `<svelte:head>` + pustaka SEO; Astro integrations.",
       "source": "gap §3 (head/metadata)"
     },
@@ -202,13 +159,8 @@
         "Contoh alur login/logout end-to-end (session + CSRF + rate limit)",
         "Halaman docs auth dengan peringatan yang jelas"
       ],
-      "areas": [
-        "packages/security",
-        "packages/core"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/security", "packages/core"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js + Auth.js; Remix cookie sessions; SvelteKit cookies + Lucia; Nuxt nuxt-auth-utils.",
       "source": "gap §3 (auth)",
       "strategic": true
@@ -227,18 +179,10 @@
         "Invalidasi on-demand (tag/path) dari action/API + test",
         "Dokumentasi interaksi dengan SSG dan streaming"
       ],
-      "areas": [
-        "packages/ssr",
-        "packages/core",
-        "packages/server"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/ssr", "packages/core", "packages/server"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js ISR + revalidateTag; Nuxt route rules + SWR; Astro (di level adapter/CDN).",
-      "dependsOn": [
-        "p0-static-generation"
-      ],
+      "dependsOn": ["p0-static-generation"],
       "source": "gap §3 (ISR/caching)",
       "strategic": true
     },
@@ -256,9 +200,7 @@
         "Soft navigation memakai payload ter-prefetch + test e2e",
         "Tidak menggandakan request saat klik cepat"
       ],
-      "areas": [
-        "packages/react"
-      ],
+      "areas": ["packages/react"],
       "adrs": [],
       "competitor": "Next.js Link prefetch (default); SvelteKit preload on hover; Nuxt NuxtLink prefetch.",
       "source": "gap §3 (soft navigation)",
@@ -278,14 +220,8 @@
         "Analisis build menolak impor server dari modul client + test negatif",
         "Pesan error menunjuk file dan solusi"
       ],
-      "areas": [
-        "packages/compiler",
-        "packages/bundler",
-        "packages/core"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/compiler", "packages/bundler", "packages/core"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js `server-only` + error boundary Turbopack; SvelteKit $env/static/private; Nuxt folder .server.",
       "source": "utang (audit)",
       "strategic": false
@@ -304,10 +240,7 @@
         "Setiap perintah diverifikasi berjalan (diuji saat menulis + di CI smoke bila murah)",
         "Contoh akhir yang bisa di-scaffold"
       ],
-      "areas": [
-        "docs",
-        "apps/docs"
-      ],
+      "areas": ["docs", "apps/docs"],
       "adrs": [],
       "competitor": "Next.js Learn; React Router tutorial; SvelteKit tutorial; Nuxt getting started; Astro tutorial.",
       "source": "gap §3 (docs)",
@@ -327,14 +260,8 @@
         "Minimal satu plugin contoh (mis. analytics/SEO) dipakai di playground",
         "Panduan menulis + mempublikasikan plugin"
       ],
-      "areas": [
-        "packages/bundler",
-        "packages/core",
-        "packages/devtools"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/bundler", "packages/core", "packages/devtools"],
+      "adrs": ["ADR baru"],
       "competitor": "Nuxt modules; Astro integrations; SvelteKit Vite plugins; Next.js plugins (terbatas).",
       "source": "gap §3 (ekosistem)",
       "strategic": true
@@ -353,13 +280,8 @@
         "Hook metrik terdokumentasi (durasi/status/route)",
         "Contoh ekspor ke OTel atau format JSON"
       ],
-      "areas": [
-        "packages/server",
-        "packages/core"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/server", "packages/core"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js instrumentation + OTel; Nuxt devtools/OTel; SvelteKit hooks + adapter-node logs.",
       "source": "gap §3 (observability)"
     },
@@ -377,13 +299,8 @@
         "`--strict`/blocking hanya aktif saat baseline cocok (guard diperkuat) + test",
         "Keputusan blocking dicatat sebagai ADR (perbarui ADR-0045)"
       ],
-      "areas": [
-        "benchmarks",
-        ".github/workflows"
-      ],
-      "adrs": [
-        "ADR-0045 (perbarui)"
-      ],
+      "areas": ["benchmarks", ".github/workflows"],
+      "adrs": ["ADR-0045 (perbarui)"],
       "competitor": "Turbopack benchmarks, SvelteKit bench, Nuxt bundle metrics — semuanya punya gate performa di CI.",
       "source": "utang (ADR-0045) + kandidat lama",
       "strategic": true
@@ -402,12 +319,8 @@
         "Perilaku redirect tetap aman (pin per hop) + test",
         "Dokumentasi + perbarui security.json/ADR-0031"
       ],
-      "areas": [
-        "packages/security"
-      ],
-      "adrs": [
-        "ADR-0031 (lanjutan)"
-      ],
+      "areas": ["packages/security"],
+      "adrs": ["ADR-0031 (lanjutan)"],
       "competitor": "Tidak umum di framework JS — diferensiasi keamanan bila selesai dengan bukti.",
       "source": "utang (ADR-0031)"
     },
@@ -425,13 +338,8 @@
         "Celah ditemukan dicatat di security.json + TODO lanjutan",
         "Ringkasan publik yang jujur (apa yang terbukti, apa yang tidak)"
       ],
-      "areas": [
-        "runtime/crates/js-engine",
-        "docs/security"
-      ],
-      "adrs": [
-        "ADR-0051 (lanjutan)"
-      ],
+      "areas": ["runtime/crates/js-engine", "docs/security"],
+      "adrs": ["ADR-0051 (lanjutan)"],
       "competitor": "Tidak ada pembanding langsung — menjadi diferensiasi hanya jika terbukti dan didokumentasikan.",
       "source": "utang (audit)"
     },
@@ -449,14 +357,8 @@
         "Font helper + preload + docs",
         "Benchmark LCP/CLS playground sebelum-sesudah"
       ],
-      "areas": [
-        "packages/bundler",
-        "packages/react",
-        "packages/devtools"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages/bundler", "packages/react", "packages/devtools"],
+      "adrs": ["ADR baru"],
       "competitor": "next/image + next/font; @nuxt/image + @nuxt/fonts; Astro `<Image>` + fontsource.",
       "source": "gap §3 (assets)",
       "strategic": true
@@ -475,11 +377,7 @@
         "Setiap error publik punya tautan docs + kode stabil + test",
         "Halaman docs troubleshooting"
       ],
-      "areas": [
-        "packages/compiler",
-        "packages/bundler",
-        "packages/ssr"
-      ],
+      "areas": ["packages/compiler", "packages/bundler", "packages/ssr"],
       "adrs": [],
       "competitor": "Next.js error overlay; SvelteKit enhanced error pages; Nuxt error page + devtools.",
       "source": "gap §3 (DX error)"
@@ -497,9 +395,7 @@
         "`ramonyx build --watch` + restart server dengan debounce + test manual terdokumentasi",
         "Dokumentasi perbedaan dev vs watch"
       ],
-      "areas": [
-        "packages/devtools"
-      ],
+      "areas": ["packages/devtools"],
       "adrs": [],
       "competitor": "`vite build --watch`, `nuxt build --watch`, `astro dev`/`astro preview` — semua punya loop rebuild.",
       "source": "kandidat lama",
@@ -519,13 +415,8 @@
         "Diuji dengan klien MCP (protocol-level test)",
         "Dokumentasi pemasangan (Claude Code/Cursor/OpenCode)"
       ],
-      "areas": [
-        "packages (baru)",
-        "docs/machine"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "areas": ["packages (baru)", "docs/machine"],
+      "adrs": ["ADR baru"],
       "competitor": "Svelte mcp.svelte.dev; Nuxt nuxt.com/mcp; Astro mcp.docs.astro.build; Next.js runtime MCP (bukan docs).",
       "source": "riset §2",
       "strategic": true
@@ -543,9 +434,7 @@
         "Listing Context7 aktif dan diuji (query Ramonyx mengembalikan docs)",
         "Dicatat di README + llms.txt"
       ],
-      "areas": [
-        "docs"
-      ],
+      "areas": ["docs"],
       "adrs": [],
       "competitor": "Next.js, Svelte, Nuxt, Astro, React Router semuanya terdaftar.",
       "source": "riset §2",
@@ -565,11 +454,7 @@
         "e2e + situs docs tetap hijau (termasuk ekspor Pages)",
         "Dokumen repo diperbarui"
       ],
-      "areas": [
-        "apps/playground",
-        "apps/docs",
-        "packages/devtools"
-      ],
+      "areas": ["apps/playground", "apps/docs", "packages/devtools"],
       "adrs": [],
       "competitor": "Dogfooding CLI adalah standar framework (create-next-app memakai next, Nuxt memakai nuxi, SvelteKit memakai vite/svelte-kit).",
       "source": "kandidat lama"
@@ -583,14 +468,8 @@
       "status": "open",
       "what": "Halaman docs testing: memakai `@ramonyx/testing` (handler in-process), mengetes loader/action, e2e dengan Playwright, pola data.",
       "why": "DX testing adalah faktor retensi; pesaing punya dokumentasi testing yang dalam, sedangkan paket testing kami belum terdokumentasi publik.",
-      "done": [
-        "Halaman docs testing dengan contoh yang dijalankan di CI",
-        "README paket testing"
-      ],
-      "areas": [
-        "docs",
-        "packages/testing"
-      ],
+      "done": ["Halaman docs testing dengan contoh yang dijalankan di CI", "README paket testing"],
+      "areas": ["docs", "packages/testing"],
       "adrs": [],
       "competitor": "SvelteKit testing docs; Nuxt @nuxt/test-utils; Next.js testing setup.",
       "source": "gap §3 (testing docs)",
@@ -605,18 +484,9 @@
       "status": "open",
       "what": "Routing locale (prefix/domain), negosiasi Accept-Language, helper terjemahan server/client.",
       "why": "Paritas untuk produk global; tidak mendesak untuk adopsi awal, tetapi menjadi syarat untuk pasar tertentu.",
-      "done": [
-        "Routing locale + negosiasi + test",
-        "Helper terjemahan + docs + contoh"
-      ],
-      "areas": [
-        "packages/router",
-        "packages/compiler",
-        "packages/core"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "done": ["Routing locale + negosiasi + test", "Helper terjemahan + docs + contoh"],
+      "areas": ["packages/router", "packages/compiler", "packages/core"],
+      "adrs": ["ADR baru"],
       "competitor": "Next.js i18n routing; Nuxt i18n module; SvelteKit paraglide; Astro i18n routing.",
       "source": "gap §3 (i18n)"
     },
@@ -629,16 +499,9 @@
       "status": "open",
       "what": "Panel di dev server: daftar rute + manifest, timing loader/render per request, status hydration, ukuran bundle.",
       "why": "Devtools meningkatkan retensi dan kecepatan debugging; pesaing besar memilikinya, tetapi ini bukan blocker adopsi.",
-      "done": [
-        "Panel dev + data timing nyata + docs"
-      ],
-      "areas": [
-        "packages/devtools",
-        "packages/bundler"
-      ],
-      "adrs": [
-        "ADR baru"
-      ],
+      "done": ["Panel dev + data timing nyata + docs"],
+      "areas": ["packages/devtools", "packages/bundler"],
+      "adrs": ["ADR baru"],
       "competitor": "Nuxt DevTools; Next.js devtools MCP; Vite inspector.",
       "source": "gap §3 (DX)"
     },
@@ -655,10 +518,7 @@
         "Domain kustom aktif dengan HTTPS + redirect dari Pages",
         "Preview PR (atau keputusan sadar untuk tidak, dicatat)"
       ],
-      "areas": [
-        ".github/workflows",
-        "docs"
-      ],
+      "areas": [".github/workflows", "docs"],
       "adrs": [],
       "competitor": "Semua docs resmi framework besar berada di domain sendiri.",
       "source": "kandidat lama"

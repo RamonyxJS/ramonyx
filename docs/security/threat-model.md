@@ -84,5 +84,9 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
   tanpa 5xx & tanpa error di bawah beban (`benchmarks/results/phase3-abuse.json`);
   RSS server diukur terpisah (proses anak) — plateau saat beban berhenti, tanpa klaim stabilitas
   sampai soak berjam-jam per protokol §8.
-- XSS/CSP, CSRF helper, SSRF, path traversal (static), limit SSR penuh, isolasi plugin: belum —
+- XSS/CSP: 🟡 escaping kontekstual React sudah ada; `securityHeaders()` menyediakan opsi CSP;
+  CSP default nonaktif sampai ada nonce untuk payload hydration (ADR-0013).
+- CSRF: ✅ primitif `csrfProtection()` (double-submit cookie + header, ADR-0013); verifikasi
+  field form menyusul.
+- SSRF, path traversal (runtime/plugin), limit SSR penuh (output size), isolasi plugin: belum —
   fase berikutnya (Phase 3 lanjutan / Phase 4).

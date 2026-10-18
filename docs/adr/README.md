@@ -20,3 +20,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0010](0010-browser-e2e.md) | Browser E2E Playwright + baseline Web Vitals | Accepted |
 | [0011](0011-resource-limits.md) | Resource limits secure-by-default (body 1 MiB, timeout 10s) | Accepted |
 | [0012](0012-concurrency-limit.md) | Concurrency limit / load shedding (default 100, 503 + Retry-After) | Accepted |
+| [0013](0013-security-package.md) | Paket security: headers + CSRF double-submit (Web Crypto) | Accepted |

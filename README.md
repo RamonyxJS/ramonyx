@@ -5,9 +5,10 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
 > **Status: Phase 3 (hardening) berjalan** — Phase 2 selesai (SSR + hydration + navigasi +
-> dev server HMR + e2e). Kini: batas body 1 MiB (413) & timeout 10s (503) secure-by-default,
-> body streaming, fuzz test, suite keamanan `tests/security/`. Berikutnya: abuse/load test,
-> audit dependensi berkelanjutan, pemetaan OWASP ASVS. Klaim mengikuti aturan BLUEPRINT §10.
+> dev server HMR + e2e). Kini: limits body/timeout/concurrency secure-by-default, security headers
+> + CSRF (`@ramonyx/security`), fuzz, suite keamanan, abuse/soak benchmark, pemetaan ASVS awal.
+> Berikutnya: CSP nonce, SSRF guard, output limit, audit dependensi.
+> Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

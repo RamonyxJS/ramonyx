@@ -1,7 +1,7 @@
 # Roadmap Phase 0–1
 
-- Status per 2026-10-18: **Phase 0 selesai; Phase 1 selesai; Phase 2 berjalan**
-  (file routing + SSR React + hydration selesai; dev server/HMR & client navigation menyusul).
+- Status per 2026-10-18: **Phase 0 selesai; Phase 1 selesai; Phase 2 selesai; Phase 3 berjalan**
+  (limits + concurrency + security headers/CSRF + fuzz + abuse bench + ASVS awal).
 - Sumber: `docs/BLUEPRINT.md` §9 dan §12.
 
 ## Phase 0 — Foundation & RFC ✅
@@ -76,7 +76,10 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
       semua sesuai ekspektasi tanpa 5xx/error; soak 20s+3s drain — RSS proses server dipantau via /proc
       (plateau saat beban berhenti; soak berjam-jam per protokol §8 masih diperlukan sebelum klaim)
 - [ ] Dependency audit berkelanjutan (CI sudah `pnpm audit`; tambah kebijakan & provenance)
-- [ ] Pemetaan OWASP ASVS → acceptance criteria + perluasan security regression suite
+- [x] Pemetaan awal OWASP ASVS (`docs/security/asvs-mapping.md`) + primitif XSS/CSRF:
+      `@ramonyx/security` — `securityHeaders()` + `csrfProtection()` (ADR-0013)
+- [ ] Perluasan acceptance criteria per area ASVS: CSPnonce, SSRF guard, output limit,
+      rate limiting per klien, verifikasi CSRF via field form
 - [x] Concurrency limit / load shedding (ADR-0012): default 100 → 503 + `Retry-After`, tanpa antrean
 - [ ] Keputusan menyusul: rate limiting per klien (butuh identitas klien/trusted proxy) + output limit
 

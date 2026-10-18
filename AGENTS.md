@@ -78,7 +78,8 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 2 **selesai** (2026-10-18). **Phase 3 (hardening) berjalan** — limits body/timeout
-(ADR-0011), streaming body, fuzz fast-check, suite `tests/security/`, dan abuse-case/soak terukur
-(`pnpm bench:security`); 89 tes Node + 4 e2e hijau. Berikutnya: dependency audit berkelanjutan,
-pemetaan OWASP ASVS. Keputusan terbuka pemilik: scope npm & lisensi, matrix browser, PRD.
+Phase 2 **selesai** (2026-10-18). **Phase 3 (hardening) berjalan** — limits body/timeout/concurrency
+(ADR-0011/0012), security headers + CSRF `@ramonyx/security` (ADR-0013), fuzz fast-check, suite
+`tests/security/`, abuse/soak `pnpm bench:security`, pemetaan ASVS awal; 99 tes Node + 4 e2e hijau.
+Berikutnya: CSP nonce, SSRF guard, output limit, dependency audit. Keputusan terbuka pemilik:
+scope npm & lisensi, matrix browser, PRD.

@@ -58,3 +58,19 @@ scaffolder v1 harus berguna **di dalam repo** tanpa menunggu publish.
 
 - Pengguna baru mendapat titik awal yang berjalan dalam < 1 menit (tanpa membaca contoh besar).
 - Non-blocker tersisa: **apps/docs** (docs site) dan keputusan publikasi npm.
+
+## Diperbarui (2026-10-18): Template v2 — File Routing + SSR React + Hydration
+
+Template ditingkatkan dari "halaman HTML manual" ke konvensi yang sama dengan playground:
+
+- **File routing** (`@ramonyx/compiler`): `src/routes/page.tsx` (loader + komponen React),
+  `layout.tsx`, `src/routes/api/**` (`export const GET = route({ ... })`);
+- **Hydration**: `createPageRoutes({ client: { script: "/assets/client.js" } })` + `build.ts`
+  (`@ramonyx/bundler`/Vite) → `dist/client/client.js`; middleware template menyajikan `/assets/*`
+  (guard traversal);
+- Middleware `securityHeaders()` + `cspNonce()` ikut di template; alur: `pnpm build` → `pnpm start`.
+
+Bukti tambahan: test **mem-build klien sungguhan** lalu menyajikan aset (200 `text/javascript`,
+traversal 404); smoke SSR memeriksa konten, payload `window.__RAMONYX__`, dan
+`<script src="/assets/client.js">`; **verifikasi browser** (chrome-devtools) pada app hasil
+scaffold: klik counter → `Klik saya: 1` (hydration bekerja), payload ada.

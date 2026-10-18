@@ -26,7 +26,8 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 ## Quick start
 
 Buat aplikasi baru (di dalam repo): `pnpm create:app aplikasi-saya` — lalu `cd aplikasi-saya`,
-`pnpm install`, `pnpm start`.
+`pnpm install`, `pnpm build`, `pnpm start` (template sudah SSR React + hydration dengan file
+routing `src/routes`).
 
 Baca dokumentasi sebagai situs: `pnpm docs` → http://127.0.0.1:4000 (SSR React, dogfood).
 

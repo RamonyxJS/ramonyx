@@ -1170,6 +1170,7 @@ dependencies = [
  "deno_ast",
  "deno_core",
  "deno_error",
+ "getrandom",
  "http-body-util",
  "hyper",
  "hyper-util",

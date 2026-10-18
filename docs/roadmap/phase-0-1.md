@@ -176,8 +176,10 @@ pekerjaan Phase 5.
 - [x] **R4 (profiling + baseline)** — timings per eksekusi (`Engine::last_timings`, log
       `engine.executed`: `startupMs` + `loadMs`/`evalMs`/`totalMs`), **metrik op** opsional
       (`--op-metrics`, tanpa biaya saat mati), dan `benchmarks/runtime-startup.sh` →
-      `benchmarks/results/runtime-startup.json`; optimasi berbasis snapshot V8 dicatat sebagai
-      kandidat (belum) — ADR-0037
+      `benchmarks/results/runtime-startup.json` (termasuk breakdown init `v8Ms`/`bootstrapMs`/
+      `webShimMs`); **investigasi snapshot V8 selesai: ditolak dengan alasan terukur** (plafon
+      ~2.35 ms/isolate; jalur build-time Cargo cyclic) — kandidat berikutnya **warm worker pool**
+      — ADR-0037
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

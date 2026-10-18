@@ -131,10 +131,10 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 (thread + isolate V8 terpisah, pesan JSON, permission irisan, kill switch — ADR-0034), dan
 **streaming request + batas body server** (body pull-model + 413 dini — ADR-0035), dan
 **`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036), serta **R4 profiling
-startup** (timings per fase, metrik op `--op-metrics`, baseline reproducible — ADR-0037) —
+startup** (timings per fase termasuk breakdown init `v8Ms`/`bootstrapMs`/`webShimMs`, metrik op
+`--op-metrics`, baseline reproducible; **snapshot V8 ditolak dengan alasan terukur** — ADR-0037) —
 semuanya diverifikasi test + smoke. **Exit criteria Phase 4 tercapai**; sisa menuju Phase 5:
-kuota CPU/memori eksternal, isolasi level proses untuk plugin, optimasi berbasis snapshot,
-rilis.
+kuota CPU/memori eksternal, isolasi level proses untuk plugin, warm worker pool, rilis.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,

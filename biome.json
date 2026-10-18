@@ -1,7 +1,15 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/dist", "!**/.ramonyx", "!benchmarks/results"]
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/.ramonyx",
+      "!**/test-results",
+      "!**/playwright-report",
+      "!benchmarks/results"
+    ]
   },
   "formatter": {
     "indentStyle": "space",

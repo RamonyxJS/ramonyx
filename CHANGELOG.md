@@ -2,6 +2,38 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikuti semver.
 
+## [0.1.1] — 2026-10-18
+
+Rilis cepat setelah 0.1.0: **CLI `ramonyx`**, template scaffolder berbasis CLI, perbaikan
+adapter, dan penguatan runtime eksperimental.
+
+### Framework (baseline produksi)
+
+- **CLI `@ramonyx/devtools` v1** (ADR-0053): `ramonyx dev` (Vite + HMR → SSR), `ramonyx build`,
+  `ramonyx start` (produksi — `NODE_ENV=production` otomatis), `ramonyx doctor`; konvensi
+  `src/app.ts` `createApp(options?)`; loader TypeScript/JSX dipasang programatik sehingga
+  `pnpm exec ramonyx …` bekerja dengan Node polos.
+- **Template `create-ramonyx-app`**: boilerplate `build.ts`/`src/main.ts` dihapus → skrip
+  `ramonyx dev|build|start`; `src/app.ts` menerima opsi (client/importer/reload/streaming).
+- **`@ramonyx/adapter-runtime`**: normalisasi loopback IPv6 `::1` → `127.0.0.1` (identitas klien
+  stabil untuk rate limit/logging lintas jalur IPv4/IPv6).
+
+### Runtime Rust + V8 (eksperimental)
+
+- **Plugin: backoff eksponensial + reset stabil** (`delayMs·2^n` ≤ `backoffMaxMs`; kuota pulih
+  setelah generasi stabil) dan **health-check otomatis via watchdog** (deteksi senyap tanpa
+  induk menunggu `receive`) — ADR-0050.
+- **Sandbox OS plugin via Landlock** (ADR-0051): kelas eksplisit baca/tulis/TCP, irisan dengan
+  permission efektif, auto-izin entry/CA TLS/proc-self kuota, fail-hard bila kernel tak
+  mendukung; uji kernel positif/negatif.
+
+### Tooling & docs
+
+- **Situs dokumentasi di-host** di GitHub Pages (ekspor statis 65+ halaman, subpath-safe) — ADR-0052.
+- Bench: guard lintas-mesin untuk `--strict` + evaluasi tercatat (ADR-0045).
+- CI: perbaikan laten (toolchain Rust, `pnpm install` di job Rust, test menggantung `::1`,
+  race worker) + Pages workflow.
+
 ## [0.1.0] — 2026-10-18
 
 Rilis pertama (alpha). Framework Node.js (Phase 0–3 selesai) + runtime Rust/V8 eksperimental

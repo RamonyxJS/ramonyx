@@ -5,9 +5,11 @@ SSR React (+ streaming), hydration + soft navigation, middleware security, valid
 tepi kepercayaan, dan benchmark/gate reproducible.
 
 > **Status: alpha 0.1.0 — terbit di npm** (2026-10-18, `@ramonyx/*` + `ramonyx` +
-> `create-ramonyx-app`). Framework Node adalah baseline produksi; runtime Rust/V8 eksperimental
-> (Phase 4 selesai, Phase 5 berjalan). Verifikasi registry end-to-end: scaffold → install →
-> build → start → SSR. Checklist rilis: [docs/releasing.md](docs/releasing.md).
+> `create-ramonyx-app`) — lihat [Rilis v0.1.0](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.1.0)
+> (16 aset: tarball npm + binary runtime + `SHA256SUMS` + manifest). Framework Node adalah
+> baseline produksi; runtime Rust/V8 eksperimental (Phase 4 selesai, Phase 5 berjalan).
+> Verifikasi registry end-to-end: scaffold → install → build → start → SSR.
+> Checklist rilis: [docs/releasing.md](docs/releasing.md).
 
 ## Mulai cepat
 

@@ -54,6 +54,12 @@ cd demo-app && pnpm install && pnpm build && pnpm start
 - Verifikasi registry: `pnpm dlx create-ramonyx-app@alpha demo-app` → `pnpm install` (template
   `^0.1.0` + `allowBuilds` esbuild) → `pnpm build` → `pnpm start` → halaman SSR + payload
   hydration + CSP nonce + API route template ✓.
+- **Workflow `release.yml` dieksekusi sukses** pada tag `v0.1.0` (2026-10-18): 14 artefak +
+  verifikasi penuh (scaffold build/start/SSR dari tarball) + **GitHub Release** (16 aset);
+  job publish skip (versi sudah ada; idempoten). Secret `NPM_TOKEN` (automation) terpasang
+  untuk rilis berikutnya — rilis baru cukup: bump versi di `Cargo.toml` → commit → tag `vX.Y.Z`.
+- Catatan higiene: jangan pernah menempelkan nilai token sebagai **nama** `gh secret set`
+  (nama secret terlihat di pengaturan repo — token harus dianggap terekspos dan dirotasi).
 
 ## Catatan jujur
 

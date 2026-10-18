@@ -1,6 +1,8 @@
 # Rencana: Konsolidasi Dokumentasi Machine-Readable + TODO.md
 
-- Status: **rencana** (diekskusi setelah dokumen ini final; §2 diisi dari riset pembanding).
+- Status: **SELESAI** (Fase 0–3; dieksekusi 2026-10-18 — hasil: ADR-0054, `docs/machine/`,
+  `pnpm docs:validate|generate|stats`, situs menerbitkan llms.txt + markdown per halaman,
+  `TODO.json` → `TODO.md`). Dokumen ini dipertahankan sebagai catatan riset & keputusan (Fase 0).
 - Baseline: `307bd1b` — 0.1.1, 13 paket `packages/*` (12 scoped + meta) + staging `create-ramonyx-app`,
   53 ADR, 161 test Node + 111 Rust + 5 e2e (dari CI terakhir), docs live, tree bersih (diverifikasi).
 - Tujuan: dokumentasi yang dapat dikonsumsi **manusia dan agen AI** setara framework besar, dengan

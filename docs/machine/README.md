@@ -35,6 +35,21 @@ Semua berkas juga diterbitkan bersama situs docs: `https://ramonyxjs.github.io/r
 | `pnpm docs:stats` | Menjalankan suite Node+Rust dan menulis stats.json (angka test) |
 | `pnpm test` | Termasuk `tests/docs/` (validator + skema config vs `resolveConfig`) |
 
+## Uji dengan agen (Fase 3)
+
+Diuji: 3 tugas TODO diambil (satu per jenis) dan ditelusuri "fakta apa yang dibutuhkan agen"
+hanya dari `AGENTS.md` + lapisan machine — tanpa bertanya.
+
+| Tugas | Fakta yang dibutuhkan | Hasil |
+| --- | --- | --- |
+| `p1-prefetch` | titik masuk kode (`features.json` → `soft-navigation`: `packages/react/src/client.ts`), aturan (tanpa JSX di paket framework), cara test (`pnpm test`, e2e navigasi) | ✅ lengkap |
+| `p2-ip-pinning` | celah + riwayat (`security.json` → `sec-ip-pinning`, ADR-0031), kode saat ini (`packages/security/src/ssrf.ts`), batas `node:*` (rules: `packages/security` diizinkan), pola test (`ssrf.test.ts`) | ✅ lengkap |
+| `p0-http-production-basics` | area kode (`adapter-runtime/node.ts`, `bundler/build.ts`), konteks `no-store` template, protokol benchmark + vitals | ✅ setelah perbaikan bukti |
+
+Celah yang ditemukan & diperbaiki saat uji: bukti beberapa fitur `planned`/`partial` hanya menunjuk
+dokumen rencana — sekarang menunjuk **kode terdekat** (mis. `asset-fingerprinting` →
+`apps/create-app/template/src/routes/middleware.ts`), sehingga agen punya titik masuk nyata.
+
 ## Riwayat konsolidasi (aturan "jangan hapus informasi")
 
 - **2026-10-18 — audit sinkronisasi menyeluruh** (commit `307bd1b`): 13 dokumen dikoreksi terhadap

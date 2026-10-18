@@ -22,8 +22,14 @@
           "statusDetail": { "type": "string" },
           "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
           "decision": { "type": "string", "minLength": 10 },
-          "related": { "type": "array", "items": { "type": "string", "pattern": "^ADR-[0-9]{4}$" } },
-          "updates": { "type": "array", "items": { "type": "string", "pattern": "^ADR-[0-9]{4}$" } },
+          "related": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^ADR-[0-9]{4}$" }
+          },
+          "updates": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^ADR-[0-9]{4}$" }
+          },
           "features": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" } }
         }
       }

@@ -56,9 +56,10 @@ function parseExports(source: string): Pick<PackageApi, "values" | "types" | "re
 export function generateApi(): { schemaVersion: 1; generatedAt: string; packages: PackageApi[] } {
   const packages: PackageApi[] = [];
   for (const entry of readdirSync(`${ROOT}packages`).sort()) {
-    const pkg = JSON.parse(
-      readFileSync(`${ROOT}packages/${entry}/package.json`, "utf8"),
-    ) as { name: string; version: string };
+    const pkg = JSON.parse(readFileSync(`${ROOT}packages/${entry}/package.json`, "utf8")) as {
+      name: string;
+      version: string;
+    };
     const sourcePath = `packages/${entry}/src/index.ts`;
     const source = readFileSync(`${ROOT}${sourcePath}`, "utf8");
     packages.push({

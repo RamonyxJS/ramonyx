@@ -25,7 +25,7 @@ function read(relative: string): string {
 function versionFromCargo(): string {
   const match = read("Cargo.toml").match(/^version = "(.+)"$/m);
   if (!match) {
-    throw new Error("Cargo.toml: baris `version = \"...\"` tidak ditemukan");
+    throw new Error('Cargo.toml: baris `version = "..."` tidak ditemukan');
   }
   return match[1] ?? "";
 }
@@ -55,7 +55,8 @@ function adrCount(): number {
 }
 
 function e2eSpecCount(): number {
-  return readdirSync(`${ROOT}apps/playground/e2e`).filter((file) => file.endsWith(".spec.ts")).length;
+  return readdirSync(`${ROOT}apps/playground/e2e`).filter((file) => file.endsWith(".spec.ts"))
+    .length;
 }
 
 function runNodeTests(): number {
@@ -127,7 +128,9 @@ const stats = {
 if (rustOnly || nodeOnly) {
   // Mode parsial: pertahankan angka suite lain dari stats.json lama (bila ada).
   try {
-    const prev = JSON.parse(readFileSync(STATS_PATH, "utf8")) as { tests?: { node?: number; rust?: number } };
+    const prev = JSON.parse(readFileSync(STATS_PATH, "utf8")) as {
+      tests?: { node?: number; rust?: number };
+    };
     if (rustOnly && typeof prev.tests?.node === "number") {
       stats.tests.node = prev.tests.node;
     }
@@ -140,4 +143,6 @@ if (rustOnly || nodeOnly) {
 }
 
 writeFileSync(STATS_PATH, `${JSON.stringify(stats, null, 2)}\n`);
-console.log(`docs/machine/stats.json ditulis: v${stats.version}, ${stats.adrs} ADR, ${stats.packages.npm} paket npm, tests node=${stats.tests.node} rust=${stats.tests.rust}`);
+console.log(
+  `docs/machine/stats.json ditulis: v${stats.version}, ${stats.adrs} ADR, ${stats.packages.npm} paket npm, tests node=${stats.tests.node} rust=${stats.tests.rust}`,
+);

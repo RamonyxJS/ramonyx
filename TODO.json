@@ -468,10 +468,7 @@
       "status": "open",
       "what": "Halaman docs testing: memakai `@ramonyx/testing` (handler in-process), mengetes loader/action, e2e dengan Playwright, pola data.",
       "why": "DX testing adalah faktor retensi; pesaing punya dokumentasi testing yang dalam, sedangkan paket testing kami belum terdokumentasi publik.",
-      "done": [
-        "Halaman docs testing dengan contoh yang dijalankan di CI",
-        "README paket testing"
-      ],
+      "done": ["Halaman docs testing dengan contoh yang dijalankan di CI", "README paket testing"],
       "areas": ["docs", "packages/testing"],
       "adrs": [],
       "competitor": "SvelteKit testing docs; Nuxt @nuxt/test-utils; Next.js testing setup.",
@@ -487,10 +484,7 @@
       "status": "open",
       "what": "Routing locale (prefix/domain), negosiasi Accept-Language, helper terjemahan server/client.",
       "why": "Paritas untuk produk global; tidak mendesak untuk adopsi awal, tetapi menjadi syarat untuk pasar tertentu.",
-      "done": [
-        "Routing locale + negosiasi + test",
-        "Helper terjemahan + docs + contoh"
-      ],
+      "done": ["Routing locale + negosiasi + test", "Helper terjemahan + docs + contoh"],
       "areas": ["packages/router", "packages/compiler", "packages/core"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js i18n routing; Nuxt i18n module; SvelteKit paraglide; Astro i18n routing.",
@@ -505,9 +499,7 @@
       "status": "open",
       "what": "Panel di dev server: daftar rute + manifest, timing loader/render per request, status hydration, ukuran bundle.",
       "why": "Devtools meningkatkan retensi dan kecepatan debugging; pesaing besar memilikinya, tetapi ini bukan blocker adopsi.",
-      "done": [
-        "Panel dev + data timing nyata + docs"
-      ],
+      "done": ["Panel dev + data timing nyata + docs"],
       "areas": ["packages/devtools", "packages/bundler"],
       "adrs": ["ADR baru"],
       "competitor": "Nuxt DevTools; Next.js devtools MCP; Vite inspector.",

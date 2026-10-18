@@ -36,6 +36,7 @@ function read(relative: string): string {
 }
 
 export function generateLlms(): { llms: string; llmsFull: string } {
+  const stats = JSON.parse(read("docs/machine/stats.json")) as { adrs: number; version: string };
   const llms = `# Ramonyx
 
 > Framework full-stack TypeScript (runtime MVP Node.js) dengan SSR React, hydration, soft navigation, keamanan bawaan, dan runtime Rust/V8 eksperimental. Disiplin bukti: setiap klaim punya ADR/test/benchmark.
@@ -45,7 +46,7 @@ Dokumentasi lengkap: ${SITE}/ . Fakta terstruktur (sumber kebenaran status/angka
 ## Machine-readable (sumber kebenaran fakta)
 
 - [features.json](${SITE}/machine/features.json): status setiap fitur (implemented/partial/experimental/planned) + paket + bukti + batasan
-- [adrs.json](${SITE}/machine/adrs.json): indeks 54 ADR — keputusan satu kalimat + relasi
+- [adrs.json](${SITE}/machine/adrs.json): indeks ${stats.adrs} ADR — keputusan satu kalimat + relasi
 - [rules.json](${SITE}/machine/rules.json): aturan menulis aplikasi di atas Ramonyx, dengan contoh benar/salah
 - [security.json](${SITE}/machine/security.json): kontrol keamanan + status + celah yang diakui
 - [glossary.json](${SITE}/machine/glossary.json): istilah + peta konsep
@@ -83,7 +84,14 @@ Dokumentasi lengkap: ${SITE}/ . Fakta terstruktur (sumber kebenaran status/angka
   ];
 
   for (const file of MACHINE_FILES) {
-    parts.push(`## docs/machine/${file}`, "", "```json", read(`docs/machine/${file}`).trimEnd(), "```", "");
+    parts.push(
+      `## docs/machine/${file}`,
+      "",
+      "```json",
+      read(`docs/machine/${file}`).trimEnd(),
+      "```",
+      "",
+    );
   }
 
   for (const doc of HUMAN_DOCS) {

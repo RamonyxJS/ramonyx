@@ -7,10 +7,11 @@
 //  4. stats.json konsisten statis dengan Cargo.toml + filesystem (angka test: regenerasi eksplisit).
 //  5. Berkas generated segar: llms.txt, llms-full.txt, api.json, cli.json, TODO.md.
 //  6. Link relatif di docs/** tidak rusak.
+
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { execFileSync } from "node:child_process";
 
 import { generateApi } from "./api.ts";
 import { generateCli } from "./cli.ts";
@@ -40,7 +41,9 @@ function readText(relative: string): string {
 }
 
 function stripGeneratedAt(json: unknown): unknown {
-  return JSON.parse(JSON.stringify(json).replace(/"generatedAt":\s*"[^"]*"/g, '"generatedAt":"<x>"'));
+  return JSON.parse(
+    JSON.stringify(json).replace(/"generatedAt":\s*"[^"]*"/g, '"generatedAt":"<x>"'),
+  );
 }
 
 // ---------- 1. Skema ----------
@@ -196,7 +199,10 @@ const workspacePackages = readdirSync(`${ROOT}packages`).filter((entry) =>
   existsSync(`${ROOT}packages/${entry}/package.json`),
 );
 if (stats.packages.workspace !== workspacePackages.length) {
-  fail("stats", `stats.packages.workspace ${stats.packages.workspace} != ${workspacePackages.length}`);
+  fail(
+    "stats",
+    `stats.packages.workspace ${stats.packages.workspace} != ${workspacePackages.length}`,
+  );
 }
 if (stats.packages.npm !== stats.packages.workspace + 1) {
   fail("stats", `stats.packages.npm ${stats.packages.npm} != workspace + create-ramonyx-app`);
@@ -219,10 +225,34 @@ if (stats.tests.node < 0 || stats.tests.rust < 0) {
 }
 const head = execFileSync("git", ["rev-parse", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim();
 if (stats.commit !== head) {
-  console.warn(
-    `⚠ stats.json digenerate di commit ${stats.commit.slice(0, 7)} (HEAD ${head.slice(0, 7)}) — ` +
-      "angka test bisa drift; regenerasi: pnpm docs:stats (report-only, tidak memblokir)",
-  );
+  // Peringatan hanya bermakna bila berkas yang memengaruhi angka test berubah sejak stats dibuat.
+  let relevant = "";
+  try {
+    relevant = execFileSync(
+      "git",
+      [
+        "diff",
+        "--name-only",
+        `${stats.commit}..HEAD`,
+        "--",
+        "packages",
+        "apps",
+        "tests",
+        "runtime",
+        "scripts",
+        "benchmarks",
+      ],
+      { cwd: ROOT, encoding: "utf8" },
+    ).trim();
+  } catch {
+    relevant = "(tidak dapat membandingkan riwayat)";
+  }
+  if (relevant.length > 0) {
+    console.warn(
+      `⚠ stats.json digenerate di commit ${stats.commit.slice(0, 7)} dan berkas relevan berubah sejak itu — ` +
+        "angka test bisa drift; regenerasi: pnpm docs:stats (report-only, tidak memblokir)",
+    );
+  }
 }
 
 // ---------- 5. Kesegaran berkas generated ----------

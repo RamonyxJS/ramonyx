@@ -54,14 +54,20 @@
       "control": "Guard SSRF `guardedFetch`: validasi host/IP, blokir rentang privat, cek per-hop redirect",
       "status": "implemented",
       "evidence": ["packages/security/src/ssrf.ts", "packages/security/test/ssrf.test.ts"],
-      "gaps": ["IP-pinning (anti DNS-rebinding) belum — dicatat ADR-0031", "Pencocokan IPv6/zone-id terbatas"],
+      "gaps": [
+        "IP-pinning (anti DNS-rebinding) belum — dicatat ADR-0031",
+        "Pencocokan IPv6/zone-id terbatas"
+      ],
       "adrs": ["ADR-0015", "ADR-0031"]
     },
     {
       "id": "sec-rate-limit",
       "control": "Rate limit per klien (token bucket) → 429 + `Retry-After`; identitas dari adapter, `trustProxy` opt-in",
       "status": "implemented",
-      "evidence": ["packages/security/src/rate-limit.ts", "packages/security/test/rate-limit.test.ts"],
+      "evidence": [
+        "packages/security/src/rate-limit.ts",
+        "packages/security/test/rate-limit.test.ts"
+      ],
       "gaps": ["In-memory per proses (tanpa store terdistribusi)"],
       "adrs": ["ADR-0017"]
     },
@@ -93,7 +99,10 @@
       "id": "sec-runtime-permissions",
       "control": "Runtime Rust: permission deny-all (fs/env/net) hanya via `--allow-*`; `revoke()` runtime",
       "status": "implemented",
-      "evidence": ["runtime/crates/runtime-core/src/permissions.rs", "runtime/crates/cli/tests/cli.rs"],
+      "evidence": [
+        "runtime/crates/runtime-core/src/permissions.rs",
+        "runtime/crates/cli/tests/cli.rs"
+      ],
       "gaps": ["Runtime belum produksi (Phase 4+)"],
       "adrs": ["ADR-0023", "ADR-0033"]
     },
@@ -102,7 +111,9 @@
       "control": "Kuota runtime: heap V8, watchdog timeout, CPU per-thread, RSS proses",
       "status": "implemented",
       "evidence": ["runtime/crates/js-engine/src/lib.rs", "docs/adr/0038-cpu-rss-quotas.md"],
-      "gaps": ["Heap hanya heap V8 — ArrayBuffer besar tidak dihitung; alokasi raksasa tunggal masih bisa OOM fatal"],
+      "gaps": [
+        "Heap hanya heap V8 — ArrayBuffer besar tidak dihitung; alokasi raksasa tunggal masih bisa OOM fatal"
+      ],
       "adrs": ["ADR-0033", "ADR-0038"]
     },
     {
@@ -110,14 +121,19 @@
       "control": "Isolasi worker: thread + isolate V8 terpisah, pesan JSON, permission irisan anti-eskalasi, kill switch",
       "status": "implemented",
       "evidence": ["runtime/crates/js-engine/src/worker.rs", "docs/adr/0034-worker-isolation.md"],
-      "gaps": ["Isolasi V8 bukan sandbox keamanan (dicatat di BLUEPRINT) — batas tepercaya tetap proses/OS"],
+      "gaps": [
+        "Isolasi V8 bukan sandbox keamanan (dicatat di BLUEPRINT) — batas tepercaya tetap proses/OS"
+      ],
       "adrs": ["ADR-0034"]
     },
     {
       "id": "sec-plugin-process-isolation",
       "control": "Isolasi plugin level proses (`ramonyx.spawn`), protokol JSON, permission irisan, kill + supervisi",
       "status": "implemented",
-      "evidence": ["runtime/crates/js-engine/src/plugin.rs", "runtime/crates/js-engine/tests/plugin_process.rs"],
+      "evidence": [
+        "runtime/crates/js-engine/src/plugin.rs",
+        "runtime/crates/js-engine/tests/plugin_process.rs"
+      ],
       "gaps": [],
       "adrs": ["ADR-0040", "ADR-0043", "ADR-0044", "ADR-0050"]
     },
@@ -125,15 +141,24 @@
       "id": "sec-plugin-sandbox-landlock",
       "control": "Sandbox kernel plugin via Landlock LSM (batasi FS + TCP tanpa bergantung permission JS)",
       "status": "implemented",
-      "evidence": ["runtime/crates/js-engine/src/sandbox.rs", "docs/adr/0051-plugin-sandbox-landlock.md"],
-      "gaps": ["Net deny mencakup TCP saja (UDP/DNS tidak)", "Belum ada pentest escape (dicatat TODO)"],
+      "evidence": [
+        "runtime/crates/js-engine/src/sandbox.rs",
+        "docs/adr/0051-plugin-sandbox-landlock.md"
+      ],
+      "gaps": [
+        "Net deny mencakup TCP saja (UDP/DNS tidak)",
+        "Belum ada pentest escape (dicatat TODO)"
+      ],
       "adrs": ["ADR-0051"]
     },
     {
       "id": "sec-https-tls",
       "control": "`fetch` runtime: TLS diverifikasi, CA kustom `--tls-ca`, redirect dengan permission per hop",
       "status": "implemented",
-      "evidence": ["runtime/crates/js-engine/src/http_client.rs", "runtime/crates/js-engine/tests/fetch_tls.rs"],
+      "evidence": [
+        "runtime/crates/js-engine/src/http_client.rs",
+        "runtime/crates/js-engine/tests/fetch_tls.rs"
+      ],
       "gaps": ["Runtime eksperimental"],
       "adrs": ["ADR-0036"]
     },

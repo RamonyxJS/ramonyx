@@ -35,9 +35,15 @@ export function generateTodoMd(todo: TodoFile): string {
   const lines: string[] = [];
   lines.push("# TODO — menuju paritas kompetitif");
   lines.push("");
-  lines.push("> **Sumber tunggal: `TODO.json`** — berkas ini hasil generate, jangan diedit manual.");
-  lines.push("> Generate: `pnpm docs:generate` · Validasi: `pnpm docs:validate` · Konteks: `docs/PLAN-docs-consolidation.md` §3–4.");
-  lines.push("> Prioritas: **P0** blocker adopsi · **P1** paritas · **P2** diferensiasi & utang yang diakui · **P3** nice-to-have. Ukuran: S (≤1 hari) · M (beberapa hari) · L (1–2 minggu).");
+  lines.push(
+    "> **Sumber tunggal: `TODO.json`** — berkas ini hasil generate, jangan diedit manual.",
+  );
+  lines.push(
+    "> Generate: `pnpm docs:generate` · Validasi: `pnpm docs:validate` · Konteks: `docs/PLAN-docs-consolidation.md` §3–4.",
+  );
+  lines.push(
+    "> Prioritas: **P0** blocker adopsi · **P1** paritas · **P2** diferensiasi & utang yang diakui · **P3** nice-to-have. Ukuran: S (≤1 hari) · M (beberapa hari) · L (1–2 minggu).",
+  );
   lines.push("> Status fitur saat ini (bukti + batasan): `docs/machine/features.json`.");
   lines.push("");
 

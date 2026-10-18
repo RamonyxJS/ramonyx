@@ -15,9 +15,18 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/compiler", "@ramonyx/ssr"],
-      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts"],
-      "limitations": ["Route groups `(grup)` belum ada", "Middleware per-folder belum ada"]
+      "packages": [
+        "@ramonyx/compiler",
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/compiler/src/pages.ts",
+        "packages/compiler/test/pages.test.ts"
+      ],
+      "limitations": [
+        "Route groups `(grup)` belum ada",
+        "Middleware per-folder belum ada"
+      ]
     },
     {
       "id": "routing-api-methods",
@@ -25,8 +34,14 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/compiler", "@ramonyx/server"],
-      "evidence": ["packages/compiler/src/manifest.ts", "packages/compiler/test/manifest.test.ts"],
+      "packages": [
+        "@ramonyx/compiler",
+        "@ramonyx/server"
+      ],
+      "evidence": [
+        "packages/compiler/src/manifest.ts",
+        "packages/compiler/test/manifest.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -35,7 +50,9 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/router"],
+      "packages": [
+        "@ramonyx/router"
+      ],
       "evidence": [
         "packages/router/src/match.ts",
         "packages/router/test/match.test.ts",
@@ -49,8 +66,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/compiler"],
-      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts"],
+      "packages": [
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/compiler/src/pages.ts",
+        "packages/compiler/test/pages.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -59,8 +81,15 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/compiler", "@ramonyx/ssr"],
-      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts", "apps/playground/e2e/errors.spec.ts"],
+      "packages": [
+        "@ramonyx/compiler",
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/compiler/src/pages.ts",
+        "packages/compiler/test/pages.test.ts",
+        "apps/playground/e2e/errors.spec.ts"
+      ],
       "limitations": []
     },
     {
@@ -69,9 +98,16 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/server"],
-      "evidence": ["packages/server/src/handler.ts", "packages/server/test/pipeline.test.ts"],
-      "limitations": ["Hanya app-level — tidak ada `middleware.ts` per folder/route group"]
+      "packages": [
+        "@ramonyx/server"
+      ],
+      "evidence": [
+        "packages/server/src/handler.ts",
+        "packages/server/test/pipeline.test.ts"
+      ],
+      "limitations": [
+        "Hanya app-level — tidak ada `middleware.ts` per folder/route group"
+      ]
     },
     {
       "id": "middleware-per-folder",
@@ -79,9 +115,15 @@
       "status": "planned",
       "since": null,
       "priority": "p1",
-      "packages": ["@ramonyx/compiler"],
-      "evidence": ["packages/compiler/src/pages.ts"],
-      "limitations": ["Belum ada implementasi"]
+      "packages": [
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/compiler/src/pages.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi"
+      ]
     },
     {
       "id": "ssr-sync",
@@ -89,8 +131,15 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/ssr", "@ramonyx/react"],
-      "evidence": ["packages/ssr/src/pages.ts", "packages/ssr/src/document.ts", "packages/ssr/test/pages.test.ts"],
+      "packages": [
+        "@ramonyx/ssr",
+        "@ramonyx/react"
+      ],
+      "evidence": [
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/src/document.ts",
+        "packages/ssr/test/pages.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -99,9 +148,17 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/ssr", "@ramonyx/react"],
-      "evidence": ["packages/ssr/src/pages.ts", "docs/adr/0047-ssr-streaming-node.md"],
-      "limitations": ["Error setelah byte pertama = koneksi diputus (status/error page hanya berlaku sebelum byte pertama)"]
+      "packages": [
+        "@ramonyx/ssr",
+        "@ramonyx/react"
+      ],
+      "evidence": [
+        "packages/ssr/src/pages.ts",
+        "docs/adr/0047-ssr-streaming-node.md"
+      ],
+      "limitations": [
+        "Error setelah byte pertama = koneksi diputus (status/error page hanya berlaku sebelum byte pertama)"
+      ]
     },
     {
       "id": "hydration",
@@ -109,8 +166,15 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/react", "@ramonyx/compiler"],
-      "evidence": ["packages/react/src/client.ts", "apps/playground/e2e/ssr.spec.ts", "docs/adr/0007-hydration.md"],
+      "packages": [
+        "@ramonyx/react",
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/react/src/client.ts",
+        "apps/playground/e2e/ssr.spec.ts",
+        "docs/adr/0007-hydration.md"
+      ],
       "limitations": []
     },
     {
@@ -119,9 +183,17 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/react"],
-      "evidence": ["packages/react/src/client.ts", "apps/playground/e2e/navigation.spec.ts", "docs/adr/0008-client-navigation.md"],
-      "limitations": ["Belum ada prefetch saat hover/viewport"]
+      "packages": [
+        "@ramonyx/react"
+      ],
+      "evidence": [
+        "packages/react/src/client.ts",
+        "apps/playground/e2e/navigation.spec.ts",
+        "docs/adr/0008-client-navigation.md"
+      ],
+      "limitations": [
+        "Belum ada prefetch saat hover/viewport"
+      ]
     },
     {
       "id": "data-loaders",
@@ -129,9 +201,18 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
-      "evidence": ["packages/core/src/page.ts", "packages/ssr/src/pages.ts", "packages/ssr/test/pages.test.ts"],
-      "limitations": ["Hanya GET; belum ada loader dependensi antar-route"]
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/core/src/page.ts",
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/pages.test.ts"
+      ],
+      "limitations": [
+        "Hanya GET; belum ada loader dependensi antar-route"
+      ]
     },
     {
       "id": "mutations-server-actions",
@@ -139,9 +220,17 @@
       "status": "planned",
       "since": null,
       "priority": "p1",
-      "packages": ["@ramonyx/core"],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Belum ada implementasi; saat ini POST manual lewat API route"]
+      "packages": [
+        "@ramonyx/core"
+      ],
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "packages/server/src/handler.ts",
+        "packages/schema/src/validate.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi; saat ini POST manual lewat API route"
+      ]
     },
     {
       "id": "redirect-helper",
@@ -149,8 +238,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/core"],
-      "evidence": ["packages/core/src/types.ts", "packages/core/test/route.test.ts"],
+      "packages": [
+        "@ramonyx/core"
+      ],
+      "evidence": [
+        "packages/core/src/types.ts",
+        "packages/core/test/route.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -159,9 +253,17 @@
       "status": "partial",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
-      "evidence": ["packages/core/src/page.ts", "packages/ssr/src/pages.ts"],
-      "limitations": ["Hanya title/status — tanpa description/OG/head injection per halaman"]
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/core/src/page.ts",
+        "packages/ssr/src/pages.ts"
+      ],
+      "limitations": [
+        "Hanya title/status — tanpa description/OG/head injection per halaman"
+      ]
     },
     {
       "id": "schema-validation",
@@ -169,7 +271,9 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/schema"],
+      "packages": [
+        "@ramonyx/schema"
+      ],
       "evidence": [
         "packages/schema/src/validate.ts",
         "packages/schema/test/validate.test.ts",
@@ -184,8 +288,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/core"],
-      "evidence": ["packages/core/src/config.ts", "packages/core/test/config.test.ts"],
+      "packages": [
+        "@ramonyx/core"
+      ],
+      "evidence": [
+        "packages/core/src/config.ts",
+        "packages/core/test/config.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -194,7 +303,9 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/security"],
+      "packages": [
+        "@ramonyx/security"
+      ],
       "evidence": [
         "packages/security/src/headers.ts",
         "packages/security/test/headers.test.ts",
@@ -208,8 +319,14 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/security"],
-      "evidence": ["packages/security/src/csp.ts", "packages/security/test/csp.test.ts", "docs/adr/0014-csp-nonce.md"],
+      "packages": [
+        "@ramonyx/security"
+      ],
+      "evidence": [
+        "packages/security/src/csp.ts",
+        "packages/security/test/csp.test.ts",
+        "docs/adr/0014-csp-nonce.md"
+      ],
       "limitations": []
     },
     {
@@ -218,8 +335,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/security"],
-      "evidence": ["packages/security/src/csrf.ts", "packages/security/test/csrf.test.ts"],
+      "packages": [
+        "@ramonyx/security"
+      ],
+      "evidence": [
+        "packages/security/src/csrf.ts",
+        "packages/security/test/csrf.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -228,9 +350,17 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/security"],
-      "evidence": ["packages/security/src/ssrf.ts", "packages/security/test/ssrf.test.ts", "docs/adr/0015-ssrf-guard-output-limit.md"],
-      "limitations": ["IP-pinning (anti DNS-rebinding) menyusul — dicatat di ADR-0031"]
+      "packages": [
+        "@ramonyx/security"
+      ],
+      "evidence": [
+        "packages/security/src/ssrf.ts",
+        "packages/security/test/ssrf.test.ts",
+        "docs/adr/0015-ssrf-guard-output-limit.md"
+      ],
+      "limitations": [
+        "IP-pinning (anti DNS-rebinding) menyusul — dicatat di ADR-0031"
+      ]
     },
     {
       "id": "rate-limit",
@@ -238,9 +368,17 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/security"],
-      "evidence": ["packages/security/src/rate-limit.ts", "packages/security/test/rate-limit.test.ts", "docs/adr/0017-rate-limiting.md"],
-      "limitations": ["In-memory per proses (tanpa store terdistribusi)"]
+      "packages": [
+        "@ramonyx/security"
+      ],
+      "evidence": [
+        "packages/security/src/rate-limit.ts",
+        "packages/security/test/rate-limit.test.ts",
+        "docs/adr/0017-rate-limiting.md"
+      ],
+      "limitations": [
+        "In-memory per proses (tanpa store terdistribusi)"
+      ]
     },
     {
       "id": "resource-limits",
@@ -248,7 +386,9 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/server"],
+      "packages": [
+        "@ramonyx/server"
+      ],
       "evidence": [
         "packages/server/src/handler.ts",
         "tests/security/server-hardening.test.ts",
@@ -263,8 +403,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p2",
-      "packages": ["@ramonyx/ssr"],
-      "evidence": ["docs/adr/0015-ssrf-guard-output-limit.md", "packages/ssr/src/pages.ts"],
+      "packages": [
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "docs/adr/0015-ssrf-guard-output-limit.md",
+        "packages/ssr/src/pages.ts"
+      ],
       "limitations": []
     },
     {
@@ -273,8 +418,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/bundler"],
-      "evidence": ["packages/bundler/src/dev.ts", "docs/adr/0009-dev-server.md"],
+      "packages": [
+        "@ramonyx/bundler"
+      ],
+      "evidence": [
+        "packages/bundler/src/dev.ts",
+        "docs/adr/0009-dev-server.md"
+      ],
       "limitations": []
     },
     {
@@ -283,9 +433,17 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/bundler", "@ramonyx/compiler"],
-      "evidence": ["packages/bundler/src/build.ts", "docs/adr/0005-bundler.md"],
-      "limitations": ["Belum ada code splitting per rute"]
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/bundler/src/build.ts",
+        "docs/adr/0005-bundler.md"
+      ],
+      "limitations": [
+        "Belum ada code splitting per rute"
+      ]
     },
     {
       "id": "source-maps",
@@ -293,8 +451,12 @@
       "status": "implemented",
       "since": "0.1.1",
       "priority": "p2",
-      "packages": ["@ramonyx/bundler"],
-      "evidence": ["docs/adr/0046-source-maps.md"],
+      "packages": [
+        "@ramonyx/bundler"
+      ],
+      "evidence": [
+        "docs/adr/0046-source-maps.md"
+      ],
       "limitations": []
     },
     {
@@ -303,8 +465,14 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/compiler"],
-      "evidence": ["packages/compiler/src/register.mjs", "packages/compiler/src/esbuild-hooks.mjs", "docs/adr/0006-jsx-loader.md"],
+      "packages": [
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/compiler/src/register.mjs",
+        "packages/compiler/src/esbuild-hooks.mjs",
+        "docs/adr/0006-jsx-loader.md"
+      ],
       "limitations": []
     },
     {
@@ -313,9 +481,17 @@
       "status": "implemented",
       "since": "0.1.1",
       "priority": "p0",
-      "packages": ["@ramonyx/devtools"],
-      "evidence": ["packages/devtools/src/commands.ts", "packages/devtools/test/cli.test.ts", "docs/adr/0053-devtools-cli.md"],
-      "limitations": ["Tanpa watch mode (rebuild otomatis)"]
+      "packages": [
+        "@ramonyx/devtools"
+      ],
+      "evidence": [
+        "packages/devtools/src/commands.ts",
+        "packages/devtools/test/cli.test.ts",
+        "docs/adr/0053-devtools-cli.md"
+      ],
+      "limitations": [
+        "Tanpa watch mode (rebuild otomatis)"
+      ]
     },
     {
       "id": "scaffolder",
@@ -323,8 +499,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["create-ramonyx-app"],
-      "evidence": ["apps/create-app/test/create-app.test.ts", "docs/adr/0041-create-app.md"],
+      "packages": [
+        "create-ramonyx-app"
+      ],
+      "evidence": [
+        "apps/create-app/test/create-app.test.ts",
+        "docs/adr/0041-create-app.md"
+      ],
       "limitations": []
     },
     {
@@ -333,9 +514,16 @@
       "status": "planned",
       "since": null,
       "priority": "p2",
-      "packages": ["@ramonyx/compiler"],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Belum ada implementasi"]
+      "packages": [
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "packages/compiler/src/manifest.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi"
+      ]
     },
     {
       "id": "error-messages-id",
@@ -343,9 +531,17 @@
       "status": "partial",
       "since": "0.1.0",
       "priority": "p3",
-      "packages": ["@ramonyx/core", "@ramonyx/compiler"],
-      "evidence": ["packages/core/src/errors.ts", "packages/compiler/src/errors.ts"],
-      "limitations": ["Tanpa tautan ke dokumentasi per pesan"]
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/core/src/errors.ts",
+        "packages/compiler/src/errors.ts"
+      ],
+      "limitations": [
+        "Tanpa tautan ke dokumentasi per pesan"
+      ]
     },
     {
       "id": "static-export",
@@ -354,8 +550,13 @@
       "since": "0.1.1",
       "priority": "p2",
       "packages": [],
-      "evidence": ["apps/docs/export.ts", "docs/adr/0052-docs-hosting-pages.md"],
-      "limitations": ["Skrip aplikasi docs, bukan API framework untuk SSG"]
+      "evidence": [
+        "apps/docs/export.ts",
+        "docs/adr/0052-docs-hosting-pages.md"
+      ],
+      "limitations": [
+        "Skrip aplikasi docs, bukan API framework untuk SSG"
+      ]
     },
     {
       "id": "ssg-first-class",
@@ -363,9 +564,16 @@
       "status": "planned",
       "since": null,
       "priority": "p1",
-      "packages": ["@ramonyx/ssr"],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Belum ada implementasi"]
+      "packages": [
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "apps/docs/export.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi"
+      ]
     },
     {
       "id": "http-cache-helpers",
@@ -373,9 +581,16 @@
       "status": "planned",
       "since": null,
       "priority": "p2",
-      "packages": ["@ramonyx/core"],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Belum ada implementasi"]
+      "packages": [
+        "@ramonyx/core"
+      ],
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "packages/adapter-runtime/src/node.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi"
+      ]
     },
     {
       "id": "asset-fingerprinting",
@@ -383,9 +598,17 @@
       "status": "planned",
       "since": null,
       "priority": "p2",
-      "packages": ["@ramonyx/bundler"],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Aset saat ini tanpa hash; template memakai cache-control: no-store"]
+      "packages": [
+        "@ramonyx/bundler"
+      ],
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "apps/create-app/template/src/routes/middleware.ts",
+        "packages/bundler/src/build.ts"
+      ],
+      "limitations": [
+        "Aset saat ini tanpa hash; template memakai cache-control: no-store"
+      ]
     },
     {
       "id": "adapter-node",
@@ -393,9 +616,16 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/adapter-runtime"],
-      "evidence": ["packages/adapter-runtime/src/node.ts", "packages/adapter-runtime/test/node.test.ts"],
-      "limitations": ["Tanpa kompresi/ETag"]
+      "packages": [
+        "@ramonyx/adapter-runtime"
+      ],
+      "evidence": [
+        "packages/adapter-runtime/src/node.ts",
+        "packages/adapter-runtime/test/node.test.ts"
+      ],
+      "limitations": [
+        "Tanpa kompresi/ETag"
+      ]
     },
     {
       "id": "adapter-memory",
@@ -403,8 +633,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/adapter-runtime"],
-      "evidence": ["packages/adapter-runtime/src/memory.ts", "packages/adapter-runtime/test/memory.test.ts"],
+      "packages": [
+        "@ramonyx/adapter-runtime"
+      ],
+      "evidence": [
+        "packages/adapter-runtime/src/memory.ts",
+        "packages/adapter-runtime/test/memory.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -414,8 +649,13 @@
       "since": null,
       "priority": "p1",
       "packages": [],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Belum ada implementasi"]
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "packages/adapter-runtime/src/node.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi"
+      ]
     },
     {
       "id": "compression-etag",
@@ -423,9 +663,16 @@
       "status": "planned",
       "since": null,
       "priority": "p2",
-      "packages": ["@ramonyx/adapter-runtime"],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Belum ada implementasi"]
+      "packages": [
+        "@ramonyx/adapter-runtime"
+      ],
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "packages/adapter-runtime/test/node.test.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi"
+      ]
     },
     {
       "id": "image-optimization",
@@ -434,8 +681,13 @@
       "since": null,
       "priority": "p3",
       "packages": [],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Belum ada implementasi"]
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "packages/bundler/src/build.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi"
+      ]
     },
     {
       "id": "i18n",
@@ -444,8 +696,13 @@
       "since": null,
       "priority": "p3",
       "packages": [],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Belum ada implementasi"]
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "packages/router/src/match.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi"
+      ]
     },
     {
       "id": "auth",
@@ -454,8 +711,13 @@
       "since": null,
       "priority": "p2",
       "packages": [],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Aplikasi memutuskan sendiri saat ini; tanpa helper session"]
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "packages/security/src/csrf.ts"
+      ],
+      "limitations": [
+        "Aplikasi memutuskan sendiri saat ini; tanpa helper session"
+      ]
     },
     {
       "id": "forms",
@@ -464,8 +726,13 @@
       "since": null,
       "priority": "p2",
       "packages": [],
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "limitations": ["Belum ada implementasi"]
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md",
+        "packages/schema/src/validate.ts"
+      ],
+      "limitations": [
+        "Belum ada implementasi"
+      ]
     },
     {
       "id": "observability-logger",
@@ -473,9 +740,16 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p2",
-      "packages": ["@ramonyx/core"],
-      "evidence": ["packages/core/src/logger.ts", "docs/adr/0037-r4-profiling-startup.md"],
-      "limitations": ["Tanpa tracing terdistribusi / endpoint metrics"]
+      "packages": [
+        "@ramonyx/core"
+      ],
+      "evidence": [
+        "packages/core/src/logger.ts",
+        "docs/adr/0037-r4-profiling-startup.md"
+      ],
+      "limitations": [
+        "Tanpa tracing terdistribusi / endpoint metrics"
+      ]
     },
     {
       "id": "observability-metrics",
@@ -484,8 +758,13 @@
       "since": null,
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/metrics.rs", "docs/adr/0037-r4-profiling-startup.md"],
-      "limitations": ["Hanya di runtime eksperimental; belum dipakai produksi Node"]
+      "evidence": [
+        "runtime/crates/js-engine/src/metrics.rs",
+        "docs/adr/0037-r4-profiling-startup.md"
+      ],
+      "limitations": [
+        "Hanya di runtime eksperimental; belum dipakai produksi Node"
+      ]
     },
     {
       "id": "benchmark-gates",
@@ -500,7 +779,10 @@
         "docs/adr/0045-perf-regression-gate.md",
         "docs/adr/0048-bench-ssr-vitals.md"
       ],
-      "limitations": ["Report-only — belum memblokir regresi", "Strict hanya sahih di mesin baseline (guard lintas-mesin)"]
+      "limitations": [
+        "Report-only — belum memblokir regresi",
+        "Strict hanya sahih di mesin baseline (guard lintas-mesin)"
+      ]
     },
     {
       "id": "e2e-playwright",
@@ -509,7 +791,11 @@
       "since": "0.1.0",
       "priority": "p1",
       "packages": [],
-      "evidence": ["apps/playground/e2e/ssr.spec.ts", "apps/playground/e2e/navigation.spec.ts", "docs/adr/0010-browser-e2e.md"],
+      "evidence": [
+        "apps/playground/e2e/ssr.spec.ts",
+        "apps/playground/e2e/navigation.spec.ts",
+        "docs/adr/0010-browser-e2e.md"
+      ],
       "limitations": []
     },
     {
@@ -518,8 +804,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p2",
-      "packages": ["@ramonyx/testing"],
-      "evidence": ["packages/testing/src/index.ts", "packages/testing/test/testing.test.ts"],
+      "packages": [
+        "@ramonyx/testing"
+      ],
+      "evidence": [
+        "packages/testing/src/index.ts",
+        "packages/testing/test/testing.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -543,8 +834,14 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/runtime-core/src/permissions.rs", "runtime/crates/cli/tests/cli.rs", "docs/adr/0023-permission-model.md"],
-      "limitations": ["Runtime belum produksi (Phase 4+)"]
+      "evidence": [
+        "runtime/crates/runtime-core/src/permissions.rs",
+        "runtime/crates/cli/tests/cli.rs",
+        "docs/adr/0023-permission-model.md"
+      ],
+      "limitations": [
+        "Runtime belum produksi (Phase 4+)"
+      ]
     },
     {
       "id": "runtime-http-server",
@@ -553,8 +850,14 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/http.rs", "runtime/crates/js-engine/tests/compat_playground.rs", "docs/adr/0022-runtime-io.md"],
-      "limitations": ["Bind localhost; production hardening belum"]
+      "evidence": [
+        "runtime/crates/js-engine/src/http.rs",
+        "runtime/crates/js-engine/tests/compat_playground.rs",
+        "docs/adr/0022-runtime-io.md"
+      ],
+      "limitations": [
+        "Bind localhost; production hardening belum"
+      ]
     },
     {
       "id": "runtime-streaming",
@@ -563,7 +866,12 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/http.rs", "runtime/crates/js-engine/tests/compat_stream_ssr.rs", "docs/adr/0025-response-streaming.md", "docs/adr/0035-streaming-request.md"],
+      "evidence": [
+        "runtime/crates/js-engine/src/http.rs",
+        "runtime/crates/js-engine/tests/compat_stream_ssr.rs",
+        "docs/adr/0025-response-streaming.md",
+        "docs/adr/0035-streaming-request.md"
+      ],
       "limitations": []
     },
     {
@@ -573,8 +881,13 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/worker.rs", "docs/adr/0034-worker-isolation.md"],
-      "limitations": ["Kuota heap = heap V8 saja (ArrayBuffer besar tidak dihitung)"]
+      "evidence": [
+        "runtime/crates/js-engine/src/worker.rs",
+        "docs/adr/0034-worker-isolation.md"
+      ],
+      "limitations": [
+        "Kuota heap = heap V8 saja (ArrayBuffer besar tidak dihitung)"
+      ]
     },
     {
       "id": "runtime-plugin-process",
@@ -583,8 +896,14 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/plugin.rs", "runtime/crates/js-engine/tests/plugin_process.rs", "docs/adr/0040-plugin-process-isolation.md"],
-      "limitations": ["Landlock net deny hanya TCP (bukan UDP/DNS)"]
+      "evidence": [
+        "runtime/crates/js-engine/src/plugin.rs",
+        "runtime/crates/js-engine/tests/plugin_process.rs",
+        "docs/adr/0040-plugin-process-isolation.md"
+      ],
+      "limitations": [
+        "Landlock net deny hanya TCP (bukan UDP/DNS)"
+      ]
     },
     {
       "id": "runtime-plugin-supervision",
@@ -593,7 +912,11 @@
       "since": "0.1.1",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/plugin.rs", "docs/adr/0043-plugin-supervision.md", "docs/adr/0050-plugin-backoff-watchdog.md"],
+      "evidence": [
+        "runtime/crates/js-engine/src/plugin.rs",
+        "docs/adr/0043-plugin-supervision.md",
+        "docs/adr/0050-plugin-backoff-watchdog.md"
+      ],
       "limitations": []
     },
     {
@@ -603,8 +926,13 @@
       "since": "0.1.1",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/sandbox.rs", "docs/adr/0051-plugin-sandbox-landlock.md"],
-      "limitations": ["Belum ada pentest escape (dicatat di TODO)"]
+      "evidence": [
+        "runtime/crates/js-engine/src/sandbox.rs",
+        "docs/adr/0051-plugin-sandbox-landlock.md"
+      ],
+      "limitations": [
+        "Belum ada pentest escape (dicatat di TODO)"
+      ]
     },
     {
       "id": "runtime-quotas",
@@ -613,8 +941,14 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/lib.rs", "docs/adr/0033-resource-limits.md", "docs/adr/0038-cpu-rss-quotas.md"],
-      "limitations": ["Heap hanya heap V8; alokasi ArrayBuffer raksasa tunggal masih bisa OOM fatal"]
+      "evidence": [
+        "runtime/crates/js-engine/src/lib.rs",
+        "docs/adr/0033-resource-limits.md",
+        "docs/adr/0038-cpu-rss-quotas.md"
+      ],
+      "limitations": [
+        "Heap hanya heap V8; alokasi ArrayBuffer raksasa tunggal masih bisa OOM fatal"
+      ]
     },
     {
       "id": "runtime-compat-suite",
@@ -623,7 +957,10 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/tests/compat_framework.rs", "docs/adr/0028-compat-suite.md"],
+      "evidence": [
+        "runtime/crates/js-engine/tests/compat_framework.rs",
+        "docs/adr/0028-compat-suite.md"
+      ],
       "limitations": []
     },
     {
@@ -633,8 +970,13 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/cjs.rs", "docs/adr/0029-commonjs-interop.md"],
-      "limitations": ["Subset — require dinamis/modul ESM lewat require ditolak dengan pesan jelas"]
+      "evidence": [
+        "runtime/crates/js-engine/src/cjs.rs",
+        "docs/adr/0029-commonjs-interop.md"
+      ],
+      "limitations": [
+        "Subset — require dinamis/modul ESM lewat require ditolak dengan pesan jelas"
+      ]
     },
     {
       "id": "runtime-fetch",
@@ -643,7 +985,12 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/http_client.rs", "runtime/crates/js-engine/tests/fetch_tls.rs", "docs/adr/0030-fetch-readablestream.md", "docs/adr/0036-fetch-tls-redirect.md"],
+      "evidence": [
+        "runtime/crates/js-engine/src/http_client.rs",
+        "runtime/crates/js-engine/tests/fetch_tls.rs",
+        "docs/adr/0030-fetch-readablestream.md",
+        "docs/adr/0036-fetch-tls-redirect.md"
+      ],
       "limitations": []
     },
     {
@@ -653,8 +1000,15 @@
       "since": "0.1.1",
       "priority": "p1",
       "packages": [],
-      "evidence": ["apps/docs/export.ts", "apps/docs/test/docs.test.ts", "docs/adr/0042-docs-app.md", "docs/adr/0052-docs-hosting-pages.md"],
-      "limitations": ["Di-host di GitHub Pages subpath /ramonyx/"]
+      "evidence": [
+        "apps/docs/export.ts",
+        "apps/docs/test/docs.test.ts",
+        "docs/adr/0042-docs-app.md",
+        "docs/adr/0052-docs-hosting-pages.md"
+      ],
+      "limitations": [
+        "Di-host di GitHub Pages subpath /ramonyx/"
+      ]
     },
     {
       "id": "machine-docs",
@@ -663,8 +1017,14 @@
       "since": null,
       "priority": "p1",
       "packages": [],
-      "evidence": ["docs/machine/features.json", "scripts/docs/validate.ts", "docs/adr/0054-machine-readable-docs.md"],
-      "limitations": ["Belum dirilis di versi npm (setelah 0.1.1)"]
+      "evidence": [
+        "docs/machine/features.json",
+        "scripts/docs/validate.ts",
+        "docs/adr/0054-machine-readable-docs.md"
+      ],
+      "limitations": [
+        "Belum dirilis di versi npm (setelah 0.1.1)"
+      ]
     },
     {
       "id": "llms-txt",
@@ -673,8 +1033,14 @@
       "since": null,
       "priority": "p1",
       "packages": [],
-      "evidence": ["docs/machine/llms.txt", "docs/machine/llms-full.txt", "docs/adr/0054-machine-readable-docs.md"],
-      "limitations": ["Belum ada markdown per halaman untuk paket npm (hanya situs)"]
+      "evidence": [
+        "docs/machine/llms.txt",
+        "docs/machine/llms-full.txt",
+        "docs/adr/0054-machine-readable-docs.md"
+      ],
+      "limitations": [
+        "Belum ada markdown per halaman untuk paket npm (hanya situs)"
+      ]
     },
     {
       "id": "agent-skill",
@@ -683,8 +1049,13 @@
       "since": null,
       "priority": "p2",
       "packages": [],
-      "evidence": [".agents/skills/ramonyx/SKILL.md", "docs/adr/0054-machine-readable-docs.md"],
-      "limitations": ["Satu skill; tanpa instalasi otomatis di scaffolder"]
+      "evidence": [
+        ".agents/skills/ramonyx/SKILL.md",
+        "docs/adr/0054-machine-readable-docs.md"
+      ],
+      "limitations": [
+        "Satu skill; tanpa instalasi otomatis di scaffolder"
+      ]
     },
     {
       "id": "mcp-docs-server",
@@ -693,8 +1064,13 @@
       "since": null,
       "priority": "p3",
       "packages": [],
-      "evidence": ["docs/adr/0054-machine-readable-docs.md"],
-      "limitations": ["Ditunda — butuh hosting/index/pemeliharaan (riset §2 rencana konsolidasi)"]
+      "evidence": [
+        "docs/adr/0054-machine-readable-docs.md",
+        "docs/machine/llms.txt"
+      ],
+      "limitations": [
+        "Ditunda — butuh hosting/index/pemeliharaan (riset §2 rencana konsolidasi)"
+      ]
     }
   ]
 }
@@ -1498,14 +1874,20 @@
       "control": "Guard SSRF `guardedFetch`: validasi host/IP, blokir rentang privat, cek per-hop redirect",
       "status": "implemented",
       "evidence": ["packages/security/src/ssrf.ts", "packages/security/test/ssrf.test.ts"],
-      "gaps": ["IP-pinning (anti DNS-rebinding) belum — dicatat ADR-0031", "Pencocokan IPv6/zone-id terbatas"],
+      "gaps": [
+        "IP-pinning (anti DNS-rebinding) belum — dicatat ADR-0031",
+        "Pencocokan IPv6/zone-id terbatas"
+      ],
       "adrs": ["ADR-0015", "ADR-0031"]
     },
     {
       "id": "sec-rate-limit",
       "control": "Rate limit per klien (token bucket) → 429 + `Retry-After`; identitas dari adapter, `trustProxy` opt-in",
       "status": "implemented",
-      "evidence": ["packages/security/src/rate-limit.ts", "packages/security/test/rate-limit.test.ts"],
+      "evidence": [
+        "packages/security/src/rate-limit.ts",
+        "packages/security/test/rate-limit.test.ts"
+      ],
       "gaps": ["In-memory per proses (tanpa store terdistribusi)"],
       "adrs": ["ADR-0017"]
     },
@@ -1537,7 +1919,10 @@
       "id": "sec-runtime-permissions",
       "control": "Runtime Rust: permission deny-all (fs/env/net) hanya via `--allow-*`; `revoke()` runtime",
       "status": "implemented",
-      "evidence": ["runtime/crates/runtime-core/src/permissions.rs", "runtime/crates/cli/tests/cli.rs"],
+      "evidence": [
+        "runtime/crates/runtime-core/src/permissions.rs",
+        "runtime/crates/cli/tests/cli.rs"
+      ],
       "gaps": ["Runtime belum produksi (Phase 4+)"],
       "adrs": ["ADR-0023", "ADR-0033"]
     },
@@ -1546,7 +1931,9 @@
       "control": "Kuota runtime: heap V8, watchdog timeout, CPU per-thread, RSS proses",
       "status": "implemented",
       "evidence": ["runtime/crates/js-engine/src/lib.rs", "docs/adr/0038-cpu-rss-quotas.md"],
-      "gaps": ["Heap hanya heap V8 — ArrayBuffer besar tidak dihitung; alokasi raksasa tunggal masih bisa OOM fatal"],
+      "gaps": [
+        "Heap hanya heap V8 — ArrayBuffer besar tidak dihitung; alokasi raksasa tunggal masih bisa OOM fatal"
+      ],
       "adrs": ["ADR-0033", "ADR-0038"]
     },
     {
@@ -1554,14 +1941,19 @@
       "control": "Isolasi worker: thread + isolate V8 terpisah, pesan JSON, permission irisan anti-eskalasi, kill switch",
       "status": "implemented",
       "evidence": ["runtime/crates/js-engine/src/worker.rs", "docs/adr/0034-worker-isolation.md"],
-      "gaps": ["Isolasi V8 bukan sandbox keamanan (dicatat di BLUEPRINT) — batas tepercaya tetap proses/OS"],
+      "gaps": [
+        "Isolasi V8 bukan sandbox keamanan (dicatat di BLUEPRINT) — batas tepercaya tetap proses/OS"
+      ],
       "adrs": ["ADR-0034"]
     },
     {
       "id": "sec-plugin-process-isolation",
       "control": "Isolasi plugin level proses (`ramonyx.spawn`), protokol JSON, permission irisan, kill + supervisi",
       "status": "implemented",
-      "evidence": ["runtime/crates/js-engine/src/plugin.rs", "runtime/crates/js-engine/tests/plugin_process.rs"],
+      "evidence": [
+        "runtime/crates/js-engine/src/plugin.rs",
+        "runtime/crates/js-engine/tests/plugin_process.rs"
+      ],
       "gaps": [],
       "adrs": ["ADR-0040", "ADR-0043", "ADR-0044", "ADR-0050"]
     },
@@ -1569,15 +1961,24 @@
       "id": "sec-plugin-sandbox-landlock",
       "control": "Sandbox kernel plugin via Landlock LSM (batasi FS + TCP tanpa bergantung permission JS)",
       "status": "implemented",
-      "evidence": ["runtime/crates/js-engine/src/sandbox.rs", "docs/adr/0051-plugin-sandbox-landlock.md"],
-      "gaps": ["Net deny mencakup TCP saja (UDP/DNS tidak)", "Belum ada pentest escape (dicatat TODO)"],
+      "evidence": [
+        "runtime/crates/js-engine/src/sandbox.rs",
+        "docs/adr/0051-plugin-sandbox-landlock.md"
+      ],
+      "gaps": [
+        "Net deny mencakup TCP saja (UDP/DNS tidak)",
+        "Belum ada pentest escape (dicatat TODO)"
+      ],
       "adrs": ["ADR-0051"]
     },
     {
       "id": "sec-https-tls",
       "control": "`fetch` runtime: TLS diverifikasi, CA kustom `--tls-ca`, redirect dengan permission per hop",
       "status": "implemented",
-      "evidence": ["runtime/crates/js-engine/src/http_client.rs", "runtime/crates/js-engine/tests/fetch_tls.rs"],
+      "evidence": [
+        "runtime/crates/js-engine/src/http_client.rs",
+        "runtime/crates/js-engine/tests/fetch_tls.rs"
+      ],
       "gaps": ["Runtime eksperimental"],
       "adrs": ["ADR-0036"]
     },
@@ -1794,7 +2195,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T17:50:38.346Z",
+  "generatedAt": "2026-10-18T17:57:48.542Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2055,7 +2456,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T17:50:45.060Z",
+  "generatedAt": "2026-10-18T17:57:49.553Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev       Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build     Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx start     Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor    Diagnostik konfigurasi & lingkungan\n  ramonyx version   Versi CLI\n  ramonyx help      Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2233,11 +2634,15 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
 ## Verifikasi
 
 ```bash
-pnpm lint && pnpm typecheck && pnpm test   # 161 tes Node
-pnpm build && pnpm test:e2e                # 5 e2e (Playwright)
-cargo test --workspace                     # 111 tes Rust
+pnpm lint && pnpm typecheck && pnpm test   # tes Node
+pnpm build && pnpm test:e2e                # e2e (Playwright)
+cargo test --workspace                     # tes Rust
+pnpm docs:validate                         # dokumentasi machine-readable (blocking)
 pnpm audit --audit-level high              # bersih
 ```
+
+Angka aktual (versi, jumlah paket/ADR/test) ada di satu tempat:
+[docs/machine/stats.json](docs/machine/stats.json) — generate ulang: `pnpm docs:stats`.
 
 ## Struktur
 
@@ -2257,7 +2662,11 @@ pnpm audit --audit-level high              # bersih
 
 Mulai dari [docs/BLUEPRINT.md](docs/BLUEPRINT.md) (sumber kebenaran teknis),
 [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) (status audit berbasis bukti),
-dan [docs/adr/README.md](docs/adr/README.md) (keputusan arsitektur 0001–0049).
+dan [docs/adr/README.md](docs/adr/README.md) (keputusan arsitektur).
+
+Untuk agen AI dan fakta terstruktur: [docs/machine/README.md](docs/machine/README.md) —
+status fitur + bukti (`features.json`), indeks ADR (`adrs.json`), aturan menulis aplikasi
+(`rules.json`), kontrol keamanan (`security.json`), dan `llms.txt`/`llms-full.txt`.
 
 ## Lisensi
 
@@ -3575,6 +3984,8 @@ aplikasi masing-masing.
 
 ```bash
 # 1. Samakan versi di Cargo.toml (sumber) + package.json paket, commit.
+# 1b. Regenerasi dokumentasi machine-readable (angka test/ADR/paket dari suite — ADR-0054):
+pnpm docs:stats && pnpm docs:generate && pnpm docs:validate && git add -A && git commit -m "docs: regenerasi stats"
 # 2. Dry-run lokal (tanpa kredensial):
 pnpm release && pnpm release:verify
 for t in dist/npm/*.tgz; do npm publish --dry-run "$t"; done
@@ -3694,6 +4105,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 3. `docs/api/core-contract.md` — kontrak API v0 + catatan implementasi (§10).
 4. `docs/roadmap/phase-0-1.md` — status kerja & langkah berikutnya.
 5. `docs/PRD.md` — level produk; pertanyaan terbuka sudah direkonsiliasi (ADR-0018).
+6. `docs/machine/README.md` — lapisan dokumentasi machine-readable (status fitur + bukti, indeks
+   ADR, aturan agen, kontrol keamanan, glosarium, llms.txt); **sumber angka tunggal**:
+   `docs/machine/stats.json` (jangan mengetik angka di dokumen lain).
 
 ## Perintah
 
@@ -3710,6 +4124,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   atas `docs/**`) di http://127.0.0.1:4000 (build klien + start).
 - `pnpm docs:export` — ekspor statis situs docs (`apps/docs/export.ts`) untuk hosting;
   workflow `pages.yml` memakai `--base /ramonyx` → https://ramonyxjs.github.io/ramonyx/ (ADR-0052).
+- `pnpm docs:validate` / `pnpm docs:generate` / `pnpm docs:stats` — dokumentasi machine-readable
+  (`docs/machine/`, ADR-0054): validasi blocking (skema, bukti, indeks ADR, kesegaran, link),
+  regenerate artefak turunan (api/cli/llms/TODO.md), dan regenerate `stats.json` dari suite.
 - CLI devtools (`@ramonyx/devtools`, ADR-0053): di repo jalankan lewat loader —
   `node --import ./tools/register.mjs packages/devtools/src/cli.ts <dev|build|start|doctor> --app <dir>`;
   aplikasi (template) memakai `ramonyx dev|build|start` dengan konvensi `src/app.ts` `createApp()`.

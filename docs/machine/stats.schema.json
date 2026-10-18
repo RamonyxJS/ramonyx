@@ -3,7 +3,16 @@
   "title": "Ramonyx stats",
   "description": "SATU-SATUNYA tempat angka (versi, jumlah paket, ADR, test). Digenerate `pnpm docs:stats` (menjalankan suite). Versi/paket/ADR diverifikasi statis oleh `pnpm docs:validate`.",
   "type": "object",
-  "required": ["schemaVersion", "version", "generatedAt", "commit", "node", "packages", "adrs", "tests"],
+  "required": [
+    "schemaVersion",
+    "version",
+    "generatedAt",
+    "commit",
+    "node",
+    "packages",
+    "adrs",
+    "tests"
+  ],
   "additionalProperties": false,
   "properties": {
     "schemaVersion": { "const": 1 },

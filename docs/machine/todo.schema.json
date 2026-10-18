@@ -12,24 +12,54 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "title", "theme", "priority", "size", "status", "what", "why", "done", "areas", "competitor"],
+        "required": [
+          "id",
+          "title",
+          "theme",
+          "priority",
+          "size",
+          "status",
+          "what",
+          "why",
+          "done",
+          "areas",
+          "competitor"
+        ],
         "additionalProperties": false,
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
           "title": { "type": "string", "minLength": 5 },
           "theme": {
-            "enum": ["routing", "rendering", "data", "security", "dx", "deploy", "docs", "ecosystem", "perf", "quality"]
+            "enum": [
+              "routing",
+              "rendering",
+              "data",
+              "security",
+              "dx",
+              "deploy",
+              "docs",
+              "ecosystem",
+              "perf",
+              "quality"
+            ]
           },
           "priority": { "enum": ["p0", "p1", "p2", "p3"] },
           "size": { "enum": ["S", "M", "L"] },
           "status": { "enum": ["open", "in-progress", "done"] },
           "what": { "type": "string", "minLength": 20 },
           "why": { "type": "string", "minLength": 20 },
-          "done": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 10 } },
+          "done": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 10 }
+          },
           "areas": { "type": "array", "minItems": 1, "items": { "type": "string" } },
           "adrs": { "type": "array", "items": { "type": "string" } },
           "competitor": { "type": "string", "minLength": 10 },
-          "dependsOn": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" } },
+          "dependsOn": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+          },
           "quickWin": { "type": "boolean" },
           "strategic": { "type": "boolean" },
           "source": { "type": "string" }

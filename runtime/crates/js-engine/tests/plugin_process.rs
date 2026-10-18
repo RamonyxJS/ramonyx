@@ -568,3 +568,180 @@ globalThis.__health_null_ok = true;
 
     let _ = std::fs::remove_dir_all(&directory);
 }
+
+/// Watchdog health-check **otomatis**: plugin senyap dibunuh & di-restart walau induk sama sekali
+/// tidak memanggil `receive` (ADR-0050) — tanpa watchdog, test ini menggantung.
+#[test]
+fn plugin_watchdog_mendeteksi_tanpa_receive() {
+    let directory = temp_dir("watchdog");
+    let marker = directory.join("generasi.txt");
+    let plugin = directory.join("plugin-watchdog.mjs");
+    std::fs::write(
+        &plugin,
+        format!(
+            r#"
+const berkas = {berkas};
+let generasi = 0;
+try {{
+  generasi = Number(await ramonyx.readTextFile(berkas));
+}} catch {{
+  generasi = 0;
+}}
+generasi += 1;
+await ramonyx.writeTextFile(berkas, String(generasi));
+await ramonyx.parent.send({{ siap: generasi }});
+
+if (generasi === 1) {{
+  // Generasi 1: senyap tanpa heartbeat — watchdog harus membunuhnya tanpa `receive`.
+  for (;;) {{}}
+}}
+
+// Generasi 2: sehat — heartbeat berkala.
+for (;;) {{
+  await ramonyx.sleep(50);
+  await ramonyx.heartbeat();
+}}
+"#,
+            berkas = js_literal(&marker),
+        ),
+    )
+    .expect("write");
+
+    let main = directory.join("main.mjs");
+    std::fs::write(
+        &main,
+        format!(
+            r#"
+const plugin = await ramonyx.spawn({plugin}, {{
+  allow: {{ read: [{dir}], write: [{dir}] }},
+  restart: {{ maxRestarts: 2, delayMs: 20 }},
+  healthCheck: {{ deadlineMs: 300 }},
+}});
+
+// Tanpa `receive` sama sekali: tunggu watchdog + supervisor restart (poll stats).
+const batas = Date.now() + 5000;
+for (;;) {{
+  const s = plugin.stats();
+  if (s.hangs >= 1 && s.restarts >= 1) break;
+  if (Date.now() > batas) throw new Error("watchdog tidak menyala: " + JSON.stringify(s));
+  await ramonyx.sleep(50);
+}}
+
+const siap1 = await plugin.receive();
+const siap2 = await plugin.receive();
+if (siap1?.siap !== 1 || siap2?.siap !== 2) {{
+  throw new Error("urutan generasi salah: " + JSON.stringify([siap1, siap2]));
+}}
+
+const stats = plugin.stats();
+if (stats.hangs !== 1) throw new Error("hangs harus 1 (generasi 2 sehat): " + JSON.stringify(stats));
+if (!stats.running) throw new Error("generasi 2 harus hidup: " + JSON.stringify(stats));
+
+await plugin.kill();
+globalThis.__watchdog_ok = true;
+"#,
+            plugin = js_literal(&plugin),
+            dir = js_literal(&directory),
+        ),
+    )
+    .expect("write");
+
+    let mut engine = engine(Permissions {
+        read: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        write: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        ..Default::default()
+    });
+    engine
+        .execute_module(&main)
+        .expect("watchdog tanpa receive");
+    engine
+        .execute(
+            "[verify]",
+            "if (globalThis.__watchdog_ok !== true) throw new Error('watchdog gagal');",
+        )
+        .expect("verify");
+
+    let _ = std::fs::remove_dir_all(&directory);
+}
+
+/// Generasi yang bertahan ≥ `stableAfterMs` dianggap stabil → kuota restart pulih (ADR-0050):
+/// dengan `maxRestarts: 1`, generasi 3 hanya mungkin bila reset terjadi setelah generasi 2 stabil.
+#[test]
+fn plugin_backoff_reset_setelah_generasi_stabil() {
+    let directory = temp_dir("backoff-reset");
+    let marker = directory.join("generasi.txt");
+    let plugin = directory.join("plugin-reset.mjs");
+    std::fs::write(
+        &plugin,
+        format!(
+            r#"
+const berkas = {berkas};
+let generasi = 0;
+try {{
+  generasi = Number(await ramonyx.readTextFile(berkas));
+}} catch {{
+  generasi = 0;
+}}
+generasi += 1;
+await ramonyx.writeTextFile(berkas, String(generasi));
+
+if (generasi === 1) {{
+  ramonyx.exit(1); // crash cepat (belum stabil)
+}}
+if (generasi === 2) {{
+  await ramonyx.sleep(250); // hidup ≥ stableAfterMs → kuota di-reset
+  ramonyx.exit(1);
+}}
+await ramonyx.parent.send({{ siap: generasi }});
+for (;;) {{
+  await ramonyx.sleep(50);
+  await ramonyx.heartbeat();
+}}
+"#,
+            berkas = js_literal(&marker),
+        ),
+    )
+    .expect("write");
+
+    let main = directory.join("main.mjs");
+    std::fs::write(
+        &main,
+        format!(
+            r#"
+const plugin = await ramonyx.spawn({plugin}, {{
+  allow: {{ read: [{dir}], write: [{dir}] }},
+  restart: {{ maxRestarts: 1, delayMs: 10, backoffMaxMs: 40, stableAfterMs: 150 }},
+  healthCheck: {{ deadlineMs: 800 }},
+}});
+
+const siap = await plugin.receive();
+if (siap?.siap !== 3) {{
+  throw new Error("generasi 3 harus berjalan setelah reset stabil: " + JSON.stringify(siap));
+}}
+const stats = plugin.stats();
+if (stats.running !== true) throw new Error("generasi 3 harus hidup: " + JSON.stringify(stats));
+if (stats.nextBackoffMs > 40) {{ throw new Error("backoff melebihi cap: " + JSON.stringify(stats)); }}
+await plugin.kill();
+globalThis.__reset_ok = true;
+"#,
+            plugin = js_literal(&plugin),
+            dir = js_literal(&directory),
+        ),
+    )
+    .expect("write");
+
+    let mut engine = engine(Permissions {
+        read: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        write: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        ..Default::default()
+    });
+    engine.execute_module(&main).expect("backoff reset stabil");
+    engine
+        .execute(
+            "[verify]",
+            "if (globalThis.__reset_ok !== true) throw new Error('reset gagal');",
+        )
+        .expect("verify");
+
+    let _ = std::fs::remove_dir_all(&directory);
+}

@@ -2421,6 +2421,28 @@ globalThis.__perm_ok = true;
     }
 
     #[test]
+    fn backoff_eksponensial_terbatas_dan_saturasi() {
+        // ADR-0050: delay restart ke-n = min(base · 2^n, max), aman dari overflow.
+        use std::time::Duration;
+
+        let base = Duration::from_millis(50);
+        let max = Duration::from_millis(400);
+        let delay = |attempt| crate::plugin::next_backoff(attempt, base, max);
+
+        assert_eq!(delay(0), Duration::from_millis(50));
+        assert_eq!(delay(1), Duration::from_millis(100));
+        assert_eq!(delay(2), Duration::from_millis(200));
+        assert_eq!(delay(3), max);
+        assert_eq!(delay(9), max, "dibatasi max");
+        assert_eq!(delay(31), max, "saturasi, bukan overflow");
+        assert_eq!(
+            crate::plugin::next_backoff(0, Duration::from_secs(9), max),
+            max,
+            "base > max → max"
+        );
+    }
+
+    #[test]
     fn worker_pesan_dan_selesai() {
         let directory = temp_dir("worker-pesan");
         let pekerja = directory.join("pekerja.mjs");

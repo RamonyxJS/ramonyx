@@ -40,22 +40,47 @@ pub enum RestartSpec {
         max_restarts: Option<u32>,
         #[serde(rename = "delayMs")]
         delay_ms: Option<u64>,
+        #[serde(rename = "backoffMaxMs")]
+        backoff_max_ms: Option<u64>,
+        #[serde(rename = "stableAfterMs")]
+        stable_after_ms: Option<u64>,
     },
 }
 
+/// Kebijakan supervisi hasil normalisasi `RestartSpec` (ADR-0043 + backoff eksponensial ADR-0050).
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct RestartPolicy {
+    pub(crate) max_restarts: u32,
+    /// Delay dasar: restart ke-n menunggu `min(base · 2^n, max_delay)`.
+    pub(crate) base_delay: std::time::Duration,
+    pub(crate) max_delay: std::time::Duration,
+    /// Generasi yang hidup ≥ durasi ini dianggap stabil → kuota restart di-reset.
+    pub(crate) stable_after: std::time::Duration,
+}
+
 impl RestartSpec {
-    /// `(maxRestarts, delay)`; `None` bila supervisi dimatikan.
-    pub(crate) fn policy(&self) -> Option<(u32, std::time::Duration)> {
+    /// `None` bila supervisi dimatikan.
+    pub(crate) fn policy(&self) -> Option<RestartPolicy> {
+        use std::time::Duration;
         match self {
             Self::Flag(false) => None,
-            Self::Flag(true) => Some((3, std::time::Duration::from_millis(100))),
+            Self::Flag(true) => Some(RestartPolicy {
+                max_restarts: 3,
+                base_delay: Duration::from_millis(100),
+                max_delay: Duration::from_secs(30),
+                stable_after: Duration::from_secs(60),
+            }),
             Self::Tabel {
                 max_restarts,
                 delay_ms,
-            } => Some((
-                max_restarts.unwrap_or(3),
-                std::time::Duration::from_millis(delay_ms.unwrap_or(100)),
-            )),
+                backoff_max_ms,
+                stable_after_ms,
+            } => Some(RestartPolicy {
+                max_restarts: max_restarts.unwrap_or(3),
+                base_delay: Duration::from_millis(delay_ms.unwrap_or(100)),
+                max_delay: Duration::from_millis(backoff_max_ms.unwrap_or(30_000)),
+                stable_after: Duration::from_millis(stable_after_ms.unwrap_or(60_000)),
+            }),
         }
     }
 }
@@ -77,9 +102,9 @@ pub struct WorkerOptions {
     pub(crate) max_rss_mb: Option<usize>,
     /// Supervisi restart **plugin** (proses); diabaikan worker (thread) — ADR-0043.
     pub(crate) restart: Option<RestartSpec>,
-    /// Health-check plugin (ADR-0044): `true` (5 s) atau `{ deadlineMs }`. Deteksi senyap
-    /// dilakukan saat induk menunggu pesan (`receive`); plugin terwell-behaved mengirim
-    /// `ramonyx.heartbeat()` secara berkala.
+    /// Health-check plugin (ADR-0044/0050): `true` (5 s) atau `{ deadlineMs }`. Deteksi senyap
+    /// **otomatis** via watchdog latar (tidak perlu induk sedang menunggu `receive`); plugin
+    /// terwell-behaved mengirim `ramonyx.heartbeat()` secara berkala.
     pub(crate) health_check: Option<HealthSpec>,
 }
 

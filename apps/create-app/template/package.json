@@ -6,12 +6,24 @@
     "node": ">=24"
   },
   "scripts": {
+    "build": "node build.ts",
     "start": "node src/main.ts",
     "dev": "node --watch src/main.ts"
   },
   "dependencies": {
     "@ramonyx/adapter-runtime": "^0.1.0",
+    "@ramonyx/bundler": "^0.1.0",
+    "@ramonyx/compiler": "^0.1.0",
+    "@ramonyx/react": "^0.1.0",
+    "@ramonyx/security": "^0.1.0",
     "@ramonyx/server": "^0.1.0",
-    "ramonyx": "^0.1.0"
+    "@ramonyx/ssr": "^0.1.0",
+    "ramonyx": "^0.1.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
   }
 }

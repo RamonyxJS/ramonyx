@@ -27,6 +27,8 @@
     "@biomejs/biome": "2.5.15",
     "@playwright/test": "1.64.1",
     "@ramonyx/adapter-runtime": "workspace:*",
+    "@ramonyx/bundler": "workspace:*",
+    "@ramonyx/compiler": "workspace:*",
     "@ramonyx/core": "workspace:*",
     "@ramonyx/react": "workspace:*",
     "@ramonyx/router": "workspace:*",
@@ -38,9 +40,9 @@
     "@types/node": "26.6.5",
     "autocannon": "8.0.0",
     "esbuild": "0.28.2",
+    "ramonyx": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "typescript": "7.0.2",
-    "ramonyx": "workspace:*"
+    "typescript": "7.0.2"
   }
 }

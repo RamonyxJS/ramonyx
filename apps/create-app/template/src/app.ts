@@ -1,44 +1,38 @@
+import { fileURLToPath } from "node:url";
+import { createRouteManifest, loadPageRoutes } from "@ramonyx/compiler";
+import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
-import { HttpError, route } from "ramonyx";
+import { createPageRoutes } from "@ramonyx/ssr";
+import type { FetchHandler } from "ramonyx";
+
+import middleware from "./routes/middleware.ts";
 
 /**
- * Aplikasi __APP_NAME__: satu halaman HTML + dua endpoint API.
+ * Aplikasi __APP_NAME__: route API + halaman SSR React dari `src/routes` (file routing),
+ * dengan hydration klien (`/assets/client.js` — jalankan `pnpm build` dulu).
  *
- * Langkah lanjutan yang disarankan:
- * - tambahkan schema (`@ramonyx/schema`) di `route({ params/query/body })` untuk validasi;
- * - tambahkan middleware (`@ramonyx/security`: securityHeaders, csrfProtection, rateLimit);
- * - halaman SSR React: pakai `@ramonyx/ssr` + `@ramonyx/react` (lihat repo Ramonyx).
+ * Konvensi folder `src/routes`:
+ * - `page.tsx` — halaman (loader + komponen React; boleh `layout.tsx`, `error.tsx`);
+ * - `api/*.ts` — route API (`export const GET = route({ ... })`).
  */
-export function createApp() {
+export async function createApp(): Promise<FetchHandler> {
+  const dir = fileURLToPath(new URL("./routes", import.meta.url));
+
+  const [apiRoutes, pages] = await Promise.all([
+    createRouteManifest({ dir }),
+    loadPageRoutes({ dir }),
+  ]);
+
   return createHandler({
     strictValidation: true,
     routes: [
-      {
-        method: "GET",
-        path: "/",
-        definition: route({
-          handler: () =>
-            new Response("<h1>Halo dari __APP_NAME__ 👋</h1>", {
-              headers: { "content-type": "text/html; charset=utf-8" },
-            }),
-        }),
-      },
-      {
-        method: "GET",
-        path: "/api/halo/[nama]",
-        definition: route<{ nama: string }>({
-          handler: ({ params, json }) => json({ halo: params.nama }),
-        }),
-      },
-      {
-        method: "GET",
-        path: "/api/rahasia",
-        definition: route({
-          handler: () => {
-            throw new HttpError(403, "Tidak untukmu");
-          },
-        }),
-      },
+      ...apiRoutes,
+      ...createPageRoutes({
+        pages,
+        renderer: createReactRenderer(),
+        client: { script: "/assets/client.js" },
+      }),
     ],
+    middleware,
   });
 }

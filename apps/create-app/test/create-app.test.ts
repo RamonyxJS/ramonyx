@@ -24,6 +24,13 @@ function runCli(args: string[], allowFail = false): string {
   }
 }
 
+function runNode(script: string, cwd: string): string {
+  return execFileSync(process.execPath, ["--import", loader, script], {
+    cwd,
+    encoding: "utf8",
+  });
+}
+
 function collectFiles(directory: string, found: string[] = []): string[] {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
@@ -52,10 +59,16 @@ test("scaffold membuat struktur dan mengganti placeholder", () => {
   for (const relative of [
     "package.json",
     "ramonyx.config.ts",
+    "build.ts",
     "README.md",
     ".gitignore",
     "src/app.ts",
     "src/main.ts",
+    "src/routes/middleware.ts",
+    "src/routes/layout.tsx",
+    "src/routes/page.tsx",
+    "src/routes/api/halo/[nama].ts",
+    "src/routes/api/rahasia.ts",
   ]) {
     assert.ok(existsSync(join(target, relative)), `berkas ${relative} ada`);
   }
@@ -67,7 +80,8 @@ test("scaffold membuat struktur dan mengganti placeholder", () => {
   };
   assert.equal(manifest.name, "hello-app");
   assert.ok(manifest.dependencies.ramonyx, "dependensi ramonyx ada");
-  assert.ok(manifest.dependencies["@ramonyx/server"], "dependensi server ada");
+  assert.ok(manifest.dependencies["@ramonyx/react"], "dependensi react ada");
+  assert.ok(manifest.dependencies["@ramonyx/bundler"], "dependensi bundler ada");
   assert.match(readFileSync(join(target, "README.md"), "utf8"), /hello-app/);
 
   // Tidak ada placeholder yang tersisa di berkas mana pun.
@@ -91,37 +105,77 @@ test("direktori tidak kosong ditolak tanpa --force", () => {
   assert.ok(existsSync(join(target, "catatan.txt")), "berkas lama tidak dihapus");
 });
 
-test("app hasil scaffold berjalan terhadap paket workspace", () => {
+test("app hasil scaffold: SSR + hydration payload + API", async () => {
   mkdirSync(workDir, { recursive: true });
   const target = join(workDir, "app-smoke");
   runCli([target]);
 
-  // Smoke memakai handler langsung (tanpa server) agar cepat; resolusi paket
-  // framework lewat node_modules repo (template berada di dalam workspace).
   writeFileSync(
     join(target, "smoke.mjs"),
     `import { createApp } from "./src/app.ts";
-const app = createApp();
+const app = await createApp();
+
+const halaman = await app(new Request("http://uji/"));
+if (halaman.status !== 200) throw new Error("status halaman: " + halaman.status);
+const html = await halaman.text();
+if (!html.includes("Halo dari SSR Ramonyx")) throw new Error("konten SSR: " + html.slice(0, 200));
+if (!html.includes('id="ramonyx-payload"')) throw new Error("payload hydration tidak ada");
+if (!html.includes("window.__RAMONYX__")) throw new Error("window.__RAMONYX__ tidak ada");
+if (!html.includes('src="/assets/client.js"')) throw new Error("script klien tidak ada");
+if (!html.includes("Klik saya:")) throw new Error("counter SSR tidak dirender");
+if (halaman.headers.get("x-content-type-options") !== "nosniff") throw new Error("security header hilang");
+
 const halo = await app(new Request("http://uji/api/halo/dunia"));
 if (halo.status !== 200) throw new Error("status halo: " + halo.status);
 const data = await halo.json();
 if (data.halo !== "dunia") throw new Error("isi halo: " + JSON.stringify(data));
-const halaman = await app(new Request("http://uji/"));
-const html = await halaman.text();
-if (!html.includes("Halo dari app-smoke")) throw new Error("halaman: " + html);
+
 const rahasia = await app(new Request("http://uji/api/rahasia"));
 if (rahasia.status !== 403) throw new Error("rahasia: " + rahasia.status);
+
 const hilang = await app(new Request("http://uji/tidak-ada"));
 if (hilang.status !== 404) throw new Error("404: " + hilang.status);
 console.log("SMOKE APP OK");
 `,
   );
 
-  const output = execFileSync(process.execPath, ["--import", loader, "smoke.mjs"], {
-    cwd: target,
-    encoding: "utf8",
-  });
+  const output = runNode("smoke.mjs", target);
   assert.match(output, /SMOKE APP OK/);
+});
+
+test("app hasil scaffold: build klien + aset disajikan", async () => {
+  mkdirSync(workDir, { recursive: true });
+  const target = join(workDir, "app-build");
+  runCli([target]);
+
+  // Bundel klien sungguhan (Vite lewat @ramonyx/bundler).
+  const buildOutput = runNode("build.ts", target);
+  assert.match(buildOutput, /client bundle/);
+  assert.ok(existsSync(join(target, "dist/client/client.js")), "client.js ter-build");
+
+  const bundle = readFileSync(join(target, "dist/client/client.js"), "utf8");
+  assert.ok(
+    bundle.includes("hydrate") || bundle.includes("hydrateRoot"),
+    "bundel memuat hydration",
+  );
+
+  // Aset disajikan middleware template, traversal ditolak.
+  writeFileSync(
+    join(target, "assets.mjs"),
+    `import { createApp } from "./src/app.ts";
+const app = await createApp();
+const aset = await app(new Request("http://uji/assets/client.js"));
+if (aset.status !== 200) throw new Error("status aset: " + aset.status);
+if (aset.headers.get("content-type") !== "text/javascript; charset=utf-8") {
+  throw new Error("content-type: " + aset.headers.get("content-type"));
+}
+const traversal = await app(new Request("http://uji/assets/..%2F..%2Fpackage.json"));
+if (traversal.status !== 404) throw new Error("traversal aset: " + traversal.status);
+console.log("ASSETS OK");
+`,
+  );
+  const output = runNode("assets.mjs", target);
+  assert.match(output, /ASSETS OK/);
 });
 
 test("help menampilkan penggunaan", () => {

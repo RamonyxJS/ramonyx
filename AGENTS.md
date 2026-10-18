@@ -46,8 +46,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   **10s → 503** (+ `request.signal` abort); request bersamaan **100 → 503 + Retry-After**
   (load shedding). Aplikasi menyesuaikan lewat opsi `createHandler`
   (`maxBodyBytes`, `timeoutMs`, `maxConcurrent`).
-- **`node:*` hanya di `packages/adapter-runtime` dan `packages/compiler` (build-time)**, plus
-  test/benchmark/playground; ditegakkan lint.
+- **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
+  `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
 - **Disiplin klaim (BLUEPRINT §10).** Jangan menulis klaim performa/keamanan tanpa bukti yang bisa
   dijalankan.
@@ -79,7 +79,7 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 ## Status & langkah berikutnya
 
 Phase 2 **selesai** (2026-10-18). **Phase 3 (hardening) berjalan** — limits body/timeout/concurrency
-(ADR-0011/0012), security headers + CSRF + CSP nonce `@ramonyx/security` (ADR-0013/0014), fuzz
-fast-check, suite `tests/security/`, abuse/soak `pnpm bench:security`, pemetaan ASVS awal;
-105 tes Node + 4 e2e hijau. Berikutnya: SSRF guard, output limit, dependency audit.
-Keputusan terbuka pemilik: scope npm & lisensi, matrix browser, PRD.
+(ADR-0011/0012), security headers + CSRF + CSP nonce + SSRF guard + output limit
+(`@ramonyx/security`, ADR-0013/0014/0015), fuzz fast-check, suite `tests/security/`, abuse/soak
+`pnpm bench:security`, pemetaan ASVS awal; 110 tes Node + 4 e2e hijau. Berikutnya: dependency
+audit, rate limiting per klien. Keputusan terbuka pemilik: scope npm & lisensi, matrix browser, PRD.

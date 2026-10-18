@@ -32,8 +32,11 @@
 7. Header keamanan default terpasang — `packages/security/test/headers.test.ts`
 8. CSP dengan nonce: payload hydration memakai `nonce`, script same-origin — e2e `ssr.spec.ts` +
    browser dev (HMR connected, nol error konsol) — ADR-0014
+9. SSRF: target privat/loopback/link-local ditolak; redirect privat ditolak per hop —
+   `packages/security/test/ssrf.test.ts` — ADR-0015
+10. Output limit SSR: dokumen >2 MiB → 500 — `packages/ssr/test/pages.test.ts` — ADR-0015
 
 ## Berikutnya
 
-SSRF guard untuk fetch server · output limit · rate limiting per klien · verifikasi CSRF via field
-form · perluasan pemetaan per item ASVS.
+Rate limiting per klien · verifikasi CSRF via field form · IP-pinning guard SSRF · perluasan
+pemetaan per item ASVS.

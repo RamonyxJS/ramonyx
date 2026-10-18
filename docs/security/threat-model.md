@@ -77,7 +77,10 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
 
 - Oversized/malformed body: ✅ batas ukuran + 413, header + streaming (ADR-0011), diuji `tests/security/`.
 - DoS handler/loader/render: ✅ timeout 10s + abort `request.signal` (ADR-0011);
-  ✅ concurrency limit 100 dengan load shedding 503 + `Retry-After` (ADR-0012) — output limit menyusul.
+  ✅ concurrency limit 100 dengan load shedding 503 + `Retry-After` (ADR-0012);
+  ✅ output limit dokumen SSR 2 MiB → 500 (ADR-0015).
+- SSRF: ✅ `guardedFetch` (ADR-0015) — tolak alamat privat/loopback/link-local + validasi per hop
+  redirect; catatan rebinding di ADR (IP-pinning menyusul).
 - Prototype pollution (query): ✅ `parseQuery` aman (ADR-0011), diuji fuzz + e2e.
 - Robustness parser/matcher: ✅ fuzz `fast-check` (router, query, normalisasi schema).
 - Abuse-case terukur: ✅ 6 skenario (oversized/JSON rusak/schema invalid/traversal/query raksasa/echo)
@@ -89,5 +92,5 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
   bisa diganti aplikasi; CSP default hanya menyala bila aplikasi memasang middleware-nya.
 - CSRF: ✅ primitif `csrfProtection()` (double-submit cookie + header, ADR-0013); verifikasi
   field form menyusul.
-- SSRF, path traversal (runtime/plugin), limit SSR penuh (output size), isolasi plugin: belum —
-  fase berikutnya (Phase 3 lanjutan / Phase 4).
+- SSRF, path traversal (runtime/plugin), limit SSR penuh (output size), isolasi plugin: SSRF ✅
+  (ADR-0015); sisanya fase berikutnya (Phase 3 lanjutan / Phase 4).

@@ -6,8 +6,8 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 
 > **Status: Phase 3 (hardening) berjalan** — Phase 2 selesai (SSR + hydration + navigasi +
 > dev server HMR + e2e). Kini: limits body/timeout/concurrency secure-by-default, security headers
-> + CSRF + CSP nonce (`@ramonyx/security`), fuzz, suite keamanan, abuse/soak benchmark, pemetaan
-> ASVS awal. Berikutnya: SSRF guard, output limit, audit dependensi.
+> + CSRF + CSP nonce + SSRF guard + output limit (`@ramonyx/security`), fuzz, suite keamanan,
+> abuse/soak benchmark, pemetaan ASVS awal. Berikutnya: audit dependensi, rate limiting per klien.
 > Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start

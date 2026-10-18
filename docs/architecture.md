@@ -64,9 +64,9 @@ jelas (BLUEPRINT §5 aturan 5). Nama scope npm masih keputusan terbuka (§8).
 4. FFI adalah boundary yang diaudit: `unsafe` dibatasi, invarian didokumentasikan.
 5. Hindari memecah semua fitur menjadi package terpisah sebelum batas tanggung jawab jelas.
 
-Konsekuensi operasional yang ditegakkan lint: hanya `packages/adapter-runtime` dan
-`packages/compiler` (build-time) yang boleh mengimpor `node:*`; paket runtime lain hanya memakai
-kontrak §5. Tooling dev (test/benchmark/playground) bebas.
+Konsekuensi operasional yang ditegakkan lint: hanya `packages/adapter-runtime`, `packages/compiler`
+(build-time), dan `packages/security` (guard SSRF) yang boleh mengimpor `node:*`; paket runtime lain
+hanya memakai kontrak §5. Tooling dev (test/benchmark/playground) bebas.
 
 App code ber-JSX dijalankan lewat loader dev `tools/register.mjs` (esbuild, JSX automatic —
 ADR-0006); paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.

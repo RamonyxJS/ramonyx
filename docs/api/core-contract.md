@@ -164,7 +164,9 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
   content-length sebelum routing + streaming byte-count); `timeoutMs` default 10s → **503** +
   `request.signal` abort; `maxConcurrent` default 100 → **503 + `Retry-After: 1`** (load shedding);
   body dibaca streaming; `parseQuery` aman untuk `__proto__`.
-- Paket `@ramonyx/security` (ADR-0013/0014): `securityHeaders()`
+- Paket `@ramonyx/security` (ADR-0013/0014/0015): `securityHeaders()`
   (nosniff/referrer/frame-options; CSP opt-in), `cspNonce()` (CSP dengan nonce per request,
   nonce dibaca ssr dari `NONCE_HEADER`), `csrfProtection()` (double-submit cookie + header
-  `x-csrf-token` → 403 bila salah).
+  `x-csrf-token` → 403 bila salah), `guardedFetch()` (proteksi SSRF: alamat privat ditolak,
+  redirect divalidasi per hop, `allowHosts` untuk API internal).
+- Output limit SSR (ADR-0015): `createPageRoutes({ maxDocumentBytes })` default 2 MiB → 500 + log.

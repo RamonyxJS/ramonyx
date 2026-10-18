@@ -169,7 +169,7 @@
 
 ### `p1-boundary-lint` — Analisis + penegakan batas server/client
 
-*tema: quality · ukuran: M · status: open · sumber: utang (audit)*
+*tema: quality · ukuran: M · status: done · sumber: utang (audit) — selesai ADR-0063*
 
 - **Apa**: Konvensi modul server (`*.server.ts`) + analisis build yang menolak impor API server (node:*, rahasia) dari modul yang masuk bundle client, dengan pesan error jelas.
 - **Kenapa penting untuk bersaing**: Utang yang diakui di audit dokumentasi: tanpa penegakan, kebocoran server→client adalah bug keamanan yang menunggu terjadi; pesaing punya konvensi + tooling untuk ini.

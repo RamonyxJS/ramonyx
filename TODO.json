@@ -212,7 +212,7 @@
       "theme": "quality",
       "priority": "p1",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Konvensi modul server (`*.server.ts`) + analisis build yang menolak impor API server (node:*, rahasia) dari modul yang masuk bundle client, dengan pesan error jelas.",
       "why": "Utang yang diakui di audit dokumentasi: tanpa penegakan, kebocoran server→client adalah bug keamanan yang menunggu terjadi; pesaing punya konvensi + tooling untuk ini.",
       "done": [
@@ -223,7 +223,7 @@
       "areas": ["packages/compiler", "packages/bundler", "packages/core"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js `server-only` + error boundary Turbopack; SvelteKit $env/static/private; Nuxt folder .server.",
-      "source": "utang (audit)",
+      "source": "utang (audit) — selesai ADR-0063",
       "strategic": false
     },
     {

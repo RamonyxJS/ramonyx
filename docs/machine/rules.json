@@ -193,13 +193,15 @@
     },
     {
       "id": "client-server-boundary",
-      "rule": "Modul yang diimpor entry client tidak boleh menyentuh API server (node:*, fs, env rahasia). Pisahkan modul server/client.",
-      "rationale": "Bundle client dikirim ke browser; kebocoran API server = bug keamanan. Analisis batas otomatis belum ada (dicatat di TODO).",
+      "rule": "Kode server (fs/db/rahasia) ditulis di modul `*.server.ts`; jangan mengimpor `node:*` langsung dari modul halaman/layout (bundle klien).",
+      "rationale": "Modul halaman masuk bundle klien (hydration); impor server langsung merusak bundle. Stub poison-pill membuat pemanggilan dari klien gagal cepat dengan pesan jelas.",
       "scope": "app",
-      "good": "// data.server.ts (hanya server) vs komponen presentasional di halaman",
-      "bad": "import { readFile } from \"node:fs/promises\" di komponen yang di-hydrate",
-      "enforcement": "BELUM ditegakkan lint — kandidat TODO (analisis batas server/client)",
-      "adrs": []
+      "good": "// data.server.ts (server)\nimport { readFile } from \"node:fs/promises\";\nexport async function baca() { return readFile(...); }\n// page.tsx\nimport { baca } from \"./data.server.ts\";\nexport async function loader() { return { isi: await baca() }; }",
+      "bad": "// page.tsx\nimport { readFile } from \"node:fs/promises\"; // → build ditolak (ADR-0063)",
+      "enforcement": "Build klien: pre-check modul klien + scan output (shim browser-external/node:*) → error dengan file; stub `*.server.ts` melempar saat dipanggil di browser",
+      "adrs": [
+        "ADR-0063"
+      ]
     },
     {
       "id": "mutations-via-action",

@@ -10,6 +10,7 @@ import { join } from "node:path";
 import { generateServerEntry, listApiRoutes, loadPageRoutes } from "@ramonyx/compiler";
 import { build } from "vite";
 import { readClientScript } from "./build.ts";
+import { serverOnlyPlugin } from "./server-only.ts";
 
 export interface BuildEdgeOptions {
   readonly appDir: string;
@@ -74,6 +75,7 @@ export async function buildEdge(options: BuildEdgeOptions): Promise<BuildEdgeRes
     root: appDir,
     logLevel: "warn",
     esbuild: { jsx: "automatic" },
+    // `*.server.ts` tetap nyata di edge (server) — plugin stub hanya untuk bundle klien.
     // Runtime edge tidak punya `process` — define agar React memakai build produksi.
     define: { "process.env.NODE_ENV": JSON.stringify("production") },
     ssr: { noExternal: true },

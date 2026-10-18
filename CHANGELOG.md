@@ -34,6 +34,9 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
 - **Primitif sesi & cookie** (ADR-0062): `@ramonyx/security` — `parseCookies`/`serializeCookie`
   (default aman), `signValue`/`verifyValue` (HMAC Web Crypto), `createSession` (read/commit/clear);
   `PageActionResult.headers` menyebar `set-cookie` ke render ulang (logout langsung terlihat).
+- **Batas server/client** (ADR-0063): modul `*.server.ts` distub poison-pill di bundle klien
+  (build + dev); impor `node:*` langsung dari modul klien ditolak saat build, impor transitif
+  ditangkap scan output — pesan menunjuk file dan solusi.
 
 ### Perubahan API (pra-1.0)
 

@@ -1176,6 +1176,26 @@
       "limitations": [
         "Belum dirilis di npm (setelah 0.1.1)"
       ]
+    },
+    {
+      "id": "boundary-enforcement",
+      "name": "Penegakan batas server/client (`*.server.ts` stub + tolak node:* di bundle klien)",
+      "status": "implemented",
+      "since": null,
+      "priority": "p1",
+      "packages": [
+        "@ramonyx/bundler"
+      ],
+      "evidence": [
+        "packages/bundler/src/server-only.ts",
+        "packages/bundler/src/build.ts",
+        "packages/bundler/test/build.test.ts",
+        "docs/adr/0063-server-client-boundary.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Lint statis (Biome) untuk konvensi belum"
+      ]
     }
   ]
 }

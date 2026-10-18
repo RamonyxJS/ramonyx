@@ -10,6 +10,7 @@ import {
   RouteManifestError,
 } from "@ramonyx/compiler";
 import { type Connect, createServer } from "vite";
+import { serverOnlyPlugin } from "./server-only.ts";
 
 export interface DevServerOptions {
   readonly appDir: string;
@@ -124,6 +125,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     esbuild: { jsx: "automatic" },
     server: { port: options.port ?? 5173 },
     plugins: [
+      serverOnlyPlugin(),
       {
         name: "ramonyx-ssr-proxy",
         configureServer(server) {

@@ -3,9 +3,13 @@ import { join } from "node:path";
 import { generateClientEntry } from "@ramonyx/compiler";
 import type { LoadedPage } from "@ramonyx/core";
 import { build } from "vite";
+import { serverOnlyPlugin } from "./server-only.ts";
 
 /** Nama berkas manifest aset di direktori keluaran klien (ADR-0055). */
 export const CLIENT_MANIFEST_FILE = "ramonyx.assets.json";
+
+const SERVER_ONLY_IMPORT = /(?:from|import\s*\(|require\s*\()\s*["'](node:[^"']+)["']/g;
+const BROWSER_EXTERNAL_MARKER = "__vite-browser-external";
 
 export interface BuildClientOptions {
   readonly appDir: string;
@@ -41,10 +45,70 @@ export interface AssetManifest {
  * dengan `cache-control: immutable`; peta nama ditulis ke `ramonyx.assets.json` dan dibaca
  * server lewat `readClientScript`.
  */
+/** Pre-check (ADR-0063): modul yang masuk bundle klien (page/layout) dilarang mengimpor `node:*`. */
+async function assertClientFilesBrowserSafe(pages: readonly LoadedPage[]): Promise<void> {
+  const files = new Set<string>();
+  for (const page of pages) {
+    if (page.pageFile !== undefined) {
+      files.add(page.pageFile);
+    }
+    for (const layout of page.layoutFiles ?? []) {
+      files.add(layout);
+    }
+  }
+
+  const violations: string[] = [];
+  for (const file of files) {
+    let source: string;
+    try {
+      source = await readFile(file, "utf8");
+    } catch {
+      continue;
+    }
+    for (const match of source.matchAll(SERVER_ONLY_IMPORT)) {
+      violations.push(`${file} → ${match[1] ?? "?"}`);
+    }
+  }
+
+  if (violations.length > 0) {
+    throw new Error(
+      "Batas server/client dilanggar (ADR-0063): modul yang masuk bundle klien mengimpor API server:\n" +
+        violations.map((entry) => `  - ${entry}`).join("\n") +
+        "\nPindahkan kode server ke modul `*.server.ts` yang hanya diimpor dari loader/action/route API, " +
+        "atau akses lewat API route.",
+    );
+  }
+}
+
+/** Post-build (ADR-0063): output tidak boleh memuat shim browser-external Vite atau `node:*` (impor transitif). */
+async function assertBundleBrowserSafe(outDir: string): Promise<void> {
+  const files = (await readdir(outDir, { recursive: true })).filter((file) => file.endsWith(".js"));
+  const violations = new Set<string>();
+  for (const file of files) {
+    const source = await readFile(join(outDir, file), "utf8");
+    if (source.includes(BROWSER_EXTERNAL_MARKER)) {
+      violations.add(file);
+    }
+    for (const match of source.matchAll(SERVER_ONLY_IMPORT)) {
+      violations.add(`${file} → ${match[1] ?? "?"}`);
+    }
+  }
+
+  if (violations.size > 0) {
+    throw new Error(
+      "Bundel klien memuat API server (ADR-0063) — kemungkinan impor transitif dari modul klien:\n" +
+        [...violations].map((entry) => `  - ${entry}`).join("\n") +
+        "\nPisahkan modul server (`*.server.ts`) dan impor hanya dari loader/action/route API.",
+    );
+  }
+}
+
 export async function buildClient(options: BuildClientOptions): Promise<BuildClientResult> {
   const outDir = join(options.appDir, options.outDir ?? "dist/client");
   const entryDir = join(options.appDir, ".ramonyx");
   const entryFile = join(entryDir, "client-entry.ts");
+
+  await assertClientFilesBrowserSafe(options.pages);
 
   await mkdir(entryDir, { recursive: true });
   await writeFile(entryFile, generateClientEntry(options.pages, { from: entryDir }));
@@ -54,6 +118,7 @@ export async function buildClient(options: BuildClientOptions): Promise<BuildCli
     root: options.appDir,
     logLevel: "warn",
     esbuild: { jsx: "automatic" },
+    plugins: [serverOnlyPlugin()],
     build: {
       outDir,
       emptyOutDir: true,
@@ -73,6 +138,8 @@ export async function buildClient(options: BuildClientOptions): Promise<BuildCli
       },
     },
   });
+
+  await assertBundleBrowserSafe(outDir);
 
   const files = (await readdir(outDir, { recursive: true })).filter(
     (file) => !file.endsWith(CLIENT_MANIFEST_FILE),

@@ -831,6 +831,22 @@
       "features": [
         "auth-session"
       ]
+    },
+    {
+      "id": "ADR-0063",
+      "file": "0063-server-client-boundary.md",
+      "title": "Batas Server/Client — Konvensi `*.server.ts` + Penegakan Build",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Modul `*.server.ts` distub poison-pill di bundle klien (plugin Vite, juga di dev); impor node:* langsung dari modul klien ditolak pre-check, dan impor transitif ditangkap scan post-build — keduanya dengan pesan yang menunjuk file.",
+      "related": [
+        "ADR-0058",
+        "ADR-0005"
+      ],
+      "features": [
+        "boundary-enforcement"
+      ]
     }
   ]
 }

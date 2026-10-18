@@ -14,6 +14,52 @@ import {
 // node_modules workspace — sama seperti aplikasi nyata.
 const workDir = fileURLToPath(new URL("../.tmp-test/build", import.meta.url));
 
+test("buildClient: `*.server.ts` distub di bundle klien; `node:*` langsung ditolak (ADR-0063)", async () => {
+  const fixtureRoot = fileURLToPath(new URL("../.tmp-test/boundary", import.meta.url));
+  await rm(fixtureRoot, { recursive: true, force: true });
+
+  // Fixture A: halaman mengimpor modul server (dipakai loader) → build sukses + stub poison-pill.
+  const appA = `${fixtureRoot}/a`;
+  await mkdir(`${appA}/src/routes`, { recursive: true });
+  await writeFile(
+    `${appA}/src/routes/data.server.ts`,
+    'import { readFile } from "node:fs/promises";\nexport async function bacaData(): Promise<string> {\n  return readFile("x", "utf8");\n}\n',
+  );
+  await writeFile(
+    `${appA}/src/routes/page.tsx`,
+    'import { bacaData } from "./data.server.ts";\nexport default function Page() {\n  return null;\n}\nexport async function loader() {\n  return { isi: await bacaData() };\n}\n',
+  );
+
+  // Fixture B: halaman mengimpor node:* langsung → build ditolak dengan pesan jelas.
+  const appB = `${fixtureRoot}/b`;
+  await mkdir(`${appB}/src/routes`, { recursive: true });
+  await writeFile(
+    `${appB}/src/routes/page.tsx`,
+    'import { readFile } from "node:fs/promises";\nexport default function Page() {\n  return null;\n}\n',
+  );
+
+  try {
+    const pagesA = await loadPageRoutes({ dir: `${appA}/src/routes` });
+    const result = await buildClient({ appDir: appA, pages: pagesA, minify: true });
+    const clientFile = result.files.find((file) => /^client-.*\.js$/.test(file));
+    assert.ok(clientFile !== undefined, "bundle klien ada");
+    const bundle = await readFile(`${result.outDir}/${clientFile}`, "utf8");
+    assert.ok(
+      bundle.includes("hanya tersedia di server"),
+      "bundle klien memuat stub poison-pill untuk modul server",
+    );
+
+    const pagesB = await loadPageRoutes({ dir: `${appB}/src/routes` });
+    await assert.rejects(
+      () => buildClient({ appDir: appB, pages: pagesB }),
+      /Batas server\/client dilanggar[\s\S]*node:fs\/promises/,
+      "impor node:* langsung dari modul klien ditolak",
+    );
+  } finally {
+    await rm(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
 test("buildClient: entry ber-hash + manifest + readClientScript (ADR-0055)", async () => {
   await rm(workDir, { recursive: true, force: true });
   const routesDir = `${workDir}/src/routes`;

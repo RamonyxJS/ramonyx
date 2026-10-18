@@ -63,11 +63,13 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   `node_modules` ESM v1** (`exports`/`module`/`main`), **`web_shim`** (URL, TextEncoder,
   Headers/Request/Response, setTimeout, MessageChannel — ADR-0027/0029), **compatibility suite v1**
   (pipeline framework nyata — ADR-0028), **interop CommonJS v1 + demo SSR React**
-  (`react` + `react-dom/server.browser` di runtime — ADR-0029), serta **`fetch` + `ReadableStream`
-  + body streaming** (POST body, SSR streaming `renderToReadableStream` — ADR-0030) — tetapi
-  **belum**: https/TLS & redirect fetch, streaming request/transport bertahap, worker/kuota;
-  CommonJS pun **subset** (require dinamis, modul bawaan Node, dan require modul ESM ditolak
-  dengan pesan jelas) — jangan diklaim lebih. Build pertama V8/deno_core+deno_ast+hyper ±3 menit;
+  (`react` + `react-dom/server.browser` di runtime — ADR-0029), **`fetch` + `ReadableStream`
+  + body streaming** (POST body, SSR streaming `renderToReadableStream` — ADR-0030), serta
+  **builtin subset `node:net`/`node:dns/promises` + `crypto` + subset `@ramonyx/security`**
+  (securityHeaders/cspNonce/csrf/rateLimit/guardedFetch — ADR-0031) — tetapi **belum**: https/TLS
+  & redirect fetch, streaming request/transport bertahap, worker/kuota; CommonJS pun **subset**
+  (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak dengan pesan
+  jelas) — jangan diklaim lebih. Build pertama V8/deno_core+deno_ast+hyper ±3 menit;
   biarkan `target/` cache.
 - **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
   `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
@@ -111,11 +113,13 @@ chunked (ADR-0025), **R3a**: permission model deny-all dengan flag `--allow-*` (
 ESM v1** (ADR-0026), **`web_shim`** (URL/TextEncoder/Headers/Request/Response — ADR-0027),
 **compatibility suite v1** (pipeline framework nyata berjalan di runtime — ADR-0028),
 **interop CommonJS v1 + demo SSR React** (`react` + `react-dom/server.browser` di runtime —
-ADR-0029), dan **`fetch` + `ReadableStream` + body streaming** (POST body, SSR streaming —
-ADR-0030) — semuanya diverifikasi test + smoke; sisa: https/TLS & redirect, streaming request,
+ADR-0029), **`fetch` + `ReadableStream` + body streaming** (POST body, SSR streaming —
+ADR-0030), dan **builtin subset + subset `@ramonyx/security` di runtime** (`node:net`/
+`node:dns/promises`, `crypto.getRandomValues`, middleware security + guardedFetch/SSRF —
+ADR-0031) — semuanya diverifikasi test + smoke; sisa: https/TLS & redirect, streaming request,
 worker/kuota.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 61 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 64 test Rust hijau.

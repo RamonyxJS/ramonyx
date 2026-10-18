@@ -101,8 +101,8 @@ Phase 4 (runtime alpha).
 
 Status exit criteria ("framework demo berjalan di runtime alpha dan lulus subset compatibility
 tests"): **tercapai sebagian** — pipeline framework (core/router/schema/server), **demo SSR
-React**, dan **SSR streaming** berjalan di runtime; compatibility lebih luas (fixture playground
-subset, suite security di runtime) dan worker/kuota menyusul.
+React**, **SSR streaming**, dan **subset `@ramonyx/security`** berjalan di runtime; compatibility
+lebih luas (fixture playground subset) dan worker/kuota menyusul.
 
 - [x] **R0** — Workspace Cargo (root `Cargo.toml`, members `runtime/crates/*`), toolchain dipin
       (`rust-toolchain.toml` 1.99.0 + rustfmt/clippy), `runtime-core` (config `ramonyx.runtime.json`
@@ -133,8 +133,12 @@ subset, suite security di runtime) dan worker/kuota menyusul.
   (pull-based, `type: "bytes"`); `Request`/`Response` body streaming (POST body tuntas);
   `TextDecoder` mode stream; **temuan diperbaiki**: `server.close()` membangunkan accept yang
   pending (keep-alive menahan channel → event loop menggantung)
-- [ ] **Compatibility lanjutan** — fixture playground subset, suite `@ramonyx/security` di
-  runtime, https/TLS + redirect fetch, streaming request bertahap
+- [x] **Builtin subset + security di runtime** (ADR-0031): `node:net` (`isIP`) & `node:dns/promises`
+      (`lookup` via `op_dns_lookup`) sebagai modul sintetis; `crypto.getRandomValues`/`randomUUID`;
+      **subset `@ramonyx/security` berjalan di runtime** (securityHeaders, cspNonce, csrfProtection,
+      rateLimit, guardedFetch/SSRF) — fixture `security-subset.mjs`
+- [ ] **Compatibility lanjutan** — fixture playground subset, https/TLS + redirect fetch,
+  streaming request bertahap
 - [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
       **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,
       handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end

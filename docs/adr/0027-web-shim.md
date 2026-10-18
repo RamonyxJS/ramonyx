@@ -37,6 +37,8 @@ Framework core berbicara dalam tipe standar web (`URL`, `Request`, `Response`, `
   > **Diperbarui (ADR-0030):** `fetch` (http://, via `op_fetch`) dan `ReadableStream`
   > (termasuk `type: "bytes"` pull-based) kini tersedia; `Request`/`Response` punya body
   > streaming.
+  > **Diperbarui (ADR-0031):** `crypto.getRandomValues`/`randomUUID` (via `op_random_bytes`)
+  > dan modul bawaan sintetis `node:net`/`node:dns/promises`.
 - `AbortController` tetap polyfill (ADR-0024); `getSetCookie` memakai pemisahan koma sederhana.
 - Ini **shim**, bukan implementasi spec penuh — jangan diklaim sebagai WHATWG lengkap.
 

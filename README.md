@@ -9,9 +9,10 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 > streaming respons), R3a (permission model **deny-all**), `web_shim`, **compatibility suite
 > v1** (pipeline framework nyata berjalan di runtime), **interop CommonJS v1** — termasuk demo
 > **SSR React** (`react` + `react-dom/server.browser`) dan **SSR streaming**
-> (`renderToReadableStream`) — serta **`fetch` + `ReadableStream`** (http://, permission per
-> host). Framework Node tetap baseline produksi; runtime eksperimental sampai
-> compatibility/security testing lolos. Klaim mengikuti aturan BLUEPRINT §10.
+> (`renderToReadableStream`) — **`fetch` + `ReadableStream`** (http://, permission per
+> host), serta **subset `@ramonyx/security`** (middleware + guardedFetch/SSRF) dengan builtin
+> `node:net`/`node:dns/promises` + `crypto`. Framework Node tetap baseline produksi; runtime
+> eksperimental sampai compatibility/security testing lolos. Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

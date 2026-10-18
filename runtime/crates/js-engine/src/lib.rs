@@ -27,8 +27,10 @@ use runtime_core::Permissions;
 
 mod http;
 mod resolve;
+mod web_shim;
 
 use resolve::resolve_bare;
+use web_shim::WEB_SHIM;
 
 const BOOTSTRAP: &str = r#"
 // Polyfill minimal AbortController/AbortSignal (deno_core tidak menyediakan DOM API).
@@ -475,6 +477,9 @@ impl Engine {
         runtime
             .execute_script("[ramonyx:bootstrap]".to_string(), BOOTSTRAP.to_string())
             .map_err(|error| EngineError::new(format!("bootstrap gagal: {error}")))?;
+        runtime
+            .execute_script("[ramonyx:web-shim]".to_string(), WEB_SHIM.to_string())
+            .map_err(|error| EngineError::new(format!("web shim gagal: {error}")))?;
 
         runtime.op_state().borrow_mut().put(options.permissions);
 
@@ -1089,6 +1094,77 @@ await ramonyx.writeTextFile({port_literal}, String(server.port));
             engine_result.is_ok(),
             "module selesai bersih: {engine_result:?}"
         );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn web_shim_dasar() {
+        let directory = temp_dir("web-shim");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+// TextEncoder/Decoder: UTF-8 multibyte bolak-balik.
+const teks = "halo é 中 🚀";
+const bytes = new TextEncoder().encode(teks);
+if (bytes.length !== 16) throw new Error("panjang byte salah: " + bytes.length);
+const kembali = new TextDecoder().decode(bytes);
+if (kembali !== teks) throw new Error("roundtrip gagal: " + kembali);
+
+// URL + searchParams.
+const url = new URL("http://contoh.id:8080/usr/rin?q=1&q=2&z=%20#halo");
+if (url.hostname !== "contoh.id") throw new Error("hostname: " + url.hostname);
+if (url.port !== "8080") throw new Error("port: " + url.port);
+if (url.pathname !== "/usr/rin") throw new Error("pathname: " + url.pathname);
+if (url.searchParams.getAll("q").join(",") !== "1,2") throw new Error("getAll");
+if (url.searchParams.get("z") !== " ") throw new Error("decode spasi");
+if (!url.hash.startsWith("#")) throw new Error("hash");
+
+// Headers: case-insensitive + append.
+const headers = new Headers({ "Content-Type": "text/plain" });
+headers.append("X-A", "1");
+headers.append("x-a", "2");
+if (headers.get("content-type") !== "text/plain") throw new Error("get header");
+if (headers.get("X-A") !== "1, 2") throw new Error("append header");
+
+// Response: json + clone.
+const response = Response.json({ a: 1 });
+const cloned = response.clone();
+if (cloned.headers.get("content-type") !== "application/json") throw new Error("ct json");
+const parsed = await cloned.json();
+
+// Request: method uppercase + body.
+const request = new Request("http://x/", { method: "post", body: "isi" });
+
+// setTimeout berjalan.
+let fired = false;
+setTimeout(() => { fired = true; }, 5);
+await ramonyx.sleep(30);
+if (!fired) throw new Error("setTimeout tidak jalan");
+
+globalThis.__web_ok = {
+  jsonNilai: parsed.a,
+  requestMethod: request.method,
+  requestBody: await request.text(),
+};
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::new().expect("engine");
+        engine.execute_module(&main).expect("web shim module");
+        engine
+            .execute(
+                "[verify]",
+                r##"
+const hasil = globalThis.__web_ok;
+if (hasil.jsonNilai !== 1) throw new Error("json clone salah");
+if (hasil.requestMethod !== "POST") throw new Error("method: " + hasil.requestMethod);
+if (hasil.requestBody !== "isi") throw new Error("body: " + hasil.requestBody);
+"##,
+            )
+            .expect("verify");
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }

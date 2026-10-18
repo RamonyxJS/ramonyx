@@ -814,6 +814,23 @@
         "routing-route-groups",
         "middleware-global"
       ]
+    },
+    {
+      "id": "ADR-0062",
+      "file": "0062-auth-session.md",
+      "title": "Primitif Sesi & Cookie (Tanda Tangan HMAC)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "@ramonyx/security menyediakan parseCookies/serializeCookie + signValue/verifyValue (HMAC-SHA256 Web Crypto) + createSession (read/commit/clear) dengan default cookie aman; PageActionResult.headers menyebar set-cookie ke respons render ulang dan request render menerapkan ganti/hapus per nama.",
+      "related": [
+        "ADR-0057",
+        "ADR-0058",
+        "ADR-0013"
+      ],
+      "features": [
+        "auth-session"
+      ]
     }
   ]
 }

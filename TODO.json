@@ -151,7 +151,7 @@
       "theme": "security",
       "priority": "p1",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Helper cookie (sign/verify, opsi aman default) + antarmuka session store + contoh alur login/logout yang memakai CSRF dan rate limit yang sudah ada.",
       "why": "Hampir semua aplikasi nyata butuh auth; menyediakan primitif aman mencegah setiap pengguna merakit sendiri (dan salah) — sekaligus memperkuat posisi keamanan Ramonyx.",
       "done": [
@@ -162,7 +162,7 @@
       "areas": ["packages/security", "packages/core"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js + Auth.js; Remix cookie sessions; SvelteKit cookies + Lucia; Nuxt nuxt-auth-utils.",
-      "source": "gap §3 (auth)",
+      "source": "gap §3 (auth) — selesai ADR-0062",
       "strategic": true
     },
     {

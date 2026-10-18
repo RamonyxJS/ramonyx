@@ -31,6 +31,9 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
 - **Middleware per-folder + route group** (ADR-0061): `middleware.ts` per folder (root otomatis
   untuk semua rute, urutan root→terdalam); urusan pre-routing (aset statis/logging) tetap global;
   folder `(grup)` tidak muncul di URL.
+- **Primitif sesi & cookie** (ADR-0062): `@ramonyx/security` — `parseCookies`/`serializeCookie`
+  (default aman), `signValue`/`verifyValue` (HMAC Web Crypto), `createSession` (read/commit/clear);
+  `PageActionResult.headers` menyebar `set-cookie` ke render ulang (logout langsung terlihat).
 
 ### Perubahan API (pra-1.0)
 

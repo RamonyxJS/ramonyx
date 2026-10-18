@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T21:34:08.504Z",
+  "generatedAt": "2026-10-18T21:44:01.626Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -159,6 +159,7 @@
         "PageActionContext",
         "PageActionResult",
         "PageActionState",
+        "PageLoaderContext",
         "RamonyxConfig",
         "RamonyxConfigInput",
         "RouteDefinition",
@@ -220,17 +221,28 @@
       "version": "0.1.1",
       "source": "packages/security/src/index.ts",
       "values": [
+        "DEFAULT_COOKIE_OPTIONS",
+        "createSession",
         "cspNonce",
         "csrfProtection",
         "defaultContentSecurityPolicy",
+        "expireCookie",
+        "parseCookies",
         "rateLimit",
-        "securityHeaders"
+        "securityHeaders",
+        "serializeCookie",
+        "signValue",
+        "verifyValue"
       ],
       "types": [
+        "CookieOptions",
         "CspNonceOptions",
         "CsrfOptions",
         "RateLimitOptions",
-        "SecurityHeadersOptions"
+        "SecurityHeadersOptions",
+        "Session",
+        "SessionData",
+        "SessionOptions"
       ],
       "reexports": []
     },

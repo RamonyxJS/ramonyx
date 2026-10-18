@@ -128,7 +128,7 @@
 
 ### `p1-auth-session` — Primitif autentikasi: cookie ter-sign + session
 
-*tema: security · ukuran: M · status: open · sumber: gap §3 (auth)*
+*tema: security · ukuran: M · status: done · sumber: gap §3 (auth) — selesai ADR-0062*
 
 - **Apa**: Helper cookie (sign/verify, opsi aman default) + antarmuka session store + contoh alur login/logout yang memakai CSRF dan rate limit yang sudah ada.
 - **Kenapa penting untuk bersaing**: Hampir semua aplikasi nyata butuh auth; menyediakan primitif aman mencegah setiap pengguna merakit sendiri (dan salah) — sekaligus memperkuat posisi keamanan Ramonyx.

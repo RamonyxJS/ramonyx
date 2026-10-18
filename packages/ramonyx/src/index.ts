@@ -8,6 +8,7 @@ export type {
   PageActionContext,
   PageActionResult,
   PageActionState,
+  PageLoaderContext,
   RamonyxConfig,
   RamonyxConfigInput,
   RouteDefinition,

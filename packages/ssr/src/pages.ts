@@ -133,11 +133,55 @@ function buildPageTree(
   return tree;
 }
 
-function htmlResponse(html: string, status: number): Response {
+function htmlResponse(
+  html: string,
+  status: number,
+  extraHeaders?: Readonly<Record<string, string>>,
+): Response {
   return new Response(html, {
     status,
-    headers: { "content-type": "text/html; charset=utf-8" },
+    headers: { "content-type": "text/html; charset=utf-8", ...extraHeaders },
   });
+}
+
+/**
+ * Terapkan `set-cookie` dari action ke request render ulang: ganti/hapus per nama
+ * (cookie kedaluwarsa — `Max-Age=0` — dihapus, bukan ditambahkan) agar loader melihat sesi
+ * terbaru (termasuk setelah logout).
+ */
+function requestWithCookies(request: Request, setCookies: readonly string[]): Request {
+  if (setCookies.length === 0) {
+    return request;
+  }
+  const headers = new Headers(request.headers);
+  let cookieHeader = headers.get("cookie") ?? "";
+
+  for (const cookie of setCookies) {
+    const pair = cookie.split(";")[0] ?? "";
+    const separator = pair.indexOf("=");
+    if (separator <= 0) {
+      continue;
+    }
+    const name = pair.slice(0, separator).trim();
+    const value = pair.slice(separator + 1);
+    const expired = /max-age=0(?!\d)/i.test(cookie);
+    const parts = cookieHeader
+      .split(";")
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0 && !part.startsWith(`${name}=`));
+    if (!expired && value.length > 0) {
+      parts.push(pair);
+    }
+    cookieHeader = parts.join("; ");
+  }
+
+  if (cookieHeader.length === 0) {
+    headers.delete("cookie");
+  } else {
+    headers.set("cookie", cookieHeader);
+  }
+  // Request BARU tanpa body: body action sudah dikonsumsi (membungkus request terpakai = error).
+  return new Request(request.url, { method: request.method, headers });
 }
 
 function fallbackBody(error: PublicError): string {
@@ -237,6 +281,7 @@ async function renderPage(
   streaming: boolean,
   actionState?: PageActionState,
   statusOverride?: number,
+  extraHeaders?: Readonly<Record<string, string>>,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
@@ -296,7 +341,7 @@ async function renderPage(
                 error: error instanceof Error ? error.message : String(error),
               }),
           ),
-          { status, headers: { "content-type": "text/html; charset=utf-8" } },
+          { status, headers: { "content-type": "text/html; charset=utf-8", ...extraHeaders } },
         );
       }
       // Dokumen kustom mengabaikan body/penanda → fallback sinkron di bawah (ADR-0047).
@@ -321,7 +366,7 @@ async function renderPage(
       );
     }
 
-    return htmlResponse(document, status);
+    return htmlResponse(document, status, extraHeaders);
   } catch (error) {
     const publicError = toPublicError(error);
     if (!(error instanceof HttpError)) {
@@ -404,6 +449,7 @@ async function runAction(
 
   let actionState: PageActionState | undefined;
   let status: number | undefined;
+  let extraHeaders: Readonly<Record<string, string>> | undefined;
 
   const schema = page.page.actionSchema;
   if (schema !== undefined) {
@@ -427,7 +473,10 @@ async function runAction(
       })) ?? {};
     if (typeof result.redirect === "string" && result.redirect.length > 0) {
       // PRG: 303 agar refresh tidak mengirim ulang POST (progressive enhancement).
-      return new Response(null, { status: 303, headers: { location: result.redirect } });
+      return new Response(null, {
+        status: 303,
+        headers: { location: result.redirect, ...result.headers },
+      });
     }
     actionState = {
       ok: result.errors === undefined,
@@ -436,11 +485,21 @@ async function runAction(
       data: result.data,
     };
     status = result.status ?? (result.errors === undefined ? 200 : 400);
+    extraHeaders = result.headers;
   }
+
+  // Cookie baru (set-cookie) dipakai saat render ulang agar loader melihat sesi terbaru.
+  const setCookies = Object.entries(extraHeaders ?? {})
+    .filter(([name]) => name.toLowerCase() === "set-cookie")
+    .map(([, value]) => value);
+  const renderContext: RouteHandlerContext =
+    setCookies.length === 0
+      ? context
+      : { ...context, request: requestWithCookies(request, setCookies) };
 
   return renderPage(
     page,
-    context,
+    renderContext,
     renderer,
     documentRenderer,
     client,
@@ -448,6 +507,7 @@ async function runAction(
     streaming,
     actionState,
     status,
+    extraHeaders,
   );
 }
 

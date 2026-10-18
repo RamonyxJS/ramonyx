@@ -57,6 +57,11 @@ export interface PageActionResult {
   readonly errors?: Readonly<Record<string, string>>;
   readonly message?: string;
   readonly data?: unknown;
+  /**
+   * Header tambahan pada respons render ulang (mis. `set-cookie` dari `createSession`).
+   * Cookie baru ikut dipakai saat halaman dirender ulang (loader melihat sesi terbaru).
+   */
+  readonly headers?: Readonly<Record<string, string>>;
 }
 
 export type PageAction<P = Record<string, string>> = (

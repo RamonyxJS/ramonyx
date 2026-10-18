@@ -68,3 +68,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0059](0059-metadata-seo.md) | Metadata halaman (description/OG/Twitter/robots) + `sitemap.xml`/`robots.txt` | Accepted |
 | [0060](0060-prefetch.md) | Prefetch halaman klien (hover/focus/viewport, cache LRU + TTL) | Accepted |
 | [0061](0061-middleware-per-folder.md) | Middleware per-folder otomatis + route group `(grup)` | Accepted |
+| [0062](0062-auth-session.md) | Primitif sesi & cookie (HMAC, Web Crypto) + action men-set cookie | Accepted |

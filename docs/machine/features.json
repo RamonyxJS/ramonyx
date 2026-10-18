@@ -741,18 +741,26 @@
       ]
     },
     {
-      "id": "auth",
-      "name": "Primitif autentikasi (session, cookie helper)",
-      "status": "planned",
+      "id": "auth-session",
+      "name": "Primitif autentikasi: cookie bertanda tangan + session (HMAC, edge-safe)",
+      "status": "partial",
       "since": null,
-      "priority": "p2",
-      "packages": [],
+      "priority": "p1",
+      "packages": [
+        "@ramonyx/security"
+      ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/security/src/csrf.ts"
+        "packages/security/src/cookies.ts",
+        "packages/security/src/session.ts",
+        "packages/security/test/session.test.ts",
+        "apps/playground/src/routes/sesi/page.tsx",
+        "docs/security/sessions.md",
+        "docs/adr/0062-auth-session.md"
       ],
       "limitations": [
-        "Aplikasi memutuskan sendiri saat ini; tanpa helper session"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Ditandatangani, bukan dienkripsi",
+        "Tanpa rotasi secret otomatis / store bawaan / UI login"
       ]
     },
     {

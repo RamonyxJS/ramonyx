@@ -22,7 +22,11 @@ export interface CreatePageRoutesOptions {
   readonly document?: DocumentRenderer;
   /** Isi untuk mengaktifkan hydration (payload + `<script type="module">`). */
   readonly client?: ClientOptions;
+  /** Batas ukuran dokumen HTML per halaman (default 2 MiB) → 500 bila lewat. */
+  readonly maxDocumentBytes?: number;
 }
+
+const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
 
 interface PublicError {
   readonly status: number;
@@ -103,6 +107,7 @@ async function renderPage(
   renderer: Renderer,
   documentRenderer: DocumentRenderer,
   client: ClientOptions | undefined,
+  maxDocumentBytes: number,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
@@ -121,19 +126,34 @@ async function renderPage(
           });
 
     const body = await renderer.render(buildPageTree(page, data, params));
-    return htmlResponse(
-      documentRenderer({
-        title: page.page.metadata?.title ?? "",
-        body,
-        status: 200,
-        scripts: hydrationScripts(
-          client,
-          { path: page.path, params, data },
-          context.request.headers.get(NONCE_HEADER) ?? undefined,
-        ),
-      }),
-      200,
-    );
+    const document = documentRenderer({
+      title: page.page.metadata?.title ?? "",
+      body,
+      status: 200,
+      scripts: hydrationScripts(
+        client,
+        { path: page.path, params, data },
+        context.request.headers.get(NONCE_HEADER) ?? undefined,
+      ),
+    });
+
+    if (document.length > maxDocumentBytes) {
+      log.error("Output halaman melebihi batas", {
+        path: page.path,
+        bytes: document.length,
+        maxDocumentBytes,
+      });
+      return htmlResponse(
+        documentRenderer({
+          title: "500",
+          body: fallbackBody({ status: 500, message: "Internal Server Error" }),
+          status: 500,
+        }),
+        500,
+      );
+    }
+
+    return htmlResponse(document, 200);
   } catch (error) {
     const publicError = toPublicError(error);
     if (!(error instanceof HttpError)) {
@@ -188,13 +208,21 @@ async function renderPage(
  */
 export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[] {
   const documentRenderer = options.document ?? defaultDocument;
+  const maxDocumentBytes = options.maxDocumentBytes ?? DEFAULT_MAX_DOCUMENT_BYTES;
 
   return options.pages.map((page) => ({
     method: "GET",
     path: page.path,
     definition: route({
       handler: (context) =>
-        renderPage(page, context, options.renderer, documentRenderer, options.client),
+        renderPage(
+          page,
+          context,
+          options.renderer,
+          documentRenderer,
+          options.client,
+          maxDocumentBytes,
+        ),
     }),
   }));
 }

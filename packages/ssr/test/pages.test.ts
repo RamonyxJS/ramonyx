@@ -256,6 +256,27 @@ test("tanpa client option: tidak ada payload/script hydration", async () => {
   assert.ok(!html.includes('type="module"'));
 });
 
+test("output limit: dokumen melebihi batas → 500 + log", async () => {
+  const { logger, lines } = makingLogger();
+  const page = basePage("/", {
+    default: Page,
+    loader: async () => ({ big: "x".repeat(1000) }),
+  });
+
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer(), maxDocumentBytes: 200 }),
+    logger,
+  });
+  const response = await handler(new Request("http://test.local/"));
+
+  assert.equal(response.status, 500);
+  assert.ok(
+    lines.some(
+      (line) => line.level === "error" && line.message === "Output halaman melebihi batas",
+    ),
+  );
+});
+
 test("header nonce → atribut nonce pada payload script (CSP)", async () => {
   const page = basePage("/", { default: Page, loader: async () => ({ ok: true }) });
   const handler = createHandler({

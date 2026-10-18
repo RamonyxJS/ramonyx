@@ -17,14 +17,16 @@ use std::time::Duration;
 use bytes::Bytes;
 use deno_core::{OpState, op2};
 use deno_error::JsErrorBox;
-use http_body_util::{BodyExt, Full};
-use hyper::body::Incoming;
+use http_body_util::combinators::BoxBody;
+use http_body_util::{BodyExt, Full, StreamBody};
+use hyper::body::{Frame, Incoming};
 use hyper::service::service_fn;
 use hyper::{Request, Response};
 use runtime_core::Permissions;
 use serde::Serialize;
 use tokio::net::TcpListener;
 use tokio::sync::{Notify, mpsc, oneshot};
+use tokio_stream::wrappers::ReceiverStream;
 
 /// IO wrapper yang menandai EOF dari klien (koneksi putus) agar handler bisa dibatalkan.
 struct ObservedIo {
@@ -94,13 +96,38 @@ pub struct RequestPayload {
     pub body: String,
 }
 
-pub struct PendingResponse {
-    pub status: u16,
-    pub headers: Vec<(String, String)>,
-    pub body: String,
+/// Respons yang dikirim ke hyper: penuh (buffered) atau streaming chunked.
+pub enum ResponseOutcome {
+    Full {
+        status: u16,
+        headers: Vec<(String, String)>,
+        body: String,
+    },
+    Stream {
+        status: u16,
+        headers: Vec<(String, String)>,
+        chunks: mpsc::Receiver<Result<Frame<Bytes>, JsErrorBox>>,
+    },
 }
 
-type IncomingRequest = (RequestPayload, oneshot::Sender<PendingResponse>);
+/// Entri pending per request: respons buffered (oneshot) atau stream chunked (mpsc).
+enum PendingEntry {
+    Buffered(oneshot::Sender<ResponseOutcome>),
+    Streaming(mpsc::Sender<Result<Frame<Bytes>, JsErrorBox>>),
+}
+
+impl PendingEntry {
+    fn is_closed(&self) -> bool {
+        match self {
+            Self::Buffered(sender) => sender.is_closed(),
+            Self::Streaming(sender) => sender.is_closed(),
+        }
+    }
+}
+
+type ServiceBody = BoxBody<Bytes, JsErrorBox>;
+
+type IncomingRequest = (RequestPayload, oneshot::Sender<ResponseOutcome>);
 
 pub struct ServerHandle {
     accept_rx: Option<mpsc::Receiver<IncomingRequest>>,
@@ -110,7 +137,7 @@ pub struct ServerHandle {
 #[derive(Default)]
 pub struct HttpState {
     servers: HashMap<u64, ServerHandle>,
-    pending: HashMap<(u64, u64), oneshot::Sender<PendingResponse>>,
+    pending: HashMap<(u64, u64), PendingEntry>,
     next_server_id: u64,
     next_request_id: u64,
 }
@@ -176,7 +203,7 @@ fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox
                             Err(_) => Bytes::new(),
                         };
 
-                        let (respond_tx, respond_rx) = oneshot::channel::<PendingResponse>();
+                        let (respond_tx, respond_rx) = oneshot::channel::<ResponseOutcome>();
                         let payload = RequestPayload {
                             id: 0, // diisi op_http_accept saat dikirim ke JS
                             method,
@@ -202,14 +229,26 @@ fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox
                             tokio::select! {
                                 result = &mut respond_rx => {
                                     return match result {
-                                        Ok(pending) => {
-                                            let mut builder = Response::builder().status(pending.status);
-                                            for (name, value) in pending.headers {
+                                        Ok(outcome) => {
+                                            let (status, headers) = match &outcome {
+                                                ResponseOutcome::Full { status, headers, .. } => (*status, headers.clone()),
+                                                ResponseOutcome::Stream { status, headers, .. } => (*status, headers.clone()),
+                                            };
+                                            let mut builder = Response::builder().status(status);
+                                            for (name, value) in headers {
                                                 builder = builder.header(name, value);
                                             }
-                                            // Keep-alive dibiarkan ke hyper (HTTP/1.1 default).
+                                            let body: ServiceBody = match outcome {
+                                                ResponseOutcome::Full { body, .. } => Full::new(Bytes::from(body))
+                                                    .map_err(|never: Infallible| -> JsErrorBox { match never {} })
+                                                    .boxed(),
+                                                ResponseOutcome::Stream { chunks, .. } => {
+                                                    // Transfer-Encoding: chunked dikelola hyper.
+                                                    StreamBody::new(ReceiverStream::new(chunks)).boxed()
+                                                }
+                                            };
                                             let response = builder
-                                                .body(Full::new(Bytes::from(pending.body)))
+                                                .body(body)
                                                 .unwrap_or_else(|_| error_response(500, "header tidak valid"));
                                             Ok(response)
                                         }
@@ -240,11 +279,15 @@ fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox
     ))
 }
 
-fn error_response(status: u16, message: &str) -> Response<Full<Bytes>> {
+fn error_response(status: u16, message: &str) -> Response<ServiceBody> {
     Response::builder()
         .status(status)
         .header("content-type", "text/plain; charset=utf-8")
-        .body(Full::new(Bytes::from(message.to_string())))
+        .body(
+            Full::new(Bytes::from(message.to_string()))
+                .map_err(|never: Infallible| -> JsErrorBox { match never {} })
+                .boxed(),
+        )
         .expect("respons statis valid")
 }
 
@@ -303,7 +346,8 @@ pub async fn op_http_accept(
         return Ok(None);
     };
     payload.id = http.next_request();
-    http.pending.insert((server_id, payload.id), respond_tx);
+    http.pending
+        .insert((server_id, payload.id), PendingEntry::Buffered(respond_tx));
     Ok(Some(payload))
 }
 
@@ -317,22 +361,105 @@ pub fn op_http_respond(
     #[string] body: String,
 ) -> Result<(), JsErrorBox> {
     let http = state.borrow_mut::<HttpState>();
-    let Some(sender) = http.pending.remove(&(server_id, request_id)) else {
+    let Some(entry) = http.pending.remove(&(server_id, request_id)) else {
         return Err(JsErrorBox::generic(format!(
             "request {request_id} tidak pending"
         )));
+    };
+    let PendingEntry::Buffered(sender) = entry else {
+        return Err(JsErrorBox::generic(
+            "respons stream sudah dimulai untuk request ini",
+        ));
     };
     if sender.is_closed() {
         // Klien sudah pergi (abort); bukan error — server tetap hidup.
         return Ok(());
     }
     sender
-        .send(PendingResponse {
+        .send(ResponseOutcome::Full {
             status,
             headers,
             body,
         })
         .map_err(|_| JsErrorBox::generic("koneksi sudah tertutup"))
+}
+
+/// Mulai respons streaming: kirim status+header ke hyper, lalu chunk dikirim
+/// lewat `op_http_stream_chunk` sampai `op_http_stream_end`.
+#[op2]
+pub fn op_http_stream_start(
+    state: &mut OpState,
+    #[smi] server_id: u64,
+    #[smi] request_id: u64,
+    #[smi] status: u16,
+    #[serde] headers: Vec<(String, String)>,
+) -> Result<(), JsErrorBox> {
+    let http = state.borrow_mut::<HttpState>();
+    let Some(entry) = http.pending.remove(&(server_id, request_id)) else {
+        return Err(JsErrorBox::generic(format!(
+            "request {request_id} tidak pending"
+        )));
+    };
+    let PendingEntry::Buffered(sender) = entry else {
+        return Err(JsErrorBox::generic(
+            "respons stream sudah dimulai untuk request ini",
+        ));
+    };
+
+    if sender.is_closed() {
+        return Ok(()); // klien sudah pergi — tidak ada yang dikirim
+    }
+
+    let (chunk_tx, chunk_rx) = mpsc::channel::<Result<Frame<Bytes>, JsErrorBox>>(8);
+    sender
+        .send(ResponseOutcome::Stream {
+            status,
+            headers,
+            chunks: chunk_rx,
+        })
+        .map_err(|_| JsErrorBox::generic("koneksi sudah tertutup"))?;
+
+    http.pending
+        .insert((server_id, request_id), PendingEntry::Streaming(chunk_tx));
+    Ok(())
+}
+
+/// Kirim satu chunk (dengan backpressure via `await`).
+#[op2(async(lazy), fast)]
+pub async fn op_http_stream_chunk(
+    state: Rc<RefCell<OpState>>,
+    #[smi] server_id: u64,
+    #[smi] request_id: u64,
+    #[string] chunk: String,
+) -> Result<(), JsErrorBox> {
+    let sender = {
+        let op_state = state.borrow();
+        let http = op_state.borrow::<HttpState>();
+        match http.pending.get(&(server_id, request_id)) {
+            Some(PendingEntry::Streaming(sender)) => sender.clone(),
+            Some(PendingEntry::Buffered(_)) => {
+                return Err(JsErrorBox::generic("respons belum streaming"));
+            }
+            None => return Err(JsErrorBox::generic("request tidak pending")),
+        }
+    };
+
+    sender
+        .send(Ok(Frame::data(Bytes::from(chunk))))
+        .await
+        .map_err(|_| JsErrorBox::generic("klien terputus saat streaming"))
+}
+
+/// Akhiri respons streaming (idempoten).
+#[op2(fast)]
+pub fn op_http_stream_end(
+    state: &mut OpState,
+    #[smi] server_id: u64,
+    #[smi] request_id: u64,
+) -> Result<(), JsErrorBox> {
+    let http = state.borrow_mut::<HttpState>();
+    http.pending.remove(&(server_id, request_id));
+    Ok(())
 }
 
 /// Menunggu klien putus untuk request yang sedang diproses: `true` bila koneksi klien tertutup

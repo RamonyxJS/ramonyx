@@ -125,13 +125,33 @@ globalThis.ramonyx = {
           };
         }
         // Bila klien sudah pergi, respond menjadi no-op (server tetap hidup).
-        Deno.core.ops.op_http_respond(
-          serverId,
-          request.id,
-          response?.status ?? 200,
-          Object.entries(response?.headers ?? {}),
-          String(response?.body ?? ""),
-        );
+        const body = response?.body ?? "";
+        if (body != null && typeof body[Symbol.asyncIterator] === "function") {
+          // Streaming chunked (Transfer-Encoding dikelola server).
+          Deno.core.ops.op_http_stream_start(
+            serverId,
+            request.id,
+            response?.status ?? 200,
+            Object.entries(response?.headers ?? {}),
+          );
+          try {
+            for await (const chunk of body) {
+              await Deno.core.ops.op_http_stream_chunk(serverId, request.id, String(chunk));
+            }
+            Deno.core.ops.op_http_stream_end(serverId, request.id);
+          } catch (error) {
+            Deno.core.ops.op_http_stream_end(serverId, request.id);
+            Deno.core.ops.op_log_error("streaming dihentikan: " + error);
+          }
+        } else {
+          Deno.core.ops.op_http_respond(
+            serverId,
+            request.id,
+            response?.status ?? 200,
+            Object.entries(response?.headers ?? {}),
+            String(body),
+          );
+        }
       }
     })();
     loop.catch((error) => {
@@ -216,6 +236,9 @@ extension!(
         http::op_http_listen,
         http::op_http_accept,
         http::op_http_respond,
+        http::op_http_stream_start,
+        http::op_http_stream_chunk,
+        http::op_http_stream_end,
         http::op_http_watch,
         http::op_http_close,
     ],
@@ -936,6 +959,79 @@ await ramonyx.writeTextFile({port_literal}, String(server.port));
         assert_eq!(status_count, 2, "dua respons pada satu koneksi: {response}");
         assert!(response.contains("req:/a"), "body pertama");
         assert!(response.contains("req:/b"), "body kedua");
+
+        let engine_result = done_rx
+            .recv_timeout(Duration::from_secs(10))
+            .expect("engine selesai");
+        assert!(
+            engine_result.is_ok(),
+            "module selesai bersih: {engine_result:?}"
+        );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn respons_streaming_chunked() {
+        use std::io::{Read as IoRead, Write as IoWrite};
+
+        let directory = temp_dir("stream");
+        let port_path = directory.join("port.txt");
+        let port_literal = serde_json::to_string(port_path.to_str().expect("utf8")).expect("json");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            format!(
+                r#"
+const server = ramonyx.serve(0, async (request) => {{
+  async function* stream() {{
+    for (let i = 1; i <= 3; i += 1) {{
+      await ramonyx.sleep(10);
+      yield "bagian-" + i + ";";
+    }}
+  }}
+  return {{ status: 200, headers: {{ "content-type": "text/plain; charset=utf-8" }}, body: stream() }};
+}});
+await ramonyx.writeTextFile({port_literal}, String(server.port));
+// Beri waktu stream selesai, lalu tutup server agar proses exit bersih.
+(async () => {{
+  await ramonyx.sleep(400);
+  server.close();
+}})();
+"#
+            ),
+        )
+        .expect("write");
+
+        let (done_tx, done_rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let mut engine = Engine::with_options(EngineOptions {
+                permissions: Permissions::allow_all(),
+            })
+            .expect("engine");
+            let result = engine.execute_module(&main);
+            let _ = done_tx.send(result.map_err(|error| error.to_string()));
+        });
+
+        let port = wait_port(&port_path);
+
+        let mut stream = std::net::TcpStream::connect(("127.0.0.1", port)).expect("connect");
+        stream
+            .write_all(b"GET /stream HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+            .expect("kirim");
+        let mut response = String::new();
+        stream.read_to_string(&mut response).expect("baca");
+
+        let lower = response.to_lowercase();
+        assert!(lower.contains("200 ok"), "status: {response}");
+        assert!(
+            lower.contains("transfer-encoding: chunked"),
+            "chunked (tanpa content-length): {response}"
+        );
+        let first = response.find("bagian-1;").expect("chunk 1");
+        let second = response.find("bagian-2;").expect("chunk 2");
+        let third = response.find("bagian-3;").expect("chunk 3");
+        assert!(first < second && second < third, "urutan chunk: {response}");
 
         let engine_result = done_rx
             .recv_timeout(Duration::from_secs(10))

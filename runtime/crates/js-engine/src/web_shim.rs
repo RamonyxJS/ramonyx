@@ -671,7 +671,13 @@ globalThis.fetch = globalThis.fetch ?? (async function fetch(input, init) {
   }
   let reply;
   try {
-    reply = await Deno.core.ops.op_fetch(method, url, [...headers.entries()], body);
+    reply = await Deno.core.ops.op_fetch(
+      method,
+      url,
+      [...headers.entries()],
+      body,
+      String(options.redirect ?? "follow"),
+    );
   } catch (error) {
     throw new TypeError(
       "fetch failed: " + (error && error.message !== undefined ? error.message : String(error)),
@@ -684,6 +690,7 @@ globalThis.fetch = globalThis.fetch ?? (async function fetch(input, init) {
   });
   response.url = reply.url;
   response.type = "basic";
+  response.redirected = reply.redirected === true;
   return response;
 });
 

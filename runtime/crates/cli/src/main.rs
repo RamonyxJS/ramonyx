@@ -30,6 +30,7 @@ PERMISSIONS (default: semua ditolak):
 RESOURCE LIMITS (opsional):
     --max-heap-mb <MiB>   Batas heap V8; pelanggaran → error jelas (bukan abort).
     --timeout-ms <ms>     Batas waktu wall-clock per eksekusi (watchdog V8).
+    --tls-ca <path.pem>   CA tambahan untuk fetch https (verifikasi tetap aktif).
 ";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -46,6 +47,7 @@ enum Command {
         permissions: Permissions,
         max_heap_mb: Option<usize>,
         timeout_ms: Option<u64>,
+        tls_ca: Option<PathBuf>,
     },
 }
 
@@ -60,6 +62,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
     let mut permissions = Permissions::default();
     let mut max_heap_mb: Option<usize> = None;
     let mut timeout_ms: Option<u64> = None;
+    let mut tls_ca: Option<PathBuf> = None;
     let mut positional: Option<String> = None;
     let mut rest = iterator.peekable();
 
@@ -85,6 +88,10 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
                     .filter(|mb| *mb > 0)
                     .ok_or("--max-heap-mb harus bilangan > 0")?;
                 max_heap_mb = Some(parsed);
+            }
+            "--tls-ca" => {
+                let value = rest.next().ok_or("--tls-ca butuh nilai <path.pem>")?;
+                tls_ca = Some(PathBuf::from(value));
             }
             "--timeout-ms" => {
                 let value = rest.next().ok_or("--timeout-ms butuh nilai <ms>")?;
@@ -134,6 +141,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             permissions,
             max_heap_mb,
             timeout_ms,
+            tls_ca,
         }),
         other => Err(format!("subcommand tidak dikenal: {other}")),
     }
@@ -170,6 +178,7 @@ fn run_command(command: Command) -> ExitCode {
             permissions,
             max_heap_mb,
             timeout_ms,
+            tls_ca,
         } => {
             let resolved = match load_config(config.as_deref()) {
                 Ok(resolved) => resolved,
@@ -225,12 +234,13 @@ fn run_command(command: Command) -> ExitCode {
                 }),
             );
 
-            if max_heap_mb.is_some() || timeout_ms.is_some() {
+            if max_heap_mb.is_some() || timeout_ms.is_some() || tls_ca.is_some() {
                 logger.info(
                     "runtime.limits",
                     &serde_json::json!({
                         "maxHeapMb": max_heap_mb,
                         "timeoutMs": timeout_ms,
+                        "tlsCa": tls_ca.as_ref().map(|path| path.display().to_string()),
                     }),
                 );
             }
@@ -239,6 +249,7 @@ fn run_command(command: Command) -> ExitCode {
                 permissions: permissions.clone(),
                 max_heap_mb,
                 timeout: timeout_ms.map(std::time::Duration::from_millis),
+                tls_ca_file: tls_ca.clone(),
             };
 
             let extension = entry_path
@@ -416,6 +427,8 @@ mod tests {
             "64",
             "--timeout-ms",
             "1500",
+            "--tls-ca",
+            "ca.pem",
         ]));
         assert_eq!(
             parsed,
@@ -430,6 +443,7 @@ mod tests {
                 },
                 max_heap_mb: Some(64),
                 timeout_ms: Some(1500),
+                tls_ca: Some(PathBuf::from("ca.pem")),
             })
         );
     }

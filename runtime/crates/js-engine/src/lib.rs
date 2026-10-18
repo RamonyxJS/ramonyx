@@ -387,7 +387,6 @@ extension!(
     ],
     state = |state: &mut OpState| {
         state.put(http::HttpState::default());
-        state.put(http_client::FetchState::new());
         state.put(worker::WorkerRegistry::default());
         state.put(worker::WorkerSelfChannel::default());
     },
@@ -636,6 +635,7 @@ impl ModuleLoader for FileModuleLoader {
 #[derive(Debug, Clone, Default)]
 pub struct EngineLimits {
     pub max_heap_mb: Option<usize>,
+    pub tls_ca_file: Option<PathBuf>,
 }
 
 /// Alasan penghentian paksa (kuota/timeout) — dibaca setelah eksekusi berakhir.
@@ -698,6 +698,9 @@ pub struct EngineOptions {
     /// Batas waktu wall-clock per eksekusi (`None` = tanpa batas). Berlaku untuk
     /// `execute` dan `execute_module` (ADR-0033).
     pub timeout: Option<Duration>,
+    /// File PEM berisi CA tambahan untuk `fetch` https (mis. CA privat/internal).
+    /// Verifikasi sertifikat tetap aktif — ini menambah root, bukan mematikan (ADR-0036).
+    pub tls_ca_file: Option<PathBuf>,
 }
 
 impl Engine {
@@ -718,6 +721,9 @@ impl Engine {
         });
 
         let limit_state = Arc::new(LimitState::default());
+        // Klien HTTP dibangun lebih dulu agar CA/TLS yang tidak valid gagal cepat.
+        let fetch_state = http_client::FetchState::new(options.tls_ca_file.as_deref())
+            .map_err(|error| EngineError::new(format!("inisialisasi klien HTTP gagal: {error}")))?;
 
         // Isolate HARUS dibuat di dalam konteks tokio: V8 dapat memposting delayed
         // task kapan saja (mis. GC memory reducer); deno_core men-abort proses bila
@@ -757,10 +763,16 @@ impl Engine {
             .execute_script("[ramonyx:web-shim]".to_string(), WEB_SHIM.to_string())
             .map_err(|error| EngineError::new(format!("web shim gagal: {error}")))?;
 
-        runtime.op_state().borrow_mut().put(options.permissions);
-        runtime.op_state().borrow_mut().put(EngineLimits {
-            max_heap_mb: options.max_heap_mb,
-        });
+        {
+            let op_state_rc = runtime.op_state();
+            let mut op_state = op_state_rc.borrow_mut();
+            op_state.put(options.permissions);
+            op_state.put(EngineLimits {
+                max_heap_mb: options.max_heap_mb,
+                tls_ca_file: options.tls_ca_file.clone(),
+            });
+            op_state.put(fetch_state);
+        }
 
         Ok(Self {
             runtime,
@@ -2649,6 +2661,169 @@ await ramonyx.writeTextFile({port}, String(server.port));
             engine_result.is_ok(),
             "module selesai bersih: {engine_result:?}"
         );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn fetch_mengikuti_redirect_dan_mode_manual_error() {
+        let directory = temp_dir("redirect");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+const a = ramonyx.serve(0, async (request) => {
+  if (request.path === "/mulai") {
+    return { status: 302, headers: { location: "/tujuan" }, body: "" };
+  }
+  return { status: 200, headers: { "content-type": "text/plain" }, body: "sampai:" + request.path };
+});
+const dasar = "http://127.0.0.1:" + a.port;
+
+// follow (default): 302 diikuti sampai final.
+const response = await fetch(dasar + "/mulai");
+const teks = await response.text();
+if (response.status !== 200 || teks !== "sampai:/tujuan") {
+  throw new Error("follow gagal: " + response.status + " " + teks);
+}
+if (response.redirected !== true) throw new Error("redirected harus true");
+if (!response.url.endsWith("/tujuan")) throw new Error("url final: " + response.url);
+
+// manual: 302 dikembalikan apa adanya (dipakai guardedFetch).
+const manual = await fetch(dasar + "/mulai", { redirect: "manual" });
+await manual.text();
+if (manual.status !== 302 || manual.headers.get("location") !== "/tujuan") {
+  throw new Error("manual gagal: " + manual.status);
+}
+if (manual.redirected !== false) throw new Error("manual tidak boleh redirected");
+
+// error: melempar.
+let pesan = null;
+try {
+  await fetch(dasar + "/mulai", { redirect: "error" });
+} catch (error) {
+  pesan = String(error);
+}
+if (pesan === null || !pesan.includes("redirect")) throw new Error("mode error: " + pesan);
+
+a.close();
+globalThis.__redirect_ok = true;
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+            ..Default::default()
+        })
+        .expect("engine");
+        engine.execute_module(&main).expect("redirect module");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__redirect_ok !== true) throw new Error('redirect gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn fetch_redirect_method_body_dan_header_sensitif() {
+        let directory = temp_dir("redirect-method");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+async function bacaBody(request) {
+  let isi = "";
+  for await (const chunk of request.body) {
+    isi += new TextDecoder().decode(chunk, { stream: true });
+  }
+  isi += new TextDecoder().decode();
+  return isi;
+}
+const echo = async (request) => {
+  const kepala = Object.fromEntries(request.headers);
+  return {
+    status: 200,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ method: request.method, body: await bacaBody(request), auth: kepala.authorization ?? null }),
+  };
+};
+
+const b = ramonyx.serve(0, async (request) => echo(request));
+const a = ramonyx.serve(0, async (request) => {
+  if (request.path === "/echo") return echo(request);
+  if (request.path === "/jaga") {
+    return { status: 307, headers: { location: "http://127.0.0.1:" + b.port + "/echo" }, body: "" };
+  }
+  if (request.path === "/ubah") {
+    return { status: 303, headers: { location: "http://127.0.0.1:" + b.port + "/echo" }, body: "" };
+  }
+  if (request.path === "/lokal") {
+    return { status: 307, headers: { location: "/echo" }, body: "" };
+  }
+  return { status: 200, body: "a" };
+});
+
+// 307 lintas origin: method+body dipertahankan; authorization DIBUANG.
+const jaga = await fetch("http://127.0.0.1:" + a.port + "/jaga", {
+  method: "POST",
+  headers: { authorization: "Bearer rahasia", "content-type": "text/plain" },
+  body: "isi-307",
+});
+const hasilJaga = await jaga.json();
+if (hasilJaga.method !== "POST" || hasilJaga.body !== "isi-307") {
+  throw new Error("307 harus mempertahankan method+body: " + JSON.stringify(hasilJaga));
+}
+if (hasilJaga.auth !== null) {
+  throw new Error("authorization harus dibuang lintas origin: " + hasilJaga.auth);
+}
+
+// 303 lintas origin: jadi GET tanpa body.
+const ubah = await fetch("http://127.0.0.1:" + a.port + "/ubah", {
+  method: "POST",
+  headers: { "content-type": "text/plain" },
+  body: "isi-303",
+});
+const hasilUbah = await ubah.json();
+if (hasilUbah.method !== "GET" || hasilUbah.body !== "") {
+  throw new Error("303 harus jadi GET tanpa body: " + JSON.stringify(hasilUbah));
+}
+
+// 307 same-origin: authorization dipertahankan.
+const lokal = await fetch("http://127.0.0.1:" + a.port + "/lokal", {
+  method: "POST",
+  headers: { authorization: "Bearer sama", "content-type": "text/plain" },
+  body: "isi-lokal",
+});
+const hasilLokal = await lokal.json();
+if (hasilLokal.auth !== "Bearer sama" || hasilLokal.body !== "isi-lokal") {
+  throw new Error("same-origin harus mempertahankan header: " + JSON.stringify(hasilLokal));
+}
+
+a.close();
+b.close();
+globalThis.__redirect2_ok = true;
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+            ..Default::default()
+        })
+        .expect("engine");
+        engine
+            .execute_module(&main)
+            .expect("redirect method module");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__redirect2_ok !== true) throw new Error('redirect2 gagal');",
+            )
+            .expect("verify");
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }

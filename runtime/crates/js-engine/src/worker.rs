@@ -135,10 +135,12 @@ pub async fn op_worker_spawn(
     #[string] entry: String,
     #[serde] options: WorkerOptions,
 ) -> Result<u64, JsErrorBox> {
-    let (parent_permissions, parent_heap, id) = {
+    let (parent_permissions, parent_heap, parent_ca, id) = {
         let mut state = state.borrow_mut();
         let permissions = state.borrow::<Permissions>().clone();
-        let parent_heap = state.borrow::<crate::EngineLimits>().max_heap_mb;
+        let parent_limits = state.borrow::<crate::EngineLimits>();
+        let parent_heap = parent_limits.max_heap_mb;
+        let parent_ca = parent_limits.tls_ca_file.clone();
         let registry = state.borrow_mut::<WorkerRegistry>();
         if registry.workers.len() >= MAX_WORKERS {
             return Err(JsErrorBox::generic(format!(
@@ -146,7 +148,7 @@ pub async fn op_worker_spawn(
             )));
         }
         registry.next_id += 1;
-        (permissions, parent_heap, registry.next_id)
+        (permissions, parent_heap, parent_ca, registry.next_id)
     };
 
     let child_options = EngineOptions {
@@ -154,6 +156,8 @@ pub async fn op_worker_spawn(
         permissions: resolve_permissions(&parent_permissions, options.allow.as_ref()),
         max_heap_mb: options.max_heap_mb.or(parent_heap),
         timeout: options.timeout_ms.map(std::time::Duration::from_millis),
+        // CA TLS diwarisi dari induk (bukan di-override per worker).
+        tls_ca_file: parent_ca,
     };
 
     let (to_worker_tx, to_worker_rx) = unbounded_channel::<String>();

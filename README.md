@@ -25,6 +25,10 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 
 ## Quick start
 
+Buat aplikasi baru (di dalam repo): `pnpm create:app aplikasi-saya` — lalu `cd aplikasi-saya`,
+`pnpm install`, `pnpm start`.
+
+
 ```bash
 pnpm install
 pnpm test          # suite kontrak v0

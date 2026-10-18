@@ -173,8 +173,12 @@ pekerjaan Phase 5.
       `ramonyx.parent.*` terpadu (worker & plugin), permission irisan anti-eskalasi, kuota
       diteruskan sebagai flag, `kill()` + `ramonyx.exit()`; bukti: crash/exit/kill plugin tidak
       menjatuhkan induk
+- [x] **Scaffolder aplikasi** (ADR-0041): `pnpm create:app <dir>` — template minimal yang
+      benar-benar berjalan (config + API + halaman + `HttpError`), placeholder `__APP_NAME__`,
+      `--force`, plus smoke di CI; tervalidasi typecheck terhadap paket workspace
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
-      restart supervision plugin, sandbox OS (seccomp/namespace)
+      restart supervision plugin, sandbox OS (seccomp/namespace), SSR React di template,
+      apps/docs
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

@@ -48,3 +48,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0038](0038-cpu-rss-quotas.md) | Kuota CPU per-thread + RSS proses (gap memori eksternal) | Accepted |
 | [0039](0039-release-pipeline.md) | Release pipeline v1: artefak, verifikasi instalasi, rilis 0.1.0 | Accepted |
 | [0040](0040-plugin-process-isolation.md) | Isolasi level proses untuk plugin (`ramonyx.spawn`) | Accepted |
+| [0041](0041-create-app.md) | `apps/create-app` — scaffolder aplikasi | Accepted |

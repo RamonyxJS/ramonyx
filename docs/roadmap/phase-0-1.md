@@ -199,9 +199,14 @@ pekerjaan Phase 5.
       rps 1318); advisory `uuid` ditutup via override `hyperid@4` (audit bersih)
 - [x] **Source map produksi** (ADR-0046): `buildClient` default `sourcemap: true`; paket npm
       `sourceMap + inlineSources`; `verify-release` memeriksa map + `sourcesContent` di tarball
+- [x] **SSR streaming Node** (ADR-0047): `Renderer.renderStream` opsional + React
+      `renderToReadableStream` via **`react-dom/server.edge`** (hindari `MessageChannel` build
+      browser yang menahan proses Node); dokumen dipecah penanda body; adapter Node pipe
+      chunked + putus koneksi saat error setelah header; opt-in `streaming: true` (playground
+      dev+produksi); parity byte-per-byte + aliran sungguhan diuji, e2e 5/5
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
       sandbox OS (seccomp/namespace), health-check otomatis, backoff eksponensial,
-      kalibrasi toleransi bench + protokol §8 penuh
+      evaluasi `--strict` bench setelah beberapa invokasi tenang lagi
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

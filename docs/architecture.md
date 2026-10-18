@@ -32,8 +32,8 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `packages/adapter-runtime` | Kontrak runtime + adapter Node + adapter in-memory (test) | Phase 1 | belum dibuat |
 | `packages/schema` | Integrasi Standard Schema (ADR-0004) + pemetaan error | Phase 1 | belum dibuat |
 | `packages/testing` | `createTestServer`, fixture app, helper | Phase 1 | belum dibuat |
-| `packages/react` | Adapter UI React (ADR-0003): SSR + hydration + navigasi client | Phase 2 | selesai |
-| `packages/ssr` | Render halaman → HTML (+ streaming) | Phase 2 | SSR selesai (streaming menyusul) |
+| `packages/react` | Adapter UI React (ADR-0003): SSR (sinkron + stream) + hydration + navigasi client | Phase 2 | selesai |
+| `packages/ssr` | Render halaman → HTML (+ streaming Node, ADR-0047) | Phase 2 | selesai |
 | `packages/client` | Tidak dibuat terpisah — hydration + navigasi client ada di `@ramonyx/react/client` (ADR-0007/0008) | — | digabung |
 | `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`, `generateClientEntry`), transformasi & analisis batas server/client | Phase 2 | file routing + halaman + codegen selesai |
 | `packages/bundler` | Pembungkus Vite (ADR-0005): build client + dev server (ADR-0009) | Phase 2 | selesai |

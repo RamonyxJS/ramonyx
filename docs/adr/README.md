@@ -53,3 +53,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0043](0043-plugin-supervision.md) | Supervisi restart plugin (`restart` pada `ramonyx.spawn`) | Accepted |\n| [0044](0044-plugin-health-check.md) | Health-check plugin (heartbeat + deteksi senyap) | Accepted |
 | [0045](0045-perf-regression-gate.md) | Performance regression gate (report-only) | Accepted |
 | [0046](0046-source-maps.md) | Source map produksi (client bundle + paket npm) | Accepted |
+| [0047](0047-ssr-streaming-node.md) | SSR streaming di runtime Node (`renderToReadableStream` + `server.edge`) | Accepted |

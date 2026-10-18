@@ -124,8 +124,9 @@ export default [
 
 ## 8. Non-goal v0
 
-Server actions, streaming SSR, caching/ISR, websocket, upload file besar, middleware per-folder,
-route groups. Dievaluasi setelah baseline (Phase 2+).
+Server actions, caching/ISR, websocket, upload file besar, middleware per-folder,
+route groups. Dievaluasi setelah baseline (Phase 2+). (SSR streaming halaman **sudah ada** —
+opsi `streaming` di `createPageRoutes`, ADR-0047.)
 
 ## 9. Test yang lahir dari kontrak (Phase 1)
 

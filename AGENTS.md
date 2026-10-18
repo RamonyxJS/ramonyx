@@ -46,14 +46,19 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 ## Jebakan yang paling mudah kena
 
 - **Blueprint §4/§5 masih rancangan, belum semuanya diimplementasikan.** Yang nyata:
-  `packages/*`, `apps/playground`, `benchmarks/*`. File routing (API + halaman) dan SSR React
-  tanpa hydration sudah ada; hydration, bundler, dev server/HMR belum — cek kode, jangan asumsikan.
+  `packages/*`, `apps/playground`, `apps/docs`, `apps/create-app`, `benchmarks/*`. File routing
+  (API + halaman), SSR React (sinkron + streaming), hydration, bundler, dev server/HMR sudah ada;
+  `packages/devtools` belum — cek kode, jangan asumsikan.
 - **Syntax harus erasable.** Paket diekspor sebagai `.ts` dan dijalankan Node type stripping:
   dilarang `enum`, `namespace`, parameter property; `erasableSyntaxOnly` + `verbatimModuleSyntax`
   menegakkannya. Impor relatif wajib berekstensi `.ts`.
 - **JSX hanya lewat loader dev.** Node type stripping tidak memproses JSX; jalankan app/test dengan
   `node --import ./tools/register.mjs` (script `test`/`bench`/`dev` sudah begitu — ADR-0006).
   Paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
+- **SSR streaming (ADR-0047):** opt-in `streaming: true` di `createPageRoutes`/`createApp`;
+  renderer React memakai `react-dom/server.edge` — **jangan** `server.browser` (MessageChannel
+  level-modul menahan proses Node: test/CLI menggantung). Error setelah byte pertama = koneksi
+  diputus (status/error page hanya berlaku sebelum byte pertama).
 - **Hydration:** di dev `pnpm dev` sudah otomatis (entry via Vite); di produksi jalankan
   `pnpm build` dulu lalu `pnpm start` (tanpa build, `/assets/client.js` 404). Payload
   `window.__RAMONYX__` + container `#ramonyx-root`; loader data wajib JSON-serializable;
@@ -151,7 +156,9 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 (`ramonyx.spawn`, protokol JSON, permission irisan, kill, **supervisi restart** — ADR-0040/0043,
 **health-check heartbeat** — ADR-0044),
 **scaffolder aplikasi**
-(`pnpm create:app` — template file-routing **SSR React + hydration**, ADR-0041), dan **situs
+(`pnpm create:app` — template file-routing **SSR React + hydration**, ADR-0041), **SSR streaming
+Node** (`renderToReadableStream` via `react-dom/server.edge` — ADR-0047; jalur sinkron tetap
+untuk halaman error), dan **situs
 dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042) —
 semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; sisa Phase 5: **publikasi npm sebenarnya** (butuh kredensial
@@ -160,4 +167,4 @@ Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 136 tes Node + 5 e2e + 101 test Rust hijau.
+(ADR-0016); 144 tes Node + 5 e2e + 101 test Rust hijau.

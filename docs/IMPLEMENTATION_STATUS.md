@@ -36,8 +36,8 @@
 | 7. SSR, streaming, hydration, client navigation | DONE (dengan catatan) | `packages/ssr/src/pages.ts` (loader → render → dokumen + payload `window.__RAMONYX__`), `packages/react/src/{renderer,client}.ts` (hydrate + soft navigation + payload segar setelah navigasi); e2e `ssr.spec.ts`, `navigation.spec.ts` (5/5 lulus audit) | SSR streaming Node terintegrasi (ADR-0047: `Renderer.renderStream` + `react-dom/server.edge`, opt-in `streaming: true` — playground dev+produksi mengaktifkan; parity byte-per-byte + aliran + batas diuji); jalur sinkron tetap dipakai untuk halaman error |
 | 8. Compiler, bundler, route manifest, source maps | DONE | `packages/compiler/src/{manifest,pages,client-entry}.ts`, test 5 file; **source map produksi aktif** (ADR-0046): `buildClient` default `sourcemap: true`, paket npm `sourceMap+inlineSources`, `verify-release` memeriksa map + `sourcesContent` | — |
 | 9. Security baseline & threat-model | DONE (dengan catatan) | `packages/security` (headers, CSP nonce, CSRF double-submit, rate limit, SSRF guard) + limit body/timeout/concurrency di server; `docs/security/{threat-model,asvs-mapping,dependency-policy}.md`; test `packages/security/test/*` (5 file), `tests/security/`, fuzz; `pnpm audit --audit-level high` exit 0, **No known vulnerabilities found** (override `hyperid@4`) | pentest/escape plugin belum dinilai (lihat §6) |
-| 10. Testing, compatibility, regression | DONE | 144 tes Node (termasuk fuzz fast-check), 5 e2e Playwright, 101 tes Rust (termasuk **8 file integrasi** compat: framework, SSR, SSR streaming, security, playground subset, TLS fetch, isolasi proses plugin, CLI) | Belum ada performance-regression gate di CI (§7) |
-| 11. Benchmark, profiling, memory, regression | DONE (gate report-only) | Artefak baseline + harness; **regression gate report-only** (ADR-0045): `pnpm bench:report` + unit `benchmarks/http/compare.test.ts` (5 test) + langkah CI non-blocking + perbandingan di `benchmarks/runtime-startup.sh`; timings+metrik op runtime (ADR-0037) | Gate **belum memblokir** (disengaja); benchmark tetap tidak dijalankan ulang saat audit awal |
+| 10. Testing, compatibility, regression | DONE | 156 tes Node (termasuk fuzz fast-check), 5 e2e Playwright, 101 tes Rust (termasuk **8 file integrasi** compat: framework, SSR, SSR streaming, security, playground subset, TLS fetch, isolasi proses plugin, CLI) | — |
+| 11. Benchmark, profiling, memory, regression | DONE (gate report-only) | Artefak baseline + harness; **gate report-only**: HTTP (ADR-0045), **SSR** (ADR-0048: `benchmarks/ssr/bench.tsx` — paritas byte-per-byte + suspense + `--expose-gc`), **Web Vitals** (median 3 load + ambang absolut); unit compare/stats + langkah CI non-blocking + perbandingan `benchmarks/runtime-startup.sh`; timings+metrik op runtime (ADR-0037) | Gate **belum memblokir** (disengaja); toleransi belum dikalibrasi multi-mesin |
 | 12. Developer tooling, CLI, dev server, diagnostics | DONE | `tools/register.mjs` (loader esbuild, ADR-0006), `apps/playground/src/dev.ts` (Vite+HMR→SSR), CLI runtime `ramonyx-runtime` (R0+flag permission/kuota/profiling), `apps/create-app` (scaffolder + smoke), `apps/docs` (dogfood SSR+hydration), `--op-metrics` + log `engine.executed` | — |
 | 13. Runtime host & engine integration | DONE (eksperimental) | `runtime/crates/{cli,js-engine,runtime-core}` (deno_core/V8, ADR-0020), compile & 101 tes Rust lulus | Klaim produksi tidak dibuat; lihat batasan per ADR |
 | 14. Runtime module loading/fs/net/permission | DONE (subset terdokumentasi) | ESM+TS+`node_modules` v1, interop CommonJS, `web_shim`, builtin `node:net`/`node:dns/promises`, HTTP server pull-model (streaming request+respons), permission deny-all + revoke, kuota heap/CPU/RSS/timeout, worker isolate, proses plugin + supervisi + health-check (ADR-0021–0044) | Batasan eksplisit: tanpa HTTPS server/h2, CommonJS subset, tanpa worker fairness/quota CPU lintas proses, sandbox OS belum (ADR-0040/0043/0044) |
@@ -76,7 +76,10 @@ ini kecuali disebut lain.
    penuh (warm-up 3 s + 5 ulangan, median + spread via `stats.ts`), peringatan `p50 +37%`
    sebelumnya terbukti **artefak sekali-jalan tanpa warm-up**, baseline diperbarui eksplisit
    (p50 34 / p90 48 / p99 72 / rps 1318), perbandingan lanjutan semua dalam toleransi
-   (≤ 5.6%). Sisa: multi-invokasi tambahan bila ingin `--strict`.
+   (≤ 5.6%). *Diperluas 2026-10-18 (ADR-0048):* gate **SSR** (`pnpm bench:ssr:report` — paritas
+   byte-per-byte, skenario suspense, lantai delta 1 ms) + **ambang Web Vitals** (median 3 load,
+   ambang absolut, report-only) + `NODE_ENV=production` untuk server produksi/template.
+   Sisa: multi-invokasi tambahan bila ingin `--strict`.
    — *kondisi awal:* artefak baseline ada
    (`benchmarks/results/*.json`), harness ada, tetapi CI hanya mengunggah artefak tanpa
    membandingkan threshold, dan audit ini tidak menjalankan bench karena skrip menulis ulang
@@ -125,11 +128,14 @@ ini kecuali disebut lain.
 | Perf report gate | `pnpm bench:report` | **PASS** | Report-only pasca-kalibrasi: p50 +2.94%, p90 +2.08%, p99 +5.56%, rps −0.38% — semua dalam toleransi; baseline tidak tersentuh |
 | Source map build | `pnpm build` + inspeksi `client.js.map` | **PASS** | 19 sumber dengan `sourcesContent` |
 | Source map paket | `pnpm release` + `verify-release` | **PASS** | `*.js.map` ada di tarball; `sourcesContent` non-kosong |
-| Tes Node (pembaruan) | `pnpm test` | **PASS** | **144 tes** (128 + 5 compare + 3 stats + 8 streaming) |
+| Tes Node (pembaruan) | `pnpm test` | **PASS** | **156 tes** (termasuk compare/stats untuk gate HTTP/SSR/vitals + 8 streaming) |
 | SSR streaming Node (ADR-0047) | `pnpm test` (ssr/react/adapter) + e2e + curl | **PASS** | parity byte-per-byte vs sinkron; `Transfer-Encoding: chunked`; payload hydration utuh; proses Node keluar bersih (`server.edge`) |
 | Kalibrasi bench (protokol §8) | `pnpm bench:report` ×2 + `pnpm bench` (refresh baseline) | **PASS** | median p50 33–35 ms (stabil ≤ ~9% antar-invokasi); perbandingan lanjutan ≤ 5.6% |
 | Refresh baseline HTTP | `pnpm bench` | **PASS** | baseline baru: p50 34 / p90 48 / p99 72 / rps 1318 (5 ulangan + warm-up 3 s) |
 | Benchmark HTTP | `pnpm bench` | **NOT RUN** | Skrip menulis ulang `benchmarks/results/phase1-baseline.json` (artefak ter-commit) — tidak dijalankan agar tidak mengubah artefak saat audit |
+| Bench SSR (ADR-0048) | `pnpm bench:ssr` + `bench:ssr:report` ×3 | **PASS** | paritas byte-per-byte ✓ (small/medium/large); 2 report berturut-turut semua dalam toleransi; baseline pada skala 0,6–415 KB + suspense |
+| Web Vitals (ADR-0048) | e2e + refresh baseline eksplisit | **PASS** | baseline baru: LCP 84 / FCP 84 / TTFB 11,1 / CLS 0 (median 3 load, produksi); report berikutnya semua dalam toleransi; ambang absolut ✓ |
+| `NODE_ENV` produksi (ADR-0048) | `pnpm start`/`docs`/template + e2e | **PASS** | temuan: React dev dipakai di server produksi; kini `NODE_ENV=production` (e2e 5/5 di atas produksi) |
 | Benchmark keamanan/soak | `pnpm bench:security` | **NOT RUN** | Harness abuse+soak (menulis artefak & menjalankan soak) — di luar cakupan audit ini |
 | Baseline startup runtime | `benchmarks/runtime-startup.sh` | **NOT RUN** | Sama: menulis ulang `benchmarks/results/runtime-startup.json` |
 | Publikasi npm | `pnpm publish` / workflow rilis | **NOT RUN** | Butuh keputusan/kredensial pemilik; tidak dijalankan tanpa otorisasi |
@@ -178,14 +184,16 @@ diukur ulang dalam audit ini:
 | Artefak | Tanggal | Lingkup | Catatan |
 |---|---|---|---|
 | `benchmarks/results/phase1-baseline.json` | 2026-10-18 (refresh; sebelumnya 2026-10-17) | HTTP baseline (autocannon, **warm-up + 5 ulangan**) | env: linux x64, Node v24.22.0, 8 vCPU (AMD Ryzen 5 7520U); median p50 34 / p90 48 / p99 72 / rps 1318 |
-| `benchmarks/results/phase2-web-vitals.json` | 2026-10-18 | Web Vitals beranda (Playwright) | "baseline artefak — bukan klaim; threshold menyusul" |
+| `benchmarks/results/phase2-web-vitals.json` | 2026-10-18 (refresh: median 3 load, React produksi) | Web Vitals beranda (Playwright) | LCP 84 / FCP 84 / TTFB 11,1 / CLS 0; nilai lama (sekali load, dev React) 360/360/40,9 |
+| `benchmarks/results/ssr-baseline.json` | 2026-10-18 | Bench SSR sinkron vs streaming (warm-up 3 + 9 ulangan, `--expose-gc`) | median: small 2,8/1,7 ms; medium 14,9/12,7 ms (80 KB); large 53,0/52,1 ms (415 KB); suspense ttfb 1,6 ms vs total 57,7 ms |
 | `benchmarks/results/phase3-abuse.json` | 2026-10-18 | Abuse-case + soak ringkas | env sama; "bukan klaim" |
 | `benchmarks/results/runtime-startup.json` | 2026-10-18 | Startup runtime (7 run, median) | `mini` ~42 ms wall; `four-workers` ~84 ms; detail breakdown `v8Ms/bootstrapMs/webShimMs` (ADR-0037) |
 
 - **Kesimpulan performa:** belum dapat dijadikan klaim publik; protokol ada
-  (`docs/benchmark-protocol.md`) dan artefak reproducible (`pnpm bench`,
-  `benchmarks/runtime-startup.sh`, `pnpm bench:security`), tetapi **threshold/regression gate
-  belum ditetapkan** dan audit ini tidak menjalankan ulang benchmark (alasan di §5).
+  (`docs/benchmark-protocol.md`) dan artefak reproducible (`pnpm bench`, `pnpm bench:ssr`,
+  `benchmarks/runtime-startup.sh`, `pnpm bench:security`, vitals e2e). Gate **report-only**
+  tersedia (HTTP/SSR/Web Vitals — ADR-0045/0048) tetapi belum memblokir dan toleransi belum
+  dikalibrasi multi-mesin; audit awal tidak menjalankan ulang benchmark (alasan di §5).
 - **Profiling runtime** tersedia: `engine.executed` (timings per fase) + `--op-metrics`
   (ADR-0037).
 - **Report gate berjalan** (ADR-0045) dengan **protokol §8 penuh**: warm-up + 5 ulangan,

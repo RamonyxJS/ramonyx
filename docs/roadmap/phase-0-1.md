@@ -204,6 +204,11 @@ pekerjaan Phase 5.
       browser yang menahan proses Node); dokumen dipecah penanda body; adapter Node pipe
       chunked + putus koneksi saat error setelah header; opt-in `streaming: true` (playground
       dev+produksi); parity byte-per-byte + aliran sungguhan diuji, e2e 5/5
+- [x] **Bench SSR + ambang Web Vitals** (ADR-0048): `benchmarks/ssr/bench.tsx` (in-process,
+      warm-up 3 + 9 ulangan, paritas byte-per-byte, suspense, `--expose-gc`, lantai delta 1 ms)
+      + baseline `ssr-baseline.json` + langkah CI report-only; vitals = median 3 load + ambang
+      absolut (report-only, `VITALS_STRICT=1` tersedia); baseline vitals di-refresh eksplisit;
+      `NODE_ENV=production` di skrip start/docs/bench + template `create-app`
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
       sandbox OS (seccomp/namespace), health-check otomatis, backoff eksponensial,
       evaluasi `--strict` bench setelah beberapa invokasi tenang lagi

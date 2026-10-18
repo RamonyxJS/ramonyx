@@ -54,3 +54,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0045](0045-perf-regression-gate.md) | Performance regression gate (report-only) | Accepted |
 | [0046](0046-source-maps.md) | Source map produksi (client bundle + paket npm) | Accepted |
 | [0047](0047-ssr-streaming-node.md) | SSR streaming di runtime Node (`renderToReadableStream` + `server.edge`) | Accepted |
+| [0048](0048-bench-ssr-vitals.md) | Bench SSR + ambang Web Vitals (report-only) + `NODE_ENV` produksi | Accepted |

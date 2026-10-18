@@ -50,8 +50,15 @@
   artefak = median antar-run + `spread` (`pnpm bench` memperbarui baseline secara eksplisit).
 - **Mode report-only** (`pnpm bench:report`) membandingkan hasil vs baseline **tanpa** menimpanya
   (toleransi 25%, belum memblokir) dan dipakai langkah CI non-blocking — ADR-0045.
-- Web Vitals (Phase 2): baseline `benchmarks/results/phase2-web-vitals.json` (diperbarui via
-  `UPDATE_BASELINE_VITALS=1`); run biasa menulis `test-results/web-vitals-latest.json`.
+- Bench SSR (`pnpm bench:ssr`, `benchmarks/ssr/bench.tsx`) memakai prosedur sama: warm-up 3 +
+  **9 ulangan**, median + `spread`, GC eksplisit (`--expose-gc`); in-process (tanpa socket);
+  paritas byte-per-byte sinkron vs streaming + skenario suspense; baseline
+  `benchmarks/results/ssr-baseline.json`, report-only `pnpm bench:ssr:report` (lantai delta
+  absolut 1 ms) — ADR-0048.
+- Web Vitals (Phase 2): baseline `benchmarks/results/phase2-web-vitals.json` — **median 3 load**
+  (1 load pemanasan dibuang), diperbarui via `UPDATE_BASELINE_VITALS=1`; run biasa menulis
+  `test-results/web-vitals-latest.json` + perbandingan report-only (toleransi 25%) dan ambang
+  absolut LCP ≤ 2500 / FCP ≤ 1800 / TTFB ≤ 800 / CLS ≤ 0,1 (`VITALS_STRICT=1` memblokir) — ADR-0048.
 - Abuse-case & soak (Phase 3): `benchmarks/results/phase3-abuse.json` (`pnpm bench:security`,
   `SOAK_SECONDS=<detik>` untuk durasi) — skenario serangan + RSS proses server (anak) via `/proc`
   **dan breakdown `heapUsed`/`external`/`arrayBuffers`**; CI meng-upload seluruh

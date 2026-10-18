@@ -31,6 +31,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   dari `RUNS` eksekusi; hasil → `benchmarks/results/runtime-startup.json`; butuh build release).
 - `pnpm bench:report` — benchmark HTTP **report-only** (bandingkan vs baseline tanpa menimpanya;
   artefak `benchmarks/results/latest-http.json`; gate belum memblokir — ADR-0045).
+- `pnpm bench:ssr` / `pnpm bench:ssr:report` — bench SSR in-process (sinkron vs streaming;
+  warm-up + 9 ulangan; paritas byte-per-byte + suspense; `NODE_ENV=production` + `--expose-gc`)
+  — report-only, baseline `ssr-baseline.json` (ADR-0048).
 - `pnpm bench` — autocannon HTTP baseline (**protokol §8 penuh**: warm-up 3 s + 5 ulangan,
   median/spread; menulis ulang baseline ter-commit — eksplisit); `pnpm bench:security` — abuse-case + soak
   (spawn server terpisah, RSS via /proc; `SOAK_SECONDS=300` untuk soak panjang). Hasil di
@@ -55,6 +58,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - **JSX hanya lewat loader dev.** Node type stripping tidak memproses JSX; jalankan app/test dengan
   `node --import ./tools/register.mjs` (script `test`/`bench`/`dev` sudah begitu — ADR-0006).
   Paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
+- **Produksi = `NODE_ENV=production`.** Skrip `start`/`docs`/bench SSR + template `create-app`
+  sudah men-set-nya; tanpa itu React berjalan build dev (pernah terjadi di server produksi —
+  ADR-0048).
 - **SSR streaming (ADR-0047):** opt-in `streaming: true` di `createPageRoutes`/`createApp`;
   renderer React memakai `react-dom/server.edge` — **jangan** `server.browser` (MessageChannel
   level-modul menahan proses Node: test/CLI menggantung). Error setelah byte pertama = koneksi
@@ -126,8 +132,10 @@ host runtime Rust + V8 (Phase 4+) · CI: lint → typecheck → test → build �
 
 ## Benchmark (blueprint §8)
 
-Baseline Phase 1: `benchmarks/results/phase1-baseline.json` (mesin dev; bukan klaim publik).
-Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-rata.
+Baseline (mesin dev; **bukan klaim publik**): `phase1-baseline.json` (HTTP),
+`ssr-baseline.json` (SSR sinkron vs streaming), `phase2-web-vitals.json` (median 3 load).
+Warm-up + beberapa ulangan, laporkan distribusi/median — bukan rata-rata. Gate **report-only**:
+`pnpm bench:report`, `pnpm bench:ssr:report`, vitals di e2e (`VITALS_STRICT=1` untuk memblokir).
 
 ## Status & langkah berikutnya
 
@@ -158,7 +166,7 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 **scaffolder aplikasi**
 (`pnpm create:app` — template file-routing **SSR React + hydration**, ADR-0041), **SSR streaming
 Node** (`renderToReadableStream` via `react-dom/server.edge` — ADR-0047; jalur sinkron tetap
-untuk halaman error), dan **situs
+untuk halaman error), **bench SSR + ambang Web Vitals** (report-only — ADR-0048), dan **situs
 dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042) —
 semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; sisa Phase 5: **publikasi npm sebenarnya** (butuh kredensial
@@ -167,4 +175,4 @@ Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 144 tes Node + 5 e2e + 101 test Rust hijau.
+(ADR-0016); 156 tes Node + 5 e2e + 101 test Rust hijau.

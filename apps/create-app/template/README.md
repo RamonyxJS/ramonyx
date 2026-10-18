@@ -9,7 +9,7 @@ Aplikasi [Ramonyx](https://github.com/ramonyx/ramonyx) — framework full-stack 
 ```bash
 pnpm install
 pnpm build     # bundel klien (wajib sebelum start)
-pnpm start     # http://127.0.0.1:3000
+pnpm start     # http://127.0.0.1:3000 (React build produksi: NODE_ENV=production)
 pnpm dev       # mode watch (jalankan `pnpm build` setelah mengubah UI klien)
 ```
 

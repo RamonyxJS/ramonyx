@@ -1,5 +1,8 @@
 // Statistik benchmark HTTP (protokol §8): warm-up + beberapa ulangan → distribusi (median +
-// min/max), bukan sekali jalan. Fungsi murni supaya dapat diuji unit (ADR-0045/0047).
+// min/max), bukan sekali jalan. Fungsi murni supaya dapat diuji unit (ADR-0045); helper
+// median/spread dibagi di `benchmarks/stats.ts`.
+
+import { median, type Spread, spread } from "../stats.ts";
 
 export interface LatencyMetrics {
   readonly p50: number;
@@ -17,34 +20,12 @@ export interface RunMetrics {
   readonly non2xx: number;
 }
 
-export interface Spread {
-  readonly min: number;
-  readonly max: number;
-}
-
 export interface AggregatedMetrics extends RunMetrics {
   readonly spread: {
     readonly latency: Record<keyof LatencyMetrics, Spread>;
     readonly requestsPerSecond: Spread;
     readonly throughputBytesPerSecond: Spread;
   };
-}
-
-/** Median; array kosong → error (pemanggil harus menjaga minimal 1 ulangan). */
-export function median(values: readonly number[]): number {
-  if (values.length === 0) {
-    throw new Error("median butuh minimal satu nilai");
-  }
-  const sorted = [...values].sort((a, b) => a - b);
-  const middle = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 === 1) {
-    return sorted[middle] ?? 0;
-  }
-  return ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
-}
-
-function spread(values: readonly number[]): Spread {
-  return { min: Math.min(...values), max: Math.max(...values) };
 }
 
 function medianOf(values: (runs: RunMetrics) => number, runs: readonly RunMetrics[]): number {

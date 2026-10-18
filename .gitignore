@@ -4,6 +4,7 @@ node_modules/
 # Build output
 dist/
 benchmarks/results/latest-http.json
+benchmarks/results/latest-ssr.json
 build/
 out/
 *.tsbuildinfo

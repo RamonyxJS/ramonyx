@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { median, type RunMetrics, summarizeRuns } from "./stats.ts";
+import { type RunMetrics, summarizeRuns } from "./stats.ts";
 
 function run(p50: number, rps: number): RunMetrics {
   return {
@@ -12,12 +12,6 @@ function run(p50: number, rps: number): RunMetrics {
     non2xx: 0,
   };
 }
-
-test("median: ganjil & genap", () => {
-  assert.equal(median([3, 1, 2]), 2);
-  assert.equal(median([4, 1, 3, 2]), 2.5);
-  assert.throws(() => median([]));
-});
 
 test("summarizeRuns: median antar-run + spread min/max", () => {
   const hasil = summarizeRuns([run(30, 1000), run(50, 800), run(40, 1200)]);

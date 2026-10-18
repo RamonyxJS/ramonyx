@@ -57,6 +57,8 @@ jobs:
         run: pnpm bench:security
       - name: Performance report (report-only, non-blocking)
         run: pnpm bench:report
+      - name: Performance report SSR (report-only, non-blocking)
+        run: pnpm bench:ssr:report
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
         with:

@@ -1,15 +1,36 @@
 {
-  "generatedAt": "2026-10-18T03:52:40.687Z",
-  "scenario": "GET / (build produksi, Chromium)",
+  "generatedAt": "2026-10-18T12:11:35.278Z",
+  "scenario": "GET / (build produksi, Chromium, React produksi + SSR streaming)",
   "viewport": {
     "width": 1280,
     "height": 720
   },
-  "note": "Baseline artefak — bukan klaim; threshold per workload menyusul (protokol benchmark §8)",
+  "note": "Baseline artefak — bukan klaim; vitals = median 3 load (1 load pemanasan dibuang); perbandingan report-only vs baseline (protokol benchmark §8, ADR-0048)",
+  "runs": 3,
   "vitals": {
-    "lcp": 360,
+    "lcp": 84,
     "cls": 0,
-    "fcp": 360,
-    "ttfb": 40.89999999990687
-  }
+    "fcp": 84,
+    "ttfb": 11.100000001490116
+  },
+  "perRun": [
+    {
+      "lcp": 84,
+      "cls": 0,
+      "fcp": 84,
+      "ttfb": 10.899999998509884
+    },
+    {
+      "lcp": 128,
+      "cls": 0,
+      "fcp": 128,
+      "ttfb": 13.099999999627471
+    },
+    {
+      "lcp": 80,
+      "cls": 0,
+      "fcp": 80,
+      "ttfb": 11.100000001490116
+    }
+  ]
 }

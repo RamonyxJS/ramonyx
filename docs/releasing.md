@@ -33,6 +33,8 @@
 
 ```bash
 # 1. Samakan versi di Cargo.toml (sumber) + package.json paket, commit.
+# 1b. Regenerasi dokumentasi machine-readable (angka test/ADR/paket dari suite — ADR-0054):
+pnpm docs:stats && pnpm docs:generate && pnpm docs:validate && git add -A && git commit -m "docs: regenerasi stats"
 # 2. Dry-run lokal (tanpa kredensial):
 pnpm release && pnpm release:verify
 for t in dist/npm/*.tgz; do npm publish --dry-run "$t"; done

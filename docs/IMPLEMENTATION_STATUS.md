@@ -3,6 +3,10 @@
 > Laporan audit berbasis bukti repository. **Bukan** roadmap kerja (roadmap per fase tetap di
 > `docs/roadmap/phase-0-1.md`; file ini dibuat terpisah karena diminta sebagai snapshot status
 > implementasi dan tidak menggantikan dokumen tersebut).
+>
+> **Catatan (ADR-0054):** berkas ini adalah **snapshot audit historis** — angka di dalamnya benar
+> pada saat audit dan sengaja tidak diperbarui di sini. Status fitur + angka terkini yang
+> divalidasi CI ada di `docs/machine/` (`features.json`, `stats.json`).
 
 ## 1. Ringkasan Eksekutif
 

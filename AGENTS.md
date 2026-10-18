@@ -11,6 +11,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 3. `docs/api/core-contract.md` — kontrak API v0 + catatan implementasi (§10).
 4. `docs/roadmap/phase-0-1.md` — status kerja & langkah berikutnya.
 5. `docs/PRD.md` — level produk; pertanyaan terbuka sudah direkonsiliasi (ADR-0018).
+6. `docs/machine/README.md` — lapisan dokumentasi machine-readable (status fitur + bukti, indeks
+   ADR, aturan agen, kontrol keamanan, glosarium, llms.txt); **sumber angka tunggal**:
+   `docs/machine/stats.json` (jangan mengetik angka di dokumen lain).
 
 ## Perintah
 
@@ -27,6 +30,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   atas `docs/**`) di http://127.0.0.1:4000 (build klien + start).
 - `pnpm docs:export` — ekspor statis situs docs (`apps/docs/export.ts`) untuk hosting;
   workflow `pages.yml` memakai `--base /ramonyx` → https://ramonyxjs.github.io/ramonyx/ (ADR-0052).
+- `pnpm docs:validate` / `pnpm docs:generate` / `pnpm docs:stats` — dokumentasi machine-readable
+  (`docs/machine/`, ADR-0054): validasi blocking (skema, bukti, indeks ADR, kesegaran, link),
+  regenerate artefak turunan (api/cli/llms/TODO.md), dan regenerate `stats.json` dari suite.
 - CLI devtools (`@ramonyx/devtools`, ADR-0053): di repo jalankan lewat loader —
   `node --import ./tools/register.mjs packages/devtools/src/cli.ts <dev|build|start|doctor> --app <dir>`;
   aplikasi (template) memakai `ramonyx dev|build|start` dengan konvensi `src/app.ts` `createApp()`.

@@ -42,11 +42,15 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
 ## Verifikasi
 
 ```bash
-pnpm lint && pnpm typecheck && pnpm test   # 161 tes Node
-pnpm build && pnpm test:e2e                # 5 e2e (Playwright)
-cargo test --workspace                     # 111 tes Rust
+pnpm lint && pnpm typecheck && pnpm test   # tes Node
+pnpm build && pnpm test:e2e                # e2e (Playwright)
+cargo test --workspace                     # tes Rust
+pnpm docs:validate                         # dokumentasi machine-readable (blocking)
 pnpm audit --audit-level high              # bersih
 ```
+
+Angka aktual (versi, jumlah paket/ADR/test) ada di satu tempat:
+[docs/machine/stats.json](docs/machine/stats.json) — generate ulang: `pnpm docs:stats`.
 
 ## Struktur
 
@@ -66,7 +70,11 @@ pnpm audit --audit-level high              # bersih
 
 Mulai dari [docs/BLUEPRINT.md](docs/BLUEPRINT.md) (sumber kebenaran teknis),
 [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) (status audit berbasis bukti),
-dan [docs/adr/README.md](docs/adr/README.md) (keputusan arsitektur 0001–0049).
+dan [docs/adr/README.md](docs/adr/README.md) (keputusan arsitektur).
+
+Untuk agen AI dan fakta terstruktur: [docs/machine/README.md](docs/machine/README.md) —
+status fitur + bukti (`features.json`), indeks ADR (`adrs.json`), aturan menulis aplikasi
+(`rules.json`), kontrol keamanan (`security.json`), dan `llms.txt`/`llms-full.txt`.
 
 ## Lisensi
 

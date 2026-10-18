@@ -49,12 +49,9 @@ const handler = createHandler({
                 ? "ditolak"
                 : `error-lain:${error.message}`;
           }
-          const response = await guardedFetch(
-            `http://127.0.0.1:${server.port}/cek`,
-            {},
-            { allowHosts: ["127.0.0.1"] },
-          );
-          hasil.diizinkan = await response.text();
+          // Jalur koneksi guardedFetch membutuhkan builtin node:http/https/stream — tersedia di
+          // Node, belum di runtime subset (ADR-0031/0064). Validasi (di atas) tetap diuji di sini.
+          hasil.diizinkan = "butuh-node-http";
           return json(hasil);
         },
       }),
@@ -129,7 +126,7 @@ const statuses = {
 if (halo.status !== 200 || csrfTanpaToken.status !== 403 || csrfDenganToken.status !== 200) {
   throw new Error(`status security salah: ${JSON.stringify(statuses)}`);
 }
-if (ssrf.loopback !== "ditolak" || ssrf.takAda !== "ditolak" || ssrf.diizinkan !== "lokal:/cek") {
+if (ssrf.loopback !== "ditolak" || ssrf.takAda !== "ditolak" || ssrf.diizinkan !== "butuh-node-http") {
   throw new Error(`SSRF salah: ${JSON.stringify(ssrf)}`);
 }
 if (statuses.cspNonce !== true) throw new Error("nonce CSP tidak berganti antar request");

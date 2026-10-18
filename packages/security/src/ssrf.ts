@@ -1,8 +1,8 @@
 import { lookup as dnsLookup } from "node:dns/promises";
-import { request as httpRequest } from "node:http";
-import { request as httpsRequest } from "node:https";
 import { isIP } from "node:net";
-import { Readable } from "node:stream";
+// `node:http`/`node:https`/`node:stream` diimpor **lazy** (di `pinnedFetch`) agar modul ini
+// tetap dapat dimuat di runtime subset tanpa API tersebut (validasi SSRF tetap jalan;
+// jalur koneksi memberi error jelas) — ADR-0031/0064.
 
 export class SsrfError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -155,7 +155,7 @@ function toNodeBody(
 ):
   | { kind: "none" }
   | { kind: "buffer"; data: Buffer; contentType?: string }
-  | { kind: "stream"; stream: Readable } {
+  | { kind: "stream"; stream: ReadableStream } {
   if (body === null || body === undefined) {
     return { kind: "none" };
   }
@@ -176,7 +176,7 @@ function toNodeBody(
     return { kind: "buffer", data: Buffer.from(body.buffer, body.byteOffset, body.byteLength) };
   }
   if (body instanceof ReadableStream) {
-    return { kind: "stream", stream: Readable.fromWeb(body as never) };
+    return { kind: "stream", stream: body };
   }
   throw new SsrfError(
     "guardedFetch: tipe body belum didukung (gunakan string/bytes/URLSearchParams/ReadableStream; FormData menyusul).",
@@ -184,7 +184,24 @@ function toNodeBody(
 }
 
 /** Koneksi HTTP(S) dengan alamat terpin (`lookup` mengembalikan alamat hasil validasi). */
-function pinnedFetch(url: URL, pin: Pin | null, init: RequestInit): Promise<Response> {
+async function pinnedFetch(url: URL, pin: Pin | null, init: RequestInit): Promise<Response> {
+  let httpRequest: typeof import("node:http").request;
+  let httpsRequest: typeof import("node:https").request;
+  let Readable: typeof import("node:stream").Readable;
+  try {
+    [{ request: httpRequest }, { request: httpsRequest }, { Readable }] = await Promise.all([
+      import("node:http"),
+      import("node:https"),
+      import("node:stream"),
+    ]);
+  } catch (error) {
+    throw new SsrfError(
+      "guardedFetch: jalur koneksi membutuhkan builtin node:http/node:https/node:stream (runtime Node) — " +
+        "validasi SSRF tetap tersedia tanpa builtin tersebut.",
+      { cause: error },
+    );
+  }
+
   return new Promise<Response>((resolve, reject) => {
     const headers = collectHeaders(init);
     const body = toNodeBody(init.body);
@@ -266,8 +283,9 @@ function pinnedFetch(url: URL, pin: Pin | null, init: RequestInit): Promise<Resp
     if (body.kind === "buffer") {
       request.end(body.data);
     } else if (body.kind === "stream") {
-      body.stream.pipe(request);
-      body.stream.on("error", (error) => request.destroy(error));
+      const nodeStream = Readable.fromWeb(body.stream as never);
+      nodeStream.pipe(request);
+      nodeStream.on("error", (error: Error) => request.destroy(error));
     } else {
       request.end();
     }

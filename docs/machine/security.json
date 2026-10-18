@@ -91,7 +91,8 @@
       ],
       "gaps": [
         "Body FormData/multipart belum didukung",
-        "Pencocokan IPv6/zone-id terbatas"
+        "Pencocokan IPv6/zone-id terbatas",
+        "Jalur koneksi butuh builtin node:http/https/stream — validasi tetap jalan di runtime subset (ADR-0064)"
       ],
       "adrs": [
         "ADR-0015",

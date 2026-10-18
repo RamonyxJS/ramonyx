@@ -51,3 +51,6 @@ validasi dan koneksi, sehingga koneksi bisa mendarat di alamat privat.
   opsi fetch lanjutan seperti `redirect: "follow"` internal tidak berlaku — API kami memakai
   `maxRedirects`).
 - Sisa kandidat: `FormData`/multipart, proxy support, timeout bawaan selain `signal`.
+- **Runtime subset (ADR-0031)**: `node:http`/`node:https`/`node:stream` diimpor **lazy** — modul
+  tetap dimuat dan validasi SSRF berjalan di runtime, sedangkan jalur koneksi memberi error jelas
+  (`butuh builtin node:http…`); fixture compatibility diperbarui sesuai (koneksi diuji di Node).

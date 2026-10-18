@@ -77,6 +77,34 @@ pub struct WorkerOptions {
     pub(crate) max_rss_mb: Option<usize>,
     /// Supervisi restart **plugin** (proses); diabaikan worker (thread) — ADR-0043.
     pub(crate) restart: Option<RestartSpec>,
+    /// Health-check plugin (ADR-0044): `true` (5 s) atau `{ deadlineMs }`. Deteksi senyap
+    /// dilakukan saat induk menunggu pesan (`receive`); plugin terwell-behaved mengirim
+    /// `ramonyx.heartbeat()` secara berkala.
+    pub(crate) health_check: Option<HealthSpec>,
+}
+
+/// Opsi health-check (`healthCheck: true | { deadlineMs }`).
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(untagged)]
+pub enum HealthSpec {
+    Flag(bool),
+    Tabel {
+        #[serde(rename = "deadlineMs")]
+        deadline_ms: Option<u64>,
+    },
+}
+
+impl HealthSpec {
+    /// `None` bila dimatikan; selain itu deadline senyap.
+    pub(crate) fn deadline(&self) -> Option<std::time::Duration> {
+        match self {
+            Self::Flag(false) => None,
+            Self::Flag(true) => Some(std::time::Duration::from_secs(5)),
+            Self::Tabel { deadline_ms } => Some(std::time::Duration::from_millis(
+                deadline_ms.unwrap_or(5000),
+            )),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Default)]

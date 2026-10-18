@@ -425,3 +425,146 @@ globalThis.__kill_supervisi_ok = true;
 
     let _ = std::fs::remove_dir_all(&directory);
 }
+
+/// Skrip plugin untuk uji health-check: heartbeat berkala + bisa dibuat "hang" (blokir JS).
+const PLUGIN_HEARTBEAT: &str = r#"
+const berkas = __MARKER__;
+let generasi = 0;
+try {
+  generasi = Number(await ramonyx.readTextFile(berkas));
+} catch {
+  generasi = 0;
+}
+generasi += 1;
+await ramonyx.writeTextFile(berkas, String(generasi));
+
+// Heartbeat berkala selama pekerjaan berjalan.
+(async () => {
+  for (;;) {
+    await ramonyx.sleep(100);
+    await ramonyx.heartbeat();
+  }
+})();
+
+await ramonyx.parent.send({ siap: generasi });
+const perintah = await ramonyx.parent.receive();
+if (perintah?.perintah === "hang") {
+  for (;;) {} // blokir JS: heartbeat berhenti -> induk mendeteksi senyap
+}
+"#;
+
+#[test]
+fn plugin_health_check_restart_setelah_hang() {
+    let directory = temp_dir("health");
+    let marker = directory.join("generasi.txt");
+    let plugin = directory.join("plugin-heartbeat.mjs");
+    std::fs::write(
+        &plugin,
+        PLUGIN_HEARTBEAT.replace("__MARKER__", &js_literal(&marker)),
+    )
+    .expect("write");
+
+    let main = directory.join("main.mjs");
+    std::fs::write(
+        &main,
+        format!(
+            r#"
+const plugin = await ramonyx.spawn({plugin}, {{
+  allow: {{ read: [{dir}], write: [{dir}] }},
+  restart: {{ maxRestarts: 3, delayMs: 50 }},
+  healthCheck: {{ deadlineMs: 700 }},
+}});
+
+const siap1 = await plugin.receive();
+if (siap1?.siap !== 1) throw new Error("generasi awal harus 1: " + JSON.stringify(siap1));
+
+await plugin.send({{ perintah: "hang" }});
+// Induk menunggu; heartbeat berhenti -> deteksi senyap -> kill -> restart generasi 2.
+const siap2 = await plugin.receive();
+if (siap2?.siap !== 2) throw new Error("harus generasi 2 setelah hang: " + JSON.stringify(siap2));
+
+const stats = plugin.stats();
+if (stats.hangs !== 1) throw new Error("hangs harus 1: " + JSON.stringify(stats));
+if (stats.restarts !== 1) throw new Error("restarts harus 1: " + JSON.stringify(stats));
+
+await plugin.kill();
+globalThis.__health_ok = true;
+"#,
+            plugin = js_literal(&plugin),
+            dir = js_literal(&directory),
+        ),
+    )
+    .expect("write");
+
+    let mut engine = engine(Permissions {
+        read: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        write: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        ..Default::default()
+    });
+    engine.execute_module(&main).expect("health check restart");
+    engine
+        .execute(
+            "[verify]",
+            "if (globalThis.__health_ok !== true) throw new Error('health gagal');",
+        )
+        .expect("verify");
+
+    let _ = std::fs::remove_dir_all(&directory);
+}
+
+#[test]
+fn plugin_health_check_tanpa_supervisi_berakhir_null() {
+    let directory = temp_dir("health-null");
+    let marker = directory.join("generasi.txt");
+    let plugin = directory.join("plugin-heartbeat.mjs");
+    std::fs::write(
+        &plugin,
+        PLUGIN_HEARTBEAT.replace("__MARKER__", &js_literal(&marker)),
+    )
+    .expect("write");
+
+    let main = directory.join("main.mjs");
+    std::fs::write(
+        &main,
+        format!(
+            r#"
+const plugin = await ramonyx.spawn({plugin}, {{
+  allow: {{ read: [{dir}], write: [{dir}] }},
+  healthCheck: {{ deadlineMs: 500 }},
+}});
+
+const siap = await plugin.receive();
+if (siap?.siap !== 1) throw new Error("generasi awal harus 1: " + JSON.stringify(siap));
+
+await plugin.send({{ perintah: "hang" }});
+const akhir = await plugin.receive();
+if (akhir !== null) throw new Error("harus null setelah hang tanpa supervisi: " + JSON.stringify(akhir));
+
+const stats = plugin.stats();
+if (stats.hangs !== 1) throw new Error("hangs harus 1: " + JSON.stringify(stats));
+if (stats.stopped !== true) throw new Error("harus stopped: " + JSON.stringify(stats));
+globalThis.__health_null_ok = true;
+"#,
+            plugin = js_literal(&plugin),
+            dir = js_literal(&directory),
+        ),
+    )
+    .expect("write");
+
+    let mut engine = engine(Permissions {
+        read: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        write: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        ..Default::default()
+    });
+    engine
+        .execute_module(&main)
+        .expect("health tanpa supervisi");
+    engine
+        .execute(
+            "[verify]",
+            "if (globalThis.__health_null_ok !== true) throw new Error('health null gagal');",
+        )
+        .expect("verify");
+
+    let _ = std::fs::remove_dir_all(&directory);
+}

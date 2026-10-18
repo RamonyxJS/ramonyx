@@ -29,13 +29,16 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines};
 use tokio::process::{Child, ChildStdin, ChildStdout};
 use tokio::sync::Notify;
 
-use crate::worker::{RestartSpec, WorkerOptions, resolve_permissions};
+use crate::worker::{HealthSpec, RestartSpec, WorkerOptions, resolve_permissions};
 
 /// Batas ukuran satu pesan (JSON) induk ↔ plugin.
 const MAX_MESSAGE_BYTES: usize = 1024 * 1024;
 
 /// Batas jumlah plugin aktif per proses (guard fork bomb).
 const MAX_PLUGINS: usize = 8;
+
+/// Baris protokol khusus heartbeat (difilter dari `receive`, dipakai health-check ADR-0044).
+const HEARTBEAT_LINE: &str = "{\"__ramonyx\":\"heartbeat\"}";
 
 /// Perintah spawn yang dapat diulang (dipakai supervisor).
 #[derive(Clone)]
@@ -86,6 +89,9 @@ pub struct PluginState {
     max_restarts: u32,
     restart_delay: Duration,
     last_exit: Option<i32>,
+    hang_deadline: Option<Duration>,
+    hangs: u32,
+    last_activity: std::time::Instant,
     wake: Arc<Notify>,
 }
 
@@ -147,6 +153,7 @@ pub struct StatsEnvelope {
     running: bool,
     stopped: bool,
     last_exit: Option<i32>,
+    hangs: u32,
 }
 
 fn check_message_size(text: &str) -> Result<(), JsErrorBox> {
@@ -362,6 +369,7 @@ pub async fn op_plugin_spawn(
     let stdout = child.stdout.take().map(|out| BufReader::new(out).lines());
 
     let supervised = policy_max.is_some();
+    let hang_deadline = options.health_check.as_ref().and_then(HealthSpec::deadline);
     let plugin_state = Arc::new(Mutex::new(PluginState {
         spec,
         child: Some(child),
@@ -374,6 +382,9 @@ pub async fn op_plugin_spawn(
         max_restarts: policy_max.unwrap_or(0),
         restart_delay: policy_delay.unwrap_or_default(),
         last_exit: None,
+        hang_deadline,
+        hangs: 0,
+        last_activity: std::time::Instant::now(),
         wake: Arc::new(Notify::new()),
     }));
 
@@ -479,7 +490,59 @@ pub async fn op_plugin_receive(
         };
 
         if let Some(mut lines) = lines.take() {
-            let read = lines.next_line().await.map_err(|error| {
+            let deadline = {
+                let plugin = plugin_state
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+                plugin.hang_deadline
+            };
+
+            let read = match deadline {
+                Some(deadline) => match tokio::time::timeout(deadline, lines.next_line()).await {
+                    Ok(result) => result,
+                    Err(_) => {
+                        // Senyap melebihi deadline: anggap hang → SIGKILL proses saat ini.
+                        // Dengan supervisi: supervisor mereap lalu restart generasi baru.
+                        // Tanpa supervisi: reap sendiri + tandai stopped (terminal).
+                        let (supervised, child) = {
+                            let mut plugin = plugin_state
+                                .lock()
+                                .unwrap_or_else(|poisoned| poisoned.into_inner());
+                            plugin.hangs += 1;
+                            (plugin.supervised, plugin.child.take())
+                        };
+
+                        if supervised {
+                            let plugin = plugin_state
+                                .lock()
+                                .unwrap_or_else(|poisoned| poisoned.into_inner());
+                            if let Some(pid) = plugin.pid {
+                                // SAFETY: `kill` hanya mengirim sinyal; kegagalan diabaikan.
+                                unsafe {
+                                    libc::kill(pid as i32, libc::SIGKILL);
+                                }
+                            }
+                            plugin.wake.notify_waiters();
+                            drop(plugin);
+                        } else if let Some(mut child) = child {
+                            let _ = child.start_kill();
+                            let status = child.wait().await.ok();
+                            let mut plugin = plugin_state
+                                .lock()
+                                .unwrap_or_else(|poisoned| poisoned.into_inner());
+                            plugin.last_exit = status.and_then(|status| status.code());
+                            plugin.pid = None;
+                            plugin.stopped = true;
+                            plugin.wake.notify_waiters();
+                            drop(plugin);
+                        }
+                        continue;
+                    }
+                },
+                None => lines.next_line().await,
+            };
+
+            let read = read.map_err(|error| {
                 JsErrorBox::generic(format!("gagal membaca dari plugin: {error}"))
             });
             match read {
@@ -487,6 +550,13 @@ pub async fn op_plugin_receive(
                     let mut plugin = plugin_state
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
+                    plugin.last_activity = std::time::Instant::now();
+                    // Baris heartbeat bukan pesan aplikasi — jangan diteruskan ke `receive`.
+                    if line == HEARTBEAT_LINE {
+                        plugin.stdout = Some(lines);
+                        drop(plugin);
+                        continue;
+                    }
                     plugin.stdout = Some(lines);
                     return Ok(MessageEnvelope { text: Some(line) });
                 }
@@ -534,6 +604,7 @@ pub fn op_plugin_stats(
             running: false,
             stopped: true,
             last_exit: None,
+            hangs: 0,
         });
     };
     let plugin = plugin
@@ -544,6 +615,7 @@ pub fn op_plugin_stats(
         running: plugin.child.is_some(),
         stopped: plugin.stopped || plugin.terminal(),
         last_exit: plugin.last_exit,
+        hangs: plugin.hangs,
     })
 }
 
@@ -625,6 +697,36 @@ pub async fn op_plugin_kill(
     }
 
     Ok(MessageEnvelope { text: None })
+}
+
+/// Kirim heartbeat ke induk (hanya plugin): baris protokol khusus yang difilter `receive`.
+#[op2(async(lazy), fast)]
+pub async fn op_parent_heartbeat(state: Rc<RefCell<OpState>>) -> Result<(), JsErrorBox> {
+    {
+        let op_state = state.borrow();
+        let channel = op_state.borrow::<crate::worker::WorkerSelfChannel>();
+        if channel.to_parent.is_some() {
+            return Err(JsErrorBox::generic(
+                "ramonyx.heartbeat hanya untuk plugin (proses)",
+            ));
+        }
+        let bridge = op_state.borrow::<ProcessBridge>();
+        if bridge.stdin.is_none() {
+            return Err(JsErrorBox::generic(
+                "ramonyx.heartbeat hanya tersedia di dalam plugin",
+            ));
+        }
+    }
+
+    let mut stdout = tokio::io::stdout();
+    stdout
+        .write_all(format!("{HEARTBEAT_LINE}\n").as_bytes())
+        .await
+        .map_err(|error| JsErrorBox::generic(format!("gagal menulis heartbeat: {error}")))?;
+    stdout
+        .flush()
+        .await
+        .map_err(|error| JsErrorBox::generic(format!("gagal flush heartbeat: {error}")))
 }
 
 /// Keluar dari proses ini dengan kode tertentu (dipakai plugin untuk selesai).

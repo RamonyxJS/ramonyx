@@ -180,6 +180,8 @@ globalThis.ramonyx = {
   },
   // Keluar dari proses ini (dipakai plugin untuk menyelesaikan diri).
   exit: (code) => Deno.core.ops.op_process_exit(Math.max(0, Math.trunc(Number(code) || 0))),
+  // Heartbeat plugin (health-check induk): kirim berkala saat pekerjaan berjalan.
+  heartbeat: () => Deno.core.ops.op_parent_heartbeat(),
   serve: (port, handler, options) => {
     // Batas body server (default 1 MiB, selaras ADR-0011): content-length lebih besar →
     // 413 dini; chunked yang melebihi batas → error saat dibaca (ADR-0035).
@@ -413,6 +415,7 @@ extension!(
         plugin::op_plugin_kill,
         plugin::op_plugin_stats,
         plugin::op_process_exit,
+        plugin::op_parent_heartbeat,
         plugin::op_parent_send,
         plugin::op_parent_receive,
     ],

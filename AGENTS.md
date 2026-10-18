@@ -71,8 +71,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   **isolasi worker + kuota** (`ramonyx.worker`: thread + isolate V8 terpisah, pesan JSON,
   permission irisan anti-eskalasi, kill switch — ADR-0034), serta **streaming request + batas
   body server** (`payload.body` stream pull-model, `maxBodyBytes` default 1 MiB, 413 dini —
-  ADR-0035) — tetapi **belum**: https/TLS & redirect fetch, kuota CPU/memori eksternal, isolasi
-  level proses untuk plugin; **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
+  ADR-0035), serta **`fetch` https + redirect otomatis** (TLS diverifikasi, CA kustom
+  `--tls-ca`, follow/manual/error, permission per hop — ADR-0036) — tetapi **belum**: kuota
+  CPU/memori eksternal, isolasi level proses untuk plugin; **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
   dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
   **subset** (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak
   dengan pesan jelas) — jangan diklaim lebih. Build pertama V8/deno_core+deno_ast+hyper ±3 menit;
@@ -126,11 +127,12 @@ ADR-0031), **jembatan `serveHandler` + playground subset** (halaman SSR + API + 
 security berjalan end-to-end lewat HTTP — ADR-0032), **resource limits** (kuota heap V8,
 watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker + kuota**
 (thread + isolate V8 terpisah, pesan JSON, permission irisan, kill switch — ADR-0034), dan
-**streaming request + batas body server** (body pull-model + 413 dini — ADR-0035) — semuanya
-diverifikasi test + smoke. **Exit criteria Phase 4 tercapai**; sisa menuju Phase 5: kuota
-CPU/memori eksternal, isolasi level proses untuk plugin, https/TLS & redirect, profiling.
+**streaming request + batas body server** (body pull-model + 413 dini — ADR-0035), dan
+**`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036) — semuanya diverifikasi
+test + smoke. **Exit criteria Phase 4 tercapai**; sisa menuju Phase 5: kuota CPU/memori
+eksternal, isolasi level proses untuk plugin, profiling (R4), rilis.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 78 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 84 test Rust hijau.

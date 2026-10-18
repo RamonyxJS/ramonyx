@@ -144,7 +144,10 @@ pekerjaan Phase 5.
   diperbaiki: byte chunk dulu di-`String()` → body rusak (kini decoder UTF-8 mode stream);
   fixture playground subset (halaman SSR + layout + loader + rute dinamis + error page + API +
   POST + security middleware) berjalan **end-to-end lewat HTTP** di runtime
-- [ ] **Compatibility lanjutan** — https/TLS + redirect fetch, suite yang lebih luas
+- [x] **`fetch` https (TLS diverifikasi) + redirect otomatis** (ADR-0036): rustls + ring, root
+      webpki + CA kustom (`--tls-ca`), verifikasi tidak pernah dimatikan; redirect follow/manual/
+      error (maks 10 hop, permission per hop, strip header sensitif lintas origin)
+- [ ] **Compatibility lanjutan** — suite yang lebih luas (mis. fixture aplikasi kedua)
 - [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
       **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,
       handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end
@@ -159,7 +162,7 @@ pekerjaan Phase 5.
       1 MiB, selaras ADR-0011) — **413 dini** via content-length tanpa memanggil handler, atau
       error saat dibaca untuk chunked; bukti pembacaan bertahap end-to-end (marker chunk pertama)
 - [ ] **Fase 5 lanjutan** — kuota CPU/memori eksternal, isolasi level proses untuk plugin,
-      https/TLS + redirect fetch, R4 profiling/startup, release pipeline
+      R4 profiling/startup, release pipeline
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

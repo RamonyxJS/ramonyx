@@ -103,3 +103,16 @@ pub struct ExecutionTimings {
     pub evaluate: Duration,
     pub total: Duration,
 }
+
+/// Rincian inisialisasi engine (R4): isolate/deno_core vs bootstrap vs web shim.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct InitTimings {
+    /// `JsRuntime::new` (isolate V8 + deno_core init; termasuk init platform V8 sekali per proses).
+    pub runtime: Duration,
+    /// Eksekusi script bootstrap (`globalThis.ramonyx`, AbortController, console).
+    pub bootstrap: Duration,
+    /// Eksekusi web shim (URL/Headers/ReadableStream/fetch/timers/MessageChannel/crypto).
+    pub web_shim: Duration,
+    /// Total inisialisasi engine.
+    pub total: Duration,
+}

@@ -52,6 +52,7 @@ binary, runs, tmp, out_path = sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.ar
 
 def measure(script, extra=()):
     wall, startup, load, evaluate, total = [], [], [], [], []
+    v8, bootstrap, web_shim = [], [], []
     for _ in range(runs):
         started = time.perf_counter()
         result = subprocess.run(
@@ -69,6 +70,10 @@ def measure(script, extra=()):
                 continue
             fields = record.get("fields", {})
             startup.append(fields.get("startupMs"))
+            breakdown = fields.get("startup") or {}
+            v8.append(breakdown.get("v8Ms"))
+            bootstrap.append(breakdown.get("bootstrapMs"))
+            web_shim.append(breakdown.get("webShimMs"))
             timings = fields.get("timings") or {}
             load.append(timings.get("loadMs"))
             evaluate.append(timings.get("evalMs"))
@@ -87,6 +92,11 @@ def measure(script, extra=()):
     return {
         "wallMs": stats(wall),
         "engineStartupMs": stats(startup),
+        "startupBreakdown": {
+            "v8Ms": stats(v8),
+            "bootstrapMs": stats(bootstrap),
+            "webShimMs": stats(web_shim),
+        },
         "loadMs": stats(load),
         "evaluateMs": stats(evaluate),
         "totalMs": stats(total),

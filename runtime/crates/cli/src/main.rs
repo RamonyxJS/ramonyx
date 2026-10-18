@@ -328,12 +328,19 @@ fn log_engine_success(
             "totalMs": ms(timings.total),
         })
     });
+    let init = engine.init_timings();
     logger.info(
         "engine.executed",
         &serde_json::json!({
             "entry": entry_path.display().to_string(),
             "mode": mode,
             "startupMs": startup_ms,
+            "startup": {
+                "v8Ms": ms(init.runtime),
+                "bootstrapMs": ms(init.bootstrap),
+                "webShimMs": ms(init.web_shim),
+                "totalMs": ms(init.total),
+            },
             "timings": timings,
         }),
     );

@@ -37,7 +37,7 @@ mod resolve;
 mod web_shim;
 mod worker;
 
-pub use metrics::{ExecutionTimings, OpMetricEntry};
+pub use metrics::{ExecutionTimings, InitTimings, OpMetricEntry};
 
 use resolve::resolve_bare;
 use web_shim::WEB_SHIM;
@@ -691,6 +691,7 @@ pub struct Engine {
     timeout: Option<Duration>,
     metrics: Option<metrics::MetricsHandle>,
     last_timings: Option<ExecutionTimings>,
+    init_timings: InitTimings,
 }
 
 /// Opsi engine; default **deny-all** (secure by default, ADR-0023).
@@ -716,6 +717,7 @@ impl Engine {
     }
 
     pub fn with_options(options: EngineOptions) -> Result<Self, EngineError> {
+        let init_started = std::time::Instant::now();
         let tokio = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
@@ -738,6 +740,7 @@ impl Engine {
         // Isolate HARUS dibuat di dalam konteks tokio: V8 dapat memposting delayed
         // task kapan saja (mis. GC memory reducer); deno_core men-abort proses bila
         // isolate terdaftar tanpa handle tokio untuk menghormati delay tersebut.
+        let runtime_started = std::time::Instant::now();
         let mut runtime = {
             let _guard = tokio.enter();
             JsRuntime::new(RuntimeOptions {
@@ -767,12 +770,26 @@ impl Engine {
             });
         }
 
+        let runtime_time = runtime_started.elapsed();
+
+        let bootstrap_started = std::time::Instant::now();
         runtime
             .execute_script("[ramonyx:bootstrap]".to_string(), BOOTSTRAP.to_string())
             .map_err(|error| EngineError::new(format!("bootstrap gagal: {error}")))?;
+        let bootstrap_time = bootstrap_started.elapsed();
+
+        let web_shim_started = std::time::Instant::now();
         runtime
             .execute_script("[ramonyx:web-shim]".to_string(), WEB_SHIM.to_string())
             .map_err(|error| EngineError::new(format!("web shim gagal: {error}")))?;
+        let web_shim_time = web_shim_started.elapsed();
+
+        let init_timings = InitTimings {
+            runtime: runtime_time,
+            bootstrap: bootstrap_time,
+            web_shim: web_shim_time,
+            total: init_started.elapsed(),
+        };
 
         {
             let op_state_rc = runtime.op_state();
@@ -792,7 +809,13 @@ impl Engine {
             timeout: options.timeout,
             metrics,
             last_timings: None,
+            init_timings,
         })
+    }
+
+    /// Rincian waktu inisialisasi engine (R4).
+    pub fn init_timings(&self) -> InitTimings {
+        self.init_timings
     }
 
     /// Waktu eksekusi terakhir (bila ada).

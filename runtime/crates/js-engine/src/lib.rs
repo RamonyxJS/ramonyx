@@ -26,6 +26,9 @@ use deno_error::JsErrorBox;
 use runtime_core::Permissions;
 
 mod http;
+mod resolve;
+
+use resolve::resolve_bare;
 
 const BOOTSTRAP: &str = r#"
 // Polyfill minimal AbortController/AbortSignal (deno_core tidak menyediakan DOM API).
@@ -307,12 +310,19 @@ impl ModuleLoader for FileModuleLoader {
         referrer: &str,
         _kind: ResolutionKind,
     ) -> Result<ModuleSpecifier, ModuleLoaderError> {
-        let resolved =
+        let is_relative = specifier.starts_with("./")
+            || specifier.starts_with("../")
+            || specifier.starts_with('/')
+            || specifier.starts_with("file:");
+
+        let resolved = if is_relative {
             resolve_import(specifier, referrer).map_err(|error| {
-                JsErrorBox::generic(format!(
-                    "tidak bisa me-resolve \"{specifier}\": {error} (bare specifier/paket npm belum didukung)"
-                ))
-            })?;
+                JsErrorBox::generic(format!("tidak bisa me-resolve \"{specifier}\": {error}"))
+            })?
+        } else {
+            // Bare specifier → resolusi node_modules (ADR-0026).
+            resolve_bare(specifier, referrer)?
+        };
 
         let path = resolved
             .to_file_path()
@@ -604,7 +614,7 @@ mod tests {
     }
 
     #[test]
-    fn bare_specifier_ditolak_dengan_pesan_jelas() {
+    fn bare_specifier_tanpa_paket_ditolak_dengan_pesan_jelas() {
         let directory = temp_dir("bare");
         fs::write(directory.join("main.mjs"), "import x from 'paket-npm';\n").expect("write");
 
@@ -613,9 +623,48 @@ mod tests {
             .execute_module(&directory.join("main.mjs"))
             .expect_err("harus error");
         assert!(
-            error.to_string().contains("belum didukung"),
+            error.to_string().contains("tidak ditemukan"),
             "pesan jelas: {error}"
         );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn modul_mengimpor_paket_node_modules() {
+        let directory = temp_dir("node-modules");
+        let package_dir = directory.join("node_modules/demo-pkg");
+        fs::create_dir_all(&package_dir).expect("mkdir");
+        fs::write(
+            package_dir.join("package.json"),
+            r#"{ "name": "demo-pkg", "exports": { ".": { "import": "./esm/main.js" } } }"#,
+        )
+        .expect("manifest");
+        fs::create_dir_all(package_dir.join("esm")).expect("mkdir esm");
+        fs::write(
+            package_dir.join("esm/main.js"),
+            "export function halo() { return 'dari paket'; }\n",
+        )
+        .expect("kode paket");
+
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            "import { halo } from 'demo-pkg';\nglobalThis.__pkg = halo();\n",
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+        })
+        .expect("engine");
+        engine.execute_module(&main).expect("import paket");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__pkg !== 'dari paket') throw new Error('hasil paket salah');",
+            )
+            .expect("verify");
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }

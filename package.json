@@ -23,6 +23,7 @@
     "@playwright/test": "1.64.1",
     "@ramonyx/adapter-runtime": "workspace:*",
     "@ramonyx/core": "workspace:*",
+    "@ramonyx/router": "workspace:*",
     "@ramonyx/schema": "workspace:*",
     "@ramonyx/server": "workspace:*",
     "@types/autocannon": "7.12.7",

@@ -178,6 +178,9 @@ importers:
       '@ramonyx/core':
         specifier: workspace:*
         version: link:packages/core
+      '@ramonyx/router':
+        specifier: workspace:*
+        version: link:packages/router
       '@ramonyx/schema':
         specifier: workspace:*
         version: link:packages/schema

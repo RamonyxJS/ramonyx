@@ -199,8 +199,10 @@ pub fn resolve_bare(specifier: &str, referrer: &str) -> Result<ModuleSpecifier, 
                 )));
             }
 
-            return ModuleSpecifier::from_file_path(&resolved).map_err(|_| {
-                JsErrorBox::generic(format!("path tidak valid: {}", resolved.display()))
+            // Canonicalize agar symlink workspace (pnpm) ter-dedupe menjadi modul yang sama.
+            let canonical = std::fs::canonicalize(&resolved).unwrap_or(resolved);
+            return ModuleSpecifier::from_file_path(&canonical).map_err(|_| {
+                JsErrorBox::generic(format!("path tidak valid: {}", canonical.display()))
             });
         }
         directory = current.parent().map(Path::to_path_buf);

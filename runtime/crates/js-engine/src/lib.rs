@@ -330,14 +330,22 @@ impl ModuleLoader for FileModuleLoader {
             .to_file_path()
             .map_err(|_| JsErrorBox::generic(format!("hanya file:// yang didukung: {resolved}")))?;
 
+        // Canonicalize agar symlink workspace (pnpm/node_modules) ter-dedupe:
+        // jalur berbeda menuju file yang sama harus menjadi modul yang sama.
+        let canonical = |path: &Path| -> PathBuf {
+            std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
+        };
+
         if path.is_file() {
-            return Ok(resolved);
+            return ModuleSpecifier::from_file_path(canonical(&path))
+                .map_err(|_| JsErrorBox::generic(format!("path tidak valid: {}", path.display())));
         }
 
         for candidate in extension_candidates(&path) {
             if candidate.is_file() {
-                return ModuleSpecifier::from_file_path(&candidate).map_err(|_| {
-                    JsErrorBox::generic(format!("path tidak valid: {}", candidate.display()))
+                let file = canonical(&candidate);
+                return ModuleSpecifier::from_file_path(&file).map_err(|_| {
+                    JsErrorBox::generic(format!("path tidak valid: {}", file.display()))
                 });
             }
         }

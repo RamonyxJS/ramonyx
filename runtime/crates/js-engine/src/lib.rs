@@ -28,6 +28,64 @@ use runtime_core::Permissions;
 mod http;
 
 const BOOTSTRAP: &str = r#"
+// Polyfill minimal AbortController/AbortSignal (deno_core tidak menyediakan DOM API).
+// Cukup untuk kontrak `ramonyx.*`: aborted, reason, addEventListener("abort", fn, { once }).
+class RamonyxAbortSignal {
+  constructor() {
+    this.aborted = false;
+    this.reason = undefined;
+    this._listeners = new Set();
+  }
+  addEventListener(type, listener, options) {
+    if (type !== "abort" || typeof listener !== "function") {
+      return;
+    }
+    const once = options === true || options?.once === true;
+    if (once) {
+      const wrapper = (event) => {
+        this._listeners.delete(wrapper);
+        listener.call(this, event);
+      };
+      this._listeners.add(wrapper);
+      return;
+    }
+    this._listeners.add(listener);
+  }
+  removeEventListener(type, listener) {
+    if (type === "abort") {
+      this._listeners.delete(listener);
+    }
+  }
+  _abort(reason) {
+    if (this.aborted) {
+      return;
+    }
+    this.aborted = true;
+    this.reason = reason;
+    const listeners = [...this._listeners];
+    this._listeners.clear();
+    for (const listener of listeners) {
+      try {
+        listener.call(this, { type: "abort", target: this });
+      } catch {
+        // listener yang error tidak boleh mematikan proses abort
+      }
+    }
+  }
+}
+
+class RamonyxAbortController {
+  constructor() {
+    this.signal = new RamonyxAbortSignal();
+  }
+  abort(reason) {
+    this.signal._abort(reason);
+  }
+}
+
+globalThis.AbortController = RamonyxAbortController;
+globalThis.AbortSignal = RamonyxAbortSignal;
+
 globalThis.ramonyx = {
   sleep: (ms) => Deno.core.ops.op_sleep(ms),
   readTextFile: (path) => Deno.core.ops.op_read_text_file(path),
@@ -45,6 +103,17 @@ globalThis.ramonyx = {
         if (request === null) {
           return;
         }
+        const controller = new AbortController();
+        request.signal = controller.signal;
+        // Deteksi klien putus selama handler berjalan → abort signal (cancellation).
+        Deno.core.ops
+          .op_http_watch(serverId, request.id)
+          .then((closed) => {
+            if (closed) {
+              controller.abort("client-disconnected");
+            }
+          })
+          .catch(() => {});
         let response;
         try {
           response = await handler(request);
@@ -55,6 +124,7 @@ globalThis.ramonyx = {
             body: String(error),
           };
         }
+        // Bila klien sudah pergi, respond menjadi no-op (server tetap hidup).
         Deno.core.ops.op_http_respond(
           serverId,
           request.id,
@@ -146,6 +216,7 @@ extension!(
         http::op_http_listen,
         http::op_http_accept,
         http::op_http_respond,
+        http::op_http_watch,
         http::op_http_close,
     ],
     state = |state: &mut OpState| {
@@ -724,5 +795,169 @@ await ramonyx.writeTextFile({port_literal}, String(server.port));
         );
 
         fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn klien_putus_memicu_abort_dan_server_tetap_hidup() {
+        use std::io::{Read as IoRead, Write as IoWrite};
+
+        let directory = temp_dir("abort");
+        let port_path = directory.join("port.txt");
+        let marker = directory.join("aborted.txt");
+        let port_literal = serde_json::to_string(port_path.to_str().expect("utf8")).expect("json");
+        let marker_literal = serde_json::to_string(marker.to_str().expect("utf8")).expect("json");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            format!(
+                r#"
+const server = ramonyx.serve(0, async (request) => {{
+  if (request.path.startsWith("/lambat")) {{
+    await new Promise((resolve) => {{
+      if (request.signal.aborted) {{ resolve(); return; }}
+      request.signal.addEventListener("abort", () => resolve(), {{ once: true }});
+    }});
+    await ramonyx.writeTextFile({marker_literal}, "aborted");
+    return {{ status: 200, body: "aborted" }};
+  }}
+  queueMicrotask(() => server.close());
+  return {{ status: 200, body: "ok" }};
+}});
+await ramonyx.writeTextFile({port_literal}, String(server.port));
+"#
+            ),
+        )
+        .expect("write");
+
+        let (done_tx, done_rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let mut engine = Engine::with_options(EngineOptions {
+                permissions: Permissions::allow_all(),
+            })
+            .expect("engine");
+            let result = engine.execute_module(&main);
+            let _ = done_tx.send(result.map_err(|error| error.to_string()));
+        });
+
+        let port = wait_port(&port_path);
+
+        // Kirim request lalu putuskan koneksi tanpa menunggu respons.
+        {
+            let mut stream = std::net::TcpStream::connect(("127.0.0.1", port)).expect("connect");
+            stream
+                .write_all(b"GET /lambat HTTP/1.1\r\nHost: localhost\r\n\r\n")
+                .expect("kirim");
+            // Beri waktu handler mulai sebelum memutuskan koneksi (klien yang menutup
+            // terlalu cepat dibatalkan hyper sebelum handler berjalan — tidak perlu ditangani).
+            std::thread::sleep(Duration::from_millis(200));
+        }
+
+        let mut aborted = false;
+        for _ in 0..100 {
+            if marker.exists() {
+                aborted = true;
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        assert!(aborted, "handler menerima abort saat klien putus");
+
+        // Server tetap hidup → request kedua dilayani.
+        let mut stream = std::net::TcpStream::connect(("127.0.0.1", port)).expect("connect 2");
+        stream
+            .write_all(b"GET /ok HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+            .expect("kirim 2");
+        let mut response = String::new();
+        stream.read_to_string(&mut response).expect("baca 2");
+        assert!(
+            response.contains("200 OK") && response.contains("ok"),
+            "server tetap hidup: {response}"
+        );
+
+        let engine_result = done_rx
+            .recv_timeout(Duration::from_secs(10))
+            .expect("engine selesai");
+        assert!(
+            engine_result.is_ok(),
+            "module selesai bersih: {engine_result:?}"
+        );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn keep_alive_dua_request_satu_koneksi() {
+        use std::io::{Read as IoRead, Write as IoWrite};
+
+        let directory = temp_dir("keepalive");
+        let port_path = directory.join("port.txt");
+        let port_literal = serde_json::to_string(port_path.to_str().expect("utf8")).expect("json");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            format!(
+                r#"
+let served = 0;
+const server = ramonyx.serve(0, async (request) => {{
+  served += 1;
+  if (served >= 2) {{
+    queueMicrotask(() => server.close());
+  }}
+  return {{ status: 200, body: "req:" + request.path }};
+}});
+await ramonyx.writeTextFile({port_literal}, String(server.port));
+"#
+            ),
+        )
+        .expect("write");
+
+        let (done_tx, done_rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let mut engine = Engine::with_options(EngineOptions {
+                permissions: Permissions::allow_all(),
+            })
+            .expect("engine");
+            let result = engine.execute_module(&main);
+            let _ = done_tx.send(result.map_err(|error| error.to_string()));
+        });
+
+        let port = wait_port(&port_path);
+
+        let mut stream = std::net::TcpStream::connect(("127.0.0.1", port)).expect("connect");
+        stream
+            .write_all(
+                b"GET /a HTTP/1.1\r\nHost: localhost\r\n\r\nGET /b HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n",
+            )
+            .expect("kirim pipelined");
+        let mut response = String::new();
+        stream.read_to_string(&mut response).expect("baca");
+
+        let status_count = response.matches("200 OK").count();
+        assert_eq!(status_count, 2, "dua respons pada satu koneksi: {response}");
+        assert!(response.contains("req:/a"), "body pertama");
+        assert!(response.contains("req:/b"), "body kedua");
+
+        let engine_result = done_rx
+            .recv_timeout(Duration::from_secs(10))
+            .expect("engine selesai");
+        assert!(
+            engine_result.is_ok(),
+            "module selesai bersih: {engine_result:?}"
+        );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    /// Tunggu file port muncul (server siap) — dipakai test HTTP.
+    fn wait_port(port_path: &Path) -> u16 {
+        for _ in 0..100 {
+            if let Ok(contents) = fs::read_to_string(port_path)
+                && let Ok(value) = contents.trim().parse::<u16>()
+            {
+                return value;
+            }
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        panic!("port file tidak muncul");
     }
 }

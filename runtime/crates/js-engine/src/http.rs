@@ -1,13 +1,18 @@
 //! HTTP server minimal untuk runtime (R2): model **pull** — JS memanggil `op_http_accept`
 //! berulang dan `op_http_respond` untuk tiap request; Rust tidak pernah memanggil masuk ke V8.
 //!
-//! Cakupan R2a: body request/response di-buffer penuh (streaming menyusul), keep-alive dimatikan
-//! per-request (`Connection: close`), graceful shutdown menyusul.
+//! Cakupan R2a/R2b: body di-buffer penuh (streaming menyusul), **keep-alive menyala**,
+//! **cancellation** saat klien putus (deteksi EOF via `ObservedIo` + `op_http_watch`).
 
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::Infallible;
+use std::pin::Pin;
 use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::task::{Context, Poll};
+use std::time::Duration;
 
 use bytes::Bytes;
 use deno_core::{OpState, op2};
@@ -19,7 +24,66 @@ use hyper::{Request, Response};
 use runtime_core::Permissions;
 use serde::Serialize;
 use tokio::net::TcpListener;
-use tokio::sync::{mpsc, oneshot};
+use tokio::sync::{Notify, mpsc, oneshot};
+
+/// IO wrapper yang menandai EOF dari klien (koneksi putus) agar handler bisa dibatalkan.
+struct ObservedIo {
+    inner: tokio::net::TcpStream,
+    disconnected: Arc<AtomicBool>,
+    notify: Arc<Notify>,
+}
+
+impl ObservedIo {
+    fn new(stream: tokio::net::TcpStream) -> (Self, Arc<AtomicBool>, Arc<Notify>) {
+        let disconnected = Arc::new(AtomicBool::new(false));
+        let notify = Arc::new(Notify::new());
+        (
+            Self {
+                inner: stream,
+                disconnected: disconnected.clone(),
+                notify: notify.clone(),
+            },
+            disconnected,
+            notify,
+        )
+    }
+}
+
+impl tokio::io::AsyncRead for ObservedIo {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        let filled_before = buf.filled().len();
+        let result = Pin::new(&mut self.inner).poll_read(cx, buf);
+        if let Poll::Ready(Ok(())) = &result
+            && buf.filled().len() == filled_before
+        {
+            self.disconnected.store(true, Ordering::SeqCst);
+            self.notify.notify_waiters();
+        }
+        result
+    }
+}
+
+impl tokio::io::AsyncWrite for ObservedIo {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<std::io::Result<usize>> {
+        Pin::new(&mut self.inner).poll_write(cx, buf)
+    }
+
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<std::io::Result<()>> {
+        Pin::new(&mut self.inner).poll_flush(cx)
+    }
+
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<std::io::Result<()>> {
+        Pin::new(&mut self.inner).poll_shutdown(cx)
+    }
+}
 
 #[derive(Debug, Serialize)]
 pub struct RequestPayload {
@@ -88,8 +152,11 @@ fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox
 
             let accept_tx = accept_tx.clone();
             tokio::spawn(async move {
+                let (io, disconnected, notify) = ObservedIo::new(stream);
                 let service = service_fn(move |request: Request<Incoming>| {
                     let accept_tx = accept_tx.clone();
+                    let disconnected = disconnected.clone();
+                    let notify = notify.clone();
                     async move {
                         let method = request.method().to_string();
                         let path = request
@@ -122,25 +189,43 @@ fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox
                             return Ok::<_, Infallible>(error_response(503, "server ditutup"));
                         }
 
-                        match respond_rx.await {
-                            Ok(pending) => {
-                                let mut builder = Response::builder().status(pending.status);
-                                for (name, value) in pending.headers {
-                                    builder = builder.header(name, value);
-                                }
-                                let response = builder
-                                    .header("connection", "close")
-                                    .body(Full::new(Bytes::from(pending.body)))
-                                    .unwrap_or_else(|_| error_response(500, "header tidak valid"));
-                                Ok(response)
+                        // Loop: daftarkan `notified` DULU, baru cek flag (menghindari race notify_waiters
+                        // yang tidak menyimpan permit).
+                        let mut respond_rx = respond_rx;
+                        loop {
+                            let notified = notify.notified();
+                            if disconnected.load(Ordering::SeqCst) {
+                                // Klien sudah pergi sebelum handler selesai → batalkan (drop respond_rx).
+                                return Ok(error_response(499, "klien terputus"));
                             }
-                            Err(_) => Ok(error_response(503, "respons tidak dikirim")),
+
+                            tokio::select! {
+                                result = &mut respond_rx => {
+                                    return match result {
+                                        Ok(pending) => {
+                                            let mut builder = Response::builder().status(pending.status);
+                                            for (name, value) in pending.headers {
+                                                builder = builder.header(name, value);
+                                            }
+                                            // Keep-alive dibiarkan ke hyper (HTTP/1.1 default).
+                                            let response = builder
+                                                .body(Full::new(Bytes::from(pending.body)))
+                                                .unwrap_or_else(|_| error_response(500, "header tidak valid"));
+                                            Ok(response)
+                                        }
+                                        Err(_) => Ok(error_response(503, "respons tidak dikirim")),
+                                    };
+                                }
+                                _ = notified => {
+                                    // EOF terdeteksi → ulangi loop untuk memeriksa flag.
+                                }
+                            }
                         }
                     }
                 });
 
                 let _ = hyper::server::conn::http1::Builder::new()
-                    .serve_connection(hyper_util::rt::TokioIo::new(stream), service)
+                    .serve_connection(hyper_util::rt::TokioIo::new(io), service)
                     .await;
             });
         }
@@ -232,10 +317,15 @@ pub fn op_http_respond(
     #[string] body: String,
 ) -> Result<(), JsErrorBox> {
     let http = state.borrow_mut::<HttpState>();
-    let sender = http
-        .pending
-        .remove(&(server_id, request_id))
-        .ok_or_else(|| JsErrorBox::generic(format!("request {request_id} tidak pending")))?;
+    let Some(sender) = http.pending.remove(&(server_id, request_id)) else {
+        return Err(JsErrorBox::generic(format!(
+            "request {request_id} tidak pending"
+        )));
+    };
+    if sender.is_closed() {
+        // Klien sudah pergi (abort); bukan error — server tetap hidup.
+        return Ok(());
+    }
     sender
         .send(PendingResponse {
             status,
@@ -243,6 +333,31 @@ pub fn op_http_respond(
             body,
         })
         .map_err(|_| JsErrorBox::generic("koneksi sudah tertutup"))
+}
+
+/// Menunggu klien putus untuk request yang sedang diproses: `true` bila koneksi klien tertutup
+/// sebelum respons dikirim; `false` bila request sudah selesai/respond (entry pending hilang).
+#[op2(async(lazy), fast)]
+pub async fn op_http_watch(
+    state: Rc<RefCell<OpState>>,
+    #[smi] server_id: u64,
+    #[smi] request_id: u64,
+) -> Result<bool, JsErrorBox> {
+    loop {
+        {
+            let op_state = state.borrow();
+            let http = op_state.borrow::<HttpState>();
+            match http.pending.get(&(server_id, request_id)) {
+                Some(sender) => {
+                    if sender.is_closed() {
+                        return Ok(true);
+                    }
+                }
+                None => return Ok(false),
+            }
+        }
+        tokio::time::sleep(Duration::from_millis(25)).await;
+    }
 }
 
 #[op2(fast)]

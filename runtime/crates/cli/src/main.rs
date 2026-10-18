@@ -31,6 +31,7 @@ RESOURCE LIMITS (opsional):
     --max-heap-mb <MiB>   Batas heap V8; pelanggaran → error jelas (bukan abort).
     --timeout-ms <ms>     Batas waktu wall-clock per eksekusi (watchdog V8).
     --tls-ca <path.pem>   CA tambahan untuk fetch https (verifikasi tetap aktif).
+    --op-metrics          Log metrik op (jumlah + waktu) setelah eksekusi (profiling).
 ";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -48,6 +49,7 @@ enum Command {
         max_heap_mb: Option<usize>,
         timeout_ms: Option<u64>,
         tls_ca: Option<PathBuf>,
+        op_metrics: bool,
     },
 }
 
@@ -63,6 +65,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
     let mut max_heap_mb: Option<usize> = None;
     let mut timeout_ms: Option<u64> = None;
     let mut tls_ca: Option<PathBuf> = None;
+    let mut op_metrics = false;
     let mut positional: Option<String> = None;
     let mut rest = iterator.peekable();
 
@@ -89,6 +92,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
                     .ok_or("--max-heap-mb harus bilangan > 0")?;
                 max_heap_mb = Some(parsed);
             }
+            "--op-metrics" => op_metrics = true,
             "--tls-ca" => {
                 let value = rest.next().ok_or("--tls-ca butuh nilai <path.pem>")?;
                 tls_ca = Some(PathBuf::from(value));
@@ -142,6 +146,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             max_heap_mb,
             timeout_ms,
             tls_ca,
+            op_metrics,
         }),
         other => Err(format!("subcommand tidak dikenal: {other}")),
     }
@@ -179,6 +184,7 @@ fn run_command(command: Command) -> ExitCode {
             max_heap_mb,
             timeout_ms,
             tls_ca,
+            op_metrics,
         } => {
             let resolved = match load_config(config.as_deref()) {
                 Ok(resolved) => resolved,
@@ -234,6 +240,13 @@ fn run_command(command: Command) -> ExitCode {
                 }),
             );
 
+            if op_metrics {
+                logger.info(
+                    "runtime.profiling",
+                    &serde_json::json!({ "opMetrics": true }),
+                );
+            }
+
             if max_heap_mb.is_some() || timeout_ms.is_some() || tls_ca.is_some() {
                 logger.info(
                     "runtime.limits",
@@ -250,6 +263,7 @@ fn run_command(command: Command) -> ExitCode {
                 max_heap_mb,
                 timeout: timeout_ms.map(std::time::Duration::from_millis),
                 tls_ca_file: tls_ca.clone(),
+                op_metrics,
             };
 
             let extension = entry_path
@@ -293,8 +307,61 @@ fn run_command(command: Command) -> ExitCode {
     }
 }
 
+/// Milidetik sebagai `f64` untuk log (presisi pecahan).
+fn ms(duration: std::time::Duration) -> f64 {
+    (duration.as_secs_f64() * 1000.0 * 100.0).round() / 100.0
+}
+
+/// Log `engine.executed` + `runtime.metrics` (bila `--op-metrics`) untuk satu eksekusi sukses.
+fn log_engine_success(
+    logger: &mut Logger,
+    entry_path: &Path,
+    mode: &str,
+    startup_ms: f64,
+    engine: &Engine,
+    with_metrics: bool,
+) {
+    let timings = engine.last_timings().map(|timings| {
+        serde_json::json!({
+            "loadMs": ms(timings.load),
+            "evalMs": ms(timings.evaluate),
+            "totalMs": ms(timings.total),
+        })
+    });
+    logger.info(
+        "engine.executed",
+        &serde_json::json!({
+            "entry": entry_path.display().to_string(),
+            "mode": mode,
+            "startupMs": startup_ms,
+            "timings": timings,
+        }),
+    );
+
+    if with_metrics {
+        let entries = engine.op_metrics();
+        let top: Vec<serde_json::Value> = entries
+            .iter()
+            .take(15)
+            .map(|entry| {
+                serde_json::json!({
+                    "op": entry.op,
+                    "calls": entry.dispatched,
+                    "errors": entry.errors,
+                    "totalMs": ms(entry.total),
+                })
+            })
+            .collect();
+        logger.info(
+            "runtime.metrics",
+            &serde_json::json!({ "totalOps": entries.len(), "ops": top }),
+        );
+    }
+}
+
 /// Eksekusi file sebagai modul ESM (JS/TS) lewat `js-engine`. Mengembalikan sukses/gagal.
 fn execute_module(entry_path: &Path, logger: &mut Logger, options: &EngineOptions) -> bool {
+    let init_started = std::time::Instant::now();
     let mut engine = match Engine::with_options(options.clone()) {
         Ok(engine) => engine,
         Err(error) => {
@@ -307,14 +374,17 @@ fn execute_module(entry_path: &Path, logger: &mut Logger, options: &EngineOption
         }
     };
 
+    let startup_ms = ms(init_started.elapsed());
+
     match engine.execute_module(entry_path) {
         Ok(()) => {
-            logger.info(
-                "engine.executed",
-                &serde_json::json!({
-                    "entry": entry_path.display().to_string(),
-                    "mode": "module",
-                }),
+            log_engine_success(
+                logger,
+                entry_path,
+                "module",
+                startup_ms,
+                &engine,
+                options.op_metrics,
             );
             true
         }
@@ -349,6 +419,7 @@ fn execute_script(entry_path: &Path, logger: &mut Logger, options: &EngineOption
         }
     };
 
+    let init_started = std::time::Instant::now();
     let mut engine = match Engine::with_options(options.clone()) {
         Ok(engine) => engine,
         Err(error) => {
@@ -360,15 +431,17 @@ fn execute_script(entry_path: &Path, logger: &mut Logger, options: &EngineOption
             return false;
         }
     };
+    let startup_ms = ms(init_started.elapsed());
 
     match engine.execute(&entry_path.display().to_string(), &source) {
         Ok(()) => {
-            logger.info(
-                "engine.executed",
-                &serde_json::json!({
-                    "entry": entry_path.display().to_string(),
-                    "bytes": source.len(),
-                }),
+            log_engine_success(
+                logger,
+                entry_path,
+                "script",
+                startup_ms,
+                &engine,
+                options.op_metrics,
             );
             true
         }
@@ -429,6 +502,7 @@ mod tests {
             "1500",
             "--tls-ca",
             "ca.pem",
+            "--op-metrics",
         ]));
         assert_eq!(
             parsed,
@@ -444,6 +518,7 @@ mod tests {
                 max_heap_mb: Some(64),
                 timeout_ms: Some(1500),
                 tls_ca: Some(PathBuf::from("ca.pem")),
+                op_metrics: true,
             })
         );
     }

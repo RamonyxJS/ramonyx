@@ -32,9 +32,12 @@ mod builtins;
 mod cjs;
 mod http;
 mod http_client;
+mod metrics;
 mod resolve;
 mod web_shim;
 mod worker;
+
+pub use metrics::{ExecutionTimings, OpMetricEntry};
 
 use resolve::resolve_bare;
 use web_shim::WEB_SHIM;
@@ -686,6 +689,8 @@ pub struct Engine {
     tokio: tokio::runtime::Runtime,
     limit_state: Arc<LimitState>,
     timeout: Option<Duration>,
+    metrics: Option<metrics::MetricsHandle>,
+    last_timings: Option<ExecutionTimings>,
 }
 
 /// Opsi engine; default **deny-all** (secure by default, ADR-0023).
@@ -701,6 +706,8 @@ pub struct EngineOptions {
     /// File PEM berisi CA tambahan untuk `fetch` https (mis. CA privat/internal).
     /// Verifikasi sertifikat tetap aktif — ini menambah root, bukan mematikan (ADR-0036).
     pub tls_ca_file: Option<PathBuf>,
+    /// Aktifkan metrik op (jumlah + waktu per op) untuk profiling; mati = tanpa biaya (ADR-0037).
+    pub op_metrics: bool,
 }
 
 impl Engine {
@@ -721,6 +728,9 @@ impl Engine {
         });
 
         let limit_state = Arc::new(LimitState::default());
+        let metrics = options
+            .op_metrics
+            .then(|| Rc::new(RefCell::new(metrics::OpMetricsState::default())));
         // Klien HTTP dibangun lebih dulu agar CA/TLS yang tidak valid gagal cepat.
         let fetch_state = http_client::FetchState::new(options.tls_ca_file.as_deref())
             .map_err(|error| EngineError::new(format!("inisialisasi klien HTTP gagal: {error}")))?;
@@ -734,6 +744,7 @@ impl Engine {
                 module_loader: Some(Rc::new(FileModuleLoader::new())),
                 extensions: vec![ramonyx_engine::init()],
                 create_params,
+                op_metrics_factory_fn: metrics.clone().map(metrics::factory),
                 ..Default::default()
             })
         };
@@ -779,7 +790,22 @@ impl Engine {
             tokio,
             limit_state,
             timeout: options.timeout,
+            metrics,
+            last_timings: None,
         })
+    }
+
+    /// Waktu eksekusi terakhir (bila ada).
+    pub fn last_timings(&self) -> Option<ExecutionTimings> {
+        self.last_timings
+    }
+
+    /// Metrik op terurut (kosong bila `op_metrics` tidak diaktifkan).
+    pub fn op_metrics(&self) -> Vec<OpMetricEntry> {
+        self.metrics
+            .as_ref()
+            .map(|handle| handle.borrow().entries())
+            .unwrap_or_default()
     }
 
     /// Handle isolate thread-safe (dipakai watchdog timeout & kill switch worker).
@@ -823,6 +849,7 @@ impl Engine {
 
     /// Jalankan script JS (tanpa `import`); error dikembalikan sebagai `EngineError`.
     pub fn execute(&mut self, name: &str, source: &str) -> Result<(), EngineError> {
+        let started = std::time::Instant::now();
         let watchdog = self.start_watchdog();
         let result = self
             .runtime
@@ -830,6 +857,12 @@ impl Engine {
             .map(|_| ())
             .map_err(|error| error.to_string());
         drop(watchdog);
+        let elapsed = started.elapsed();
+        self.last_timings = Some(ExecutionTimings {
+            load: Duration::ZERO,
+            evaluate: elapsed,
+            total: elapsed,
+        });
         self.finish(result)
     }
 
@@ -841,24 +874,35 @@ impl Engine {
         let main_module = resolve_path(&entry.display().to_string(), &current_dir)
             .map_err(|error| EngineError::new(format!("entry tidak valid: {error}")))?;
 
+        let started = std::time::Instant::now();
         let watchdog = self.start_watchdog();
-        let result = {
+        let (result, load, evaluate) = {
             let Engine { runtime, tokio, .. } = self;
             tokio.block_on(async move {
-                let module_id = runtime
-                    .load_main_es_module(&main_module)
-                    .await
-                    .map_err(|error| error.to_string())?;
+                let load_started = std::time::Instant::now();
+                let loaded = runtime.load_main_es_module(&main_module).await;
+                let load = load_started.elapsed();
 
-                let evaluation = runtime.mod_evaluate(module_id);
-                runtime
-                    .run_event_loop(Default::default())
-                    .await
-                    .map_err(|error| error.to_string())?;
-                evaluation.await.map_err(|error| error.to_string())
+                let evaluate_started = std::time::Instant::now();
+                let result = match loaded {
+                    Ok(module_id) => {
+                        let evaluation = runtime.mod_evaluate(module_id);
+                        match runtime.run_event_loop(Default::default()).await {
+                            Ok(()) => evaluation.await.map_err(|error| error.to_string()),
+                            Err(error) => Err(error.to_string()),
+                        }
+                    }
+                    Err(error) => Err(error.to_string()),
+                };
+                (result, load, evaluate_started.elapsed())
             })
         };
         drop(watchdog);
+        self.last_timings = Some(ExecutionTimings {
+            load,
+            evaluate,
+            total: started.elapsed(),
+        });
         self.finish(result)
     }
 }
@@ -2824,6 +2868,58 @@ globalThis.__redirect2_ok = true;
                 "if (globalThis.__redirect2_ok !== true) throw new Error('redirect2 gagal');",
             )
             .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn timings_dan_op_metrics_tercatat() {
+        let directory = temp_dir("metrics");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+await ramonyx.sleep(5);
+crypto.getRandomValues(new Uint8Array(2));
+globalThis.__metrics_ok = true;
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            op_metrics: true,
+            ..Default::default()
+        })
+        .expect("engine");
+        engine.execute_module(&main).expect("metrics module");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__metrics_ok !== true) throw new Error('metrics gagal');",
+            )
+            .expect("verify");
+
+        let timings = engine.last_timings().expect("timings tercatat");
+        assert!(timings.total >= timings.load, "total >= load");
+        assert!(timings.evaluate > Duration::ZERO, "evaluasi terukur");
+
+        let entries = engine.op_metrics();
+        let nama: Vec<&str> = entries.iter().map(|entry| entry.op).collect();
+        let sleep = entries
+            .iter()
+            .find(|entry| entry.op == "op_sleep")
+            .unwrap_or_else(|| panic!("op_sleep tidak tercatat: {nama:?}"));
+        assert!(sleep.dispatched >= 1, "sleep dipanggil minimal sekali");
+        assert!(
+            entries.iter().any(|entry| entry.op == "op_random_bytes"),
+            "op_random_bytes tidak tercatat: {nama:?}"
+        );
+
+        // Tanpa flag: metrik kosong (tanpa biaya), timings tetap ada.
+        let mut engine_polos = Engine::new().expect("engine");
+        engine_polos.execute("[test]", "1 + 1;").expect("script");
+        assert!(engine_polos.op_metrics().is_empty());
+        assert!(engine_polos.last_timings().is_some());
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }

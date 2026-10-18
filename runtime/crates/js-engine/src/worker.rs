@@ -158,6 +158,8 @@ pub async fn op_worker_spawn(
         timeout: options.timeout_ms.map(std::time::Duration::from_millis),
         // CA TLS diwarisi dari induk (bukan di-override per worker).
         tls_ca_file: parent_ca,
+        // Metrik op cukup di induk; worker tidak perlu overhead.
+        op_metrics: false,
     };
 
     let (to_worker_tx, to_worker_rx) = unbounded_channel::<String>();

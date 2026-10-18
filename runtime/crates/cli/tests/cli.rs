@@ -312,3 +312,39 @@ fn argumen_tidak_valid_menghasilkan_exit_2_dan_usage() {
     let stderr = String::from_utf8(output.stderr).expect("utf8");
     assert!(stderr.contains("USAGE"));
 }
+
+#[test]
+fn op_metrics_mencetak_log_runtime_metrics() {
+    let directory = temp_dir("op-metrics");
+    let entry = directory.join("main.mjs");
+    fs::write(
+        &entry,
+        "await ramonyx.sleep(2);\nconsole.log('metrik jalan');\n",
+    )
+    .expect("write");
+
+    let output = Command::new(binary())
+        .args(["run"])
+        .arg(&entry)
+        .arg("--op-metrics")
+        .output()
+        .expect("spawn");
+
+    assert!(output.status.success(), "exit sukses: {output:?}");
+    let stdout = String::from_utf8(output.stdout).expect("utf8");
+    assert!(
+        has_log_line(&stdout, "runtime.metrics"),
+        "log metrics ada: {stdout}"
+    );
+    assert!(
+        stdout.contains("op_sleep"),
+        "op_sleep terdaftar di metrik: {stdout}"
+    );
+    assert!(has_log_line(&stdout, "engine.executed"), "log executed ada");
+    assert!(
+        stdout.contains("\"startupMs\""),
+        "timings startup tercatat: {stdout}"
+    );
+
+    fs::remove_dir_all(&directory).expect("cleanup");
+}

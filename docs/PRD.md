@@ -64,13 +64,13 @@ Diputuskan bersama pemilik; detail di `docs/adr/0018-owner-decisions.md`.
 | Item | Keputusan |
 | --- | --- |
 | Starter template "mobile" | **Di luar scope** — Ramonyx adalah framework web/SSR; template mobile tidak direncanakan |
-| Metrik "kepuasan dokumentasi 90%" | Target, **bukan klaim**; diukur via survei saat `apps/docs` ada. Tidak boleh dipakai di materi publik sebelum ada mekanisme |
-| Forum komunitas / support | **Ditunda**: kanal awal GitHub Issues/Discussions (repo masih privat); forum/chat bila komunitas tumbuh |
+| Metrik "kepuasan dokumentasi 90%" | Target, **bukan klaim**; diukur via survei (situs docs sudah live: https://ramonyxjs.github.io/ramonyx/). Tidak boleh dipakai di materi publik sebelum ada mekanisme |
+| Forum komunitas / support | **Ditunda**: kanal awal GitHub Issues/Discussions (repo kini publik); forum/chat bila komunitas tumbuh |
 | "Kompatibilitas browser utama" | Ditetapkan sebagai **browser matrix**: Chrome/Edge/Firefox/Safari dua versi terakhir (evergreen), ES2022, tanpa polyfill otomatis (client bundle menargetkan `es2022`) |
 | Target benchmark (pertanyaan #1) | Terjawab: `docs/benchmark-protocol.md` + baseline ter-commit |
 | Fitur kunci starter template (#3) | Dijadwalkan bersama `apps/create-app` (Phase 2–3 blueprint); kandidat: route + API + SSR + test + CI |
 | Cakupan sistem tipe (#4) | Kontrak v0 + type-test + 12 kriteria ASVS teruji; diperluas seiring fitur |
-| Kanal komunitas terbaik (#5) | Ditunda bersama forum; GitHub Discussions kandidat pertama saat repo publik |
+| Kanal komunitas terbaik (#5) | Ditunda bersama forum; GitHub Discussions kandidat pertama — repo kini publik |
 
 Semua pertanyaan terbuka PRD kini **terjawab atau ditunda secara eksplisit**; tidak ada lagi yang
 menghambat Phase 4 (runtime alpha).

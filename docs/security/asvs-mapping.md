@@ -1,7 +1,7 @@
 # Pemetaan Awal OWASP ASVS — Ramonyx
 
 - Status: pemetaan awal (2026-10-18); **bukan klaim kepatuhan** (BLUEPRINT §10).
-- Tujuan: basis acceptance criteria keamanan per fase (BLUEPRINT §7), ditumbuhkan seiring Phase 3.
+- Tujuan: basis acceptance criteria keamanan per fase (BLUEPRINT §7), ditumbuhkan seiring Phase 3–4 (keduanya selesai).
 - Legenda: ✅ ada + diuji · 🟡 sebagian/primitif · ⬜ belum · ➖ tanggung jawab aplikasi/deployment
 
 | Area ASVS | Relevansi di Ramonyx | Status | Bukti / catatan |

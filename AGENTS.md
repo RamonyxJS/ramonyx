@@ -10,7 +10,7 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 2. `docs/architecture.md` — ringkasan arsitektur, peta package, kontrak `RuntimeHost`.
 3. `docs/api/core-contract.md` — kontrak API v0 + catatan implementasi (§10).
 4. `docs/roadmap/phase-0-1.md` — status kerja & langkah berikutnya.
-5. `docs/PRD.md` — level produk; "Pertanyaan Terbuka" belum diputuskan.
+5. `docs/PRD.md` — level produk; pertanyaan terbuka sudah direkonsiliasi (ADR-0018).
 
 ## Perintah
 
@@ -56,7 +56,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 
 ## Jebakan yang paling mudah kena
 
-- **Blueprint §4/§5 masih rancangan, belum semuanya diimplementasikan.** Yang nyata:
+- **Blueprint §4/§5 sebagian sudah diimplementasikan; sisanya (mis. server actions, code
+  splitting) masih rancangan — jangan diasumsikan ada.** Yang nyata:
   `packages/*` (termasuk `@ramonyx/devtools` — CLI `ramonyx`), `apps/playground`, `apps/docs`,
   `apps/create-app`, `benchmarks/*`. File routing (API + halaman), SSR React (sinkron + streaming),
   hydration, bundler, dev server/HMR, dan CLI devtools v1 sudah ada — cek kode, jangan asumsikan.
@@ -195,7 +196,8 @@ semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; **publikasi npm selesai** (0.1.0 pada 2026-10-18; **0.1.1**
 sore harinya: **14 paket** — kini termasuk `@ramonyx/devtools` — dengan **provenance**, GitHub
 Release v0.1.1; verifikasi registry end-to-end lewat alur CLI ✓).
-Sisa Phase 5/kandidat: evaluasi `--strict` bench.
+Sisa kandidat: baseline bench per-lingkungan di CI, migrasi playground/docs ke CLI (opsional),
+watch mode.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,

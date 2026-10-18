@@ -1,5 +1,8 @@
 # Technical Blueprint: Full-Stack TypeScript Framework & Runtime
 
+> Status: **sumber kebenaran desain** (Phase 0). Status implementasi terkini:
+> `docs/IMPLEMENTATION_STATUS.md` — per rilis 0.1.1: Phase 0–4 selesai, Phase 5 praktis tuntas.
+
 **Visi:** membangun framework full-stack TypeScript dengan performa
 tinggi, keamanan sebagai prinsip desain, dan developer experience yang
 konsisten, dengan jalur evolusi menuju runtime sendiri.

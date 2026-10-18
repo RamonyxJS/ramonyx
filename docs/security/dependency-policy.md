@@ -17,14 +17,14 @@
    lihat `docs/coding-standards.md` §2.
 7. **Build script dependency dipilih eksplisit** (`allowBuilds` di `pnpm-workspace.yaml`); tidak ada
    postinstall diam-diam.
-8. **Provenance saat publikasi** (menyusul saat paket dipublikasikan): `pnpm publish --provenance`
-   + trusted publishing. Paket masih privat sampai keputusan scope & lisensi pemilik.
+8. **Provenance saat publikasi** — ✅ aktif sejak 0.1.1 (repo publik + `id-token: write`;
+   14 paket dengan "Signed provenance statement"). Scope `@ramonyx/*` + lisensi MIT diputuskan (ADR-0018).
 
 ## Pengecualian yang diketahui (ditinjau tiap minggu)
 
 | Paket | Jalur | Severity | Status |
 | --- | --- | --- | --- |
-| `uuid` `<11.1.1` | dev-only: `autocannon → hyperid → uuid` | moderate | diterima sementara — tidak pernah masuk runtime aplikasi; menunggu perbaikan upstream / override bila aman |
+| ~~`uuid` `<11.1.1`~~ | dev-only (tooling benchmark) | moderate | ✅ **ditutup** — override `hyperid@4.0.0`; `pnpm audit` bersih (2026-10-18) |
 
 ## Perintah
 

@@ -1,7 +1,8 @@
 # Roadmap Phase 0–1
 
-- Status per 2026-10-18: **Phase 0–3 selesai; Phase 4 berjalan** (R0 selesai, R1-lite: eksekusi
-  JavaScript via V8 berjalan di CLI runtime).
+- Status per 2026-10-18 (diperbarui): **Phase 0–4 selesai** (exit criteria Phase 4 tercapai);
+  **Phase 5 praktis tuntas** — **0.1.1 terbit** (14 paket, provenance; docs di-host).
+  Sisa kandidat: baseline bench per-lingkungan di CI, migrasi playground/docs ke CLI (opsional), watch mode.
 - Sumber: `docs/BLUEPRINT.md` §9 dan §12.
 
 ## Phase 0 — Foundation & RFC ✅
@@ -26,7 +27,7 @@ Exit criteria: demo app berjalan di Node.js, integration test lulus, baseline pe
 1. [x] Prasyarat: pnpm 12 standalone (`PNPM_HOME`), Node 24
 2. [x] Workspace: `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`; `apps/playground`;
       `packages/{core,router,server,schema,adapter-runtime,testing,ramonyx}`
-3. [x] CI: lint → typecheck → test → security checks (build menyusul Phase 2 — ADR-0005)
+3. [x] CI: lint → typecheck → test → build → e2e → security checks + audit (lengkap; runner hijau)
 4. [x] `adapter-runtime`: kontrak `RuntimeHost` + adapter in-memory + Node
 5. [x] `core`: context, middleware, error handling + `HttpError`
 6. [x] `router`: statis + parameter, 404/405, normalisasi trailing slash
@@ -42,7 +43,7 @@ Catatan implementasi Phase 1:
 
 - Source-first: paket mengekspor `.ts`, dijalankan Node type stripping; syntax non-erasable dilarang.
 - Handler menerima output hasil validasi schema (transform/strip diterapkan), bukan input mentah.
-- Manifest route eksplisit; file-based routing menyusul Phase 2.
+- Manifest route eksplisit; file-based routing (Phase 2) sudah ada.
 
 ## Phase 2 — Full-stack (berjalan)
 
@@ -80,7 +81,7 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
       Soak berjam-jam tetap diperlukan sebelum klaim stabilitas (protokol §8).
 - [x] Dependency audit berkelanjutan (ADR-0016): audit high di push/PR + cron mingguan, Dependabot
       (grup dev/prod, tanpa auto-merge), quarantine rilis 24 jam (`minimumReleaseAge`), kebijakan
-      `docs/security/dependency-policy.md`; provenance menyusul saat publikasi
+      `docs/security/dependency-policy.md`; **provenance aktif** sejak 0.1.1
 - [x] Pemetaan awal OWASP ASVS (`docs/security/asvs-mapping.md`) + primitif XSS/CSRF:
       `@ramonyx/security` — `securityHeaders()`, `cspNonce()` (CSP nonce, ADR-0014),
       `csrfProtection()` (ADR-0013)
@@ -167,7 +168,7 @@ pekerjaan Phase 5.
 - [x] **Release pipeline v1** (ADR-0039): versi **0.1.0**; build paket (ESM + `.d.ts`, rewrite
       ekstensi), staging + tarball npm, tarball binary runtime, `SHA256SUMS` +
       `release-manifest.json`; **verifikasi instalasi di proyek konsumen bersih dengan Node polos**
-      (`pnpm release:verify`); workflow CI rilis (belum dieksekusi — tanpa remote)
+      (`pnpm release:verify`); workflow CI rilis (**dieksekusi sukses**: v0.1.0 + v0.1.1 — publish idempoten + provenance)
 - [x] **Isolasi level proses untuk plugin** (ADR-0040): `ramonyx.spawn` → proses
       `ramonyx-runtime --plugin` terpisah, protokol JSON per baris (stdout bersih, log ke stderr),
       `ramonyx.parent.*` terpadu (worker & plugin), permission irisan anti-eskalasi, kuota
@@ -220,7 +221,7 @@ pekerjaan Phase 5.
 - [x] **Plugin: backoff eksponensial + health-check otomatis** (ADR-0050): `next_backoff`
       (`delayMs·2^n` ≤ `backoffMaxMs`), kuota restart di-reset setelah generasi stabil
       (`stableAfterMs`), terminal eksplisit `supervisor_gave_up`, reader latar + watchdog
-      (deteksi tanpa `receive`), stats `nextBackoffMs`/`droppedMessages`; 104 test Rust
+      (deteksi tanpa `receive`), stats `nextBackoffMs`/`droppedMessages`; 104 test Rust (kini 111)
 - [x] **Sandbox OS plugin** (ADR-0051): Landlock LSM opt-in — `--sandbox`/`--sandbox-allow-read/-
       write`/`--sandbox-deny-net` di CLI, `ramonyx.spawn(..., { sandbox })` (irisan permission),
       auto-izin entry dir/CA TLS/proc-self kuota, fail-hard bila kernel tak mendukung; uji kernel

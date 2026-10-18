@@ -42,9 +42,9 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
 ## Verifikasi
 
 ```bash
-pnpm lint && pnpm typecheck && pnpm test   # 156 tes Node
+pnpm lint && pnpm typecheck && pnpm test   # 161 tes Node
 pnpm build && pnpm test:e2e                # 5 e2e (Playwright)
-cargo test --workspace                     # 101 tes Rust
+cargo test --workspace                     # 111 tes Rust
 pnpm audit --audit-level high              # bersih
 ```
 

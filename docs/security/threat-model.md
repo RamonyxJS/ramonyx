@@ -1,6 +1,6 @@
 # Threat Model — Ramonyx
 
-- Status: draft v0 (Phase 0). Basis: `docs/BLUEPRINT.md` §7.
+- Status: **berlaku** (draft v0 Phase 0; diperbarui 2026-10-18 — temuan Phase 3/4 tercatat di bawah). Basis: `docs/BLUEPRINT.md` §7.
 - Asumsi: aplikasi menerima input tidak tepercaya, mengakses database, memproses session, dan
   (mulai Phase 4) mungkin menjalankan plugin pihak ketiga.
 
@@ -97,5 +97,6 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
   adapter (anti-spoof) + `trustProxy` opt-in (ADR-0017).
 - Dependency compromise: ✅ lockfile + `pnpm audit --audit-level high` (push/PR + cron mingguan) +
   `minimumReleaseAge` 24 jam + Dependabot (tanpa auto-merge) + kebijakan
-  `docs/security/dependency-policy.md` (ADR-0016); provenance menyusul saat publikasi.
-- Path traversal (runtime/plugin) + isolasi plugin: belum — Phase 4 (permission model runtime).
+  `docs/security/dependency-policy.md` (ADR-0016); **provenance aktif** sejak 0.1.1.
+- Path traversal (runtime/plugin) + isolasi plugin: ✅ permission model deny-all (ADR-0023) +
+  isolasi worker/proses + **sandbox Landlock** (ADR-0051); pentest escape belum dinilai.

@@ -157,7 +157,7 @@ opsi `streaming` di `createPageRoutes`, ADR-0047.)
 - JSX app code dijalankan lewat `node --import ./tools/register.mjs` (loader esbuild; ADR-0006).
 - Hydration (Phase 2): `generateClientEntry` (`@ramonyx/compiler`) → Vite (`@ramonyx/bundler`) →
   `hydrateAll` (`@ramonyx/react/client`); diverifikasi di browser nyata (counter interaktif,
-  tanpa mismatch) — test otomatis browser menyusul.
+  tanpa mismatch) — **e2e Playwright** ada (`ssr.spec.ts`, `navigation.spec.ts`).
 - Client navigation (ADR-0008): klik link same-origin → fetch HTML (`x-ramonyx-nav: 1`) → swap
   `#ramonyx-root` + re-hydrate + `pushState`; `popstate` ikut soft-nav; fallback full navigation.
   Diverifikasi browser: 3 navigasi maju + 2 back tanpa reload (sentinel bertahan).

@@ -12,9 +12,11 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 > **compatibility suite v1**, **interop CommonJS v1**, **SSR React + SSR streaming**,
 > **`fetch` + `ReadableStream`**, **builtin subset (`node:net`/`node:dns/promises`) + `crypto`**,
 > dan **subset `@ramonyx/security`** (middleware + guardedFetch/SSRF), plus **resource limits**
-> (kuota heap `--max-heap-mb`, watchdog `--timeout-ms`, `ramonyx.permissions.revoke`). Framework
-> Node tetap baseline produksi; fokus berikutnya Phase 5 (worker isolation, kuota CPU/memori
-> eksternal, https/TLS, profiling, rilis). Klaim mengikuti aturan BLUEPRINT §10.
+> (kuota heap `--max-heap-mb`, watchdog `--timeout-ms`, `ramonyx.permissions.revoke`), plus
+> **isolasi worker** (`ramonyx.worker`: thread + isolate V8 terpisah, pesan JSON, permission
+> irisan anti-eskalasi, kill switch). Framework Node tetap baseline produksi; fokus berikutnya
+> Phase 5 (kuota CPU/memori eksternal, isolasi proses untuk plugin, https/TLS, profiling,
+> rilis). Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

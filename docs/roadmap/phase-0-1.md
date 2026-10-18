@@ -162,8 +162,11 @@ pekerjaan Phase 5.
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI
 - [x] **R3 sisa (sebagian)** — **resource limits** (ADR-0033): `--max-heap-mb` (kuota heap V8,
   pelanggaran → error bersih tanpa abort), `--timeout-ms` (watchdog `terminate_execution`),
-  `ramonyx.permissions.get()/revoke()` (pencabutan kapabilitas saat runtime, hanya mengurangi);
-  sisa: **worker isolation**, kuota CPU & memori eksternal
+  `ramonyx.permissions.get()/revoke()` (pencabutan kapabilitas saat runtime, hanya mengurangi)
+- [x] **Isolasi worker + kuota** (ADR-0034): `ramonyx.worker(entry, options)` — thread + isolate V8
+  + tokio terpisah, pesan JSON dua arah, permission **irisan dengan induk** (default deny-all),
+  kuota `maxHeapMb`/`timeoutMs` per worker, kill switch `terminate()` (isolate thread-safe),
+  batas 8 worker; sisa: kuota CPU/memori eksternal, isolasi level proses untuk plugin
 - [ ] **R4** — optimasi startup/profiling
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)

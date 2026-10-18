@@ -25,6 +25,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm create:app <dir>` — scaffold aplikasi Ramonyx baru (template minimal yang berjalan).
 - `pnpm docs` — situs dokumentasi lokal (dogfood **penuh**: SSR React + hydration/soft navigation
   atas `docs/**`) di http://127.0.0.1:4000 (build klien + start).
+- `pnpm docs:export` — ekspor statis situs docs (`apps/docs/export.ts`) untuk hosting;
+  workflow `pages.yml` memakai `--base /ramonyx` → https://ramonyxjs.github.io/ramonyx/ (ADR-0052).
 - `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
   di `dist/`; **14 artefak** termasuk `create-ramonyx-app`); `pnpm release:verify` — verifikasi
   instalasi di proyek konsumen bersih (Node polos), termasuk scaffold `create-ramonyx-app`.
@@ -65,6 +67,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   listener dan `node --test` menggantung tanpa batas (pernah terjadi di CI); script `test` memakai
   `--test-timeout=120000` + `--test-force-exit` sebagai jaring pengaman, dan adapter menormalkan
   loopback `::1` → `127.0.0.1`.
+- **Situs docs di subpath** (`/ramonyx/`): tautan halaman harus **relatif** (`dokumen/…`, `.`) —
+  `<base href>` menegakkannya; tautan markdown `*.md` ditulis ulang otomatis (ADR-0052). Deploy
+  hanya dari `main` (`pages.yml`).
 - **Produksi = `NODE_ENV=production`.** Skrip `start`/`docs`/bench SSR + template `create-app`
   sudah men-set-nya; tanpa itu React berjalan build dev (pernah terjadi di server produksi —
   ADR-0048).
@@ -179,13 +184,14 @@ Node** (`renderToReadableStream` via `react-dom/server.edge` — ADR-0047; jalur
 untuk halaman error), **bench SSR + ambang Web Vitals** (report-only — ADR-0048), **pra-publikasi**
 (publish dari tarball terverifikasi + guard tag↔versi + dist-tag + `create-ramonyx-app` — ADR-0049),
 dan **situs
-dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042) —
+dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042),
+**di-host di GitHub Pages** (ekspor statis + `<base href>` subpath — ADR-0052) —
 semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; **publikasi npm selesai** (2026-10-18: 13 paket @ 0.1.0
 terbit — `@ramonyx/*`, `ramonyx`, `create-ramonyx-app`; verifikasi registry end-to-end ✓;
 **workflow `release.yml` dieksekusi sukses** pada tag `v0.1.0` → GitHub Release 16 aset, publish
 idempoten; CI runner hijau).
-Sisa Phase 5/kandidat: evaluasi `--strict` bench, hosting dokumentasi.
+Sisa Phase 5/kandidat: evaluasi `--strict` bench.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,

@@ -225,8 +225,11 @@ pekerjaan Phase 5.
       write`/`--sandbox-deny-net` di CLI, `ramonyx.spawn(..., { sandbox })` (irisan permission),
       auto-izin entry dir/CA TLS/proc-self kuota, fail-hard bila kernel tak mendukung; uji kernel
       positif/negatif (FS + TCP); 111 test Rust
+- [x] **Hosting dokumentasi** (ADR-0052): `apps/docs/export.ts` (ekspor statis 65 halaman +
+      404 + aset, base-path `<base href>`, tautan `*.md` ditulis ulang) + workflow `pages.yml` →
+      https://ramonyxjs.github.io/ramonyx/; test docs 7/7
 - [ ] **Fase 5 sisa** — kandidat lanjutan: evaluasi `--strict` bench setelah beberapa invokasi
-      tenang lagi, hosting dokumentasi
+      tenang lagi
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

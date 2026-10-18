@@ -59,6 +59,8 @@ pnpm audit --audit-level high              # bersih
 
 ## Dokumentasi
 
+**Online:** https://ramonyxjs.github.io/ramonyx/ (situs docs di-host dari `docs/**` — ADR-0052).
+
 Mulai dari [docs/BLUEPRINT.md](docs/BLUEPRINT.md) (sumber kebenaran teknis),
 [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) (status audit berbasis bukti),
 dan [docs/adr/README.md](docs/adr/README.md) (keputusan arsitektur 0001–0049).

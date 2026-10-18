@@ -48,6 +48,9 @@
 - Baseline Phase 1 di-commit (mis. `benchmarks/results/phase1-baseline.json`) sebagai pembanding regresi.
 - Web Vitals (Phase 2): `benchmarks/results/phase2-web-vitals.json` dari spec e2e (artefak,
   bukan klaim; threshold per workload menyusul).
+- Abuse-case & soak (Phase 3): `benchmarks/results/phase3-abuse.json` (`pnpm bench:security`) —
+  skenario serangan + RSS proses server (anak) via `/proc`; CI meng-upload seluruh
+  `benchmarks/results/` sebagai artefak.
 
 ## 6. Acceptance criteria (target eksperimen — bukan hasil)
 

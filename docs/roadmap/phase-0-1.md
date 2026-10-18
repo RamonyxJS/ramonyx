@@ -71,7 +71,10 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
 - [x] Prototype pollution: `parseQuery` aman untuk `__proto__`/`constructor`
 - [x] Fuzz/property test (fast-check): router matching, query parsing, normalisasi schema
 - [x] Suite keamanan `tests/security/` (413, timeout+abort, pollution, default limit)
-- [ ] Abuse-case & load test (skenario serangan di autocannon/k6); soak test memori
+- [x] Abuse-case & soak terukur (`pnpm bench:security`, ADR-0010-style artefak):
+      6 skenario serangan (oversized, JSON rusak, schema invalid, traversal, query raksasa, echo valid)
+      semua sesuai ekspektasi tanpa 5xx/error; soak 20s+3s drain — RSS proses server dipantau via /proc
+      (plateau saat beban berhenti; soak berjam-jam per protokol §8 masih diperlukan sebelum klaim)
 - [ ] Dependency audit berkelanjutan (CI sudah `pnpm audit`; tambah kebijakan & provenance)
 - [ ] Pemetaan OWASP ASVS → acceptance criteria + perluasan security regression suite
 - [ ] Keputusan menyusul: rate limiting / concurrency limit per route

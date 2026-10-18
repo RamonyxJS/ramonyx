@@ -21,6 +21,7 @@ pnpm build         # produksi: bundle client ke dist/client
 pnpm start         # produksi: SSR di http://localhost:3000 (setelah build)
 pnpm test:e2e      # e2e Playwright (hydration, navigasi, error, Web Vitals)
 pnpm bench         # baseline autocannon
+pnpm bench:security  # abuse-case + soak (6 skenario serangan + RSS server)
 ```
 
 ## Peta dokumen

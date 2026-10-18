@@ -10,5 +10,5 @@ test("memindai routes playground", async () => {
   const dir = fileURLToPath(new URL("../../../apps/playground/src/routes", import.meta.url));
   const entries = await createRouteManifest({ dir });
   const summary = entries.map((entry) => `${entry.method} ${entry.path}`).sort();
-  assert.deepEqual(summary, ["GET /api/hello", "GET /api/users/[id]"]);
+  assert.deepEqual(summary, ["GET /api/hello", "GET /api/users/[id]", "POST /api/echo"]);
 });

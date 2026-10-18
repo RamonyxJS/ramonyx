@@ -79,5 +79,9 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
 - DoS handler/loader/render: ✅ timeout 10s + abort `request.signal` (ADR-0011).
 - Prototype pollution (query): ✅ `parseQuery` aman (ADR-0011), diuji fuzz + e2e.
 - Robustness parser/matcher: ✅ fuzz `fast-check` (router, query, normalisasi schema).
+- Abuse-case terukur: ✅ 6 skenario (oversized/JSON rusak/schema invalid/traversal/query raksasa/echo)
+  tanpa 5xx & tanpa error di bawah beban (`benchmarks/results/phase3-abuse.json`);
+  RSS server diukur terpisah (proses anak) — plateau saat beban berhenti, tanpa klaim stabilitas
+  sampai soak berjam-jam per protokol §8.
 - XSS/CSP, CSRF helper, SSRF, path traversal (static), limit SSR penuh, isolasi plugin: belum —
   fase berikutnya (Phase 3 lanjutan / Phase 4).

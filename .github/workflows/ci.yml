@@ -31,5 +31,13 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: E2E (browser)
         run: pnpm test:e2e
+      - name: Security benchmark (abuse-case + soak)
+        run: pnpm bench:security
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmarks/results/
+          if-no-files-found: error
       - name: Security checks
         run: pnpm audit --audit-level high

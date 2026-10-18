@@ -22,7 +22,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm build` + `pnpm start` — produksi: bundle client ke `apps/playground/dist/client/`, lalu SSR di 3000.
 - `pnpm test:e2e` — Playwright terhadap build produksi (`pnpm build` + `pnpm start`); browser:
   CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
-- Hasil bench di `benchmarks/results/`.
+- `pnpm bench` — autocannon HTTP baseline; `pnpm bench:security` — abuse-case + soak
+  (spawn server terpisah, RSS via /proc). Hasil di `benchmarks/results/`.
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
 
@@ -77,6 +78,6 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 ## Status & langkah berikutnya
 
 Phase 2 **selesai** (2026-10-18). **Phase 3 (hardening) berjalan** — limits body/timeout
-(ADR-0011), streaming body, fuzz fast-check, suite `tests/security/`; 89 tes Node + 4 e2e hijau.
-Berikutnya: abuse/load test, dependency audit berkelanjutan, pemetaan OWASP ASVS. Keputusan
-terbuka pemilik: scope npm & lisensi, matrix browser, rekonsiliasi PRD.
+(ADR-0011), streaming body, fuzz fast-check, suite `tests/security/`, dan abuse-case/soak terukur
+(`pnpm bench:security`); 89 tes Node + 4 e2e hijau. Berikutnya: dependency audit berkelanjutan,
+pemetaan OWASP ASVS. Keputusan terbuka pemilik: scope npm & lisensi, matrix browser, PRD.

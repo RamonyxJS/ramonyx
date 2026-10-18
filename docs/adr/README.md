@@ -50,3 +50,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0040](0040-plugin-process-isolation.md) | Isolasi level proses untuk plugin (`ramonyx.spawn`) | Accepted |
 | [0041](0041-create-app.md) | `apps/create-app` — scaffolder aplikasi | Accepted |
 | [0042](0042-docs-app.md) | `apps/docs` — situs dokumentasi (dogfood SSR React) | Accepted |
+| [0043](0043-plugin-supervision.md) | Supervisi restart plugin (`restart` pada `ramonyx.spawn`) | Accepted |

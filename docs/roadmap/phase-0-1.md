@@ -183,8 +183,13 @@ pekerjaan Phase 5.
       middleware aktif; temuan: `DocumentRenderer` kustom menjatuhkan `scripts` & payload klien
       basi setelah soft navigation (diperbaiki + dikunci e2e); **pencarian**: filter instan di
       indeks + `GET /api/cari?q=` (isi markdown, excerpt, validasi schema)
+- [x] **Supervisi restart plugin** (ADR-0043): `restart: true | { maxRestarts, delayMs }` pada
+      `ramonyx.spawn` — supervisor latar me-restart proses yang keluar non-zero (backoff, batas),
+      `receive()` melintasi restart, `plugin.stats()` (restarts/running/stopped/lastExit),
+      `kill()` deterministik; temuan: regresi mode non-supervisi & camelCase `lastExit` (ketangkap
+      test)
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
-      restart supervision plugin, sandbox OS (seccomp/namespace)
+      sandbox OS (seccomp/namespace), health-check/heartbeat, backoff eksponensial
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

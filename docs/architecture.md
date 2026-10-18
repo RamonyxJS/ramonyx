@@ -123,10 +123,10 @@ dan renderer UI sendiri tidak direncanakan.
 
 | Topik | Status | Lokasi |
 | --- | --- | --- |
-| Scope npm package (`@ramonyx/*`?) dan lisensi | belum diputuskan | roadmap Phase 0 |
-| Matrix dukungan browser | belum diputuskan | roadmap Phase 0 |
-| Rekonsiliasi PRD (template "mobile", metrik docs 90%, forum/support) | belum diputuskan | roadmap Phase 0 |
-| Topologi rilis & versioning | belum diputuskan | setelah Phase 1 |
+| Topologi rilis & versioning | belum diputuskan | setelah Phase 4 |
+
+Diputuskan pemilik 2026-10-18: lisensi **MIT**, scope **`@ramonyx/*`**, browser matrix evergreen
+(2 versi terakhir, ES2022), rekonsiliasi PRD — lihat ADR-0018.
 
 ## 9. Menguji framework tanpa runtime sendiri
 

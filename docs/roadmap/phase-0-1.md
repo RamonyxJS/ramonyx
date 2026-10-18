@@ -15,8 +15,8 @@ Exit criteria: keputusan arsitektur terdokumentasi dan dapat diuji.
 - [x] ADR-0005 bundler (Accepted; Phase 1 source-first tanpa bundler)
 - [x] `docs/architecture.md`, `docs/api/core-contract.md` v0, threat model, benchmark protocol,
       coding standards
-- [ ] Keputusan terbuka pemilik: scope npm & lisensi; matrix browser; rekonsiliasi PRD
-      (template "mobile", metrik docs 90%, forum/support)
+- [x] Keputusan pemilik (2026-10-18): lisensi **MIT**, scope **`@ramonyx/*`**, browser matrix
+      evergreen (2 versi terakhir, ES2022), rekonsiliasi PRD — ADR-0018
 
 ## Phase 1 — Framework MVP (inti selesai di mesin dev) ✅
 

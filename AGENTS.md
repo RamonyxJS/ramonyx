@@ -81,9 +81,10 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 0–3 **selesai** (2026-10-18). Phase 3: limits body/timeout/concurrency + rate limit per klien
-(ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard + output limit
-(`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`, abuse/soak
-`pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 115 tes Node + 4 e2e hijau. Berikutnya: keputusan pemilik (scope npm & lisensi,
-matrix browser, PRD) lalu Phase 4 (runtime alpha Rust + V8).
+Phase 0–3 **selesai** (2026-10-18); keputusan pemilik juga selesai — lisensi **MIT**, scope
+**`@ramonyx/*`**, browser matrix evergreen 2 versi terakhir, rekonsiliasi PRD (ADR-0018).
+Ringkas Phase 3: limits body/timeout/concurrency + rate limit per klien (ADR-0011/0012/0017),
+security headers + CSRF + CSP nonce + SSRF guard + output limit (`@ramonyx/security`,
+ADR-0013–0015), fuzz fast-check, suite `tests/security/`, abuse/soak `pnpm bench:security`,
+ASVS mapping (12 kriteria teruji), dependency policy + Dependabot (ADR-0016); 115 tes Node + 4 e2e
+hijau. **Berikutnya: Phase 4 — runtime alpha (Rust + V8).**

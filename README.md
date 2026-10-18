@@ -4,11 +4,10 @@ Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangka
 proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
-> **Status: Phase 0–3 selesai** — framework full-stack (routing, SSR, hydration, navigasi, dev
-> server HMR) + hardening lengkap (limits, rate limit, headers, CSRF, CSP nonce, SSRF guard,
-> output limit), fuzz + e2e + bench keamanan, ASVS mapping (12 kriteria teruji), kebijakan
-> dependency. Berikutnya: keputusan pemilik (scope npm & lisensi, matrix browser, PRD) lalu
-> Phase 4 — runtime alpha (Rust + V8). Klaim mengikuti aturan BLUEPRINT §10.
+> **Status: Phase 0–3 selesai + keputusan pemilik final** — framework full-stack (routing, SSR,
+> hydration, navigasi, dev server HMR) + hardening lengkap, fuzz + e2e + bench keamanan, ASVS
+> mapping (12 kriteria teruji), lisensi MIT, scope `@ramonyx/*`, browser matrix evergreen.
+> Berikutnya: Phase 4 — runtime alpha (Rust + V8). Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 
@@ -46,6 +45,12 @@ pnpm bench:security  # abuse-case + soak (6 skenario serangan + RSS server)
 - pnpm 12 — standalone via `curl -fsSL https://get.pnpm.io/install.sh | sh -` (mesin dev:
   `~/.local/share/pnpm/bin`); CI memakai corepack.
 - Rust toolchain — Phase 4+ (sudah terpasang di mesin dev).
+
+## Lisensi & dukungan
+
+- **Lisensi: MIT** — lihat [LICENSE](LICENSE). Scope paket: `@ramonyx/*` (meta: `ramonyx`).
+- **Browser**: Chrome/Edge/Firefox/Safari dua versi terakhir, JavaScript ES2022, tanpa polyfill
+  otomatis (ADR-0018).
 
 ## Aturan singkat
 

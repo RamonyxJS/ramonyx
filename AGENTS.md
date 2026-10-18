@@ -150,6 +150,8 @@ Baseline (mesin dev; **bukan klaim publik**): `phase1-baseline.json` (HTTP),
 `ssr-baseline.json` (SSR sinkron vs streaming), `phase2-web-vitals.json` (median 3 load).
 Warm-up + beberapa ulangan, laporkan distribusi/median — bukan rata-rata. Gate **report-only**:
 `pnpm bench:report`, `pnpm bench:ssr:report`, vitals di e2e (`VITALS_STRICT=1` untuk memblokir).
+`--strict` sahih **hanya di mesin baseline** (guard menolak lintas-mesin; CI ±3× lebih cepat
+ dari mesin dev — evaluasi di ADR-0045).
 
 ## Status & langkah berikutnya
 

@@ -60,6 +60,8 @@
 ## Batasan yang dicatat jujur
 
 - In-process (tanpa socket) — **bukan** klaim TTFB jaringan; mesin dev; report-only.
+- `--strict` sahih **hanya di mesin baseline** — guard lintas-mesin menolak bila `cpuModel`
+  berbeda (evaluasi ADR-0045; CI tetap report-only).
 - Metrik kecil (< 5 ms) tetap berisik; lantai 1 ms + median meredam, bukan menghapus.
 - `--expose-gc` mengubah karakter alokasi antar-sampel (konsisten untuk baseline & report).
 - Ambang vitals absolut = panduan umum, bukan target performa yang dijanjikan.

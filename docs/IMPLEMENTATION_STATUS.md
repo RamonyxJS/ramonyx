@@ -12,7 +12,7 @@
 - **Fase saat ini (berdasarkan bukti):** Phase 0–3 **selesai**; **exit criteria Phase 4 tercapai**
   (ADR-0032); **Phase 5 berjalan dengan sebagian besar item selesai** (isolasi worker, kuota
   resource, streaming request, pipeline rilis, isolasi proses plugin + supervisi + health-check).
-  Sisa Phase 5: evaluasi `--strict` bench + hosting dokumentasi (opsional).
+  Sisa kandidat: **baseline benchmark per-lingkungan di CI** (agar `--strict` CI bermakna — hasil evaluasi di §5).
 - **Status keseluruhan:** seluruh gate yang dijalankan dalam audit **hijau** — lint, typecheck,
   128 tes Node, 5 e2e, fmt/clippy, 101 tes Rust, build produksi, dan verifikasi rilis
   (instalasi tarball di proyek konsumen bersih). Tidak ada TODO/FIXME di source.
@@ -141,6 +141,7 @@ ini kecuali disebut lain.
 | Backoff + watchdog plugin (ADR-0050) | `cargo test --workspace` | **PASS** | 104 test Rust; watchdog membunuh plugin senyap **tanpa `receive`** (test baru), reset kuota setelah generasi stabil (test baru), unit backoff eksponensial; 10 test plugin lama tetap hijau |
 | Sandbox OS plugin (ADR-0051) | `cargo test --workspace` | **PASS** | 111 test Rust; kernel menolak baca `/etc/hostname` walau permission JS `read: true` (uji fs), `fetch` ditolak kernel saat `sandbox: { net: false }` (ABI≥4), unit saringan ABI+irisan+parse CLI |
 | Ekspor + hosting docs (ADR-0052) | `pnpm docs:export --base /ramonyx` + smoke | **PASS** | 65 halaman + 404 + aset + `.nojekyll`; smoke subpath `/ramonyx/` semua 200; base href + tautan `*.md` ditulis ulang; test docs 7/7 (termasuk ekspor end-to-end) |
+| Evaluasi `--strict` bench (ADR-0045) | 3× `bench:report` + 3× `bench:ssr:report` + log CI | **PASS (keputusan tercatat)** | HTTP lokal +68–74% tanpa perubahan kode (beban tooling dev, load 1.45) → strict tidak sahih di sini; SSR 0 breach (maks 17,7%) → sahih same-machine; CI ±3× lebih cepat → strict-CI tumpul. **Guard lintas-mesin** ditambahkan (menolak dengan pesan jelas); demo: baseline palsu → exit 1, same-machine → exit 0 |
 | Verifikasi rilis (ADR-0049) | `pnpm release` + `release:verify` | **PASS** | 14 artefak; konsumen bersih + source map + **scaffold `app-baru`** + **build + start + SSR halaman dengan Node polos dari tarball** + runtime jalan |
 | Loader runtime publik (ADR-0049) | `node --import @ramonyx/compiler/register` | **PASS** | app hasil scaffold jalan tanpa loader repo (Node menolak type-strip .ts di node_modules); pnpm `allowBuilds: esbuild` disertakan template |
 | Benchmark HTTP | `pnpm bench` | **NOT RUN** | Skrip menulis ulang `benchmarks/results/phase1-baseline.json` (artefak ter-commit) — tidak dijalankan agar tidak mengubah artefak saat audit |

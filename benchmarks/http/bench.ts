@@ -132,18 +132,27 @@ if (compare && baseline !== undefined) {
   const baselineEnvironment = baseline.environment as
     | { cpuModel?: unknown; node?: unknown }
     | undefined;
-  if (
+  const bedaEnv =
     baselineEnvironment?.cpuModel !== undefined &&
-    baselineEnvironment.cpuModel !== environment.cpuModel
-  ) {
+    baselineEnvironment.cpuModel !== environment.cpuModel;
+  if (bedaEnv) {
     console.log(
-      `catatan: lingkungan berbeda (baseline: ${String(baselineEnvironment.cpuModel)}; sekarang: ${environment.cpuModel}) — bandingkan dengan hati-hati.`,
+      `catatan: lingkungan berbeda (baseline: ${String(baselineEnvironment?.cpuModel)}; sekarang: ${environment.cpuModel}) — bandingkan dengan hati-hati.`,
     );
+    if (strict) {
+      // Gate lintas mesin tidak bermakna (CI ±3× lebih cepat dari mesin dev — ADR-0045):
+      // --strict hanya sahih di mesin baseline; refus eksplisit lebih jujur daripada gagal
+      // karena perbedaan mesin atau lulus palsu.
+      console.error(
+        "--strict tidak bisa dipakai lintas mesin: baseline dari mesin berbeda. Jalankan di mesin baseline atau perbarui baseline (`pnpm bench`).",
+      );
+      process.exitCode = 1;
+    }
   }
 
   const report = compareArtifacts(baseline, payload as BenchArtifact, tolerancePercent);
   console.log(`\n${formatReport(report)}`);
-  if (report.breached && strict) {
+  if (report.breached && strict && !bedaEnv) {
     console.error("REGRESI melebihi toleransi (mode --strict)");
     process.exitCode = 1;
   }

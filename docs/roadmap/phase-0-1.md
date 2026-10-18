@@ -228,8 +228,11 @@ pekerjaan Phase 5.
 - [x] **Hosting dokumentasi** (ADR-0052): `apps/docs/export.ts` (ekspor statis 65 halaman +
       404 + aset, base-path `<base href>`, tautan `*.md` ditulis ulang) + workflow `pages.yml` →
       https://ramonyxjs.github.io/ramonyx/; test docs 7/7
-- [ ] **Fase 5 sisa** — kandidat lanjutan: evaluasi `--strict` bench setelah beberapa invokasi
-      tenang lagi
+- [x] **Evaluasi `--strict` bench** (ADR-0045): SSR sahih same-machine (5 run bersih; strict
+      lokal lulus), HTTP rentan drift ambient tooling dev (+68–74% tanpa perubahan kode), CI ±3×
+      lebih cepat → strict-CI tumpul; **guard lintas-mesin** menolak strict bila `cpuModel` beda
+- [ ] **Fase 5 sisa** — kandidat lanjutan: baseline benchmark **per-lingkungan** di CI (baru
+      setelah itu strict di CI bermakna)
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

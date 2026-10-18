@@ -353,13 +353,24 @@ await writeFile(outPath, `${JSON.stringify(payload, null, 2)}\n`);
 console.log(`\nartefak: ${relative(process.cwd(), outPath)}`);
 
 if (compare && baseline !== undefined) {
+  const baselineEnv = baseline.environment as { cpuModel?: unknown } | undefined;
+  const bedaEnv =
+    baselineEnv?.cpuModel !== undefined && baselineEnv.cpuModel !== payload.environment.cpuModel;
+  if (bedaEnv && strict) {
+    // Gate lintas mesin tidak bermakna (ADR-0048): refus eksplisit, bukan lulus/gagal palsu.
+    console.error(
+      `--strict tidak bisa dipakai lintas mesin: baseline dari '${String(baselineEnv?.cpuModel)}', sekarang '${payload.environment.cpuModel}'. Jalankan di mesin baseline atau perbarui baseline.`,
+    );
+    process.exitCode = 1;
+  }
+
   // Lantai 1 ms: metrik kecil (halaman ringan ~2 ms) masih dapat bergoyang ±1 ms di mesin
   // berisik; regresi nyata (halaman sedang/besar) tetap tertangkap (ADR-0048).
   const report = compareSsrArtifacts(baseline, payload as SsrArtifact, tolerancePercent, {
     minAbsoluteDelta: 1,
   });
   console.log(`\n${formatSsrReport(report)}`);
-  if (report.breached && strict) {
+  if (report.breached && strict && !bedaEnv) {
     console.error("REGRESI melebihi toleransi (mode --strict)");
     process.exitCode = 1;
   }

@@ -59,6 +59,25 @@ menimpa baseline".
 - **Konfirmasi:** `pnpm bench:report` berikutnya membandingkan dalam toleransi di semua metrik
   (p50 +2.9%, p90 +2.1%, p99 +5.6%, rps −0.4%).
 
+## Evaluasi `--strict` (2026-10-18)
+
+- **Mesin dev (baseline): 3 invokasi `bench:report` berturut-turut** → HTTP menandai
+  **+68–74% p50** dan rps **−39%** *tanpa perubahan kode* yang relevan (skenario `/api/hello`
+  tidak menyentuh React/SSR). Penyebab: beban ambient tooling dev (opencode ~18% CPU, VS Code
+  server ~12%, residu Chrome; load average 1.45). **Strict di mesin dev tidak sahih** untuk HTTP.
+- **SSR bench: 5 invokasi bersih berturut-turut** (delta maksimum ≤ 17,7%) → `--strict` sahih
+  **selama dijalankan di mesin baseline**.
+- **CI ±3× lebih cepat** dari mesin dev (p50 11 ms vs 34 ms; rps 4177 vs 1317; SSR large 19 vs
+  53 ms): strict di CI tidak akan flaky (selalu lebih cepat), tetapi **tumpul** — regresi nyata
+  tersembunyi oleh keunggulan mesin. Baseline dev tidak representatif untuk runner.
+- **Keputusan**: (1) guard **lintas-mesin** ditambahkan — `--strict` **menolak** (exit 1 dengan
+  pesan jelas) bila `cpuModel` baseline ≠ mesin saat ini, di bench HTTP maupun SSR; (2) langkah
+  CI tetap **report-only**; (3) `--strict` dipakai lokal di mesin baseline sebagai cek pra-rilis
+  (`pnpm bench:ssr:report --strict` aman; HTTP strict dianjurkan hanya sesaat setelah refresh
+  baseline di jendela tenang).
+- **Kandidat lanjutan**: baseline **per-lingkungan** (jalankan bench di CI, simpan sebagai
+  cache/artefak runner, bandingkan dalam lingkungan yang sama) — barulah strict di CI bermakna.
+
 ## Batasan yang dicatat jujur
 
 - Gate **belum memblokir** (sesuai rencana); `--strict` menunggu beberapa invokasi tenang lagi

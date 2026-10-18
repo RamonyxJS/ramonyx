@@ -10,6 +10,7 @@ const app = await createApp({
   logger: createConsoleLogger(),
   strictValidation: resolved.app.strictValidation,
   clientScript: "/assets/client.js",
+  streaming: true,
 });
 
 const server = await host.serve(app, {

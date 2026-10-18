@@ -54,3 +54,67 @@ test("node host melayani HTTP nyata (method, body, status, set-cookie)", async (
 
   await server.close();
 });
+
+test("node host: body aliran dikirim bertahap (chunk pertama tiba sebelum aliran selesai)", async () => {
+  const encoder = new TextEncoder();
+  let release = (): void => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  const host = createNodeHost();
+  const server = await host.serve(
+    async () => {
+      let step = 0;
+      const stream = new ReadableStream<Uint8Array>({
+        async pull(controller) {
+          if (step === 0) {
+            step = 1;
+            controller.enqueue(encoder.encode("chunk-1"));
+            await gate;
+            return;
+          }
+          if (step === 1) {
+            step = 2;
+            controller.enqueue(encoder.encode("chunk-2"));
+            controller.close();
+          }
+        },
+      });
+      return new Response(stream, { headers: { "content-type": "text/plain" } });
+    },
+    { port: 0 },
+  );
+
+  const response = await fetch(new URL("/stream", server.url));
+  assert.equal(response.status, 200);
+  const reader = response.body?.getReader();
+  assert.ok(reader !== undefined, "body aliran tersedia");
+  const decoder = new TextDecoder();
+
+  // Tanpa streaming (buffer penuh), read pertama baru selesai setelah `release()` — jadi
+  // timeout ini sekaligus menangkap regresi "respons dibuffer".
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    const first = await Promise.race([
+      reader.read(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("chunk pertama tidak tiba sebelum aliran selesai")),
+          2_000,
+        );
+      }),
+    ]);
+    assert.equal(decoder.decode(first.value), "chunk-1");
+  } finally {
+    clearTimeout(timer);
+  }
+
+  release();
+  const second = await reader.read();
+  assert.equal(decoder.decode(second.value), "chunk-2");
+  const end = await reader.read();
+  assert.equal(end.done, true);
+
+  await server.close();
+});

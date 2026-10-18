@@ -337,3 +337,225 @@ test("client extraModules dimuat sebelum entry (untuk HMR client dev)", async ()
   assert.ok(entry !== -1, "entry ada");
   assert.ok(viteClient < entry, "modul tambahan dimuat sebelum entry");
 });
+
+test("streaming: isi dokumen identik dengan jalur sinkron (paritas, termasuk hydration)", async () => {
+  const page = basePage(
+    "/users/[id]",
+    {
+      default: Page,
+      metadata: { title: "S" },
+      loader: async ({ params }) => ({ id: params.id }),
+    },
+    { layouts: [{ default: Layout }] },
+  );
+
+  const syncHandler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: fakeRenderer(),
+      client: { script: "/assets/client.js" },
+    }),
+  });
+
+  const streamingRenderer: Renderer = {
+    ...fakeRenderer(),
+    renderStream: async (element) => {
+      const bytes = new TextEncoder().encode(describeElement(element));
+      const middle = Math.floor(bytes.length / 2);
+      return new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(bytes.slice(0, middle));
+          controller.enqueue(bytes.slice(middle));
+          controller.close();
+        },
+      });
+    },
+  };
+  const streamingHandler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: streamingRenderer,
+      client: { script: "/assets/client.js" },
+      streaming: true,
+    }),
+  });
+
+  const syncHtml = await (await syncHandler(new Request("http://test.local/users/7"))).text();
+  const streamedHtml = await (
+    await streamingHandler(new Request("http://test.local/users/7"))
+  ).text();
+
+  assert.equal(streamedHtml, syncHtml);
+});
+
+test("streaming: prefix + body pertama terkirim sebelum body selesai (aliran sungguhan)", async () => {
+  const encoder = new TextEncoder();
+  let release = (): void => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const renderer: Renderer = {
+    name: "gated",
+    render: async (element) => describeElement(element),
+    renderStream: async () =>
+      new ReadableStream<Uint8Array>({
+        async start(controller) {
+          controller.enqueue(encoder.encode("BAGIAN-1"));
+          await gate;
+          controller.enqueue(encoder.encode("BAGIAN-2"));
+          controller.close();
+        },
+      }),
+  };
+
+  const page = basePage("/", { default: Page, loader: async () => ({ ok: true }) });
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer,
+      client: { script: "/assets/client.js" },
+      streaming: true,
+    }),
+  });
+  const response = await handler(new Request("http://test.local/"));
+  assert.equal(response.status, 200);
+
+  const reader = response.body?.getReader();
+  assert.ok(reader !== undefined, "respons punya body aliran");
+  const decoder = new TextDecoder();
+
+  const first = decoder.decode((await reader.read()).value);
+  assert.ok(first.includes('id="ramonyx-root"'), "prefix dokumen (container) terkirim duluan");
+  assert.ok(!first.includes("window.__RAMONYX__"), "script hydration belum terkirim");
+
+  const second = decoder.decode((await reader.read()).value);
+  assert.ok(second.includes("BAGIAN-1"));
+  assert.ok(!second.includes("BAGIAN-2"), "BAGIAN-2 masih tertahan gate");
+
+  release();
+  let rest = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    rest += decoder.decode(value);
+  }
+  assert.ok(rest.includes("BAGIAN-2"), "sisa body terkirim setelah gate dibuka");
+  assert.ok(rest.includes("window.__RAMONYX__"), "script hydration di akhir dokumen");
+});
+
+test("streaming tanpa renderStream → fallback sinkron", async () => {
+  const page = basePage("/", { default: Page });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer(), streaming: true }),
+  });
+  const response = await handler(new Request("http://test.local/"));
+
+  assert.equal(response.status, 200);
+  assert.match(await response.text(), /<Page /);
+});
+
+test("streaming: dokumen kustom tanpa penanda body → fallback sinkron", async () => {
+  let renderCalls = 0;
+  let streamCalls = 0;
+  const renderer: Renderer = {
+    name: "spy",
+    render: async (element) => {
+      renderCalls += 1;
+      return describeElement(element);
+    },
+    renderStream: async () => {
+      streamCalls += 1;
+      return new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.close();
+        },
+      });
+    },
+  };
+  const page = basePage("/", { default: Page });
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer,
+      streaming: true,
+      document: () => "<html><body>statis</body></html>",
+    }),
+  });
+
+  const html = await (await handler(new Request("http://test.local/"))).text();
+  assert.equal(html, "<html><body>statis</body></html>");
+  assert.equal(streamCalls, 0, "renderStream tidak dipakai bila dokumen mengabaikan body");
+  assert.equal(renderCalls, 1, "fallback sinkron dipakai");
+});
+
+test("streaming: melebihi batas dokumen → aliran diputus + log", async () => {
+  const { logger, lines } = makingLogger();
+  const chunk = "x".repeat(400);
+  const renderer: Renderer = {
+    name: "big",
+    render: async (element) => describeElement(element),
+    renderStream: async () =>
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          const encoder = new TextEncoder();
+          controller.enqueue(encoder.encode(chunk));
+          controller.enqueue(encoder.encode(chunk));
+          controller.close();
+        },
+      }),
+  };
+  const page = basePage("/", { default: Page });
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer,
+      streaming: true,
+      maxDocumentBytes: 500,
+    }),
+    logger,
+  });
+
+  const response = await handler(new Request("http://test.local/"));
+  assert.equal(response.status, 200, "status sudah terkirim sebelum batas terlampaui");
+  await assert.rejects(
+    async () => {
+      await response.arrayBuffer();
+    },
+    /melebihi batas/,
+    "aliran diputus saat melewati batas",
+  );
+  assert.ok(
+    lines.some(
+      (line) =>
+        line.level === "error" &&
+        line.message === "Output halaman (streaming) melebihi batas — aliran diputus",
+    ),
+  );
+});
+
+test("streaming: renderStream menolak → halaman error sinkron + log", async () => {
+  const { logger, lines } = makingLogger();
+  const renderer: Renderer = {
+    name: "reject",
+    render: async (element) => describeElement(element),
+    renderStream: async () => {
+      throw new Error("mesin streaming gagal");
+    },
+  };
+  const page = basePage("/", { default: Page }, { error: { default: ErrorPage } });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer, streaming: true }),
+    logger,
+  });
+
+  const response = await handler(new Request("http://test.local/"));
+  assert.equal(response.status, 500);
+  const html = await response.text();
+  assert.ok(html.includes("<ErrorPage "), "error module dirender sinkron");
+  assert.ok(!html.includes("mesin streaming gagal"), "pesan internal tidak bocor");
+  assert.ok(
+    lines.some((line) => line.level === "error" && line.message === "Render halaman gagal"),
+  );
+});

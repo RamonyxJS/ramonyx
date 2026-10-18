@@ -24,9 +24,74 @@ export interface CreatePageRoutesOptions {
   readonly client?: ClientOptions;
   /** Batas ukuran dokumen HTML per halaman (default 2 MiB) → 500 bila lewat. */
   readonly maxDocumentBytes?: number;
+  /**
+   * Aktifkan SSR streaming (butuh `renderer.renderStream`; default false — ADR-0047).
+   * Aliran body dikirim ke klien saat siap; error setelah byte pertama terkirim akan
+   * memutus aliran (status tidak bisa diubah lagi — halaman error hanya berlaku sebelum).
+   */
+  readonly streaming?: boolean;
 }
 
 const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
+
+/**
+ * Penanda posisi body saat streaming; dokumen dipecah pada penanda ini sehingga kontrak
+ * `DocumentRenderer` tidak berubah (ADR-0047). Bila dokumen kustom tidak memuatnya,
+ * jalur sinkron dipakai sebagai fallback.
+ */
+const BODY_MARKER = "<!--__RAMONYX_BODY__-->";
+
+const encoder = new TextEncoder();
+
+/** Menggabungkan prefix + aliran body + suffix, sekaligus menegakkan `maxDocumentBytes`. */
+function streamDocument(
+  source: ReadableStream<Uint8Array>,
+  prefix: Uint8Array,
+  suffix: Uint8Array,
+  maxDocumentBytes: number,
+  onExceed: () => void,
+  onError: (error: unknown) => void,
+): ReadableStream<Uint8Array> {
+  const reader = source.getReader();
+  let total = prefix.byteLength + suffix.byteLength;
+  let cancelled = false;
+
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      controller.enqueue(prefix);
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (cancelled) {
+            return;
+          }
+          if (done) {
+            break;
+          }
+          total += value.byteLength;
+          if (total > maxDocumentBytes) {
+            onExceed();
+            await reader.cancel();
+            controller.error(new Error("dokumen melebihi batas streaming"));
+            return;
+          }
+          controller.enqueue(value);
+        }
+        controller.enqueue(suffix);
+        controller.close();
+      } catch (error) {
+        if (!cancelled) {
+          onError(error);
+          controller.error(error);
+        }
+      }
+    },
+    cancel(reason) {
+      cancelled = true;
+      return reader.cancel(reason);
+    },
+  });
+}
 
 interface PublicError {
   readonly status: number;
@@ -108,6 +173,7 @@ async function renderPage(
   documentRenderer: DocumentRenderer,
   client: ClientOptions | undefined,
   maxDocumentBytes: number,
+  streaming: boolean,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
@@ -134,17 +200,46 @@ async function renderPage(
         ? configuredStatus
         : 200;
 
+    const title = page.page.metadata?.title ?? "";
+    const scripts = hydrationScripts(
+      client,
+      { path: page.path, params, data },
+      context.request.headers.get(NONCE_HEADER) ?? undefined,
+    );
+    const renderStream = renderer.renderStream?.bind(renderer);
+
+    if (streaming && renderStream !== undefined) {
+      const shell = documentRenderer({ title, body: BODY_MARKER, status, scripts });
+      const markerIndex = shell.indexOf(BODY_MARKER);
+      if (markerIndex !== -1) {
+        const prefix = encoder.encode(shell.slice(0, markerIndex));
+        const suffix = encoder.encode(shell.slice(markerIndex + BODY_MARKER.length));
+        const body = await renderStream(buildPageTree(page, data, params));
+        return new Response(
+          streamDocument(
+            body,
+            prefix,
+            suffix,
+            maxDocumentBytes,
+            () =>
+              log.error("Output halaman (streaming) melebihi batas — aliran diputus", {
+                path: page.path,
+                maxDocumentBytes,
+              }),
+            (error) =>
+              log.error("Aliran render halaman gagal", {
+                path: page.path,
+                error: error instanceof Error ? error.message : String(error),
+              }),
+          ),
+          { status, headers: { "content-type": "text/html; charset=utf-8" } },
+        );
+      }
+      // Dokumen kustom mengabaikan body/penanda → fallback sinkron di bawah (ADR-0047).
+    }
+
     const body = await renderer.render(buildPageTree(page, data, params));
-    const document = documentRenderer({
-      title: page.page.metadata?.title ?? "",
-      body,
-      status,
-      scripts: hydrationScripts(
-        client,
-        { path: page.path, params, data },
-        context.request.headers.get(NONCE_HEADER) ?? undefined,
-      ),
-    });
+    const document = documentRenderer({ title, body, status, scripts });
 
     if (document.length > maxDocumentBytes) {
       log.error("Output halaman melebihi batas", {
@@ -213,11 +308,13 @@ async function renderPage(
  *
  * Lifecycle: loader → render (layout berantai membungkus halaman) → dokumen HTML.
  * Error: `HttpError` menentukan status/pesan publik; `error.tsx` terdekat dirender bila ada;
- * selain itu jatuh ke halaman fallback. Hydration belum ada (Phase 2 lanjutan).
+ * selain itu jatuh ke halaman fallback. Dengan `streaming: true` (dan renderer yang
+ * menyediakan `renderStream`) body dikirim sebagai aliran; halaman error tetap sinkron.
  */
 export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[] {
   const documentRenderer = options.document ?? defaultDocument;
   const maxDocumentBytes = options.maxDocumentBytes ?? DEFAULT_MAX_DOCUMENT_BYTES;
+  const streaming = options.streaming === true;
 
   return options.pages.map((page) => ({
     method: "GET",
@@ -231,6 +328,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
           documentRenderer,
           options.client,
           maxDocumentBytes,
+          streaming,
         ),
     }),
   }));

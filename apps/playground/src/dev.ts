@@ -21,6 +21,7 @@ const app = await createApp({
   clientModules: ["/@vite/client"],
   importer: dev.importer,
   reloadManifests: true,
+  streaming: true,
 });
 
 await host.serve(app, { port: resolved.server.port, host: resolved.server.host });

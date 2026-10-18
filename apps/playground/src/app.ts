@@ -18,6 +18,8 @@ export interface CreateAppOptions {
   readonly importer?: ModuleImporter;
   /** Bangun ulang manifest tiap request (dev, tanpa restart). */
   readonly reloadManifests?: boolean;
+  /** SSR streaming untuk halaman (butuh renderer `renderStream`; ADR-0047). */
+  readonly streaming?: boolean;
 }
 
 /** Route API + halaman SSR dari `src/routes` → handler siap dilayani host apa pun. */
@@ -37,6 +39,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
       pages,
       renderer: createReactRenderer(),
       client,
+      streaming: options.streaming,
     });
 
     return createHandler({

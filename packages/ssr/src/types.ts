@@ -8,6 +8,11 @@ export interface ElementDescriptor {
 export interface Renderer {
   readonly name: string;
   render(element: ElementDescriptor): Promise<string>;
+  /**
+   * Opsional: render body sebagai aliran chunk (SSR streaming — ADR-0047).
+   * Bila tidak ada, `createPageRoutes` tetap memakai `render` walaupun `streaming: true`.
+   */
+  renderStream?(element: ElementDescriptor): Promise<ReadableStream<Uint8Array>>;
 }
 
 export interface DocumentOptions {

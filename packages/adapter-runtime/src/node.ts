@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import {
   type EnvReader,
   type FetchHandler,
@@ -56,9 +57,19 @@ async function writeResponse(target: ServerResponse, response: Response): Promis
   if (setCookies.length > 0) {
     headers["set-cookie"] = setCookies;
   }
-  const body = new Uint8Array(await response.arrayBuffer());
+
   target.writeHead(response.status, headers);
-  target.end(body);
+  const body = response.body;
+  if (body === null) {
+    target.end();
+    return;
+  }
+  // Body di-pipe sebagai aliran (chunked): backpressure + pembatalan klien via pipeline.
+  // Jalur sinkron (string) tetap mengalir lewat pipeline yang sama → framing konsisten.
+  await pipeline(
+    Readable.fromWeb(body as unknown as import("node:stream/web").ReadableStream<Uint8Array>),
+    target,
+  );
 }
 
 /** Host Node.js: `node:http` → `Request`/`Response` standar web. */
@@ -79,8 +90,13 @@ export function createNodeHost(options: NodeHostOptions = {}): RuntimeHost {
             await writeResponse(outgoing, response);
           } catch (error) {
             options.onError?.(error);
-            outgoing.writeHead(500, { "content-type": "application/json" });
-            outgoing.end(JSON.stringify({ error: "Internal Server Error" }));
+            if (outgoing.headersSent) {
+              // Aliran sudah dimulai (streaming) — status tak bisa diubah; putuskan koneksi.
+              outgoing.destroy();
+            } else {
+              outgoing.writeHead(500, { "content-type": "application/json" });
+              outgoing.end(JSON.stringify({ error: "Internal Server Error" }));
+            }
           }
         })();
       });

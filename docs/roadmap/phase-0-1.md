@@ -97,12 +97,14 @@ lulus": 12 kriteria teruji di `docs/security/asvs-mapping.md`; seluruh baris thr
 kecuali path traversal runtime & isolasi plugin (Phase 4). Berikutnya: keputusan pemilik lalu
 Phase 4 (runtime alpha).
 
-## Phase 4 — Runtime alpha: Rust + V8 (berjalan)
+## Phase 4 — Runtime alpha: Rust + V8
 
-Status exit criteria ("framework demo berjalan di runtime alpha dan lulus subset compatibility
-tests"): **tercapai sebagian** — pipeline framework (core/router/schema/server), **demo SSR
-React**, **SSR streaming**, dan **subset `@ramonyx/security`** berjalan di runtime; compatibility
-lebih luas (fixture playground subset) dan worker/kuota menyusul.
+**Exit criteria TERCAPAI (2026-10-18)**: "framework demo berjalan di runtime alpha dan lulus
+subset compatibility tests" — aplikasi berbentuk playground (halaman SSR React + API + POST +
+middleware security) berjalan di runtime lewat `ramonyx.serveHandler`, dan subset compatibility
+(core/router/schema/server/security/ssr/react + CJS + fetch/streams) lulus di CI (ADR-0032).
+Di luar klaim: `@ramonyx/compiler` (Node-only), https/TLS, streaming request, worker/kuota —
+pekerjaan Phase 5.
 
 - [x] **R0** — Workspace Cargo (root `Cargo.toml`, members `runtime/crates/*`), toolchain dipin
       (`rust-toolchain.toml` 1.99.0 + rustfmt/clippy), `runtime-core` (config `ramonyx.runtime.json`
@@ -137,8 +139,13 @@ lebih luas (fixture playground subset) dan worker/kuota menyusul.
       (`lookup` via `op_dns_lookup`) sebagai modul sintetis; `crypto.getRandomValues`/`randomUUID`;
       **subset `@ramonyx/security` berjalan di runtime** (securityHeaders, cspNonce, csrfProtection,
       rateLimit, guardedFetch/SSRF) — fixture `security-subset.mjs`
-- [ ] **Compatibility lanjutan** — fixture playground subset, https/TLS + redirect fetch,
-  streaming request bertahap
+- [x] **Jembatan `serveHandler` + playground subset** (ADR-0032): `ramonyx.serveHandler(port, app)`
+  memetakan payload → `Request` (signal/cancellation ikut) dan `Response` → loop serve; temuan
+  diperbaiki: byte chunk dulu di-`String()` → body rusak (kini decoder UTF-8 mode stream);
+  fixture playground subset (halaman SSR + layout + loader + rute dinamis + error page + API +
+  POST + security middleware) berjalan **end-to-end lewat HTTP** di runtime
+- [ ] **Compatibility lanjutan** — https/TLS + redirect fetch, streaming request bertahap,
+  worker/kuota (Phase 5)
 - [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
       **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,
       handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end

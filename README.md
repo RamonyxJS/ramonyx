@@ -4,15 +4,16 @@ Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangka
 proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
-> **Status: Phase 4 (runtime alpha) berjalan** — Phase 0–3 selesai. Runtime Rust: R0 (CLI),
-> R1 (V8, ESM, TypeScript, `node_modules` ESM v1), R2a/b/c (HTTP server, cancellation, keep-alive,
-> streaming respons), R3a (permission model **deny-all**), `web_shim`, **compatibility suite
-> v1** (pipeline framework nyata berjalan di runtime), **interop CommonJS v1** — termasuk demo
-> **SSR React** (`react` + `react-dom/server.browser`) dan **SSR streaming**
-> (`renderToReadableStream`) — **`fetch` + `ReadableStream`** (http://, permission per
-> host), serta **subset `@ramonyx/security`** (middleware + guardedFetch/SSRF) dengan builtin
-> `node:net`/`node:dns/promises` + `crypto`. Framework Node tetap baseline produksi; runtime
-> eksperimental sampai compatibility/security testing lolos. Klaim mengikuti aturan BLUEPRINT §10.
+> **Status: exit criteria Phase 4 tercapai (2026-10-18)** — Phase 0–3 selesai dan runtime alpha
+> menjalankan **aplikasi playground subset** (halaman SSR React + API + POST + middleware
+> security) lewat `ramonyx.serveHandler`, plus subset compatibility suite di CI. Runtime Rust:
+> R0 (CLI), R1 (V8, ESM, TypeScript, `node_modules` ESM v1), R2a/b/c (HTTP server, cancellation,
+> keep-alive, streaming respons), R3a (permission model **deny-all**), `web_shim`,
+> **compatibility suite v1**, **interop CommonJS v1**, **SSR React + SSR streaming**,
+> **`fetch` + `ReadableStream`**, **builtin subset (`node:net`/`node:dns/promises`) + `crypto`**,
+> dan **subset `@ramonyx/security`** (middleware + guardedFetch/SSRF). Framework Node tetap
+> baseline produksi; fokus berikutnya Phase 5 (isolasi worker/kuota, streaming request,
+> https/TLS, profiling, rilis). Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

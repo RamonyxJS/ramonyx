@@ -39,3 +39,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0029](0029-commonjs-interop.md) | Interop CommonJS v1 + demo SSR React di runtime | Accepted |
 | [0030](0030-fetch-readablestream.md) | `fetch` client + `ReadableStream` + body streaming | Accepted |
 | [0031](0031-builtins-crypto-security.md) | Builtin subset + `crypto` + security di runtime | Accepted |
+| [0032](0032-servehandler-playground.md) | Jembatan `serveHandler` + playground subset di runtime | Accepted |

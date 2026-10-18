@@ -114,12 +114,14 @@ ESM v1** (ADR-0026), **`web_shim`** (URL/TextEncoder/Headers/Request/Response �
 **compatibility suite v1** (pipeline framework nyata berjalan di runtime — ADR-0028),
 **interop CommonJS v1 + demo SSR React** (`react` + `react-dom/server.browser` di runtime —
 ADR-0029), **`fetch` + `ReadableStream` + body streaming** (POST body, SSR streaming —
-ADR-0030), dan **builtin subset + subset `@ramonyx/security` di runtime** (`node:net`/
+ADR-0030), **builtin subset + subset `@ramonyx/security` di runtime** (`node:net`/
 `node:dns/promises`, `crypto.getRandomValues`, middleware security + guardedFetch/SSRF —
-ADR-0031) — semuanya diverifikasi test + smoke; sisa: https/TLS & redirect, streaming request,
-worker/kuota.
+ADR-0031), dan **jembatan `serveHandler` + playground subset** (halaman SSR + API + POST +
+security berjalan end-to-end lewat HTTP — ADR-0032) — semuanya diverifikasi test + smoke.
+**Exit criteria Phase 4 tercapai**; sisa menuju Phase 5: https/TLS & redirect, streaming
+request, worker/kuota/isolasi, profiling.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 64 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 66 test Rust hijau.

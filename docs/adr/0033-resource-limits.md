@@ -60,6 +60,9 @@ satu loop tak berujung atau alokasi liar bisa menjatuhkan proses (DoS).
 
 - Kuota heap hanya mencakup **heap V8**: memori eksternal (data `ArrayBuffer`/`Uint8Array` besar)
   **tidak** dihitung — program yang membanjiri buffer eksternal belum dibatasi.
+  > **Diperbarui (ADR-0038):** praktis tertutup — **kuota RSS proses** (`--max-rss-mb`)
+  > menangkap memori eksternal, dan **kuota CPU per-thread** (`--max-cpu-ms`) menambah pagar
+  > CPU yang berbeda dari timeout wall-clock.
 - Satu alokasi **raksasa tunggal** (mis. `new Array(1 << 20)` per iterasi) masih dapat menabrak
   jalur OOM fatal V8 sebelum terminasi diproses; pola bertahap ditangani dengan benar.
 - `--timeout-ms` adalah batas **wall-clock**, bukan kuota CPU; kode yang menunggu I/O (sleep)

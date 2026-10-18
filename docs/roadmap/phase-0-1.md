@@ -161,8 +161,10 @@ pekerjaan Phase 5.
       pull-model (`op_http_body_read`, forwarder + backpressure TCP); `maxBodyBytes` (default
       1 MiB, selaras ADR-0011) — **413 dini** via content-length tanpa memanggil handler, atau
       error saat dibaca untuk chunked; bukti pembacaan bertahap end-to-end (marker chunk pertama)
-- [ ] **Fase 5 lanjutan** — kuota CPU/memori eksternal, isolasi level proses untuk plugin,
-      R4 profiling/startup, release pipeline
+- [x] **Kuota CPU + RSS** (ADR-0038): `--max-cpu-ms` (CPU **per-thread** engine, menunggu I/O
+      tidak terhitung) + `--max-rss-mb` (RSS proses — menangkap memori eksternal V8 yang lolos
+      dari kuota heap ADR-0033); guard polling 25 ms, diwarisi worker, Linux-only
+- [ ] **Fase 5 lanjutan** — isolasi level proses untuk plugin, release pipeline
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

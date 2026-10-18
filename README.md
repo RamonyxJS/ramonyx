@@ -16,7 +16,8 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 > **isolasi worker** (`ramonyx.worker`: thread + isolate V8 terpisah, pesan JSON, permission
 > irisan anti-eskalasi, kill switch), **streaming request + batas body server** (body
 > pull-model, 413 dini), **`fetch` https + redirect otomatis** (TLS diverifikasi, CA kustom),
-> serta **profiling startup** (timings per fase + metrik op opsional). Framework Node tetap baseline produksi; fokus berikutnya Phase 5
+> **profiling startup** (timings per fase + metrik op opsional), serta **kuota CPU per-thread
+> + RSS proses** (menutup gap memori eksternal). Framework Node tetap baseline produksi; fokus berikutnya Phase 5
 > (kuota CPU/memori eksternal, isolasi proses untuk plugin, https/TLS, profiling, rilis).
 > Klaim mengikuti aturan BLUEPRINT §10.
 

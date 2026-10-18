@@ -73,9 +73,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   **isolasi worker + kuota** (`ramonyx.worker`: thread + isolate V8 terpisah, pesan JSON,
   permission irisan anti-eskalasi, kill switch — ADR-0034), serta **streaming request + batas
   body server** (`payload.body` stream pull-model, `maxBodyBytes` default 1 MiB, 413 dini —
-  ADR-0035), serta **`fetch` https + redirect otomatis** (TLS diverifikasi, CA kustom
-  `--tls-ca`, follow/manual/error, permission per hop — ADR-0036) — tetapi **belum**: kuota
-  CPU/memori eksternal, isolasi level proses untuk plugin; **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
+  ADR-0035), **`fetch` https + redirect otomatis** (TLS diverifikasi, CA kustom `--tls-ca`,
+  follow/manual/error, permission per hop — ADR-0036), serta **kuota CPU per-thread + RSS proses**
+  (`--max-cpu-ms`/`--max-rss-mb`, menutup gap memori eksternal heap V8 — ADR-0038) — tetapi
+  **belum**: isolasi level proses untuk plugin; **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
   dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
   **subset** (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak
   dengan pesan jelas) — jangan diklaim lebih. Build pertama V8/deno_core+deno_ast+hyper ±3 menit;
@@ -130,13 +131,13 @@ security berjalan end-to-end lewat HTTP — ADR-0032), **resource limits** (kuot
 watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker + kuota**
 (thread + isolate V8 terpisah, pesan JSON, permission irisan, kill switch — ADR-0034), dan
 **streaming request + batas body server** (body pull-model + 413 dini — ADR-0035), dan
-**`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036), serta **R4 profiling
-startup** (timings per fase termasuk breakdown init `v8Ms`/`bootstrapMs`/`webShimMs`, metrik op
-`--op-metrics`, baseline reproducible; **snapshot V8 ditolak dengan alasan terukur** — ADR-0037) —
-semuanya diverifikasi test + smoke. **Exit criteria Phase 4 tercapai**; sisa menuju Phase 5:
-kuota CPU/memori eksternal, isolasi level proses untuk plugin, warm worker pool, rilis.
+**`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036), **R4 profiling startup**
+(timings per fase, metrik op, baseline; snapshot V8 ditolak dengan alasan terukur — ADR-0037),
+serta **kuota CPU per-thread + RSS proses** (ADR-0038) — semuanya diverifikasi test + smoke.
+**Exit criteria Phase 4 tercapai**; sisa menuju Phase 5: isolasi level proses untuk plugin,
+release pipeline.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 86 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 90 test Rust hijau.

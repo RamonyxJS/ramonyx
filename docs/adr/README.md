@@ -45,3 +45,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0035](0035-streaming-request.md) | Streaming request + batas body server (413 dini) | Accepted |
 | [0036](0036-fetch-tls-redirect.md) | `fetch` https (TLS diverifikasi) + redirect otomatis | Accepted |
 | [0037](0037-r4-profiling-startup.md) | R4: profiling startup — timings, metrik op, baseline | Accepted |
+| [0038](0038-cpu-rss-quotas.md) | Kuota CPU per-thread + RSS proses (gap memori eksternal) | Accepted |

@@ -236,7 +236,38 @@ async function dispatch(
     );
   }
 
-  const { entry, params } = match;
+  const { entry } = match;
+  // Middleware per-folder (root → terdalam) membungkus SELURUH pemrosesan rute (termasuk
+  // parsing body) — middleware yang mengganti request harus berjalan sebelum body dibaca
+  // (kalau tidak, `new Request(request, …)` gagal karena body sudah dikonsumsi).
+  const routeMiddlewares = entry.middlewares ?? [];
+  return await (routeMiddlewares.length === 0
+    ? dispatchRoute(entry, match.params, request, url, env, logger, strictValidation, maxBodyBytes)
+    : runMiddleware(routeMiddlewares, { request, env, log: logger }, async (finalRequest) =>
+        dispatchRoute(
+          entry,
+          match.params,
+          finalRequest,
+          new URL(finalRequest.url),
+          env,
+          logger,
+          strictValidation,
+          maxBodyBytes,
+        ),
+      ));
+}
+
+/** Validasi input + eksekusi handler untuk satu rute yang sudah dicocokkan. */
+async function dispatchRoute(
+  entry: RouteEntry,
+  params: Record<string, string>,
+  request: Request,
+  url: URL,
+  env: EnvReader,
+  logger: Logger,
+  strictValidation: boolean,
+  maxBodyBytes: number,
+): Promise<Response> {
   const definition = entry.definition;
 
   const paramsResult = await validateInput(definition.params, params);
@@ -277,14 +308,7 @@ async function dispatch(
     redirect: (location, status = 302) => new Response(null, { status, headers: { location } }),
   };
 
-  // Middleware per-folder (root → terdalam) berjalan setelah pencocokan rute (ADR-0061);
-  // dapat mengganti request (mis. nonce) sebelum handler.
-  const routeMiddlewares = entry.middlewares ?? [];
-  const response = await (routeMiddlewares.length === 0
-    ? definition.handler(context)
-    : runMiddleware(routeMiddlewares, { request, env, log: logger }, async (finalRequest) =>
-        definition.handler({ ...context, request: finalRequest }),
-      ));
+  const response = await definition.handler(context);
   return validateOutput(definition, response, logger, url.pathname, strictValidation);
 }
 

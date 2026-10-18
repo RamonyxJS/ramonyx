@@ -318,3 +318,36 @@ test("middleware dapat mengganti request untuk handler downstream", async () => 
   const response = await handler(new Request("http://test.local/"));
   assert.deepEqual(await response.json(), { nonce: "abc" });
 });
+
+test("middleware per-rute berjalan SEBELUM body di-parse (penggantian request aman)", async () => {
+  // Regresi: middleware yang mengganti request (mis. cspNonce) gagal bila body sudah dikonsumsi.
+  const replaceRequest: Middleware = async (context, next) => {
+    const headers = new Headers(context.request.headers);
+    headers.set("x-uji", "1");
+    return next(new Request(context.request, { headers, signal: context.request.signal }));
+  };
+
+  const routes: RouteEntry[] = [
+    {
+      method: "POST",
+      path: "/api/echo",
+      middlewares: [replaceRequest],
+      definition: route({
+        body: z.object({ pesan: z.string() }),
+        handler: ({ body, request, json }) =>
+          json({ pesan: body.pesan, xUji: request.headers.get("x-uji") }),
+      }),
+    },
+  ];
+  const handler = createHandler({ routes });
+
+  const response = await handler(
+    new Request("http://uji/api/echo", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ pesan: "halo" }),
+    }),
+  );
+  assert.equal(response.status, 200, "middleware mengganti request + body tetap terbaca");
+  assert.deepEqual(await response.json(), { pesan: "halo", xUji: "1" });
+});

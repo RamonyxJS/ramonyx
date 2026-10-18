@@ -56,7 +56,7 @@ Dokumentasi lengkap: ${SITE}/ . Fakta terstruktur (sumber kebenaran status/angka
 
 ## Dokumen inti
 
-- [README](${SITE}/dokumen/README/): ikhtisar, instalasi, perintah
+- [README (repo)](https://github.com/RamonyxJS/ramonyx/blob/main/README.md): ikhtisar, instalasi, perintah
 - [Architecture](${SITE}/dokumen/architecture/): peta paket + kontrak RuntimeHost
 - [Core contract (API v0)](${SITE}/dokumen/api/core-contract/): kontrak API
 - [BLUEPRINT](${SITE}/dokumen/BLUEPRINT/): sumber kebenaran teknis

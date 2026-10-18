@@ -17,7 +17,7 @@ Dokumentasi lengkap: https://ramonyxjs.github.io/ramonyx/ . Fakta terstruktur (s
 
 ## Dokumen inti
 
-- [README](https://ramonyxjs.github.io/ramonyx/dokumen/README/): ikhtisar, instalasi, perintah
+- [README (repo)](https://github.com/RamonyxJS/ramonyx/blob/main/README.md): ikhtisar, instalasi, perintah
 - [Architecture](https://ramonyxjs.github.io/ramonyx/dokumen/architecture/): peta paket + kontrak RuntimeHost
 - [Core contract (API v0)](https://ramonyxjs.github.io/ramonyx/dokumen/api/core-contract/): kontrak API
 - [BLUEPRINT](https://ramonyxjs.github.io/ramonyx/dokumen/BLUEPRINT/): sumber kebenaran teknis

@@ -286,6 +286,17 @@ if (existsSync(`${ROOT}TODO.json`)) {
   checkFresh("kesegaran", "TODO.md", generateTodoMd(readJson("TODO.json") as never));
 }
 
+// Link llms.txt ke halaman docs harus punya berkas sumbernya (slug → docs/<slug>.md).
+for (const match of llms.llms.matchAll(
+  /https:\/\/ramonyxjs\.github\.io\/ramonyx\/dokumen\/([^)\s#]+?)\/?\)/g,
+)) {
+  const slugRaw = match[1] ?? "";
+  const slug = slugRaw.endsWith(".md") ? slugRaw.slice(0, -3) : slugRaw;
+  if (slug.length > 0 && !existsSync(`${ROOT}docs/${slug}.md`)) {
+    fail("llms-link", `llms.txt menautkan halaman tanpa berkas: dokumen/${slug}/`);
+  }
+}
+
 // ---------- 6. Link relatif di docs/** ----------
 function walkMarkdown(dir: string): string[] {
   const results: string[] = [];

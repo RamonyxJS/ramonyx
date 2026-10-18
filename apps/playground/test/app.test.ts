@@ -75,6 +75,7 @@ test("playground halaman SSR (layout, loader, error boundary)", async () => {
     assert.ok(homeHtml.includes("Halo dari loader SSR"));
     assert.ok(homeHtml.includes("<strong>Ramonyx Playground</strong>"), "layout root terpakai");
     assert.ok(homeHtml.includes("Klik saya:"), "komponen interaktif dirender server");
+    assert.ok(homeHtml.includes('id="ramonyx-payload"'), "payload punya id untuk soft navigation");
     assert.ok(homeHtml.includes('window.__RAMONYX__={"path":"/","params":{}'));
     assert.ok(homeHtml.includes('<script type="module" src="/assets/client.js"></script>'));
 

@@ -72,11 +72,14 @@ function serializePayload(payload: unknown): string {
   return JSON.stringify(payload).replaceAll("<", "\\u003c");
 }
 
+/** Id script payload — dipakai `@ramonyx/react/client` untuk soft navigation. */
+export const PAYLOAD_SCRIPT_ID = "ramonyx-payload";
+
 function hydrationScripts(client: ClientOptions | undefined, payload: unknown): string {
   if (client === undefined) {
     return "";
   }
-  return `<script>window.__RAMONYX__=${serializePayload(payload)}</script>
+  return `<script id="${PAYLOAD_SCRIPT_ID}">window.__RAMONYX__=${serializePayload(payload)}</script>
 <script type="module" src="${escapeHtml(client.script)}"></script>`;
 }
 

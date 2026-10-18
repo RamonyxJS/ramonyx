@@ -49,12 +49,15 @@ export function generateClientEntry(
 
   return [
     "// File ini digenerate otomatis oleh @ramonyx/compiler — jangan diedit manual.",
-    'import { hydrateAll } from "@ramonyx/react/client";',
+    'import { enableClientNavigation, hydrateAll } from "@ramonyx/react/client";',
     ...imports,
     "",
-    "hydrateAll({",
+    "const registry = {",
     ...registry,
-    "});",
+    "};",
+    "",
+    "hydrateAll(registry);",
+    "enableClientNavigation(registry);",
     "",
   ].join("\n");
 }

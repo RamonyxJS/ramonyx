@@ -209,7 +209,7 @@ test("client option: payload hydration + script module + container", async () =>
 
   assert.ok(
     html.includes(
-      'window.__RAMONYX__={"path":"/users/[id]","params":{"id":"42"},"data":{"id":"42"}}',
+      'id="ramonyx-payload">window.__RAMONYX__={"path":"/users/[id]","params":{"id":"42"},"data":{"id":"42"}}',
     ),
   );
   assert.ok(html.includes('<script type="module" src="/assets/client.js"></script>'));

@@ -7,11 +7,20 @@ export interface NodeHostOptions {
   readonly onError?: (error: unknown) => void;
 }
 
-async function readBody(request: IncomingMessage): Promise<Uint8Array> {
+async function readBody(request: IncomingMessage): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
     request.on("data", (chunk: Buffer) => chunks.push(chunk));
-    request.on("end", () => resolve(new Uint8Array(Buffer.concat(chunks))));
+    request.on("end", () => {
+      const buffer = Buffer.concat(chunks);
+      // Salin ke ArrayBuffer milik sendiri agar valid sebagai BodyInit.
+      resolve(
+        buffer.buffer.slice(
+          buffer.byteOffset,
+          buffer.byteOffset + buffer.byteLength,
+        ) as ArrayBuffer,
+      );
+    });
     request.on("error", reject);
   });
 }

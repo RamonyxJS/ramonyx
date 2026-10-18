@@ -1,6 +1,7 @@
 # ADR-0052: Ekspor Statis & Hosting Dokumentasi (GitHub Pages)
 
 - Status: Accepted (2026-10-18)
+- Tanggal: 2026-10-18
 - Sumber: ADR-0042 (situs docs dogfood), ADR-0047 (SSR streaming), permintaan pemilik (hosting docs)
 
 ## Konteks

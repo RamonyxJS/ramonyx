@@ -1,6 +1,7 @@
 # ADR-0053: CLI `ramonyx` — `@ramonyx/devtools` v1
 
 - Status: Accepted (2026-10-18)
+- Tanggal: 2026-10-18
 - Sumber: architecture (baris `packages/devtools` "belum dibuat"), ADR-0041 (template), ADR-0052 (ekspor)
 
 ## Konteks

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ramonyx feature manifest",
+  "description": "Status fitur Ramonyx + bukti + batasan. Satu sumber kebenaran untuk status fitur; dokumen manusia merujuk ke berkas ini. Divalidasi `pnpm docs:validate` (skema + semua path bukti harus ada).",
+  "type": "object",
+  "required": ["schemaVersion", "features"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "features": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "status", "since", "packages", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "name": { "type": "string", "minLength": 3 },
+          "status": { "enum": ["implemented", "partial", "experimental", "planned", "rejected"] },
+          "since": { "type": ["string", "null"] },
+          "priority": { "enum": ["p0", "p1", "p2", "p3"] },
+          "packages": { "type": "array", "items": { "type": "string" } },
+          "evidence": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 3 } },
+          "limitations": { "type": "array", "items": { "type": "string", "minLength": 3 } },
+          "docs": { "type": "string" }
+        }
+      }
+    }
+  }
+}

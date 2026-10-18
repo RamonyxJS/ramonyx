@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ramonyx application config (input)",
+  "description": "Bentuk input `ramonyx.config.ts` (RamonyxConfigInput). Default dari resolveConfig: app.strictValidation=true, server.port=3000, server.host=\"localhost\". Diverifikasi test tests/docs/config-schema.test.ts terhadap packages/core/src/config.ts.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "app": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strictValidation": {
+          "type": "boolean",
+          "description": "Default true. Validasi schema runtime di trust boundary."
+        }
+      }
+    },
+    "server": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "description": "Default 3000."
+        },
+        "host": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Default \"localhost\"."
+        }
+      }
+    }
+  }
+}

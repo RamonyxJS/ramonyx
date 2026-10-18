@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "terms": [
+    {
+      "term": "SSR (Server-Side Rendering)",
+      "definition": "Render React di server menjadi HTML; dua mode: sinkron (`renderToString`) dan streaming (opt-in `streaming: true`, `renderToReadableStream`).",
+      "related": ["Hydration", "Streaming SSR"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Streaming SSR",
+      "definition": "SSR yang mengirim HTML bertahap; error setelah byte pertama memutus koneksi (status/error page hanya berlaku sebelum byte pertama). Memakai `react-dom/server.edge`.",
+      "related": ["SSR (Server-Side Rendering)", "Suspense"],
+      "docs": "docs/adr/0047-ssr-streaming-node.md"
+    },
+    {
+      "term": "Hydration",
+      "definition": "Mengaktifkan React di browser atas HTML SSR: payload inline `window.__RAMONYX__` + satu bundle client + `hydrateRoot`. Halaman error tidak di-hydrate.",
+      "related": ["SSR (Server-Side Rendering)", "Soft navigation"],
+      "docs": "docs/adr/0007-hydration.md"
+    },
+    {
+      "term": "Soft navigation",
+      "definition": "Navigasi klien tanpa full reload: fetch HTML halaman → swap `#ramonyx-root` → re-hydrate; `document.title` + scroll direset. Belum ada prefetch.",
+      "related": ["Hydration"],
+      "docs": "docs/adr/0008-client-navigation.md"
+    },
+    {
+      "term": "Loader",
+      "definition": "Fungsi per halaman yang mengambil data sebelum render (GET, boleh async); hasilnya harus JSON-serializable karena ikut payload hydration.",
+      "related": ["Page module", "Payload"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Page module",
+      "definition": "Modul `.tsx` di folder rute yang mengekspor komponen `default` + opsional `load` dan `metadata` (title/status).",
+      "related": ["Loader", "Layout", "Route manifest"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Layout",
+      "definition": "Komponen pembungkus per folder (`layout.tsx`) yang membungkus halaman; bersarang dan layout terdekat menang.",
+      "related": ["Page module", "Error boundary"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Error boundary",
+      "definition": "Komponen `error.tsx` per folder yang dirender saat loader/render gagal; boundary terdekat menang. Halaman error tidak di-hydrate.",
+      "related": ["Layout"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Route manifest",
+      "definition": "Artefak compiler yang memetakan file rute → pola URL, method, dan entry (dibuat saat build/dev; sumber kebenaran routing).",
+      "related": ["Page module", "Route entry"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Route entry",
+      "definition": "Pasangan rute halaman/API + handler yang dihasilkan compiler dan dipasang ke pipeline server.",
+      "related": ["Route manifest"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Middleware",
+      "definition": "Fungsi app-level (array di `createHandler`) yang berjalan berurutan sebelum rute; dapat mengganti request (mis. menyuntik nonce). Belum ada per-folder.",
+      "related": ["Handler", "CSP nonce"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Handler",
+      "definition": "Pipeline request server: middleware → pencocokan rute → validasi → eksekusi (halaman/API) dengan limits (body/timeout/concurrency).",
+      "related": ["Middleware", "Adapter"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Adapter",
+      "definition": "Lapisan runtime yang menjalankan handler: `node` (http server), `memory` (test in-process). Adapter serverless/edge belum ada.",
+      "related": ["Handler", "RuntimeHost"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "RuntimeHost",
+      "definition": "Kontrak antara framework dan host runtime (Node baseline; runtime Rust eksperimental). Lihat docs/architecture.md.",
+      "related": ["Adapter"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Client bundle",
+      "definition": "Bundle JS untuk browser (Vite) berisi entry client + komponen yang di-hydrate; dibangun oleh `ramonyx build`.",
+      "related": ["Hydration"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Capability / permission",
+      "definition": "Izin eksplisit di runtime Rust (fs/env/net) — default deny-all; diberikan lewat flag `--allow-*`, dapat dicabut (`revoke`).",
+      "related": ["Deny-all", "Worker", "Plugin"],
+      "docs": "docs/adr/0023-permission-model.md"
+    },
+    {
+      "term": "Deny-all",
+      "definition": "Default permission runtime: tanpa flag `--allow-*`, akses fs/env/net ditolak — bukan diizinkan dengan peringatan.",
+      "related": ["Capability / permission"],
+      "docs": "docs/adr/0023-permission-model.md"
+    },
+    {
+      "term": "Worker (runtime)",
+      "definition": "Eksekusi di thread + isolate V8 terpisah dengan pesan JSON, permission irisan (anti-eskalasi), dan kill switch. Bukan sandbox keamanan penuh.",
+      "related": ["Capability / permission", "Plugin"],
+      "docs": "docs/adr/0034-worker-isolation.md"
+    },
+    {
+      "term": "Plugin (runtime)",
+      "definition": "Proses terpisah yang dijalankan `ramonyx.spawn` dengan protokol JSON stdin/stdout; dapat disupervisi (restart, backoff, heartbeat) dan disandbox Landlock.",
+      "related": ["Worker (runtime)", "Landlock", "Watchdog"],
+      "docs": "docs/adr/0040-plugin-process-isolation.md"
+    },
+    {
+      "term": "Landlock",
+      "definition": "LSM kernel Linux yang membatasi filesystem + TCP proses plugin di level kernel; pelengkap permission JS. Net deny = TCP saja (bukan UDP/DNS).",
+      "related": ["Plugin (runtime)", "Deny-all"],
+      "docs": "docs/adr/0051-plugin-sandbox-landlock.md"
+    },
+    {
+      "term": "Watchdog",
+      "definition": "Health-check otomatis plugin: heartbeat + deteksi senyap, restart dengan backoff eksponensial dan reset stabil.",
+      "related": ["Plugin (runtime)"],
+      "docs": "docs/adr/0050-plugin-backoff-watchdog.md"
+    },
+    {
+      "term": "Gate report-only",
+      "definition": "Gate benchmark yang melaporkan regresi tanpa memblokir CI; `--strict` hanya sahih di mesin baseline (guard lintas-mesin).",
+      "related": ["Baseline"],
+      "docs": "docs/adr/0045-perf-regression-gate.md"
+    },
+    {
+      "term": "Baseline (benchmark)",
+      "definition": "Hasil benchmark ter-commit di `benchmarks/results/` sebagai pembanding; median dari beberapa ulangan, bukan rata-rata.",
+      "related": ["Gate report-only"],
+      "docs": "docs/benchmark-protocol.md"
+    },
+    {
+      "term": "ADR (Architecture Decision Record)",
+      "definition": "Catatan keputusan arsitektur di `docs/adr/` — satu keputusan per berkas, dengan konteks/alternatif/konsekuensi; indeks machine-readable di docs/machine/adrs.json.",
+      "related": ["Machine layer"],
+      "docs": "docs/adr/README.md"
+    },
+    {
+      "term": "Machine layer",
+      "definition": "Lapisan dokumentasi machine-readable di `docs/machine/` (features/adrs/rules/security/glossary/stats/llms) yang divalidasi `pnpm docs:validate`.",
+      "related": ["ADR (Architecture Decision Record)", "llms.txt"],
+      "docs": "docs/machine/README.md"
+    },
+    {
+      "term": "llms.txt",
+      "definition": "Indeks dokumentasi untuk agen AI (format llmstxt.org): H1 + ringkasan + daftar tautan; Ramonyx juga menerbitkan `llms-full.txt` (teks lengkap).",
+      "related": ["Machine layer"],
+      "docs": "docs/machine/llms.txt"
+    },
+    {
+      "term": "Stats",
+      "definition": "`docs/machine/stats.json` — satu-satunya tempat angka (versi, jumlah paket/ADR/test) berada; digenerate `pnpm docs:stats`.",
+      "related": ["Machine layer"],
+      "docs": "docs/machine/stats.json"
+    }
+  ]
+}

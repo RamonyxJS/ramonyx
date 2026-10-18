@@ -1,0 +1,3889 @@
+# Ramonyx — llms-full
+
+> Teks lengkap untuk agen: seluruh machine layer (JSON) + dokumen inti. Sumber: repo RamonyxJS/ramonyx (https://ramonyxjs.github.io/ramonyx).
+> Status/angka otoritatif ada di machine layer; teks ADR lengkap di docs/adr/*.md (indeks: adrs.json).
+
+## docs/machine/features.json
+
+```json
+{
+  "schemaVersion": 1,
+  "features": [
+    {
+      "id": "routing-file-based",
+      "name": "File-based routing halaman (statis, dinamis, catch-all)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/compiler", "@ramonyx/ssr"],
+      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts"],
+      "limitations": ["Route groups `(grup)` belum ada", "Middleware per-folder belum ada"]
+    },
+    {
+      "id": "routing-api-methods",
+      "name": "File-based routing API (satu file boleh mengekspor beberapa method HTTP)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/compiler", "@ramonyx/server"],
+      "evidence": ["packages/compiler/src/manifest.ts", "packages/compiler/test/manifest.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "routing-params",
+      "name": "Pencocokan rute berparameter + catch-all + prioritas statis",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/router"],
+      "evidence": [
+        "packages/router/src/match.ts",
+        "packages/router/test/match.test.ts",
+        "packages/router/test/match.fuzz.test.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "layouts-nested",
+      "name": "Layout bersarang (layout.tsx per folder, terdekat menang)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/compiler"],
+      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "error-boundaries",
+      "name": "Error boundary per folder (error.tsx, terdekat menang; halaman error tidak di-hydrate)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/compiler", "@ramonyx/ssr"],
+      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts", "apps/playground/e2e/errors.spec.ts"],
+      "limitations": []
+    },
+    {
+      "id": "middleware-global",
+      "name": "Middleware app-level (array di createHandler; urutan + next())",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/server"],
+      "evidence": ["packages/server/src/handler.ts", "packages/server/test/pipeline.test.ts"],
+      "limitations": ["Hanya app-level — tidak ada `middleware.ts` per folder/route group"]
+    },
+    {
+      "id": "middleware-per-folder",
+      "name": "Middleware per-folder / per-route",
+      "status": "planned",
+      "since": null,
+      "priority": "p1",
+      "packages": ["@ramonyx/compiler"],
+      "evidence": ["packages/compiler/src/pages.ts"],
+      "limitations": ["Belum ada implementasi"]
+    },
+    {
+      "id": "ssr-sync",
+      "name": "SSR React sinkron (renderToString) + dokumen HTML",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/ssr", "@ramonyx/react"],
+      "evidence": ["packages/ssr/src/pages.ts", "packages/ssr/src/document.ts", "packages/ssr/test/pages.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "ssr-streaming",
+      "name": "SSR streaming (opt-in `streaming: true`, react-dom/server.edge)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/ssr", "@ramonyx/react"],
+      "evidence": ["packages/ssr/src/pages.ts", "docs/adr/0047-ssr-streaming-node.md"],
+      "limitations": ["Error setelah byte pertama = koneksi diputus (status/error page hanya berlaku sebelum byte pertama)"]
+    },
+    {
+      "id": "hydration",
+      "name": "Hydration (payload inline `window.__RAMONYX__` + satu bundle client)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/react", "@ramonyx/compiler"],
+      "evidence": ["packages/react/src/client.ts", "apps/playground/e2e/ssr.spec.ts", "docs/adr/0007-hydration.md"],
+      "limitations": []
+    },
+    {
+      "id": "soft-navigation",
+      "name": "Soft navigation (fetch HTML → swap → re-hydrate; title + scroll direset)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/react"],
+      "evidence": ["packages/react/src/client.ts", "apps/playground/e2e/navigation.spec.ts", "docs/adr/0008-client-navigation.md"],
+      "limitations": ["Belum ada prefetch saat hover/viewport"]
+    },
+    {
+      "id": "data-loaders",
+      "name": "Data loader per halaman (GET, paralel dengan layout, JSON-serializable)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "evidence": ["packages/core/src/page.ts", "packages/ssr/src/pages.ts", "packages/ssr/test/pages.test.ts"],
+      "limitations": ["Hanya GET; belum ada loader dependensi antar-route"]
+    },
+    {
+      "id": "mutations-server-actions",
+      "name": "Mutations / server actions / form actions",
+      "status": "planned",
+      "since": null,
+      "priority": "p1",
+      "packages": ["@ramonyx/core"],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Belum ada implementasi; saat ini POST manual lewat API route"]
+    },
+    {
+      "id": "redirect-helper",
+      "name": "Helper redirect(location, status?) pada konteks rute",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/core"],
+      "evidence": ["packages/core/src/types.ts", "packages/core/test/route.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "head-metadata",
+      "name": "Metadata halaman (title, status)",
+      "status": "partial",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "evidence": ["packages/core/src/page.ts", "packages/ssr/src/pages.ts"],
+      "limitations": ["Hanya title/status — tanpa description/OG/head injection per halaman"]
+    },
+    {
+      "id": "schema-validation",
+      "name": "Validasi schema runtime di trust boundary (Standard Schema)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/schema"],
+      "evidence": [
+        "packages/schema/src/validate.ts",
+        "packages/schema/test/validate.test.ts",
+        "packages/schema/test/validate.fuzz.test.ts",
+        "docs/adr/0004-schema.md"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "config",
+      "name": "Konfigurasi aplikasi (createApp/createHandler: port, host, strictValidation, limits)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/core"],
+      "evidence": ["packages/core/src/config.ts", "packages/core/test/config.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "security-headers",
+      "name": "Security headers (CSP, X-Frame-Options, nosniff, Referrer-Policy, dst.)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/security"],
+      "evidence": [
+        "packages/security/src/headers.ts",
+        "packages/security/test/headers.test.ts",
+        "docs/adr/0013-security-package.md"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "csp-nonce",
+      "name": "CSP nonce per request (inline script diizinkan tanpa unsafe-inline)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/security"],
+      "evidence": ["packages/security/src/csp.ts", "packages/security/test/csp.test.ts", "docs/adr/0014-csp-nonce.md"],
+      "limitations": []
+    },
+    {
+      "id": "csrf",
+      "name": "Proteksi CSRF (double-submit cookie + validasi origin)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/security"],
+      "evidence": ["packages/security/src/csrf.ts", "packages/security/test/csrf.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "ssrf-guard",
+      "name": "Guard SSRF (guardedFetch: validasi host/IP, blokir privat, redirect per-hop)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/security"],
+      "evidence": ["packages/security/src/ssrf.ts", "packages/security/test/ssrf.test.ts", "docs/adr/0015-ssrf-guard-output-limit.md"],
+      "limitations": ["IP-pinning (anti DNS-rebinding) menyusul — dicatat di ADR-0031"]
+    },
+    {
+      "id": "rate-limit",
+      "name": "Rate limit per klien (token bucket, 429 + Retry-After)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/security"],
+      "evidence": ["packages/security/src/rate-limit.ts", "packages/security/test/rate-limit.test.ts", "docs/adr/0017-rate-limiting.md"],
+      "limitations": ["In-memory per proses (tanpa store terdistribusi)"]
+    },
+    {
+      "id": "resource-limits",
+      "name": "Resource limits secure-by-default (body 1 MiB→413, timeout 10s→503, concurrency 100→503)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/server"],
+      "evidence": [
+        "packages/server/src/handler.ts",
+        "tests/security/server-hardening.test.ts",
+        "docs/adr/0011-resource-limits.md",
+        "docs/adr/0012-concurrency-limit.md"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "output-limit",
+      "name": "Batas ukuran output SSR",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/ssr"],
+      "evidence": ["docs/adr/0015-ssrf-guard-output-limit.md", "packages/ssr/src/pages.ts"],
+      "limitations": []
+    },
+    {
+      "id": "dev-server-hmr",
+      "name": "Dev server: Vite (HMR) front → SSR backend, tanpa build",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/bundler"],
+      "evidence": ["packages/bundler/src/dev.ts", "docs/adr/0009-dev-server.md"],
+      "limitations": []
+    },
+    {
+      "id": "client-bundle",
+      "name": "Build bundle client produksi (Vite) + route manifest + metadata build",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/bundler", "@ramonyx/compiler"],
+      "evidence": ["packages/bundler/src/build.ts", "docs/adr/0005-bundler.md"],
+      "limitations": ["Belum ada code splitting per rute"]
+    },
+    {
+      "id": "source-maps",
+      "name": "Source map produksi (client + server)",
+      "status": "implemented",
+      "since": "0.1.1",
+      "priority": "p2",
+      "packages": ["@ramonyx/bundler"],
+      "evidence": ["docs/adr/0046-source-maps.md"],
+      "limitations": []
+    },
+    {
+      "id": "jsx-loader",
+      "name": "Loader dev/test JSX+TS (esbuild sendiri, dipakai app & test)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/compiler"],
+      "evidence": ["packages/compiler/src/register.mjs", "packages/compiler/src/esbuild-hooks.mjs", "docs/adr/0006-jsx-loader.md"],
+      "limitations": []
+    },
+    {
+      "id": "cli-devtools",
+      "name": "CLI `ramonyx` (dev, build, start, doctor)",
+      "status": "implemented",
+      "since": "0.1.1",
+      "priority": "p0",
+      "packages": ["@ramonyx/devtools"],
+      "evidence": ["packages/devtools/src/commands.ts", "packages/devtools/test/cli.test.ts", "docs/adr/0053-devtools-cli.md"],
+      "limitations": ["Tanpa watch mode (rebuild otomatis)"]
+    },
+    {
+      "id": "scaffolder",
+      "name": "Scaffolder aplikasi (`pnpm create:app` / `create-ramonyx-app`)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["create-ramonyx-app"],
+      "evidence": ["apps/create-app/test/create-app.test.ts", "docs/adr/0041-create-app.md"],
+      "limitations": []
+    },
+    {
+      "id": "typed-routes",
+      "name": "Typed routes (codegen tipe dari manifest rute)",
+      "status": "planned",
+      "since": null,
+      "priority": "p2",
+      "packages": ["@ramonyx/compiler"],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Belum ada implementasi"]
+    },
+    {
+      "id": "error-messages-id",
+      "name": "Pesan error konsisten (Bahasa Indonesia) dengan konteks file",
+      "status": "partial",
+      "since": "0.1.0",
+      "priority": "p3",
+      "packages": ["@ramonyx/core", "@ramonyx/compiler"],
+      "evidence": ["packages/core/src/errors.ts", "packages/compiler/src/errors.ts"],
+      "limitations": ["Tanpa tautan ke dokumentasi per pesan"]
+    },
+    {
+      "id": "static-export",
+      "name": "Ekspor statis situs docs (dogfood)",
+      "status": "partial",
+      "since": "0.1.1",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["apps/docs/export.ts", "docs/adr/0052-docs-hosting-pages.md"],
+      "limitations": ["Skrip aplikasi docs, bukan API framework untuk SSG"]
+    },
+    {
+      "id": "ssg-first-class",
+      "name": "Static Site Generation sebagai fitur framework (prerender per rute)",
+      "status": "planned",
+      "since": null,
+      "priority": "p1",
+      "packages": ["@ramonyx/ssr"],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Belum ada implementasi"]
+    },
+    {
+      "id": "http-cache-helpers",
+      "name": "Helper cache HTTP (Cache-Control, revalidate, stale-while-revalidate)",
+      "status": "planned",
+      "since": null,
+      "priority": "p2",
+      "packages": ["@ramonyx/core"],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Belum ada implementasi"]
+    },
+    {
+      "id": "asset-fingerprinting",
+      "name": "Fingerprinting aset + cache panjang (immutable)",
+      "status": "planned",
+      "since": null,
+      "priority": "p2",
+      "packages": ["@ramonyx/bundler"],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Aset saat ini tanpa hash; template memakai cache-control: no-store"]
+    },
+    {
+      "id": "adapter-node",
+      "name": "Adapter runtime Node (http server, keep-alive, streaming)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/adapter-runtime"],
+      "evidence": ["packages/adapter-runtime/src/node.ts", "packages/adapter-runtime/test/node.test.ts"],
+      "limitations": ["Tanpa kompresi/ETag"]
+    },
+    {
+      "id": "adapter-memory",
+      "name": "Adapter memory (test in-process tanpa port)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/adapter-runtime"],
+      "evidence": ["packages/adapter-runtime/src/memory.ts", "packages/adapter-runtime/test/memory.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "adapter-serverless-edge",
+      "name": "Adapter serverless/edge (Vercel, Cloudflare, Deno Deploy)",
+      "status": "planned",
+      "since": null,
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Belum ada implementasi"]
+    },
+    {
+      "id": "compression-etag",
+      "name": "Kompresi (gzip/brotli) + ETag di server standalone",
+      "status": "planned",
+      "since": null,
+      "priority": "p2",
+      "packages": ["@ramonyx/adapter-runtime"],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Belum ada implementasi"]
+    },
+    {
+      "id": "image-optimization",
+      "name": "Optimasi gambar (komponen Image, resize, format modern)",
+      "status": "planned",
+      "since": null,
+      "priority": "p3",
+      "packages": [],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Belum ada implementasi"]
+    },
+    {
+      "id": "i18n",
+      "name": "Internasionalisasi routing + konten",
+      "status": "planned",
+      "since": null,
+      "priority": "p3",
+      "packages": [],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Belum ada implementasi"]
+    },
+    {
+      "id": "auth",
+      "name": "Primitif autentikasi (session, cookie helper)",
+      "status": "planned",
+      "since": null,
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Aplikasi memutuskan sendiri saat ini; tanpa helper session"]
+    },
+    {
+      "id": "forms",
+      "name": "Form handling (parsing, validasi, progressive enhancement)",
+      "status": "planned",
+      "since": null,
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "limitations": ["Belum ada implementasi"]
+    },
+    {
+      "id": "observability-logger",
+      "name": "Logger terstruktur + op metrics (timings per fase)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/core"],
+      "evidence": ["packages/core/src/logger.ts", "docs/adr/0037-r4-profiling-startup.md"],
+      "limitations": ["Tanpa tracing terdistribusi / endpoint metrics"]
+    },
+    {
+      "id": "observability-metrics",
+      "name": "Metrik operasi runtime (timings, fase startup)",
+      "status": "partial",
+      "since": null,
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/metrics.rs", "docs/adr/0037-r4-profiling-startup.md"],
+      "limitations": ["Hanya di runtime eksperimental; belum dipakai produksi Node"]
+    },
+    {
+      "id": "benchmark-gates",
+      "name": "Benchmark + gate report-only (HTTP, SSR, Web Vitals, startup, security)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": [],
+      "evidence": [
+        "benchmarks/http/bench.ts",
+        "benchmarks/ssr/bench.tsx",
+        "docs/adr/0045-perf-regression-gate.md",
+        "docs/adr/0048-bench-ssr-vitals.md"
+      ],
+      "limitations": ["Report-only — belum memblokir regresi", "Strict hanya sahih di mesin baseline (guard lintas-mesin)"]
+    },
+    {
+      "id": "e2e-playwright",
+      "name": "E2E browser (Playwright: SSR, hydration, navigasi, error, vitals)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["apps/playground/e2e/ssr.spec.ts", "apps/playground/e2e/navigation.spec.ts", "docs/adr/0010-browser-e2e.md"],
+      "limitations": []
+    },
+    {
+      "id": "testing-utilities",
+      "name": "Utilitas testing (in-process handler, request helper)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/testing"],
+      "evidence": ["packages/testing/src/index.ts", "packages/testing/test/testing.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "fuzz-tests",
+      "name": "Property-based/fuzz test (fast-check) untuk router, schema, query",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": [
+        "packages/router/test/match.fuzz.test.ts",
+        "packages/schema/test/validate.fuzz.test.ts",
+        "packages/server/test/query.fuzz.test.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "runtime-permissions",
+      "name": "Permission model deny-all runtime Rust (--allow-read/write/net/env, revoke)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/runtime-core/src/permissions.rs", "runtime/crates/cli/tests/cli.rs", "docs/adr/0023-permission-model.md"],
+      "limitations": ["Runtime belum produksi (Phase 4+)"]
+    },
+    {
+      "id": "runtime-http-server",
+      "name": "HTTP server pull-model runtime (bind 127.0.0.1, keep-alive, cancellation)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/http.rs", "runtime/crates/js-engine/tests/compat_playground.rs", "docs/adr/0022-runtime-io.md"],
+      "limitations": ["Bind localhost; production hardening belum"]
+    },
+    {
+      "id": "runtime-streaming",
+      "name": "Streaming respons + request body runtime (chunked, 413 dini)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/http.rs", "runtime/crates/js-engine/tests/compat_stream_ssr.rs", "docs/adr/0025-response-streaming.md", "docs/adr/0035-streaming-request.md"],
+      "limitations": []
+    },
+    {
+      "id": "runtime-worker-isolation",
+      "name": "Isolasi worker (thread + isolate V8 terpisah, pesan JSON, kill switch)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/worker.rs", "docs/adr/0034-worker-isolation.md"],
+      "limitations": ["Kuota heap = heap V8 saja (ArrayBuffer besar tidak dihitung)"]
+    },
+    {
+      "id": "runtime-plugin-process",
+      "name": "Isolasi plugin level proses (ramonyx.spawn, protokol JSON, permission irisan, kill)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/plugin.rs", "runtime/crates/js-engine/tests/plugin_process.rs", "docs/adr/0040-plugin-process-isolation.md"],
+      "limitations": ["Landlock net deny hanya TCP (bukan UDP/DNS)"]
+    },
+    {
+      "id": "runtime-plugin-supervision",
+      "name": "Supervisi plugin (restart + backoff eksponensial, health-check heartbeat, watchdog)",
+      "status": "experimental",
+      "since": "0.1.1",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/plugin.rs", "docs/adr/0043-plugin-supervision.md", "docs/adr/0050-plugin-backoff-watchdog.md"],
+      "limitations": []
+    },
+    {
+      "id": "runtime-plugin-sandbox",
+      "name": "Sandbox OS plugin (Landlock: FS + TCP kernel-level)",
+      "status": "experimental",
+      "since": "0.1.1",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/sandbox.rs", "docs/adr/0051-plugin-sandbox-landlock.md"],
+      "limitations": ["Belum ada pentest escape (dicatat di TODO)"]
+    },
+    {
+      "id": "runtime-quotas",
+      "name": "Kuota runtime (heap V8, watchdog timeout, CPU per-thread, RSS proses)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/lib.rs", "docs/adr/0033-resource-limits.md", "docs/adr/0038-cpu-rss-quotas.md"],
+      "limitations": ["Heap hanya heap V8; alokasi ArrayBuffer raksasa tunggal masih bisa OOM fatal"]
+    },
+    {
+      "id": "runtime-compat-suite",
+      "name": "Compatibility suite runtime (pipeline framework nyata berjalan di runtime)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/tests/compat_framework.rs", "docs/adr/0028-compat-suite.md"],
+      "limitations": []
+    },
+    {
+      "id": "runtime-cjs-interop",
+      "name": "Interop CommonJS runtime (require subset, react/react-dom server.browser)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/cjs.rs", "docs/adr/0029-commonjs-interop.md"],
+      "limitations": ["Subset — require dinamis/modul ESM lewat require ditolak dengan pesan jelas"]
+    },
+    {
+      "id": "runtime-fetch",
+      "name": "fetch runtime (https + TLS diverifikasi, redirect per-hop, ReadableStream)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/http_client.rs", "runtime/crates/js-engine/tests/fetch_tls.rs", "docs/adr/0030-fetch-readablestream.md", "docs/adr/0036-fetch-tls-redirect.md"],
+      "limitations": []
+    },
+    {
+      "id": "docs-site",
+      "name": "Situs dokumentasi (dogfood penuh: SSR + hydration + soft navigation atas docs/**)",
+      "status": "implemented",
+      "since": "0.1.1",
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["apps/docs/export.ts", "apps/docs/test/docs.test.ts", "docs/adr/0042-docs-app.md", "docs/adr/0052-docs-hosting-pages.md"],
+      "limitations": ["Di-host di GitHub Pages subpath /ramonyx/"]
+    },
+    {
+      "id": "machine-docs",
+      "name": "Lapisan dokumentasi machine-readable (docs/machine: features/adrs/rules/security/glossary/stats)",
+      "status": "implemented",
+      "since": null,
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["docs/machine/features.json", "scripts/docs/validate.ts", "docs/adr/0054-machine-readable-docs.md"],
+      "limitations": ["Belum dirilis di versi npm (setelah 0.1.1)"]
+    },
+    {
+      "id": "llms-txt",
+      "name": "llms.txt + llms-full.txt (digenerate, diterbitkan di situs)",
+      "status": "implemented",
+      "since": null,
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["docs/machine/llms.txt", "docs/machine/llms-full.txt", "docs/adr/0054-machine-readable-docs.md"],
+      "limitations": ["Belum ada markdown per halaman untuk paket npm (hanya situs)"]
+    },
+    {
+      "id": "agent-skill",
+      "name": "Skill agen untuk penulis aplikasi (.agents/skills/ramonyx)",
+      "status": "implemented",
+      "since": null,
+      "priority": "p2",
+      "packages": [],
+      "evidence": [".agents/skills/ramonyx/SKILL.md", "docs/adr/0054-machine-readable-docs.md"],
+      "limitations": ["Satu skill; tanpa instalasi otomatis di scaffolder"]
+    },
+    {
+      "id": "mcp-docs-server",
+      "name": "MCP docs server (tools untuk agen)",
+      "status": "planned",
+      "since": null,
+      "priority": "p3",
+      "packages": [],
+      "evidence": ["docs/adr/0054-machine-readable-docs.md"],
+      "limitations": ["Ditunda — butuh hosting/index/pemeliharaan (riset §2 rencana konsolidasi)"]
+    }
+  ]
+}
+```
+
+## docs/machine/adrs.json
+
+```json
+{
+  "schemaVersion": 1,
+  "adrs": [
+    {
+      "id": "ADR-0001",
+      "file": "0001-runtime-strategy.md",
+      "title": "Strategi Runtime — Node.js Baseline + Rust/V8 Eksperimental",
+      "status": "accepted",
+      "statusDetail": "Accepted",
+      "date": "2026-10-18",
+      "decision": "Runtime MVP = Node.js; runtime Rust/V8 dibangun terpisah sebagai eksperimen Phase 4+ dan tidak boleh saling bergantung.",
+      "features": ["adapter-node", "runtime-http-server"]
+    },
+    {
+      "id": "ADR-0002",
+      "file": "0002-baseline-tooling.md",
+      "title": "Baseline Tooling, Bahasa, dan CI",
+      "status": "accepted",
+      "statusDetail": "Accepted",
+      "date": "2026-10-18",
+      "decision": "Baseline: TypeScript strict, ESM-only, source-first, pnpm workspaces, Node ≥24, CI lint→typecheck→test→build→security.",
+      "features": ["jsx-loader"]
+    },
+    {
+      "id": "ADR-0003",
+      "file": "0003-ui-adapter-react.md",
+      "title": "Adapter UI Pertama — React",
+      "status": "accepted",
+      "statusDetail": "Accepted (keputusan pemilik, 2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "UI lewat adapter yang dapat diganti; adapter pertama React (react + react-dom/server).",
+      "features": ["ssr-sync", "hydration"]
+    },
+    {
+      "id": "ADR-0004",
+      "file": "0004-schema.md",
+      "title": "Kontrak Schema Validasi — Standard Schema",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Validasi runtime memakai kontrak Standard Schema sehingga zod/valibot/arktype dapat dipakai sebagai adapter.",
+      "features": ["schema-validation"]
+    },
+    {
+      "id": "ADR-0005",
+      "file": "0005-bundler.md",
+      "title": "Bundler Awal",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Bundler awal Vite; compiler menghasilkan artefak eksplisit (client bundle, manifest rute, metadata build).",
+      "features": ["client-bundle"]
+    },
+    {
+      "id": "ADR-0006",
+      "file": "0006-jsx-loader.md",
+      "title": "Loader JSX Dev/Test — esbuild Sendiri (bukan tsx)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Loader dev/test memakai esbuild sendiri (JSX automatic) karena Node type stripping tidak memproses JSX; paket framework tetap tanpa JSX.",
+      "features": ["jsx-loader"]
+    },
+    {
+      "id": "ADR-0007",
+      "file": "0007-hydration.md",
+      "title": "Hydration — Payload Inline + Satu Bundle Client + `hydrateRoot`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Hydration lewat payload inline `window.__RAMONYX__` + satu bundle client + `hydrateRoot`; halaman error tidak di-hydrate.",
+      "features": ["hydration"]
+    },
+    {
+      "id": "ADR-0008",
+      "file": "0008-client-navigation.md",
+      "title": "Client Navigation — Soft Navigation (Fetch HTML → Swap → Re-hydrate)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Navigasi klien = soft navigation (fetch HTML → swap → re-hydrate) tanpa framework data client tambahan.",
+      "features": ["soft-navigation"]
+    },
+    {
+      "id": "ADR-0009",
+      "file": "0009-dev-server.md",
+      "title": "Dev Server — Vite Front + Proxy Manual + `ssrLoadModule`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Dev server: Vite sebagai front (HMR) mem-proxy ke SSR Node via `ssrLoadModule` — tanpa build.",
+      "features": ["dev-server-hmr"]
+    },
+    {
+      "id": "ADR-0010",
+      "file": "0010-browser-e2e.md",
+      "title": "Browser E2E — Playwright + Baseline Web Vitals",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "E2E browser memakai Playwright terhadap build produksi + baseline Web Vitals (median 3 load).",
+      "features": ["e2e-playwright"]
+    },
+    {
+      "id": "ADR-0011",
+      "file": "0011-resource-limits.md",
+      "title": "Resource Limits Secure-by-Default (Body 1 MiB, Timeout 10s)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Default aman: body ≤1 MiB → 413, handler/loader timeout 10s → 503 (+ request.signal abort); dapat dikonfigurasi.",
+      "features": ["resource-limits"]
+    },
+    {
+      "id": "ADR-0012",
+      "file": "0012-concurrency-limit.md",
+      "title": "Concurrency Limit (Load Shedding) — Default 100, Balas 503 + `Retry-After`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Batas 100 request bersamaan → 503 + Retry-After (load shedding), dapat dikonfigurasi.",
+      "features": ["resource-limits"]
+    },
+    {
+      "id": "ADR-0013",
+      "file": "0013-security-package.md",
+      "title": "Paket Security — Security Headers + CSRF Double-Submit (Web Crypto)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Paket `@ramonyx/security`: security headers + CSRF double-submit memakai Web Crypto (tanpa dependency crypto).",
+      "features": ["security-headers", "csrf"]
+    },
+    {
+      "id": "ADR-0014",
+      "file": "0014-csp-nonce.md",
+      "title": "CSP Nonce + Request Replacement di Middleware",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "CSP nonce per request + middleware dapat mengganti request (request replacement) untuk meneruskan nonce.",
+      "features": ["csp-nonce", "middleware-global"]
+    },
+    {
+      "id": "ADR-0015",
+      "file": "0015-ssrf-guard-output-limit.md",
+      "title": "SSRF Guard (`guardedFetch`) + Output Limit Dokumen SSR",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`guardedFetch` memvalidasi host/IP (blokir privat, redirect per-hop) + batas ukuran output dokumen SSR.",
+      "features": ["ssrf-guard", "output-limit"]
+    },
+    {
+      "id": "ADR-0016",
+      "file": "0016-dependency-policy.md",
+      "title": "Kebijakan Dependency & Supply Chain",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Dependency baru menunggu 24 jam (`minimumReleaseAge`), audit CI + Dependabot, justifikasi tertulis per tambahan.",
+      "features": []
+    },
+    {
+      "id": "ADR-0017",
+      "file": "0017-rate-limiting.md",
+      "title": "Rate Limiting per Klien — Identitas dari Adapter + `trustProxy` Opt-in",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Rate limit token bucket per klien; identitas dari adapter, `trustProxy` opt-in untuk X-Forwarded-For.",
+      "features": ["rate-limit"]
+    },
+    {
+      "id": "ADR-0018",
+      "file": "0018-owner-decisions.md",
+      "title": "Keputusan Pemilik — Lisensi, Scope, Browser Matrix, Rekonsiliasi PRD",
+      "status": "accepted",
+      "statusDetail": "Accepted (keputusan pemilik, 2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Lisensi MIT, scope npm `@ramonyx/*`, browser matrix evergreen 2 versi terakhir, PRD direkonsiliasi.",
+      "features": []
+    },
+    {
+      "id": "ADR-0019",
+      "file": "0019-runtime-r0.md",
+      "title": "Runtime R0 — Workspace Rust, CLI, Konfigurasi, Logging",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Runtime R0: workspace Cargo terpisah, CLI `ramonyx-runtime`, konfigurasi, structured logging.",
+      "features": ["runtime-permissions"]
+    },
+    {
+      "id": "ADR-0020",
+      "file": "0020-v8-engine.md",
+      "title": "Engine JavaScript — V8 via `deno_core`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Engine V8 di-embed lewat `deno_core` (bukan menulis engine sendiri).",
+      "features": ["runtime-http-server"]
+    },
+    {
+      "id": "ADR-0021",
+      "file": "0021-module-loader.md",
+      "title": "Module Loader ESM + Transpile TypeScript (R1)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Runtime memuat ESM + transpile TypeScript via `deno_ast`, dengan fallback ekstensi.",
+      "features": ["runtime-compat-suite"]
+    },
+    {
+      "id": "ADR-0022",
+      "file": "0022-runtime-io.md",
+      "title": "Runtime I/O (R2a) — Timer, Filesystem, Env, HTTP Server Pull-Model",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "I/O dasar (timer/fs/env) + HTTP server pull-model dengan API `ramonyx.*`, bind 127.0.0.1.",
+      "features": ["runtime-http-server"]
+    },
+    {
+      "id": "ADR-0023",
+      "file": "0023-permission-model.md",
+      "title": "Permission Model (R3a) — Secure by Default, Flag `--allow-*`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Permission deny-all secara default; akses fs/env/net hanya via flag `--allow-read/write/net/env[=daftar]`.",
+      "features": ["runtime-permissions"]
+    },
+    {
+      "id": "ADR-0024",
+      "file": "0024-http-cancellation.md",
+      "title": "Runtime HTTP R2b — Cancellation Klien + Keep-Alive",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Cancellation saat klien putus (`request.signal`) + keep-alive koneksi.",
+      "features": ["runtime-http-server"]
+    },
+    {
+      "id": "ADR-0025",
+      "file": "0025-response-streaming.md",
+      "title": "Runtime HTTP R2c — Streaming Respons (Chunked)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Respons streaming: `body` sebagai AsyncIterable dikirim chunked.",
+      "features": ["runtime-streaming"]
+    },
+    {
+      "id": "ADR-0026",
+      "file": "0026-node-modules.md",
+      "title": "Resolusi `node_modules` (ESM) — Versi 1",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Resolusi `node_modules` ESM v1 mendukung field `exports`/`module`/`main`.",
+      "features": ["runtime-compat-suite"]
+    },
+    {
+      "id": "ADR-0027",
+      "file": "0027-web-shim.md",
+      "title": "Web Platform Basics (`web_shim`) untuk Runtime",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`web_shim` menyediakan URL, TextEncoder, Headers/Request/Response, setTimeout, MessageChannel.",
+      "features": ["runtime-http-server"]
+    },
+    {
+      "id": "ADR-0028",
+      "file": "0028-compat-suite.md",
+      "title": "Compatibility Suite v1 — Pipeline Framework di Runtime",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Compatibility suite menjalankan pipeline framework nyata di runtime sebagai bukti kesesuaian.",
+      "features": ["runtime-compat-suite"]
+    },
+    {
+      "id": "ADR-0029",
+      "file": "0029-commonjs-interop.md",
+      "title": "Interop CommonJS v1 — Graf `require` Statis + Demo SSR React",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Interop CommonJS subset (graf `require` statis) + demo SSR React (`react-dom/server.browser`) berjalan di runtime.",
+      "features": ["runtime-cjs-interop"]
+    },
+    {
+      "id": "ADR-0030",
+      "file": "0030-fetch-readablestream.md",
+      "title": "`fetch` Client + `ReadableStream` + Body Streaming (Runtime)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Runtime menyediakan `fetch` + `ReadableStream` + body streaming (POST body, SSR streaming `renderToReadableStream`).",
+      "features": ["runtime-fetch", "runtime-streaming"]
+    },
+    {
+      "id": "ADR-0031",
+      "file": "0031-builtins-crypto-security.md",
+      "title": "Builtin Subset (`node:net`/`node:dns/promises`) + `crypto` + Security di Runtime",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Builtin subset node:net/dns + crypto.getRandomValues + subset @ramonyx/security berjalan di runtime; IP-pinning dicatat menyusul.",
+      "features": ["runtime-fetch", "ssrf-guard"]
+    },
+    {
+      "id": "ADR-0032",
+      "file": "0032-servehandler-playground.md",
+      "title": "Jembatan `serveHandler` + Playground Subset Berjalan di Runtime",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Jembatan `serveHandler` memungkinkan handler framework berjalan end-to-end di runtime (halaman SSR + API + POST + security).",
+      "features": ["runtime-http-server", "runtime-compat-suite"]
+    },
+    {
+      "id": "ADR-0033",
+      "file": "0033-resource-limits.md",
+      "title": "Resource Limits — Kuota Heap, Watchdog Timeout, Pencabutan Permission",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Kuota heap V8 (`--max-heap-mb`), watchdog timeout (`--timeout-ms`), dan `ramonyx.permissions.get()/revoke()`.",
+      "features": ["runtime-quotas"]
+    },
+    {
+      "id": "ADR-0034",
+      "file": "0034-worker-isolation.md",
+      "title": "Isolasi Worker + Kuota (Isolate Terpisah per Worker)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Worker berjalan di thread + isolate V8 terpisah, pesan JSON, permission irisan anti-eskalasi, kill switch.",
+      "features": ["runtime-worker-isolation"]
+    },
+    {
+      "id": "ADR-0035",
+      "file": "0035-streaming-request.md",
+      "title": "Streaming Request + Batas Body Server",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Body request pull-model + batas body default 1 MiB dengan penolakan 413 dini.",
+      "features": ["runtime-streaming", "resource-limits"]
+    },
+    {
+      "id": "ADR-0036",
+      "file": "0036-fetch-tls-redirect.md",
+      "title": "`fetch` https (TLS Diverifikasi) + Redirect Otomatis",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`fetch` https dengan TLS diverifikasi (CA kustom `--tls-ca`) + redirect follow/manual/error dengan permission per hop.",
+      "features": ["runtime-fetch"]
+    },
+    {
+      "id": "ADR-0037",
+      "file": "0037-r4-profiling-startup.md",
+      "title": "R4 — Profiling Startup (Timings + Metrik Op + Baseline)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Profiling startup: timings per fase + metrik operasi + baseline; snapshot V8 ditolak dengan alasan terukur.",
+      "features": ["observability-metrics", "observability-logger"]
+    },
+    {
+      "id": "ADR-0038",
+      "file": "0038-cpu-rss-quotas.md",
+      "title": "Kuota CPU (Per-Thread) + RSS Proses — Menutup Gap Memori Eksternal",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Kuota CPU per-thread (`--max-cpu-ms`) + RSS proses (`--max-rss-mb`) menutup gap memori di luar heap V8.",
+      "features": ["runtime-quotas"]
+    },
+    {
+      "id": "ADR-0039",
+      "file": "0039-release-pipeline.md",
+      "title": "Release Pipeline v1 — Artefak, Verifikasi Instalasi, Rilis 0.1.0",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Rilis = build paket → tarball npm + binary runtime + SHA256SUMS/manifest → verifikasi instalasi di proyek konsumen bersih.",
+      "features": []
+    },
+    {
+      "id": "ADR-0040",
+      "file": "0040-plugin-process-isolation.md",
+      "title": "Isolasi Level Proses untuk Plugin (`ramonyx.spawn`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Plugin berjalan di proses terpisah via `ramonyx.spawn` + protokol JSON stdin/stdout, permission irisan, kill.",
+      "features": ["runtime-plugin-process"]
+    },
+    {
+      "id": "ADR-0041",
+      "file": "0041-create-app.md",
+      "title": "`apps/create-app` — Scaffolder Aplikasi",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`pnpm create:app` men-scaffold aplikasi Ramonyx (template file-routing SSR React + hydration).",
+      "features": ["scaffolder"]
+    },
+    {
+      "id": "ADR-0042",
+      "file": "0042-docs-app.md",
+      "title": "`apps/docs` — Situs Dokumentasi (Dogfood SSR React)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Situs dokumentasi adalah aplikasi Ramonyx (dogfood penuh: SSR + hydration + soft navigation atas docs/**).",
+      "features": ["docs-site"]
+    },
+    {
+      "id": "ADR-0043",
+      "file": "0043-plugin-supervision.md",
+      "title": "Supervisi Restart untuk Plugin (`restart` pada `ramonyx.spawn`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Plugin dapat disupervisi: `restart` + `plugin.stats()` untuk pemulihan otomatis.",
+      "related": ["ADR-0040"],
+      "features": ["runtime-plugin-supervision"]
+    },
+    {
+      "id": "ADR-0044",
+      "file": "0044-plugin-health-check.md",
+      "title": "Health-Check Plugin (Heartbeat + Deteksi Senyap)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Health-check plugin via `ramonyx.heartbeat()` + deteksi plugin senyap.",
+      "related": ["ADR-0040", "ADR-0043"],
+      "features": ["runtime-plugin-supervision"]
+    },
+    {
+      "id": "ADR-0045",
+      "file": "0045-perf-regression-gate.md",
+      "title": "Performance Regression Gate (Report-Only)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Gate performa report-only (`pnpm bench:report`) dengan guard lintas-mesin; `--strict` hanya sahih di mesin baseline.",
+      "features": ["benchmark-gates"]
+    },
+    {
+      "id": "ADR-0046",
+      "file": "0046-source-maps.md",
+      "title": "Source Map Produksi (Client Bundle + Paket npm)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Source map produksi untuk client bundle + paket npm.",
+      "features": ["source-maps"]
+    },
+    {
+      "id": "ADR-0047",
+      "file": "0047-ssr-streaming-node.md",
+      "title": "SSR Streaming di Runtime Node (`renderToReadableStream`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "SSR streaming Node memakai `react-dom/server.edge` (bukan server.browser — MessageChannel menahan proses); opt-in `streaming: true`.",
+      "related": ["ADR-0030", "ADR-0048"],
+      "features": ["ssr-streaming"]
+    },
+    {
+      "id": "ADR-0048",
+      "file": "0048-bench-ssr-vitals.md",
+      "title": "Bench SSR (Sinkron vs Streaming) + Ambang Web Vitals + `NODE_ENV` Produksi",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Bench SSR in-process (sinkron vs streaming, paritas byte-per-byte) + ambang Web Vitals di e2e; produksi wajib `NODE_ENV=production`.",
+      "related": ["ADR-0045", "ADR-0047"],
+      "features": ["benchmark-gates", "e2e-playwright"]
+    },
+    {
+      "id": "ADR-0049",
+      "file": "0049-pra-publikasi.md",
+      "title": "Kesiapan Pra-Publikasi — Publish dari Artefak Terverifikasi + Dist-Tag + `create-ramonyx-app`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Publikasi hanya dari tarball terverifikasi (guard tag↔versi, dist-tag, provenance), termasuk `create-ramonyx-app`.",
+      "related": ["ADR-0039"],
+      "features": ["scaffolder"]
+    },
+    {
+      "id": "ADR-0050",
+      "file": "0050-plugin-backoff-watchdog.md",
+      "title": "Backoff Eksponensial + Health-Check Otomatis (Watchdog) untuk Plugin",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Restart plugin memakai backoff eksponensial dengan reset stabil + watchdog health-check otomatis.",
+      "updates": ["ADR-0043", "ADR-0044"],
+      "features": ["runtime-plugin-supervision"]
+    },
+    {
+      "id": "ADR-0051",
+      "file": "0051-plugin-sandbox-landlock.md",
+      "title": "Sandbox OS Plugin (Landlock LSM)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Plugin disandbox di level kernel via Landlock (FS + TCP); net deny mencakup TCP saja, bukan UDP/DNS.",
+      "related": ["ADR-0040"],
+      "features": ["runtime-plugin-sandbox"]
+    },
+    {
+      "id": "ADR-0052",
+      "file": "0052-docs-hosting-pages.md",
+      "title": "Ekspor Statis & Hosting Dokumentasi (GitHub Pages)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Situs docs diekspor statis (`pnpm docs:export`, `--base /ramonyx`) dan di-host di GitHub Pages; tautan halaman wajib relatif.",
+      "related": ["ADR-0042"],
+      "features": ["docs-site", "static-export"]
+    },
+    {
+      "id": "ADR-0053",
+      "file": "0053-devtools-cli.md",
+      "title": "CLI `ramonyx` — `@ramonyx/devtools` v1",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "CLI `ramonyx` v1: `dev|build|start|doctor` dengan konvensi `src/app.ts` `createApp()`.",
+      "features": ["cli-devtools"]
+    },
+    {
+      "id": "ADR-0054",
+      "file": "0054-machine-readable-docs.md",
+      "title": "Lapisan Dokumentasi Machine-Readable (`docs/machine/`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Lapisan dokumentasi machine-readable JSON di `docs/machine/` (fitur/ADR/aturan/keamanan/glosarium/stats/llms) dengan validator blocking di CI; JSON dipilih agar tanpa dependency parser baru.",
+      "related": ["ADR-0016", "ADR-0042"],
+      "features": ["machine-docs", "llms-txt", "agent-skill"]
+    }
+  ]
+}
+```
+
+## docs/machine/rules.json
+
+```json
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "erasable-syntax",
+      "rule": "Tulis TypeScript yang erasable: dilarang `enum`, `namespace`, parameter property, dan `import =`. Tipe harus hilang saat transpile.",
+      "rationale": "Paket framework diekspor sebagai `.ts` dan dijalankan Node type stripping (tanpa transpile). Sintaks non-erasable gagal saat runtime.",
+      "scope": "framework",
+      "good": "export type Status = \"ok\" | \"error\";\nconst STATUS = { ok: \"ok\" } as const;",
+      "bad": "enum Status { Ok, Error }\nclass X { constructor(private y: number) {} }",
+      "enforcement": "tsconfig `erasableSyntaxOnly` + `verbatimModuleSyntax`; `pnpm typecheck`",
+      "adrs": ["ADR-0002", "ADR-0006"]
+    },
+    {
+      "id": "relative-imports-extension",
+      "rule": "Impor relatif memakai ekstensi eksplisit: `./x.ts` / `./x.tsx` (bukan `./x`).",
+      "rationale": "Node ESM tidak menebak ekstensi; paket diekspor sebagai sumber `.ts` dan dijalankan langsung.",
+      "scope": "framework",
+      "good": "import { createApp } from \"./app.ts\";",
+      "bad": "import { createApp } from \"./app\";",
+      "enforcement": "Konsisten di seluruh repo; test loader akan gagal bila salah",
+      "adrs": ["ADR-0002"]
+    },
+    {
+      "id": "node-builtins-boundary",
+      "rule": "Impor `node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan `packages/security` (guard SSRF). Di kode aplikasi: boleh di sisi server, DILARANG di modul yang masuk bundle client.",
+      "rationale": "Menjaga core framework portable dan bundle client bersih dari API server.",
+      "scope": "framework",
+      "good": "// packages/security/src/ssrf.ts\nimport { lookup } from \"node:dns/promises\";",
+      "bad": "// packages/core/src/route.ts\nimport { readFile } from \"node:fs/promises\";",
+      "enforcement": "Lint (Biome) melarang `node:*` di luar paket yang diizinkan",
+      "adrs": ["ADR-0002", "ADR-0015"]
+    },
+    {
+      "id": "no-jsx-in-framework",
+      "rule": "Paket framework tidak berisi JSX; JSX hanya di kode aplikasi (`.tsx`) yang dijalankan lewat loader dev/test.",
+      "rationale": "Node type stripping tidak memproses JSX; paket framework harus berjalan di Node murni tanpa loader.",
+      "scope": "framework",
+      "good": "// packages/react/src/renderer.ts — fungsi murni tanpa JSX\nreturn createElement(page.component, props);",
+      "bad": "// packages/react/src/renderer.ts\nreturn <page.component {...props} />;",
+      "enforcement": "Struktur repo (tidak ada `.tsx` di packages/*/src) + test",
+      "adrs": ["ADR-0006"]
+    },
+    {
+      "id": "test-server-close-finally",
+      "rule": "Setiap server yang dijalankan test WAJIB `close()` di blok `finally`.",
+      "rationale": "Assert gagal sebelum `close()` membocorkan listener → `node --test` menggantung tanpa batas (pernah terjadi di CI).",
+      "scope": "repo",
+      "good": "const server = await start();\ntry { ...assert... } finally { await server.close(); }",
+      "bad": "const server = await start();\nassert.equal(...); // gagal → server tidak pernah ditutup\nawait server.close();",
+      "enforcement": "`--test-timeout=120000` + `--test-force-exit` sebagai jaring pengaman; konvensi review",
+      "adrs": []
+    },
+    {
+      "id": "node-env-production",
+      "rule": "Produksi WAJIB `NODE_ENV=production` (skrip `start`/`docs`/bench dan template `create-app` sudah men-set).",
+      "rationale": "Tanpa itu React berjalan build dev — pernah terjadi di server produksi (ADR-0048).",
+      "scope": "app",
+      "good": "\"start\": \"NODE_ENV=production node --import ./tools/register.mjs src/server.ts\"",
+      "bad": "\"start\": \"node src/server.ts\"",
+      "enforcement": "Template + skrip repo sudah benar; CI menjalankan build produksi di e2e",
+      "adrs": ["ADR-0048"]
+    },
+    {
+      "id": "loader-data-json",
+      "rule": "Data loader halaman harus JSON-serializable.",
+      "rationale": "Payload hydration ditanam inline ke HTML (`window.__RAMONYX__`); nilai non-JSON (function/class/Date) hilang atau error.",
+      "scope": "app",
+      "good": "export function load() { return { items: [\"a\", \"b\"] }; }",
+      "bad": "export function load() { return { when: new Date(), fn: () => 1 }; }",
+      "enforcement": "Serialisasi payload saat render; test SSR",
+      "adrs": ["ADR-0007"]
+    },
+    {
+      "id": "streaming-server-edge",
+      "rule": "SSR streaming memakai `react-dom/server.edge`; JANGAN `react-dom/server.browser` di Node.",
+      "rationale": "`server.browser` membuat MessageChannel level-modul yang menahan proses Node (test/CLI menggantung).",
+      "scope": "framework",
+      "good": "import { renderToReadableStream } from \"react-dom/server.edge\";",
+      "bad": "import { renderToReadableStream } from \"react-dom/server.browser\";",
+      "enforcement": "Impor langsung di `packages/ssr`; test streaming + e2e",
+      "adrs": ["ADR-0047"]
+    },
+    {
+      "id": "error-pages-not-hydrated",
+      "rule": "Jangan mengandalkan interaktivitas client di halaman error — halaman error tidak di-hydrate.",
+      "rationale": "Payload/hydration hanya untuk halaman sukses (ADR-0007); halaman error adalah HTML statis.",
+      "scope": "app",
+      "good": "// error.tsx: tautan <a href> biasa",
+      "bad": "// error.tsx: useEffect(() => fetch(...)) berharap hydration jalan",
+      "enforcement": "Renderer tidak menyuntikkan script client di halaman error; e2e errors.spec",
+      "adrs": ["ADR-0007"]
+    },
+    {
+      "id": "docs-relative-links",
+      "rule": "Tautan di dalam `docs/**` (situs docs) harus relatif — jangan absolut (`/dokumen/...`).",
+      "rationale": "Situs di-host di subpath `/ramonyx/`; `<base href>` menegakkan tautan relatif (ADR-0052).",
+      "scope": "docs",
+      "good": "[arsitektur](../architecture.md)",
+      "bad": "[arsitektur](/dokumen/architecture)",
+      "enforcement": "Rewriter tautan markdown otomatis + validasi `pnpm docs:validate`",
+      "adrs": ["ADR-0052"]
+    },
+    {
+      "id": "numbers-single-source",
+      "rule": "Jangan mengetik angka (versi, jumlah test/ADR/paket) di dokumen; rujuk `docs/machine/stats.json`.",
+      "rationale": "Angka duplikat menjadi basi (audit menemukan 128/101 vs 161/111). Satu sumber = tidak bisa drift.",
+      "scope": "docs",
+      "good": "Angka aktual: `docs/machine/stats.json` (generate: `pnpm docs:stats`).",
+      "bad": "Repo punya 161 tes Node dan 111 tes Rust.",
+      "enforcement": "`pnpm docs:validate` + review",
+      "adrs": ["ADR-0054"]
+    },
+    {
+      "id": "claims-need-evidence",
+      "rule": "Klaim performa/keamanan wajib punya bukti yang bisa dijalankan (test, benchmark, ADR). Tanpa itu tulis \"belum\".",
+      "rationale": "Disiplin klaim BLUEPRINT §10 — kredibilitas proyek dibangun dari bukti, bukan klaim.",
+      "scope": "docs",
+      "good": "\"Body >1 MiB → 413 (test: tests/security/server-hardening.test.ts)\"",
+      "bad": "\"Ramonyx sangat aman dan cepat.\"",
+      "enforcement": "Review + `pnpm docs:validate` (semua bukti di features.json harus ada)",
+      "adrs": []
+    },
+    {
+      "id": "adr-for-decisions",
+      "rule": "Keputusan arsitektur (API publik, format, protokol, dependency baru) ditulis sebagai ADR di `docs/adr/` + indeks diperbarui.",
+      "rationale": "Jejak keputusan yang bisa diaudit; ADR = sumber kebenaran untuk \"kenapa\", kode untuk \"apa\".",
+      "scope": "repo",
+      "good": "docs/adr/0054-machine-readable-docs.md + baris di docs/adr/README.md",
+      "bad": "Mengubah format publik tanpa catatan keputusan.",
+      "enforcement": "Konvensi review; `pnpm docs:validate` memeriksa indeks ADR lengkap",
+      "adrs": []
+    },
+    {
+      "id": "bench-strict-local-only",
+      "rule": "`--strict` pada benchmark hanya sahih di mesin baseline; jangan mengaktifkan gate blocking di CI lintas-mesin.",
+      "rationale": "CI ±3× lebih cepat dari mesin dev; guard menolak lintas-mesin (ADR-0045).",
+      "scope": "repo",
+      "good": "pnpm bench:report   # CI: report-only",
+      "bad": "VITALS_STRICT=1 di CI tanpa baseline per-lingkungan",
+      "enforcement": "Guard `cpuModel` di runner bench",
+      "adrs": ["ADR-0045", "ADR-0048"]
+    },
+    {
+      "id": "dependency-quarantine",
+      "rule": "Dependency baru menunggu 24 jam sebelum dipasang (`minimumReleaseAge` di `pnpm-workspace.yaml`). Jangan bypass.",
+      "rationale": "Kebijakan supply chain (ADR-0016) — mitigasi paket berbahaya yang baru dirilis.",
+      "scope": "repo",
+      "good": "Tunggu ≥24 jam setelah rilis versi baru sebelum menaikkan dependency.",
+      "bad": "pnpm add lib@latest && pnpm install --config.minimumReleaseAge=0",
+      "enforcement": "`pnpm-workspace.yaml` + review",
+      "adrs": ["ADR-0016"]
+    },
+    {
+      "id": "node-version",
+      "rule": "Butuh Node ≥24. Jalankan app/test dengan loader: `node --import ./tools/register.mjs` (atau CLI `ramonyx`).",
+      "rationale": "Fitur Node 24 (type stripping stabil) menjadi baseline; JSX butuh loader esbuild.",
+      "scope": "app",
+      "good": "node --import ./tools/register.mjs src/server.ts",
+      "bad": "node src/server.tsx   # JSX tidak diproses Node murni",
+      "enforcement": "`engines` di package.json; loader publik `@ramonyx/compiler/register`",
+      "adrs": ["ADR-0002", "ADR-0006"]
+    },
+    {
+      "id": "client-server-boundary",
+      "rule": "Modul yang diimpor entry client tidak boleh menyentuh API server (node:*, fs, env rahasia). Pisahkan modul server/client.",
+      "rationale": "Bundle client dikirim ke browser; kebocoran API server = bug keamanan. Analisis batas otomatis belum ada (dicatat di TODO).",
+      "scope": "app",
+      "good": "// data.server.ts (hanya server) vs komponen presentasional di halaman",
+      "bad": "import { readFile } from \"node:fs/promises\" di komponen yang di-hydrate",
+      "enforcement": "BELUM ditegakkan lint — kandidat TODO (analisis batas server/client)",
+      "adrs": []
+    }
+  ]
+}
+```
+
+## docs/machine/security.json
+
+```json
+{
+  "schemaVersion": 1,
+  "controls": [
+    {
+      "id": "sec-body-limit",
+      "control": "Batas ukuran body request default 1 MiB → 413 (dapat dikonfigurasi `maxBodyBytes`)",
+      "status": "implemented",
+      "evidence": ["packages/server/src/handler.ts", "tests/security/server-hardening.test.ts"],
+      "gaps": [],
+      "adrs": ["ADR-0011", "ADR-0035"]
+    },
+    {
+      "id": "sec-timeout",
+      "control": "Timeout handler/loader default 10s → 503 + `request.signal` abort (dapat dikonfigurasi `timeoutMs`)",
+      "status": "implemented",
+      "evidence": ["packages/server/src/handler.ts", "tests/security/server-hardening.test.ts"],
+      "gaps": [],
+      "adrs": ["ADR-0011"]
+    },
+    {
+      "id": "sec-concurrency",
+      "control": "Batas request bersamaan default 100 → 503 + `Retry-After` (load shedding)",
+      "status": "implemented",
+      "evidence": ["packages/server/src/handler.ts", "tests/security/server-hardening.test.ts"],
+      "gaps": [],
+      "adrs": ["ADR-0012"]
+    },
+    {
+      "id": "sec-headers",
+      "control": "Security headers default (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)",
+      "status": "implemented",
+      "evidence": ["packages/security/src/headers.ts", "packages/security/test/headers.test.ts"],
+      "gaps": [],
+      "adrs": ["ADR-0013"]
+    },
+    {
+      "id": "sec-csp-nonce",
+      "control": "CSP dengan nonce per request — inline script diizinkan tanpa `unsafe-inline`",
+      "status": "implemented",
+      "evidence": ["packages/security/src/csp.ts", "packages/security/test/csp.test.ts"],
+      "gaps": [],
+      "adrs": ["ADR-0014"]
+    },
+    {
+      "id": "sec-csrf",
+      "control": "Proteksi CSRF double-submit cookie + validasi origin (Web Crypto, timing-safe)",
+      "status": "implemented",
+      "evidence": ["packages/security/src/csrf.ts", "packages/security/test/csrf.test.ts"],
+      "gaps": [],
+      "adrs": ["ADR-0013"]
+    },
+    {
+      "id": "sec-ssrf",
+      "control": "Guard SSRF `guardedFetch`: validasi host/IP, blokir rentang privat, cek per-hop redirect",
+      "status": "implemented",
+      "evidence": ["packages/security/src/ssrf.ts", "packages/security/test/ssrf.test.ts"],
+      "gaps": ["IP-pinning (anti DNS-rebinding) belum — dicatat ADR-0031", "Pencocokan IPv6/zone-id terbatas"],
+      "adrs": ["ADR-0015", "ADR-0031"]
+    },
+    {
+      "id": "sec-rate-limit",
+      "control": "Rate limit per klien (token bucket) → 429 + `Retry-After`; identitas dari adapter, `trustProxy` opt-in",
+      "status": "implemented",
+      "evidence": ["packages/security/src/rate-limit.ts", "packages/security/test/rate-limit.test.ts"],
+      "gaps": ["In-memory per proses (tanpa store terdistribusi)"],
+      "adrs": ["ADR-0017"]
+    },
+    {
+      "id": "sec-input-validation",
+      "control": "Validasi schema runtime di trust boundary (Standard Schema: query/body/params)",
+      "status": "implemented",
+      "evidence": ["packages/schema/src/validate.ts", "packages/schema/test/validate.test.ts"],
+      "gaps": [],
+      "adrs": ["ADR-0004"]
+    },
+    {
+      "id": "sec-output-limit",
+      "control": "Batas ukuran dokumen SSR (mencegah output tak terkendali)",
+      "status": "implemented",
+      "evidence": ["packages/ssr/src/pages.ts", "docs/adr/0015-ssrf-guard-output-limit.md"],
+      "gaps": [],
+      "adrs": ["ADR-0015"]
+    },
+    {
+      "id": "sec-dependency-policy",
+      "control": "Kebijakan supply chain: quarantine 24 jam, `pnpm audit` di CI, Dependabot mingguan, justifikasi dependency",
+      "status": "implemented",
+      "evidence": ["docs/security/dependency-policy.md", "pnpm-workspace.yaml"],
+      "gaps": [],
+      "adrs": ["ADR-0016"]
+    },
+    {
+      "id": "sec-runtime-permissions",
+      "control": "Runtime Rust: permission deny-all (fs/env/net) hanya via `--allow-*`; `revoke()` runtime",
+      "status": "implemented",
+      "evidence": ["runtime/crates/runtime-core/src/permissions.rs", "runtime/crates/cli/tests/cli.rs"],
+      "gaps": ["Runtime belum produksi (Phase 4+)"],
+      "adrs": ["ADR-0023", "ADR-0033"]
+    },
+    {
+      "id": "sec-runtime-quotas",
+      "control": "Kuota runtime: heap V8, watchdog timeout, CPU per-thread, RSS proses",
+      "status": "implemented",
+      "evidence": ["runtime/crates/js-engine/src/lib.rs", "docs/adr/0038-cpu-rss-quotas.md"],
+      "gaps": ["Heap hanya heap V8 — ArrayBuffer besar tidak dihitung; alokasi raksasa tunggal masih bisa OOM fatal"],
+      "adrs": ["ADR-0033", "ADR-0038"]
+    },
+    {
+      "id": "sec-worker-isolation",
+      "control": "Isolasi worker: thread + isolate V8 terpisah, pesan JSON, permission irisan anti-eskalasi, kill switch",
+      "status": "implemented",
+      "evidence": ["runtime/crates/js-engine/src/worker.rs", "docs/adr/0034-worker-isolation.md"],
+      "gaps": ["Isolasi V8 bukan sandbox keamanan (dicatat di BLUEPRINT) — batas tepercaya tetap proses/OS"],
+      "adrs": ["ADR-0034"]
+    },
+    {
+      "id": "sec-plugin-process-isolation",
+      "control": "Isolasi plugin level proses (`ramonyx.spawn`), protokol JSON, permission irisan, kill + supervisi",
+      "status": "implemented",
+      "evidence": ["runtime/crates/js-engine/src/plugin.rs", "runtime/crates/js-engine/tests/plugin_process.rs"],
+      "gaps": [],
+      "adrs": ["ADR-0040", "ADR-0043", "ADR-0044", "ADR-0050"]
+    },
+    {
+      "id": "sec-plugin-sandbox-landlock",
+      "control": "Sandbox kernel plugin via Landlock LSM (batasi FS + TCP tanpa bergantung permission JS)",
+      "status": "implemented",
+      "evidence": ["runtime/crates/js-engine/src/sandbox.rs", "docs/adr/0051-plugin-sandbox-landlock.md"],
+      "gaps": ["Net deny mencakup TCP saja (UDP/DNS tidak)", "Belum ada pentest escape (dicatat TODO)"],
+      "adrs": ["ADR-0051"]
+    },
+    {
+      "id": "sec-https-tls",
+      "control": "`fetch` runtime: TLS diverifikasi, CA kustom `--tls-ca`, redirect dengan permission per hop",
+      "status": "implemented",
+      "evidence": ["runtime/crates/js-engine/src/http_client.rs", "runtime/crates/js-engine/tests/fetch_tls.rs"],
+      "gaps": ["Runtime eksperimental"],
+      "adrs": ["ADR-0036"]
+    },
+    {
+      "id": "sec-ip-pinning",
+      "control": "IP-pinning pada guardedFetch (anti DNS-rebinding)",
+      "status": "missing",
+      "evidence": ["docs/adr/0031-builtins-crypto-security.md"],
+      "gaps": ["Belum diimplementasikan — dicatat sejak ADR-0031; ada di TODO"],
+      "adrs": ["ADR-0031"]
+    },
+    {
+      "id": "sec-client-server-boundary",
+      "control": "Penegakan otomatis batas server/client (kode server tidak bocor ke bundle client)",
+      "status": "missing",
+      "evidence": ["docs/machine/rules.json"],
+      "gaps": ["Analisis batas belum ada; penegakan lint menyusul — ada di TODO"],
+      "adrs": []
+    },
+    {
+      "id": "sec-pentest-plugin-escape",
+      "control": "Pentest/penilaian escape isolasi plugin (worker + proses + Landlock)",
+      "status": "missing",
+      "evidence": ["docs/adr/0051-plugin-sandbox-landlock.md"],
+      "gaps": ["Belum dinilai secara formal — ada di TODO"],
+      "adrs": ["ADR-0051"]
+    },
+    {
+      "id": "sec-auth",
+      "control": "Autentikasi/session aplikasi",
+      "status": "app-responsibility",
+      "evidence": ["docs/PLAN-docs-consolidation.md"],
+      "gaps": ["Framework tidak menyediakan primitif session; aplikasi memutuskan sendiri"],
+      "adrs": []
+    }
+  ]
+}
+```
+
+## docs/machine/glossary.json
+
+```json
+{
+  "schemaVersion": 1,
+  "terms": [
+    {
+      "term": "SSR (Server-Side Rendering)",
+      "definition": "Render React di server menjadi HTML; dua mode: sinkron (`renderToString`) dan streaming (opt-in `streaming: true`, `renderToReadableStream`).",
+      "related": ["Hydration", "Streaming SSR"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Streaming SSR",
+      "definition": "SSR yang mengirim HTML bertahap; error setelah byte pertama memutus koneksi (status/error page hanya berlaku sebelum byte pertama). Memakai `react-dom/server.edge`.",
+      "related": ["SSR (Server-Side Rendering)", "Suspense"],
+      "docs": "docs/adr/0047-ssr-streaming-node.md"
+    },
+    {
+      "term": "Hydration",
+      "definition": "Mengaktifkan React di browser atas HTML SSR: payload inline `window.__RAMONYX__` + satu bundle client + `hydrateRoot`. Halaman error tidak di-hydrate.",
+      "related": ["SSR (Server-Side Rendering)", "Soft navigation"],
+      "docs": "docs/adr/0007-hydration.md"
+    },
+    {
+      "term": "Soft navigation",
+      "definition": "Navigasi klien tanpa full reload: fetch HTML halaman → swap `#ramonyx-root` → re-hydrate; `document.title` + scroll direset. Belum ada prefetch.",
+      "related": ["Hydration"],
+      "docs": "docs/adr/0008-client-navigation.md"
+    },
+    {
+      "term": "Loader",
+      "definition": "Fungsi per halaman yang mengambil data sebelum render (GET, boleh async); hasilnya harus JSON-serializable karena ikut payload hydration.",
+      "related": ["Page module", "Payload"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Page module",
+      "definition": "Modul `.tsx` di folder rute yang mengekspor komponen `default` + opsional `load` dan `metadata` (title/status).",
+      "related": ["Loader", "Layout", "Route manifest"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Layout",
+      "definition": "Komponen pembungkus per folder (`layout.tsx`) yang membungkus halaman; bersarang dan layout terdekat menang.",
+      "related": ["Page module", "Error boundary"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Error boundary",
+      "definition": "Komponen `error.tsx` per folder yang dirender saat loader/render gagal; boundary terdekat menang. Halaman error tidak di-hydrate.",
+      "related": ["Layout"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Route manifest",
+      "definition": "Artefak compiler yang memetakan file rute → pola URL, method, dan entry (dibuat saat build/dev; sumber kebenaran routing).",
+      "related": ["Page module", "Route entry"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Route entry",
+      "definition": "Pasangan rute halaman/API + handler yang dihasilkan compiler dan dipasang ke pipeline server.",
+      "related": ["Route manifest"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Middleware",
+      "definition": "Fungsi app-level (array di `createHandler`) yang berjalan berurutan sebelum rute; dapat mengganti request (mis. menyuntik nonce). Belum ada per-folder.",
+      "related": ["Handler", "CSP nonce"],
+      "docs": "docs/api/core-contract.md"
+    },
+    {
+      "term": "Handler",
+      "definition": "Pipeline request server: middleware → pencocokan rute → validasi → eksekusi (halaman/API) dengan limits (body/timeout/concurrency).",
+      "related": ["Middleware", "Adapter"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Adapter",
+      "definition": "Lapisan runtime yang menjalankan handler: `node` (http server), `memory` (test in-process). Adapter serverless/edge belum ada.",
+      "related": ["Handler", "RuntimeHost"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "RuntimeHost",
+      "definition": "Kontrak antara framework dan host runtime (Node baseline; runtime Rust eksperimental). Lihat docs/architecture.md.",
+      "related": ["Adapter"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Client bundle",
+      "definition": "Bundle JS untuk browser (Vite) berisi entry client + komponen yang di-hydrate; dibangun oleh `ramonyx build`.",
+      "related": ["Hydration"],
+      "docs": "docs/architecture.md"
+    },
+    {
+      "term": "Capability / permission",
+      "definition": "Izin eksplisit di runtime Rust (fs/env/net) — default deny-all; diberikan lewat flag `--allow-*`, dapat dicabut (`revoke`).",
+      "related": ["Deny-all", "Worker", "Plugin"],
+      "docs": "docs/adr/0023-permission-model.md"
+    },
+    {
+      "term": "Deny-all",
+      "definition": "Default permission runtime: tanpa flag `--allow-*`, akses fs/env/net ditolak — bukan diizinkan dengan peringatan.",
+      "related": ["Capability / permission"],
+      "docs": "docs/adr/0023-permission-model.md"
+    },
+    {
+      "term": "Worker (runtime)",
+      "definition": "Eksekusi di thread + isolate V8 terpisah dengan pesan JSON, permission irisan (anti-eskalasi), dan kill switch. Bukan sandbox keamanan penuh.",
+      "related": ["Capability / permission", "Plugin"],
+      "docs": "docs/adr/0034-worker-isolation.md"
+    },
+    {
+      "term": "Plugin (runtime)",
+      "definition": "Proses terpisah yang dijalankan `ramonyx.spawn` dengan protokol JSON stdin/stdout; dapat disupervisi (restart, backoff, heartbeat) dan disandbox Landlock.",
+      "related": ["Worker (runtime)", "Landlock", "Watchdog"],
+      "docs": "docs/adr/0040-plugin-process-isolation.md"
+    },
+    {
+      "term": "Landlock",
+      "definition": "LSM kernel Linux yang membatasi filesystem + TCP proses plugin di level kernel; pelengkap permission JS. Net deny = TCP saja (bukan UDP/DNS).",
+      "related": ["Plugin (runtime)", "Deny-all"],
+      "docs": "docs/adr/0051-plugin-sandbox-landlock.md"
+    },
+    {
+      "term": "Watchdog",
+      "definition": "Health-check otomatis plugin: heartbeat + deteksi senyap, restart dengan backoff eksponensial dan reset stabil.",
+      "related": ["Plugin (runtime)"],
+      "docs": "docs/adr/0050-plugin-backoff-watchdog.md"
+    },
+    {
+      "term": "Gate report-only",
+      "definition": "Gate benchmark yang melaporkan regresi tanpa memblokir CI; `--strict` hanya sahih di mesin baseline (guard lintas-mesin).",
+      "related": ["Baseline"],
+      "docs": "docs/adr/0045-perf-regression-gate.md"
+    },
+    {
+      "term": "Baseline (benchmark)",
+      "definition": "Hasil benchmark ter-commit di `benchmarks/results/` sebagai pembanding; median dari beberapa ulangan, bukan rata-rata.",
+      "related": ["Gate report-only"],
+      "docs": "docs/benchmark-protocol.md"
+    },
+    {
+      "term": "ADR (Architecture Decision Record)",
+      "definition": "Catatan keputusan arsitektur di `docs/adr/` — satu keputusan per berkas, dengan konteks/alternatif/konsekuensi; indeks machine-readable di docs/machine/adrs.json.",
+      "related": ["Machine layer"],
+      "docs": "docs/adr/README.md"
+    },
+    {
+      "term": "Machine layer",
+      "definition": "Lapisan dokumentasi machine-readable di `docs/machine/` (features/adrs/rules/security/glossary/stats/llms) yang divalidasi `pnpm docs:validate`.",
+      "related": ["ADR (Architecture Decision Record)", "llms.txt"],
+      "docs": "docs/machine/README.md"
+    },
+    {
+      "term": "llms.txt",
+      "definition": "Indeks dokumentasi untuk agen AI (format llmstxt.org): H1 + ringkasan + daftar tautan; Ramonyx juga menerbitkan `llms-full.txt` (teks lengkap).",
+      "related": ["Machine layer"],
+      "docs": "docs/machine/llms.txt"
+    },
+    {
+      "term": "Stats",
+      "definition": "`docs/machine/stats.json` — satu-satunya tempat angka (versi, jumlah paket/ADR/test) berada; digenerate `pnpm docs:stats`.",
+      "related": ["Machine layer"],
+      "docs": "docs/machine/stats.json"
+    }
+  ]
+}
+```
+
+## docs/machine/api.json
+
+```json
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-18T17:50:38.346Z",
+  "packages": [
+    {
+      "name": "@ramonyx/adapter-runtime",
+      "version": "0.1.1",
+      "source": "packages/adapter-runtime/src/index.ts",
+      "values": [
+        "createConsoleLogger",
+        "createMemoryHost",
+        "createNodeHost"
+      ],
+      "types": [
+        "FetchHandler",
+        "MemoryHost",
+        "MemoryHostOptions",
+        "MemoryServer",
+        "NodeHostOptions",
+        "RunningServer",
+        "RuntimeHost",
+        "ServeOptions"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/bundler",
+      "version": "0.1.1",
+      "source": "packages/bundler/src/index.ts",
+      "values": [
+        "buildClient",
+        "createDevServer"
+      ],
+      "types": [
+        "BuildClientOptions",
+        "BuildClientResult",
+        "DevServer",
+        "DevServerOptions"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/compiler",
+      "version": "0.1.1",
+      "source": "packages/compiler/src/index.ts",
+      "values": [
+        "HTTP_METHODS",
+        "RouteManifestError",
+        "createRouteManifest",
+        "generateClientEntry",
+        "loadPageRoutes",
+        "nativeImporter"
+      ],
+      "types": [
+        "CreateRouteManifestOptions",
+        "GenerateClientEntryOptions",
+        "HttpMethod",
+        "LoadPageRoutesOptions",
+        "ModuleImporter"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/core",
+      "version": "0.1.1",
+      "source": "packages/core/src/index.ts",
+      "values": [
+        "HttpError",
+        "NONCE_HEADER",
+        "REMOTE_ADDRESS_HEADER",
+        "defineConfig",
+        "resolveConfig",
+        "route",
+        "silentLogger"
+      ],
+      "types": [
+        "AppConfig",
+        "EnvReader",
+        "FetchHandler",
+        "HttpErrorOptions",
+        "LoadedPage",
+        "Logger",
+        "Middleware",
+        "MiddlewareContext",
+        "PageLoader",
+        "PageLoaderContext",
+        "PageMetadata",
+        "PageModule",
+        "RamonyxConfig",
+        "RamonyxConfigInput",
+        "RouteDefinition",
+        "RouteEntry",
+        "RouteHandler",
+        "RouteHandlerContext",
+        "ServerConfig"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/devtools",
+      "version": "0.1.1",
+      "source": "packages/devtools/src/index.ts",
+      "values": [
+        "loadConfigFile",
+        "loadCreateApp",
+        "runCli"
+      ],
+      "types": [
+        "CreateApp",
+        "CreateAppOptions"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "ramonyx",
+      "version": "0.1.1",
+      "source": "packages/ramonyx/src/index.ts",
+      "values": [
+        "HttpError",
+        "defineConfig",
+        "resolveConfig",
+        "route"
+      ],
+      "types": [
+        "EnvReader",
+        "FetchHandler",
+        "Logger",
+        "Middleware",
+        "MiddlewareContext",
+        "RamonyxConfig",
+        "RamonyxConfigInput",
+        "RouteDefinition",
+        "RouteEntry",
+        "RouteHandlerContext"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/react",
+      "version": "0.1.1",
+      "source": "packages/react/src/index.ts",
+      "values": [
+        "createReactRenderer"
+      ],
+      "types": [
+        "ErrorPageProps",
+        "LayoutProps",
+        "PageProps"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/router",
+      "version": "0.1.1",
+      "source": "packages/router/src/index.ts",
+      "values": [
+        "createRouteTable",
+        "matchRoute"
+      ],
+      "types": [
+        "RouteMatch",
+        "RouteTable"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/schema",
+      "version": "0.1.1",
+      "source": "packages/schema/src/index.ts",
+      "values": [
+        "validate"
+      ],
+      "types": [
+        "InferInput",
+        "InferOutput",
+        "StandardIssue",
+        "StandardPathSegment",
+        "StandardResult",
+        "StandardSchema",
+        "StandardSchemaProps",
+        "ValidationIssue",
+        "ValidationResult"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/security",
+      "version": "0.1.1",
+      "source": "packages/security/src/index.ts",
+      "values": [
+        "SsrfError",
+        "cspNonce",
+        "csrfProtection",
+        "defaultContentSecurityPolicy",
+        "guardedFetch",
+        "rateLimit",
+        "securityHeaders"
+      ],
+      "types": [
+        "CspNonceOptions",
+        "CsrfOptions",
+        "GuardedFetchOptions",
+        "RateLimitOptions",
+        "SecurityHeadersOptions"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/server",
+      "version": "0.1.1",
+      "source": "packages/server/src/index.ts",
+      "values": [
+        "createHandler",
+        "parseQuery"
+      ],
+      "types": [
+        "CreateHandlerOptions",
+        "QueryRecord",
+        "QueryValue"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/ssr",
+      "version": "0.1.1",
+      "source": "packages/ssr/src/index.ts",
+      "values": [
+        "PAYLOAD_SCRIPT_ID",
+        "RAMONYX_MOUNT_ID",
+        "createPageRoutes",
+        "defaultDocument",
+        "escapeHtml"
+      ],
+      "types": [
+        "ClientOptions",
+        "CreatePageRoutesOptions",
+        "DocumentOptions",
+        "DocumentRenderer",
+        "ElementDescriptor",
+        "Renderer"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/testing",
+      "version": "0.1.1",
+      "source": "packages/testing/src/index.ts",
+      "values": [
+        "createTestServer",
+        "createTestServerFromHandler"
+      ],
+      "types": [],
+      "reexports": []
+    }
+  ]
+}
+```
+
+## docs/machine/cli.json
+
+```json
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-18T17:50:45.060Z",
+  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev       Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build     Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx start     Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor    Diagnostik konfigurasi & lingkungan\n  ramonyx version   Versi CLI\n  ramonyx help      Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
+  "commands": [
+    {
+      "name": "dev",
+      "summary": "Vite + HMR (default :5173) → SSR (port dari config)"
+    },
+    {
+      "name": "build",
+      "summary": "Bundel klien → dist/client (jalankan sebelum start produksi)"
+    },
+    {
+      "name": "start",
+      "summary": "Server produksi (NODE_ENV=production, SSR)"
+    },
+    {
+      "name": "doctor",
+      "summary": "Diagnostik konfigurasi & lingkungan"
+    },
+    {
+      "name": "version",
+      "summary": "Versi CLI"
+    },
+    {
+      "name": "help",
+      "summary": "Bantuan ini"
+    }
+  ],
+  "flags": [
+    {
+      "flag": "--app",
+      "argument": "dir",
+      "description": "Direktori aplikasi (default: direktori kerja saat ini)"
+    },
+    {
+      "flag": "--config",
+      "argument": "path",
+      "description": "Path config (default: <app>/ramonyx.config.ts)"
+    },
+    {
+      "flag": "--port",
+      "argument": "n",
+      "description": "Override port server SSR"
+    },
+    {
+      "flag": "--dev-port",
+      "argument": "n",
+      "description": "Override port Vite (default 5173)"
+    }
+  ]
+}
+```
+
+## docs/machine/stats.json
+
+```json
+{
+  "schemaVersion": 1,
+  "version": "0.1.1",
+  "generatedAt": "2026-10-18T17:46:04.073Z",
+  "commit": "d3e9dddce13472786955db925e0f6c4daee3287e",
+  "node": "v24.22.0",
+  "packages": {
+    "workspace": 13,
+    "npm": 14,
+    "names": [
+      "@ramonyx/adapter-runtime",
+      "@ramonyx/bundler",
+      "@ramonyx/compiler",
+      "@ramonyx/core",
+      "@ramonyx/devtools",
+      "ramonyx",
+      "@ramonyx/react",
+      "@ramonyx/router",
+      "@ramonyx/schema",
+      "@ramonyx/security",
+      "@ramonyx/server",
+      "@ramonyx/ssr",
+      "@ramonyx/testing",
+      "create-ramonyx-app"
+    ]
+  },
+  "adrs": 54,
+  "tests": {
+    "node": 167,
+    "rust": 111,
+    "e2eSpecFiles": 4
+  }
+}
+```
+
+## docs/machine/config.schema.json
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ramonyx application config (input)",
+  "description": "Bentuk input `ramonyx.config.ts` (RamonyxConfigInput). Default dari resolveConfig: app.strictValidation=true, server.port=3000, server.host=\"localhost\". Diverifikasi test tests/docs/config-schema.test.ts terhadap packages/core/src/config.ts.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "app": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strictValidation": {
+          "type": "boolean",
+          "description": "Default true. Validasi schema runtime di trust boundary."
+        }
+      }
+    },
+    "server": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "description": "Default 3000."
+        },
+        "host": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Default \"localhost\"."
+        }
+      }
+    }
+  }
+}
+```
+
+## README.md
+
+# Ramonyx
+
+Framework full-stack TypeScript (Node ≥ 24) + runtime Rust/V8 **eksperimental**: file routing,
+SSR React (+ streaming), hydration + soft navigation, middleware security, validasi schema di
+tepi kepercayaan, dan benchmark/gate reproducible.
+
+> **Status: alpha 0.1.1 — terbit di npm** (2026-10-18, 14 paket `@ramonyx/*` + `ramonyx` +
+> `create-ramonyx-app`, **dengan provenance**) — lihat
+> [Rilis v0.1.1](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.1.1).
+> Framework Node adalah baseline produksi; runtime Rust/V8 eksperimental. Aplikasi baru:
+> `pnpm create ramonyx-app aplikasi-saya` → `pnpm dev|build|start` (CLI `ramonyx`).
+> Verifikasi registry end-to-end: scaffold → install → build → start → SSR + API.
+> Checklist rilis: [docs/releasing.md](docs/releasing.md).
+
+## Mulai cepat
+
+```bash
+# scaffold aplikasi baru (dari registry):
+pnpm create ramonyx-app aplikasi-saya
+cd aplikasi-saya && pnpm install && pnpm build && pnpm start
+
+# atau dari repo (kontribusi framework):
+corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
+```
+
+## Yang sudah ada (terverifikasi)
+
+- **Framework**: file routing (`src/routes`), lifecycle loader → render → dokumen; **SSR React**
+  dengan **streaming** (opt-in, `createPageRoutes({ streaming: true })`) + payload hydration
+  `window.__RAMONYX__` + soft navigation.
+- **CLI devtools** (`@ramonyx/devtools`): `ramonyx dev` (Vite + HMR), `ramonyx build`,
+  `ramonyx start` (produksi), `ramonyx doctor` — konvensi `src/app.ts` `createApp(options?)`.
+- **Server**: middleware `next(request?)`, timeout 10 dtk → 503, batas body 1 MiB → 413, load
+  shedding (concurrency 100), rate limit per klien, validasi schema (Standard Schema) di tepi.
+- **Security**: security headers, CSP nonce, CSRF double-submit, SSRF guard (`@ramonyx/security`).
+- **Benchmark**: protokol §8 (warm-up + ulangan + distribusi) dengan gate **report-only** —
+  HTTP, SSR (sinkron vs streaming + suspense), Web Vitals di e2e.
+- **Runtime Rust/V8 (eksperimental)**: ESM + TypeScript + `node_modules`, permission **deny-all**,
+  isolasi worker + plugin (proses terpisah + supervisi), HTTP streaming, resource limits —
+  lihat `runtime/` dan `docs/adr/`.
+
+## Verifikasi
+
+```bash
+pnpm lint && pnpm typecheck && pnpm test   # 161 tes Node
+pnpm build && pnpm test:e2e                # 5 e2e (Playwright)
+cargo test --workspace                     # 111 tes Rust
+pnpm audit --audit-level high              # bersih
+```
+
+## Struktur
+
+| Path | Isi |
+| --- | --- |
+| `packages/*` | framework: `core`, `router`, `schema`, `server`, `ssr`, `react`, `compiler`, `bundler`, `security`, `adapter-runtime`, `testing`, `devtools` (CLI), meta `ramonyx` |
+| `apps/playground` | app demo (SSR + hydration + streaming + security) |
+| `apps/docs` | situs dokumentasi (dogfood penuh: SSR + soft navigation) |
+| `apps/create-app` | scaffolder (`create-ramonyx-app`) |
+| `runtime/` | runtime Rust + V8 — Cargo workspace (eksperimental) |
+| `benchmarks/` | protokol §8: HTTP, SSR, security/soak, startup |
+| `docs/` | blueprint, arsitektur, ADR, roadmap, audit status |
+
+## Dokumentasi
+
+**Online:** https://ramonyxjs.github.io/ramonyx/ (situs docs di-host dari `docs/**` — ADR-0052).
+
+Mulai dari [docs/BLUEPRINT.md](docs/BLUEPRINT.md) (sumber kebenaran teknis),
+[docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) (status audit berbasis bukti),
+dan [docs/adr/README.md](docs/adr/README.md) (keputusan arsitektur 0001–0049).
+
+## Lisensi
+
+MIT — lihat [LICENSE](LICENSE).
+
+## docs/architecture.md
+
+# Arsitektur Ramonyx
+
+- Status: **berlaku** (diperbarui 2026-10-18; Phase 0–4 selesai, Phase 5 praktis tuntas, **0.1.1 terbit**). Turunan `docs/BLUEPRINT.md` §2/§5/§6 — jika bertentangan, **blueprint menang**.
+- Komponen di dokumen ini **sudah dibuat** kecuali yang ditandai lain di kolom Status.
+
+## 1. Prinsip yang mengikat
+
+- **Runtime independence** — framework tidak bergantung pada internal runtime tertentu, dan sebaliknya.
+- **Secure by default** — validasi runtime di trust boundary; permission berbasis capability (Phase 4+).
+- **Performance-conscious** — benchmark sejak awal; ukur dulu, klaim kemudian.
+- **Developer-first** — type inference end-to-end, error informatif, toolchain terintegrasi.
+
+## 2. Model layer
+
+``` text
+Layer 1 Framework : routing · SSR · server actions · API · client navigation · data loading
+Layer 2 Compiler  : TS transform · bundling · route manifest · source maps
+Layer 3 Runtime   : JS engine · module loader · permissions · HTTP · file I/O
+Layer 4 System    : OS · TCP/TLS · filesystem · process
+```
+
+Phase 1–3 menyentuh Layer 1 (+ Layer 2 di Phase 2); Node.js tetap baseline produksi sebagai
+Layer 3, dan runtime Rust/V8 sendiri juga sudah ada (Phase 4 selesai — eksperimental, ADR-0019 dst).
+
+## 3. Peta package
+
+| Package | Tanggung jawab | Target fase | Status |
+| --- | --- | --- | --- |
+| `packages/core` | Request lifecycle, context, middleware, error handling | Phase 1 | selesai |
+| `packages/router` | Matching route (statis, parameter, 404/405) | Phase 1 | selesai |
+| `packages/server` | Wiring HTTP → middleware → router, serve (+ limits/rate limit) | Phase 1 | selesai |
+| `packages/adapter-runtime` | Kontrak runtime + adapter Node + adapter in-memory (test) | Phase 1 | selesai |
+| `packages/schema` | Integrasi Standard Schema (ADR-0004) + pemetaan error | Phase 1 | selesai |
+| `packages/testing` | `createTestServer`, fixture app, helper | Phase 1 | selesai |
+| `packages/react` | Adapter UI React (ADR-0003): SSR (sinkron + stream) + hydration + navigasi client | Phase 2 | selesai |
+| `packages/ssr` | Render halaman → HTML (+ streaming Node, ADR-0047) | Phase 2 | selesai |
+| `packages/client` | Tidak dibuat terpisah — hydration + navigasi client ada di `@ramonyx/react/client` (ADR-0007/0008) | — | digabung |
+| `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`, `generateClientEntry`), transformasi + loader `register` | Phase 2 | file routing + halaman + codegen selesai (analisis batas server/client **belum**) |
+| `packages/bundler` | Pembungkus Vite (ADR-0005): build client + dev server (ADR-0009) | Phase 2 | selesai |
+| `packages/security` | Header keamanan + CSP nonce + CSRF + rate limit + SSRF guard | Phase 3 | selesai (ADR-0013–0017) |
+| `packages/devtools` | CLI `ramonyx` (dev/build/start/doctor), dev server, diagnostics | Phase 2–3 | **v1 selesai** (ADR-0053) |
+| `apps/playground` | App demo/uji end-to-end (SSR streaming + security) | Phase 1 | selesai |
+| `apps/docs` | Dokumentasi publik (SSG ekspor + hosting) | Phase 2 | selesai (ADR-0052) |
+| `apps/create-app` | CLI scaffolding (konvensi CLI devtools) | Phase 2–3 | selesai (ADR-0041/0053) |
+| `runtime/crates/*` | Host Rust + V8 (runtime-core, cli, js-engine) | Phase 4 | selesai (eksperimental): V8/deno_core, ESM+TS, HTTP streaming, permission deny-all, worker/plugin + sandbox Landlock (ADR-0019–0051) |
+| `benchmarks/*` | Skrip benchmark per area | Phase 1 | selesai (HTTP/SSR/security/startup — ADR-0045/0048) |
+
+Status Phase 1–3: **selesai** — file routing API + halaman (loader/layout/error), SSR React +
+**streaming** (ADR-0047), hydration (ADR-0007), client navigation (ADR-0008), dev server HMR
+(ADR-0009), e2e browser + baseline Web Vitals (ADR-0010), hardening keamanan penuh
+(limits/rate limit/security headers/CSRF/SSRF — ADR-0011–0017). Keputusan pemilik selesai
+(ADR-0018); CLI devtools v1 (ADR-0053); situs docs di-host (ADR-0052).
+
+Peta ini rambu, bukan larangan: jangan memecah paket lebih halus sebelum batas tanggung jawabnya
+jelas (BLUEPRINT §5 aturan 5). Scope npm `@ramonyx/*` + meta `ramonyx` (ADR-0018); 0.1.1 terbit.
+
+## 4. Aturan dependency
+
+1. Framework core tidak bergantung pada detail internal runtime.
+2. Runtime tidak bergantung pada full-stack framework.
+3. Compiler menghasilkan artefak eksplisit: client bundle, server bundle, route manifest, metadata build.
+4. FFI adalah boundary yang diaudit: `unsafe` dibatasi, invarian didokumentasikan.
+5. Hindari memecah semua fitur menjadi package terpisah sebelum batas tanggung jawab jelas.
+
+Konsekuensi operasional yang ditegakkan lint: hanya `packages/adapter-runtime`, `packages/compiler`
+(build-time), dan `packages/security` (guard SSRF) yang boleh mengimpor `node:*`; paket runtime lain
+hanya memakai kontrak §5. Tooling dev (test/benchmark/playground) bebas.
+
+App code ber-JSX dijalankan lewat loader dev `tools/register.mjs` (esbuild, JSX automatic —
+ADR-0006); paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
+
+## 5. Kontrak framework ↔ adapter-runtime (v0 — diimplementasikan)
+
+Prinsip:
+
+- Tipe boundary memakai **standar web** (`Request`/`Response`, streams) — dapat diimplementasi
+  Node sekarang, dan runtime Rust nanti.
+- Adapter **in-memory wajib** ada sejak Phase 1 → framework dapat diuji tanpa server nyata dan
+  tanpa runtime sendiri.
+- Kemampuan fs/network/permission adalah **capability runtime** (Phase 4, ADR-0023 — deny-all
+  default); kontrak web di atas tetap sama di Node maupun runtime Rust.
+
+``` ts
+// Diimplementasikan di packages/adapter-runtime/src/types.ts.
+export type FetchHandler = (request: Request) => Promise<Response>;
+
+export interface RuntimeHost {
+  readonly name: string; // "node" | "memory" | "ramonyx"
+  serve(handler: FetchHandler, options: { port: number; host?: string }): Promise<RunningServer>;
+  env: { get(name: string): string | undefined };
+}
+
+export interface RunningServer {
+  readonly url: string;
+  close(): Promise<void>;
+}
+```
+
+Status: diimplementasikan (Phase 1) di `packages/adapter-runtime` — `RuntimeHost` + adapter
+`memory` (test) dan `node`. Perubahan kontrak dicatat sebagai ADR bila signifikan.
+
+## 6. Alur request (target)
+
+``` text
+Phase 1 (berjalan): HTTP → adapter-runtime (Node) → server → middleware → router → handler → Response
+Phase 2 (berjalan): Request → router → loader → render (adapter React) → HTML stream → Response
+```
+
+## 7. Batas MVP (Phase 1 — historis; semuanya sudah selesai, lihat roadmap)
+
+**Masuk MVP:** config `ramonyx.config.ts`; routing HTTP statis + parameter; endpoint `api/`;
+context; middleware; error handling; validasi schema input/output; adapter Node + in-memory;
+demo app; integration tests; baseline benchmark.
+
+**Keluar dari MVP (fase lain):** SSR/hydration/navigasi client (Phase 2); dev server/HMR
+(Phase 2); security hardening, fuzz, load test (Phase 3); runtime Rust/V8 (Phase 4+);
+server actions & fitur lanjutan (setelah baseline stabil, BLUEPRINT §11). ORM, package manager,
+dan renderer UI sendiri tidak direncanakan.
+
+## 8. Keputusan terbuka
+
+| Topik | Status | Lokasi |
+| --- | --- | --- |
+| Topologi rilis & versioning | **diputuskan**: versi tunggal (`Cargo.toml`) + dist-tag alpha/beta/rc/latest (ADR-0039/0049); terbit 0.1.1 | — |
+
+Diputuskan pemilik 2026-10-18: lisensi **MIT**, scope **`@ramonyx/*`**, browser matrix evergreen
+(2 versi terakhir, ES2022), rekonsiliasi PRD — lihat ADR-0018.
+
+## 9. Menguji framework tanpa runtime sendiri
+
+In-memory adapter (§5) + `createTestServer` (`packages/testing`) menjalankan integration test di
+Node tanpa port nyata. Browser test (hydration) baru relevan di Phase 2. Runtime Rust nanti cukup
+memenuhi kontrak §5 + compatibility suite — tanpa perubahan `core`.
+
+## docs/api/core-contract.md
+
+# Kontrak API Framework Core — v0
+
+- Status: **diimplementasikan (Phase 1, 2026-10-18)**. Setiap poin kontrak punya test (daftar §9);
+  semantik hasil implementasi dicatat di §10.
+- Sumber ide: `docs/BLUEPRINT.md` §4. Contoh di blueprint adalah rancangan; dokumen ini
+  merapikannya menjadi kontrak yang bisa diuji.
+- Perubahan kontrak = ADR baru + pembaruan dokumen ini.
+
+## 1. Config — `ramonyx.config.ts`
+
+``` ts
+// ramonyx.config.ts
+import { defineConfig } from "ramonyx";
+
+export default defineConfig({
+  app: {
+    strictValidation: true, // default v0: true
+  },
+  server: {
+    port: 3000,
+    host: "localhost", // opsional
+  },
+});
+```
+
+- Config divalidasi saat load; config tidak valid → error jelas, proses berhenti.
+- Field baru hanya ditambah lewat perubahan kontrak (ADR).
+
+## 2. Route HTTP — `src/routes/api/**/*.ts`
+
+Satu file = satu path; export per method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, ...).
+
+``` ts
+// src/routes/api/users/[id].ts
+import { route } from "ramonyx";
+import { z } from "zod"; // contoh; pustaka apa pun yang memenuhi Standard Schema (ADR-0004)
+
+export const GET = route({
+  params: z.object({ id: z.string().uuid() }),
+  async handler({ params, json }) {
+    const user = await findUser(params.id);
+    if (!user) return json({ error: "Not found" }, 404);
+    return json({ user });
+  },
+});
+```
+
+Catatan: blueprint §4 mencontohkan `schema.object(...)` bawaan framework; kontrak v0 memilih netral
+(Standard Schema, ADR-0004 — masih **Proposed**). Bila ADR-0004 ditolak, contoh blueprint berlaku.
+
+- `route({ params?, query?, body?, output?, handler })` — semua schema opsional kecuali `handler`.
+- Handler menerima context: `{ params, query, body, request, env, log, json, text, redirect }`.
+- Return: `Response` (helper `json`/`text`/`redirect` atau `new Response`).
+- File tanpa export method → error saat startup/dev; method tak dikenal diabaikan dengan warning.
+- 404 default untuk path tak dikenal; 405 + header `Allow` untuk method tidak didukung pada path yang ada.
+
+## 3. Error handling
+
+- `HttpError` diekspor framework: `throw new HttpError(403, "Forbidden")` → response status sesuai,
+  body JSON aman.
+- Error tak tertangkap → `500` dengan body generik (`{ "error": "Internal Server Error" }`);
+  stack/detail hanya ke log, **tidak** ke response (di dev boleh lewat log/overlay, bukan body publik).
+- Error pada middleware diperlakukan sama; log wajib terisi.
+
+## 4. Validasi schema
+
+- Input (`params`/`query`/`body`) divalidasi **sebelum** handler; gagal → `400` dengan daftar
+  `issues` dengan format stabil.
+- `output` (jika ada) divalidasi sebelum response dikirim; gagal → `500` + log (indikasi bug app/framework).
+- `strictValidation: false` hanya melonggarkan validasi **output**, bukan input.
+  (Detail perilaku final dibahas saat implementasi; perubahan = ADR.)
+
+## 5. Middleware — `src/routes/middleware.ts`
+
+``` ts
+// src/routes/middleware.ts
+import type { Middleware } from "ramonyx";
+
+export default [
+  async (ctx, next) => {
+    const start = performance.now();
+    const res = await next();
+    ctx.log.info("request", { ms: performance.now() - start, status: res.status });
+    return res;
+  },
+] satisfies Middleware[];
+```
+
+- Dijalankan root → dalam; boleh short-circuit dengan mengembalikan `Response` tanpa `next()`.
+- `next()` atau `next(requestBaru)` — request pengganti dipakai lapisan berikutnya & handler
+  (`signal` diteruskan; timeout tetap berlaku).
+- `next()` dipanggil dua kali dalam satu middleware → 500 (dijaga framework).
+
+- Middleware `src/routes/middleware.ts`: boleh `next()` atau `next(requestBaru)` (mengganti request
+  untuk lapisan berikutnya; `signal` diteruskan). Contoh: `cspNonce()` (ADR-0014) menitipkan
+  `x-ramonyx-nonce` yang dibaca ssr untuk `nonce` pada payload script.
+- Boleh short-circuit dengan mengembalikan `Response` tanpa `next()`.
+- Urutan dieksekusi deterministik dan diuji.
+
+## 6. Halaman — `src/routes/**/page.tsx` (diimplementasikan, Phase 2)
+
+- `page.tsx` — default export komponen; `export const metadata = { title }` untuk `<title>`;
+  `export async function loader({ params, query, request, env, log })` dijalankan sebelum render,
+  hasilnya masuk sebagai prop `data` (contoh: `PageProps<Data>` dari `@ramonyx/react`).
+- `layout.tsx` di direktori yang sama atau di atasnya membungkus halaman (root → dalam).
+- `error.tsx` terdekat (naik ke root) dirender saat loader/render gagal; menerima
+  `{ error: { status, message } }` (`ErrorPageProps`). Status/pesan publik mengikuti `HttpError`.
+- Path dari struktur direktori (`users/[id]/page.tsx` → `/users/[id]`); halaman hanya `GET`.
+- Catch-all `[...name]` **hanya di segmen terakhir**: menyerap sisa path; `params[name]` = sisa
+  tergabung (`a/b/c`); kalah prioritas dari pola statis/parameter. Idiom 404:
+  `src/routes/[...notFound]/page.tsx`.
+- `metadata.status` (100–599) menetapkan status respons halaman; default 200 (mis. `status: 404`
+  untuk halaman not-found).
+- SSR + hydration via adapter React (`@ramonyx/react`); client navigation (soft navigation,
+  ADR-0008) lewat `enableClientNavigation`.
+- Hydration (ADR-0007): payload inline `window.__RAMONYX__ = { path, params, data }` +
+  `<script type="module" src="/assets/client.js">`; container `#ramonyx-root`; **`data` loader wajib
+  JSON-serializable**; halaman error dirender server saja (tidak di-hydrate).
+
+## 7. Kompatibilitas & versi
+
+- Kontrak v0 berlaku sampai ada ADR yang menggantikannya; perubahan breaking butuh catatan migrasi.
+- Paket mengikuti semver setelah publikasi pertama (topologi rilis masih keputusan terbuka).
+
+## 8. Non-goal v0
+
+Server actions, caching/ISR, websocket, upload file besar, middleware per-folder,
+route groups. Dievaluasi setelah baseline (Phase 2+). (SSR streaming halaman **sudah ada** —
+opsi `streaming` di `createPageRoutes`, ADR-0047.)
+
+## 9. Test yang lahir dari kontrak (Phase 1)
+
+1. Config: default, override, config invalid → error jelas.
+2. Router: match statis, parameter, 404, 405 + `Allow`.
+3. Validasi: params/query/body invalid → 400 `issues`; output invalid → 500 + log; diuji dengan
+   2 implementasi schema berbeda (ADR-0004).
+4. Middleware: urutan, short-circuit, error di middleware → 500 aman.
+5. Error: `HttpError` → status + body; error tak dikenal → 500 tanpa bocor; log terisi.
+6. Adapter: in-memory serve; Node adapter smoke test.
+7. Tipe: contoh penggunaan kontrak di-compile dengan `tsc` strict (type test).
+
+## 10. Catatan implementasi (Phase 1)
+
+- Handler menerima **nilai hasil validasi schema** (output `~standard`): transform dan strip key
+  tak dikenal sudah diterapkan sebelum handler (contoh: zod men-strip query key di luar schema).
+- Query berulang (`?tag=a&tag=b`) menjadi array; trailing slash dinormalisasi; route statis menang
+  atas parameter.
+- 405 menyertakan header `Allow`; body error selalu JSON aman (detail internal tidak bocor).
+- `HttpError`: 4xx terbuka secara default; 5xx selalu `{"error":"Internal Server Error"}`.
+- `strictValidation=false` hanya melonggarkan validasi output; input tetap ketat.
+- File routing: `createRouteManifest` (`@ramonyx/compiler`) memindai `src/routes/api/**` —
+  `index.ts` = direktori, `[id]` = parameter, prefix `_` diabaikan, file tanpa ekspor method =
+  error saat startup.
+- Paket Phase 1: `@ramonyx/{core,router,schema,adapter-runtime,server,testing}` + meta `ramonyx`.
+- Phase 2 (SSR): `loadPageRoutes` (`@ramonyx/compiler`) → `createPageRoutes` (`@ramonyx/ssr`) →
+  `RouteEntry` dengan handler HTML; error tak dikenal → 500 generik + log, `HttpError` → status.
+- JSX app code dijalankan lewat `node --import ./tools/register.mjs` (loader esbuild; ADR-0006).
+- Hydration (Phase 2): `generateClientEntry` (`@ramonyx/compiler`) → Vite (`@ramonyx/bundler`) →
+  `hydrateAll` (`@ramonyx/react/client`); diverifikasi di browser nyata (counter interaktif,
+  tanpa mismatch) — **e2e Playwright** ada (`ssr.spec.ts`, `navigation.spec.ts`).
+- Client navigation (ADR-0008): klik link same-origin → fetch HTML (`x-ramonyx-nav: 1`) → swap
+  `#ramonyx-root` + re-hydrate + `pushState`; `popstate` ikut soft-nav; fallback full navigation.
+  Diverifikasi browser: 3 navigasi maju + 2 back tanpa reload (sentinel bertahan).
+- Dev server (ADR-0009): Vite di 5173 (transform + HMR) dengan proxy manual ke SSR di 3000;
+  manifest/halaman dimuat ulang via `ssrLoadModule` + `reloadManifests` → edit file berlaku
+  tanpa restart; watcher `src/routes` meregenerasi entry + full-reload.
+- Browser e2e (ADR-0010): Playwright terhadap build produksi — `apps/playground/e2e/` (hydration,
+  soft navigation + back/forward, error 404/400, baseline Web Vitals).
+- Hardening (Phase 3, ADR-0011/0012): `maxBodyBytes` default 1 MiB → **413** (dicek via
+  content-length sebelum routing + streaming byte-count); `timeoutMs` default 10s → **503** +
+  `request.signal` abort; `maxConcurrent` default 100 → **503 + `Retry-After: 1`** (load shedding);
+  body dibaca streaming; `parseQuery` aman untuk `__proto__`.
+- Paket `@ramonyx/security` (ADR-0013/0014/0015): `securityHeaders()`
+  (nosniff/referrer/frame-options; CSP opt-in), `cspNonce()` (CSP dengan nonce per request,
+  nonce dibaca ssr dari `NONCE_HEADER`), `csrfProtection()` (double-submit cookie + header
+  `x-csrf-token` → 403 bila salah), `guardedFetch()` (proteksi SSRF: alamat privat ditolak,
+  redirect divalidasi per hop, `allowHosts` untuk API internal).
+- Output limit SSR (ADR-0015): `createPageRoutes({ maxDocumentBytes })` default 2 MiB → 500 + log.
+- Rate limiting (ADR-0017): `rateLimit()` middleware — fixed-window per klien, 429 + `Retry-After`;
+  identitas dari `REMOTE_ADDRESS_HEADER` (diisi adapter, anti-spoof) + `trustProxy` opt-in.
+
+## docs/BLUEPRINT.md
+
+# Technical Blueprint: Full-Stack TypeScript Framework & Runtime
+
+> Status: **sumber kebenaran desain** (Phase 0). Status implementasi terkini:
+> `docs/IMPLEMENTATION_STATUS.md` — per rilis 0.1.1: Phase 0–4 selesai, Phase 5 praktis tuntas.
+
+**Visi:** membangun framework full-stack TypeScript dengan performa
+tinggi, keamanan sebagai prinsip desain, dan developer experience yang
+konsisten, dengan jalur evolusi menuju runtime sendiri.
+
+Rekomendasi arsitektur: bangun framework dan runtime sebagai dua proyek
+yang terpisah tetapi terintegrasi. Framework dikembangkan dan diuji di
+atas runtime matang, sementara runtime eksperimental berkembang bertahap
+tanpa menghambat produk utama.
+
+> **Prinsip utama:** runtime mandiri tidak harus berarti membuat parser,
+> compiler, garbage collector, dan JIT dari nol.
+
+## 1. Visi dan batasan proyek
+
+### Sasaran desain
+
+-   **Performance-conscious:** routing cepat, streaming I/O, penggunaan
+    resource terukur, dan overhead abstraksi rendah.
+-   **Secure by default:** validasi runtime, permission berbasis
+    capability, isolasi workload, dan kebijakan keamanan eksplisit.
+-   **Developer-first:** type inference end-to-end, routing konsisten,
+    error informatif, serta toolchain terintegrasi.
+-   **Runtime independence:** framework tidak bergantung pada internal
+    runtime tertentu; runtime sendiri dikembangkan dengan compatibility
+    tests yang sama.
+
+### Target bertahap
+
+  -----------------------------------------------------------------------
+  Tahap                               Hasil yang ditargetkan
+  ----------------------------------- -----------------------------------
+  MVP                                 Full-stack framework berjalan di
+                                      runtime yang tersedia
+
+  V1                                  API stabil, SSR, routing, validasi,
+                                      testing, observability, security
+                                      baseline
+
+  Runtime alpha                       Executable sendiri,
+                                      JavaScript/TypeScript loading, HTTP
+                                      dan I/O dasar
+
+  Runtime beta                        Compatibility suite, permission
+                                      model, profiling, reliability tests
+
+  Jangka panjang                      Runtime makin mandiri dengan
+                                      keunggulan terukur pada workload
+                                      target
+  -----------------------------------------------------------------------
+
+Ini target perencanaan, bukan estimasi waktu atau janji performa.
+Runtime production-ready membutuhkan investasi jauh lebih besar daripada
+framework biasa.
+
+## 2. Arsitektur sistem
+
+``` text
+┌──────────────────────────────────────────────────┐
+│ Layer 1: Full-stack Framework                    │
+│ File routing · SSR · Server actions · API         │
+│ Client navigation · Data loading                 │
+└───────────────────────┬──────────────────────────┘
+                        │
+┌───────────────────────▼──────────────────────────┐
+│ Layer 2: Compiler & Toolchain                    │
+│ TypeScript transform · Bundling · Code splitting  │
+│ Route manifest · Source maps                      │
+└───────────────────────┬──────────────────────────┘
+                        │
+┌───────────────────────▼──────────────────────────┐
+│ Layer 3: Runtime                                  │
+│ JS engine · Module loader · Event loop integration│
+│ Permissions · HTTP · File I/O                     │
+└───────────────────────┬──────────────────────────┘
+                        │
+┌───────────────────────▼──────────────────────────┐
+│ Layer 4: System Platform                         │
+│ OS · TCP/TLS · Filesystem · Process · Memory      │
+│ Native interfaces                                 │
+└──────────────────────────────────────────────────┘
+```
+
+### Batas tanggung jawab
+
+  -----------------------------------------------------------------------
+  Komponen                            Tanggung jawab
+  ----------------------------------- -----------------------------------
+  Framework core                      Request lifecycle, routing,
+                                      middleware, dependency context
+
+  Rendering engine                    SSR, streaming HTML, hydration
+                                      strategy
+
+  Compiler                            Transformasi kode, optimasi build,
+                                      metadata route
+
+  Runtime host                        Menjalankan JavaScript dan
+                                      menyediakan API sistem
+
+  Permission manager                  Membatasi filesystem, jaringan,
+                                      environment, dan subprocess
+
+  Tooling                             CLI, dev server, diagnostics,
+                                      testing, profiling
+  -----------------------------------------------------------------------
+
+Jangan campur seluruh fitur dalam satu package. Framework harus dapat
+diuji tanpa runtime buatan sendiri, dan runtime harus dapat diuji tanpa
+framework.
+
+## 3. Strategi membangun runtime sendiri
+
+### Pilihan engine
+
+#### Opsi A --- Embed V8 (rekomendasi awal)
+
+Buat host runtime dengan Rust atau C++ dan gunakan V8 sebagai JavaScript
+engine. Kamu mengendalikan module loader, permission model, filesystem
+API, networking, serta proses runtime tanpa membuat engine JavaScript
+sendiri.
+
+Pertimbangan: - V8 memiliki embedding API untuk menjalankan JavaScript
+dan mengintegrasikan fungsi native. - Integrasi Rust memerlukan
+binding/FFI yang sesuai dengan versi engine. - Build, upgrade engine,
+dan integrasi native menambah biaya pemeliharaan. - V8 tidak otomatis
+menyediakan runtime lengkap seperti HTTP server, package manager, atau
+permission policy aplikasi.
+
+#### Opsi B --- Embed QuickJS
+
+Dapat dipertimbangkan untuk eksperimen runtime kecil. Ukur throughput,
+kompatibilitas bahasa, ekosistem, dan biaya integrasi sebelum memilihnya
+untuk full-stack production.
+
+#### Opsi C --- Engine JavaScript sendiri
+
+Membuat parser, bytecode/interpreter, garbage collector, dan mungkin JIT
+adalah proyek riset bahasa pemrograman tersendiri. Ini bukan prasyarat
+untuk membangun framework TypeScript yang baik.
+
+### Rekomendasi awal
+
+-   Rust mengelola resource sistem, lifecycle runtime, permission
+    checks, dan integrasi native.
+-   V8 menangani parsing dan eksekusi JavaScript, optimasi engine, serta
+    garbage collection.
+-   TypeScript ditransformasikan menjadi JavaScript sebelum dieksekusi.
+-   API runtime dibatasi melalui modul dan capability yang eksplisit.
+-   Modul native berisiko tinggi tidak otomatis tersedia untuk setiap
+    aplikasi.
+
+### Tahapan evolusi runtime
+
+  -----------------------------------------------------------------------
+  Tahap                   Lingkup                 Kriteria keluar
+  ----------------------- ----------------------- -----------------------
+  R0 --- Runtime wrapper  CLI, konfigurasi, entry Program minimal bisa
+                          point, logging          dijalankan
+
+  R1 --- Module runtime   Module resolution,      Modul dan error
+                          package compatibility,  reporting teruji
+                          env config              
+
+  R2 --- I/O runtime      HTTP, filesystem,       I/O dan lifecycle
+                          network, timer,         teruji
+                          cancellation, streaming 
+
+  R3 --- Isolated         Permissions, worker     Security regression
+  execution               isolation, quotas,      suite lulus
+                          shutdown                
+
+  R4 --- Optimized        Startup, snapshots jika Ada peningkatan terukur
+  runtime                 didukung, profiling,    tanpa regresi
+                          allocation reduction    correctness
+  -----------------------------------------------------------------------
+
+Jangan mengklaim runtime production-ready sebelum compatibility,
+security, stability, dan operational testing lolos.
+
+## 4. Desain full-stack framework
+
+### Fitur inti
+
+  -----------------------------------------------------------------------
+  Fitur                               Keputusan desain
+  ----------------------------------- -----------------------------------
+  File-based routing                  Route statis, parameter, layout,
+                                      error boundaries
+
+  Rendering                           SSR dahulu, lalu streaming SSR
+
+  Client navigation                   Hydration dan navigasi tanpa
+                                      full-page reload
+
+  Data loading                        Loader per route dengan lifecycle
+                                      jelas
+
+  API endpoints                       Request/response terintegrasi
+                                      dengan router
+
+  Validation                          Schema runtime untuk input dan
+                                      output
+
+  Server actions                      Opt-in; autentikasi dan otorisasi
+                                      eksplisit
+
+  Build system                        Bundling terpisah untuk client dan
+                                      server
+
+  Developer tooling                   CLI, dev server, HMR, error
+                                      overlay, route inspection
+  -----------------------------------------------------------------------
+
+Jangan membuat sistem reactive UI, compiler frontend, database ORM, dan
+package manager sekaligus pada fase pertama. Gunakan integrasi yang
+dapat diganti.
+
+### Struktur aplikasi pengguna
+
+``` text
+my-app/
+├── src/
+│   ├── routes/
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── users/
+│   │   │   ├── page.tsx
+│   │   │   └── [id]/
+│   │   │       └── page.tsx
+│   │   └── api/
+│   │       └── users.ts
+│   ├── components/
+│   ├── services/
+│   └── schemas/
+├── public/
+├── ramonyx.config.ts
+└── package.json
+```
+
+Konvensi route ini adalah rancangan API framework, bukan format yang
+sudah didukung implementasi.
+
+### Contoh konfigurasi target
+
+``` tsx
+import { defineConfig } from "ramonyx";
+
+export default defineConfig({
+  app: {
+    strictValidation: true,
+  },
+  server: {
+    port: 3000,
+  },
+});
+```
+
+### Contoh endpoint target
+
+``` ts
+import { route, schema } from "ramonyx";
+
+export const GET = route({
+  params: schema.object({
+    id: schema.string().uuid(),
+  }),
+
+  async handler({ params, json }) {
+    const user = await findUser(params.id);
+
+    if (!user) {
+      return json({ error: "Not found" }, 404);
+    }
+
+    return json({ user });
+  },
+});
+```
+
+Contoh di atas adalah rancangan API, bukan implementasi yang sudah
+tersedia. Dalam aplikasi nyata, `findUser` harus berasal dari service
+nyata dan akses terhadap user harus diperiksa berdasarkan identitas
+serta izin pemanggil. Validasi UUID saja tidak mencegah IDOR atau akses
+tanpa otorisasi.
+
+## 5. Struktur monorepo
+
+``` text
+ramonyx/
+├── apps/
+│   ├── docs/
+│   ├── playground/
+│   └── create-app/
+├── packages/
+│   ├── core/
+│   ├── router/
+│   ├── server/
+│   ├── client/
+│   ├── ssr/
+│   ├── compiler/
+│   ├── bundler/
+│   ├── schema/
+│   ├── security/
+│   ├── testing/
+│   ├── devtools/
+│   └── adapter-runtime/
+├── runtime/
+│   ├── crates/
+│   │   ├── runtime-core/
+│   │   ├── js-engine/
+│   │   ├── module-loader/
+│   │   ├── permissions/
+│   │   ├── net/
+│   │   ├── fs/
+│   │   └── cli/
+│   └── integration-tests/
+├── benchmarks/
+│   ├── router/
+│   ├── http/
+│   ├── ssr/
+│   ├── startup/
+│   └── memory/
+├── tests/
+│   ├── compatibility/
+│   ├── fuzz/
+│   └── security/
+├── docs/
+├── Cargo.toml
+├── package.json
+└── pnpm-workspace.yaml
+```
+
+### Aturan dependency
+
+1.  Framework core tidak bergantung pada detail internal runtime.
+2.  Runtime tidak bergantung pada full-stack framework.
+3.  Compiler menghasilkan artefak eksplisit: client bundle, server
+    bundle, route manifest, dan metadata build.
+4.  FFI menjadi boundary yang diaudit; batasi `unsafe` Rust dan
+    dokumentasikan invariants.
+5.  Hindari memecah semua fitur menjadi package terpisah sebelum batas
+    tanggung jawabnya jelas.
+
+## 6. Pilihan teknologi
+
+  -----------------------------------------------------------------------
+  Area                    Baseline                Pertimbangan
+  ----------------------- ----------------------- -----------------------
+  Framework API           TypeScript strict       Type inference dan
+                                                  ergonomi
+
+  Package manager         pnpm workspaces         Monorepo TypeScript
+
+  Runtime host            Rust                    Resource management dan
+                                                  integrasi sistem
+
+  JavaScript engine       V8                      Engine matang, tetapi
+                                                  biaya embedding
+                                                  signifikan
+
+  Frontend                Adapter UI pluggable    Jangan membuat renderer
+                                                  baru sebelum diperlukan
+
+  Schema                  Runtime schema adapter  Validasi data nyata di
+                                                  trust boundary
+
+  Compiler                TypeScript transform +  Mulai dengan
+                          bundler                 transformasi minimum
+
+  Testing                 Unit, integration,      Menguji behavior dan
+                          property-based, fuzz    edge cases
+
+  CI                      Lint, typecheck, tests, Mencegah regresi
+                          build, security checks  
+
+  Observability           Structured logs,        Memahami latency dan
+                          metrics, tracing        kegagalan
+  -----------------------------------------------------------------------
+
+### Catatan compiler
+
+Jangan mengandalkan TypeScript compiler API sebagai kontrak stabil tanpa
+memeriksa versi yang digunakan. Pin versi compiler dan uji integrasinya.
+Mulailah dengan compiler/bundler yang ada; buat compiler khusus hanya
+ketika ada kebutuhan terukur seperti transformasi route, analisis
+server/client boundary, atau optimasi build yang belum dapat dicapai
+tooling yang ada.
+
+## 7. Threat model
+
+Asumsikan aplikasi menerima input tidak tepercaya, mengakses database,
+memproses session, dan mungkin menjalankan plugin pihak ketiga.
+
+  -----------------------------------------------------------------------
+  Ancaman                 Dampak                  Mitigasi utama
+  ----------------------- ----------------------- -----------------------
+  Malformed request /     Crash, memory           Batas ukuran, timeout,
+  oversized body          exhaustion              validasi protokol
+
+  XSS dan unsafe HTML     Eksekusi skrip di       Escaping kontekstual,
+                          browser                 sanitasi bila
+                                                  diperlukan, CSP
+
+  CSRF                    Aksi pengguna tanpa     CSRF token atau
+                          izin                    proteksi origin sesuai
+                                                  model autentikasi
+
+  IDOR / broken           Kebocoran data          Otorisasi per resource,
+  authorization           antar-user              bukan hanya validasi
+                                                  input
+
+  SSRF                    Akses ke layanan        Validasi target,
+                          internal                kebijakan egress,
+                                                  pembatasan alamat dan
+                                                  redirect
+
+  Path traversal          Akses file di luar      Canonicalization dan
+                          direktori               filesystem capability
+
+  Dependency compromise   Eksekusi kode berbahaya Lockfile, provenance,
+                                                  audit dan pembatasan
+                                                  dependency
+
+  Malicious plugin        Akses                   Isolasi proses,
+                          filesystem/network      permission
+                                                  minimization,
+                                                  capability boundary
+
+  Runtime escape          Bypass sandbox          Pemisahan privilege,
+                                                  OS-level isolation,
+                                                  security testing
+
+  DoS pada SSR            Exhaustion CPU/memori   Render timeout,
+                                                  cancellation,
+                                                  concurrency dan output
+                                                  limits
+  -----------------------------------------------------------------------
+
+Gunakan OWASP ASVS sebagai basis acceptance criteria keamanan aplikasi,
+serta panduan OWASP XSS dan SSRF untuk kontrol implementasi spesifik.
+
+### Model keamanan runtime
+
+``` text
+Untrusted application code
+(Route handlers · Plugins · User scripts)
+                 |
+                 v
+Capability API
+(Filesystem · Network · Environment · Subprocess)
+                 |
+                 v
+Enforcement boundary
+(Permission checks · OS process isolation · Resource quotas)
+```
+
+Jangan menganggap JavaScript context terpisah sebagai sandbox keamanan
+yang memadai. Kode native dan binding FFI juga termasuk threat model.
+
+Jika runtime mendukung plugin tidak tepercaya, isolasi harus mencakup
+proses atau boundary OS, bukan hanya API JavaScript. Permission model
+juga harus didefinisikan secara jelas: permission apa yang diberikan,
+kapan diperiksa, bagaimana dicabut, dan apa yang terjadi saat operasi
+ditolak.
+
+## 8. Benchmark plan
+
+Jangan menetapkan klaim seperti "dua kali lebih cepat dari framework X"
+sebelum ada pengukuran. Tetapkan workload dan bandingkan pada hardware
+serta konfigurasi yang sama.
+
+### Matriks benchmark
+
+  -----------------------------------------------------------------------
+  Benchmark               Metrik                  Variasi
+  ----------------------- ----------------------- -----------------------
+  Router                  Latency, route matching 10, 100, 1.000, 10.000
+                          throughput              routes
+
+  HTTP                    Requests/s, p50/p95/p99 Concurrency rendah
+                                                  hingga tinggi
+
+  Serialization           Waktu dan alokasi       JSON kecil, besar,
+                          memori                  nested
+
+  SSR                     Waktu render, TTFB,     Halaman sederhana
+                          output size             hingga kompleks
+
+  Startup                 Cold start, warm start  Aplikasi minimal vs
+                                                  besar
+
+  Memory                  RSS dan heap usage      Idle, steady load,
+                                                  burst
+
+  Build                   Durasi build dan output Cold build vs
+                          size                    incremental
+
+  Stability               Error rate, resource    Soak test berjam-jam
+                          growth                  
+
+  Security                Rejection rate dan      Malformed input,
+                          resource usage          oversized body, fuzz
+  -----------------------------------------------------------------------
+
+### Prosedur benchmark
+
+1.  Gunakan hardware, OS, versi runtime, dan konfigurasi yang sama.
+2.  Pastikan handler melakukan pekerjaan identik dan menghasilkan
+    response identik.
+3.  Jalankan warm-up, lalu beberapa pengulangan independen.
+4.  Catat distribusi latency, throughput, error rate, CPU, dan memori,
+    bukan hanya rata-rata.
+5.  Uji keep-alive, payload bervariasi, serta beban realistis.
+6.  Simpan hasil benchmark sebagai artefak CI dan investigasi regresi
+    yang konsisten.
+
+Tools awal: - [autocannon](https://github.com/mcollina/autocannon) untuk
+benchmark HTTP/1.1. - [Grafana
+k6](https://grafana.com/docs/k6/latest/using-k6/thresholds/) untuk
+workload dan threshold berbasis SLO.
+
+### Proposed acceptance criteria
+
+Angka berikut adalah target eksperimen, bukan hasil yang sudah dicapai.
+
+  -----------------------------------------------------------------------
+  Area                                Kriteria awal
+  ----------------------------------- -----------------------------------
+  Framework overhead                  Ukur baseline routing + middleware
+                                      minimal terlebih dahulu
+
+  HTTP reliability                    Contoh target error rate \<1% pada
+                                      workload valid; sesuaikan untuk
+                                      production
+
+  Tail latency                        Tetapkan batas p95/p99 per workload
+
+  Memory stability                    Tidak ada pertumbuhan memori yang
+                                      tidak terkendali pada soak test
+
+  Correctness                         Response dan error behavior sesuai
+                                      spesifikasi
+
+  Security                            Semua security acceptance tests
+                                      yang ditetapkan lulus
+  -----------------------------------------------------------------------
+
+Untuk production, SLO harus mengikuti kebutuhan aplikasi. Backend cepat
+tidak otomatis membuat halaman cepat dirasakan pengguna; ukur juga Web
+Vitals di browser.
+
+## 9. Roadmap implementasi
+
+### Phase 0 --- Foundation & RFC
+
+Lingkup: - Tetapkan scope MVP dan keputusan arsitektur. - Dokumentasikan
+package boundaries dan runtime interface. - Buat threat model, coding
+standards, dan benchmark protocol.
+
+Exit criteria: keputusan arsitektur terdokumentasi dan dapat diuji.
+
+### Phase 1 --- Framework MVP
+
+Lingkup: - Router, context, middleware, error handling. - Schema
+validation dan testing client. - Jalankan framework di runtime yang
+tersedia.
+
+Exit criteria: aplikasi demo berjalan, integration tests lulus, baseline
+performa tercatat.
+
+### Phase 2 --- Full-stack
+
+Lingkup: - File routing, server/client bundle, hydration. - SSR, loader,
+error boundary, dan dev server.
+
+Exit criteria: aplikasi end-to-end berfungsi dengan browser tests.
+
+### Phase 3 --- Security & performance hardening
+
+Lingkup: - Fuzzing, abuse-case testing, load testing. - Resource limits,
+dependency audit, security regression suite.
+
+Exit criteria: acceptance criteria yang ditetapkan lulus.
+
+### Phase 4 --- Runtime alpha
+
+Lingkup: - Executable Rust, integrasi engine, module loader. -
+Permission checks dan API sistem dasar.
+
+Exit criteria: framework demo berjalan di runtime alpha dan lulus subset
+compatibility tests.
+
+### Phase 5 --- Runtime beta
+
+Lingkup: - HTTP, streaming, shutdown, cancellation. - Resource
+isolation, profiling, compatibility suite, release pipeline.
+
+Exit criteria: kriteria stabilitas, keamanan, dan performa terpenuhi
+untuk workload target.
+
+## 10. Pisahkan fakta, target, dan klaim
+
+  -----------------------------------------------------------------------
+  Pernyataan              Status                  Cara membuktikan
+  ----------------------- ----------------------- -----------------------
+  TypeScript dapat        Fakta teknis            Compiler dan
+  ditransformasikan                               integration tests
+  menjadi JavaScript                              
+
+  Rust dapat menjadi host Layak secara teknis     Prototype dan
+  runtime                                         compatibility tests
+
+  V8 dapat di-embed       Fakta teknis            Build dan executable
+                                                  minimal
+
+  Router memiliki         Hipotesis desain        Benchmark terkontrol
+  overhead rendah                                 
+
+  Framework lebih cepat   Belum terbukti          Perbandingan workload
+  dari framework populer                          identik
+
+  Runtime lebih aman      Belum terbukti          Threat model, audit,
+  daripada Node.js/Bun                            adversarial tests
+
+  Runtime mendukung semua Target jangka panjang   Compatibility suite
+  package npm                                     luas
+
+  Runtime                 Belum dapat diklaim     Reliability, security,
+  production-ready                                compatibility,
+                                                  operational evidence
+  -----------------------------------------------------------------------
+
+Keberhasilan bukan berarti semua fitur harus ditulis sendiri.
+Keberhasilan berarti batas sistem jelas, komponen dapat diganti dengan
+aman, kualitas bisa dibuktikan melalui pengujian, dan keterbatasan
+terdokumentasi.
+
+## 11. Keputusan teknis yang direkomendasikan
+
+-   **Framework:** TypeScript strict, monorepo.
+-   **MVP runtime:** Node.js sebagai baseline referensi.
+-   **Runtime eksperimental:** Rust + V8, dikembangkan paralel setelah
+    framework core berjalan.
+-   **Full-stack:** routing, SSR, loader, client navigation; fitur
+    lanjutan setelah baseline stabil.
+-   **Security:** permission boundary, schema validation, resource
+    limits, threat-model-driven tests.
+-   **Performance:** benchmark otomatis sejak awal, bukan setelah fitur
+    selesai.
+-   **Engine JavaScript sendiri:** tidak masuk roadmap awal kecuali ada
+    tujuan riset eksplisit.
+
+Strategi ini memberi jalur untuk mempelajari runtime internals tanpa
+menjadikan seluruh proyek bergantung pada keberhasilan membangun engine
+baru.
+
+## 12. Referensi teknis
+
+Dokumentasi berikut adalah titik awal untuk memverifikasi detail
+implementasi dan batasan teknologi:
+
+-   [V8 embedding guide](https://v8.dev/docs/embed)
+-   [Node.js Permission Model](https://nodejs.org/api/permissions.html)
+-   [Rustonomicon --- FFI](https://doc.rust-lang.org/nomicon/ffi.html)
+-   [OWASP Application Security Verification
+    Standard](https://owasp.org/www-project-application-security-verification-standard/)
+-   [OWASP Cross Site Scripting
+    Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
+-   [OWASP SSRF
+    Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+-   [autocannon](https://github.com/mcollina/autocannon)
+-   [Grafana k6
+    thresholds](https://grafana.com/docs/k6/latest/using-k6/thresholds/)
+
+------------------------------------------------------------------------
+
+**Langkah berikutnya:** pecah blueprint ini menjadi `architecture.md`,
+ADR untuk pilihan runtime, API contract framework core, dan task
+breakdown Phase 0--1. Ini akan mengubah blueprint menjadi spesifikasi
+implementasi yang bisa langsung dikerjakan di repository tanpa membangun
+seluruh runtime terlalu dini.
+
+## docs/PRD.md
+
+# Dokumen Persyaratan Produk: Framework Mastery TypeScript
+
+## Pernyataan Masalah
+Pengembang full-stack sering kesulitan membuat aplikasi yang robust karena kurangnya framework TypeScript berkinerja tinggi yang menawarkan dokumentasi lengkap dan pengecekan tipe yang kuat. Framework yang ada mungkin memiliki masalah performa atau dokumentasi yang kurang memadai, sehingga menyebabkan frustrasi pengembang dan meningkatnya waktu pengembangan.
+
+## Tujuan & Metrik Keberhasilan
+
+### Tujuan
+1. **Performa Tinggi**: Memastikan framework dioptimalkan untuk performa, memberikan waktu muat yang cepat dan efisiensi runtime yang baik.
+2. **Dokumentasi Lengkap**: Menyediakan dokumentasi yang detail dan mudah diikuti yang mencakup semua aspek framework.
+3. **Pengecekan Tipe yang Robust**: Mengimplementasikan sistem tipe yang kuat untuk menangkap error lebih awal dalam proses pengembangan.
+
+### Metrik Keberhasilan
+1. **Benchmark Performa**: Waktu muat framework dan efisiensi runtime memenuhi atau melebihi standar industri.
+2. **Kualitas Dokumentasi**: Kepuasan pengguna terhadap dokumentasi mencapai 90% atau lebih tinggi.
+3. **Keamanan Tipe**: 95% error tipe umum tertangkap oleh type checker framework.
+
+## User Stories
+1. **Sebagai pengembang, saya ingin dengan cepat menyiapkan proyek baru menggunakan framework ini agar saya bisa langsung mulai coding.**
+2. **Sebagai pengembang, saya ingin dokumentasi yang lengkap agar saya dapat memahami dan menggunakan framework secara efektif.**
+3. **Sebagai pengembang, saya ingin pengecekan tipe yang robust agar saya dapat menangkap error lebih awal dalam proses pengembangan.**
+4. **Sebagai pengembang, saya ingin framework ini berperforma tinggi agar aplikasi saya berjalan dengan lancar dan efisien.**
+5. **Sebagai pengembang, saya ingin referensi API yang terorganisir dengan baik dan mudah dicari agar saya dapat dengan cepat menemukan informasi yang saya butuhkan.**
+6. **Sebagai pengembang, saya ingin forum komunitas dan saluran dukungan agar saya dapat mendapatkan bantuan dan berbagi pengetahuan dengan pengembang lain.**
+
+## Persyaratan Fungsional
+1. **Persiapan Proyek**:
+   - Menyediakan tool CLI untuk menyiapkan proyek baru.
+   - Menyertakan starter template untuk jenis aplikasi umum (misalnya web, mobile, backend).
+2. **Optimasi Performa**:
+   - Mengoptimalkan core library untuk meminimalkan waktu muat dan meningkatkan efisiensi runtime.
+   - Menyediakan benchmark performa dan best practices di dalam dokumentasi.
+3. **Dokumentasi**:
+   - Membuat panduan getting started yang lengkap.
+   - Mengembangkan dokumentasi API yang detail dengan contoh kode.
+   - Memelihara bagian FAQ (Frequently Asked Questions) dan panduan best practices.
+4. **Pengecekan Tipe**:
+   - Mengimplementasikan sistem tipe yang robust dengan strict type checking.
+   - Menyediakan linter untuk menangkap error tipe umum selama pengembangan.
+   - Menyertakan type definitions untuk semua komponen inti dan utilities.
+5. **Dukungan Komunitas**:
+   - Menyiapkan forum komunitas bagi pengguna untuk bertanya dan berbagi pengetahuan.
+   - Membuat dan memelihara repositori GitHub untuk pelacakan issue dan kontribusi.
+   - Menyediakan dukungan responsif melalui email atau chat.
+
+## Persyaratan Non-Fungsional
+1. **Skalabilitas**: Framework harus mendukung aplikasi dari semua ukuran, mulai dari proyek kecil hingga aplikasi enterprise skala besar.
+2. **Keandalan**: Framework harus memiliki tingkat bug yang rendah dan tingkat stabilitas yang tinggi.
+3. **Kemudahan Penggunaan**: Framework harus mudah dipelajari dan digunakan, dengan API yang intuitif dan dokumentasi yang jelas.
+4. **Kompatibilitas**: Framework harus kompatibel dengan browser utama, Node.js, dan standar web modern.
+5. **Keamanan**: Framework harus menerapkan best practices keamanan, termasuk perlindungan terhadap kerentanan umum.
+
+## Pertanyaan Terbuka
+1. Apa saja benchmark performa spesifik yang harus kita targetkan?
+2. Bagaimana kita akan mengukur dan melacak kepuasan pengguna terhadap dokumentasi?
+3. Apa saja fitur kunci yang harus disertakan dalam starter template?
+4. Bagaimana kita memastikan sistem tipe framework mencakup semua use case umum?
+5. Apa saja saluran terbaik untuk menyediakan dukungan komunitas?
+
+## Rekonsiliasi (2026-10-18)
+
+Diputuskan bersama pemilik; detail di `docs/adr/0018-owner-decisions.md`.
+
+| Item | Keputusan |
+| --- | --- |
+| Starter template "mobile" | **Di luar scope** — Ramonyx adalah framework web/SSR; template mobile tidak direncanakan |
+| Metrik "kepuasan dokumentasi 90%" | Target, **bukan klaim**; diukur via survei (situs docs sudah live: https://ramonyxjs.github.io/ramonyx/). Tidak boleh dipakai di materi publik sebelum ada mekanisme |
+| Forum komunitas / support | **Ditunda**: kanal awal GitHub Issues/Discussions (repo kini publik); forum/chat bila komunitas tumbuh |
+| "Kompatibilitas browser utama" | Ditetapkan sebagai **browser matrix**: Chrome/Edge/Firefox/Safari dua versi terakhir (evergreen), ES2022, tanpa polyfill otomatis (client bundle menargetkan `es2022`) |
+| Target benchmark (pertanyaan #1) | Terjawab: `docs/benchmark-protocol.md` + baseline ter-commit |
+| Fitur kunci starter template (#3) | Dijadwalkan bersama `apps/create-app` (Phase 2–3 blueprint); kandidat: route + API + SSR + test + CI |
+| Cakupan sistem tipe (#4) | Kontrak v0 + type-test + 12 kriteria ASVS teruji; diperluas seiring fitur |
+| Kanal komunitas terbaik (#5) | Ditunda bersama forum; GitHub Discussions kandidat pertama — repo kini publik |
+
+Semua pertanyaan terbuka PRD kini **terjawab atau ditunda secara eksplisit**; tidak ada lagi yang
+menghambat Phase 4 (runtime alpha).
+
+## docs/security/threat-model.md
+
+# Threat Model — Ramonyx
+
+- Status: **berlaku** (draft v0 Phase 0; diperbarui 2026-10-18 — temuan Phase 3/4 tercatat di bawah). Basis: `docs/BLUEPRINT.md` §7.
+- Asumsi: aplikasi menerima input tidak tepercaya, mengakses database, memproses session, dan
+  (mulai Phase 4) mungkin menjalankan plugin pihak ketiga.
+
+## 1. Aset yang dilindungi
+
+- Data pengguna & session; secrets/environment.
+- Integritas build: kode/secret server tidak boleh masuk client bundle.
+- Resource host (CPU/memori) dan ketersediaan layanan.
+
+## 2. Trust boundary
+
+``` text
+Kode aplikasi tak tepercaya (route handler · plugin · user script)
+        │  [B1] validasi schema input (Phase 1)
+        │  [B2] batas server/client bundle (Phase 2)
+Kode framework & aplikasi
+        │  [B3] capability API (fs · network · env · subprocess)     ← Phase 4 (runtime)
+        │  [B4] enforcement: permission check · isolasi proses · quota
+OS (proses · filesystem · jaringan)
+```
+
+- [B5] Supply chain dependency (lockfile, audit) — lintas fase.
+
+## 3. Tabel ancaman
+
+| Ancaman | Dampak | Mitigasi | Fase | Bukti/tes |
+| --- | --- | --- | --- | --- |
+| Malformed request / body raksasa | Crash, memory exhaustion | Batas ukuran, timeout, validasi protokol | 1–3 | Test limit + fuzz |
+| XSS / unsafe HTML | Eksekusi skrip di browser | Escaping kontekstual, sanitasi bila perlu, CSP | 2 | Browser test + header CSP |
+| CSRF | Aksi pengguna tanpa izin | Token CSRF / proteksi origin sesuai model auth | 2 | Test origin/token |
+| IDOR / broken authorization | Kebocoran data antar-user | Otorisasi per resource, bukan hanya validasi input; framework menyediakan hook + contoh aman | 1+ (panduan) | Test IDOR di demo app |
+| SSRF | Akses layanan internal | Validasi target, kebijakan egress, pembatasan alamat & redirect | 2–4 | Test alamat terlarang |
+| Path traversal | Akses file di luar direktori | Canonicalization + filesystem capability | 1 (static) / 4 (runtime) | Test `..` dan symlink |
+| Dependency compromise | Eksekusi kode berbahaya | Lockfile, provenance, audit, pembatasan dependency | 1+ | Security check CI per rilis |
+| Malicious plugin | Akses fs/network | Isolasi proses, permission minimization, capability boundary | 4 | Security regression suite |
+| Runtime escape | Bypass sandbox | Pemisahan privilege, OS-level isolation, security testing | 4 | Adversarial tests |
+| DoS pada SSR | Exhaustion CPU/memori | Render timeout, cancellation, limit concurrency & output | 2–3 | Soak/limit test + benchmark security |
+
+## 4. Model keamanan runtime (Phase 4+)
+
+Permission model harus menjawab eksplisit: apa yang diberikan, kapan diperiksa, bagaimana dicabut,
+dan apa yang terjadi saat operasi ditolak.
+
+- JavaScript context terpisah **bukan** sandbox keamanan yang memadai.
+- Plugin tidak tepercaya → isolasi level proses/OS, bukan hanya API JavaScript.
+- Kode native dan binding FFI termasuk threat model.
+
+## 5. Batas SSR (Phase 2–3)
+
+Render timeout, cancellation, concurrency limit, output limit; load shedding terdokumentasi.
+Angka final ditetapkan bersama `docs/benchmark-protocol.md`.
+
+## 6. Basis acceptance: OWASP ASVS
+
+Gunakan OWASP ASVS sebagai basis acceptance criteria; petakan per fase saat Phase 3 (contoh area:
+V1 arsitektur & threat modeling, V5 validasi input, V7 logging & error handling, V8 perlindungan
+data, V13 API, V14 konfigurasi). Untuk kontrol spesifik, ikuti panduan OWASP XSS dan SSRF.
+Ini **bukan** klaim kepatuhan sebelum pemetaan + tes dijalankan.
+
+## 7. Rencana tes per fase
+
+- **Phase 1:** validasi input, error aman (tanpa bocor), batas body, path traversal static.
+- **Phase 2:** XSS/CSP, CSRF helper, batas SSR.
+- **Phase 3:** fuzz (router/parser/validasi), abuse-case, load test, dependency audit, security regression suite.
+- **Phase 4+:** sandbox/isolation, permission revocation, escape testing.
+
+## 8. Aturan klaim keamanan
+
+Tanpa tes yang lulus, klaim keamanan tidak boleh dipakai di README/docs/landing — atau hanya
+boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerabilities", atau
+"aman" tanpa syarat dilarang (konsisten dengan BLUEPRINT §10).
+
+## 9. Status mitigasi (2026-10-18)
+
+- Oversized/malformed body: ✅ batas ukuran + 413, header + streaming (ADR-0011), diuji `tests/security/`.
+- DoS handler/loader/render: ✅ timeout 10s + abort `request.signal` (ADR-0011);
+  ✅ concurrency limit 100 dengan load shedding 503 + `Retry-After` (ADR-0012);
+  ✅ output limit dokumen SSR 2 MiB → 500 (ADR-0015).
+- SSRF: ✅ `guardedFetch` (ADR-0015) — tolak alamat privat/loopback/link-local + validasi per hop
+  redirect; catatan rebinding di ADR (IP-pinning menyusul).
+- Prototype pollution (query): ✅ `parseQuery` aman (ADR-0011), diuji fuzz + e2e.
+- Robustness parser/matcher: ✅ fuzz `fast-check` (router, query, normalisasi schema).
+- Abuse-case terukur: ✅ 6 skenario (oversized/JSON rusak/schema invalid/traversal/query raksasa/echo)
+  tanpa 5xx & tanpa error di bawah beban (`benchmarks/results/phase3-abuse.json`); RSS + breakdown
+  heap/external proses server diukur terpisah (proses anak). Soak 5 menit menunjukkan heap sawtooth
+  (GC periodik) dengan `external` datar → bukan kebocoran native; RSS high-water karena GC malas
+  (batasi heap/container di produksi). **Tanpa klaim stabilitas** sampai soak berjam-jam per §8.
+- XSS/CSP: ✅ escaping kontekstual React + **CSP nonce aktif di playground** (ADR-0014):
+  `cspNonce()` menitipkan nonce ke payload hydration; `script-src 'self' 'nonce-…'`. Template CSP
+  bisa diganti aplikasi; CSP default hanya menyala bila aplikasi memasang middleware-nya.
+- CSRF: ✅ primitif `csrfProtection()` (double-submit cookie + header, ADR-0013); verifikasi
+  field form **ditunda** eksplisit (tanpa API body bersama — ADR-0017).
+- Rate limiting per klien: ✅ `rateLimit()` — fixed-window, 429 + `Retry-After`, identitas dari
+  adapter (anti-spoof) + `trustProxy` opt-in (ADR-0017).
+- Dependency compromise: ✅ lockfile + `pnpm audit --audit-level high` (push/PR + cron mingguan) +
+  `minimumReleaseAge` 24 jam + Dependabot (tanpa auto-merge) + kebijakan
+  `docs/security/dependency-policy.md` (ADR-0016); **provenance aktif** sejak 0.1.1.
+- Path traversal (runtime/plugin) + isolasi plugin: ✅ permission model deny-all (ADR-0023) +
+  isolasi worker/proses + **sandbox Landlock** (ADR-0051); pentest escape belum dinilai.
+
+## docs/benchmark-protocol.md
+
+# Protokol Benchmark — Ramonyx
+
+- Status: **berlaku** (protokol Phase 0; diimplementasikan untuk HTTP/SSR/Web Vitals — ADR-0045/0048; baris matriks lain menyusul). Sumber: `docs/BLUEPRINT.md` §8.
+- Aturan utama: **tidak ada klaim performa tanpa pengukuran yang bisa dijalankan.**
+
+## 1. Prinsip
+
+- Hardware, OS, versi runtime, dan konfigurasi **sama** untuk semua perbandingan.
+- Handler melakukan pekerjaan identik dan menghasilkan response identik.
+- Warm-up, lalu beberapa pengulangan independen.
+- Laporkan **distribusi** (p50/p95/p99) + throughput + error rate + CPU + memori — bukan hanya rata-rata.
+- Hasil disimpan sebagai artefak CI; regresi konsisten diselidiki sebelum rilis.
+- Klaim UX (halaman cepat) diukur terpisah dengan Web Vitals di browser (Phase 2+).
+
+## 2. Matriks benchmark
+
+| Benchmark | Metrik | Variasi |
+| --- | --- | --- |
+| Router | Latency, throughput matching | 10 / 100 / 1.000 / 10.000 route |
+| HTTP | Requests/s, p50/p95/p99 | Concurrency rendah → tinggi |
+| Serialization | Waktu & alokasi memori | JSON kecil, besar, nested |
+| SSR | Waktu render, TTFB, ukuran output | Halaman sederhana → kompleks |
+| Startup | Cold start, warm start | App minimal vs besar |
+| Memory | RSS & heap | Idle, steady load, burst |
+| Build | Durasi & ukuran output | Cold build vs incremental |
+| Stability | Error rate, pertumbuhan resource | Soak test berjam-jam |
+| Security | Rejection rate & resource usage | Malformed input, oversized body, fuzz |
+
+## 3. Alat
+
+- [autocannon](https://github.com/mcollina/autocannon) — benchmark HTTP/1.1.
+- [Grafana k6](https://grafana.com/docs/k6/latest/using-k6/thresholds/) — workload & threshold berbasis SLO.
+- Web Vitals (Phase 2+): Lighthouse/Playwright.
+
+## 4. Prosedur
+
+1. Catat spesifikasi hardware/OS/versi runtime/konfigurasi di laporan.
+2. Pastikan kesetaraan pekerjaan handler (dibuktikan, bukan diasumsikan — mis. response identik).
+3. Warm-up, lalu beberapa pengulangan independen (jangan sekali jalan).
+4. Catat distribusi latency, throughput, error rate, CPU, memori.
+5. Uji keep-alive, payload bervariasi, beban realistis.
+6. Simpan hasil; investigasi regresi yang konsisten.
+
+## 5. Penyimpanan & CI
+
+- Skrip per area di `benchmarks/<area>/` (router, http, scalar, ssr, startup, memory).
+- Hasil JSON + ringkasan disimpan sebagai **artefak CI**.
+- Baseline Phase 1 di-commit (mis. `benchmarks/results/phase1-baseline.json`) sebagai pembanding
+  regresi. Bench HTTP kini menerapkan prosedur ini: **warm-up 3 s (dibuang) + 5 ulangan**,
+  artefak = median antar-run + `spread` (`pnpm bench` memperbarui baseline secara eksplisit).
+- **Mode report-only** (`pnpm bench:report`) membandingkan hasil vs baseline **tanpa** menimpanya
+  (toleransi 25%, belum memblokir) dan dipakai langkah CI non-blocking — ADR-0045.
+- Bench SSR (`pnpm bench:ssr`, `benchmarks/ssr/bench.tsx`) memakai prosedur sama: warm-up 3 +
+  **9 ulangan**, median + `spread`, GC eksplisit (`--expose-gc`); in-process (tanpa socket);
+  paritas byte-per-byte sinkron vs streaming + skenario suspense; baseline
+  `benchmarks/results/ssr-baseline.json`, report-only `pnpm bench:ssr:report` (lantai delta
+  absolut 1 ms) — ADR-0048.
+- Web Vitals (Phase 2): baseline `benchmarks/results/phase2-web-vitals.json` — **median 3 load**
+  (1 load pemanasan dibuang), diperbarui via `UPDATE_BASELINE_VITALS=1`; run biasa menulis
+  `test-results/web-vitals-latest.json` + perbandingan report-only (toleransi 25%) dan ambang
+  absolut LCP ≤ 2500 / FCP ≤ 1800 / TTFB ≤ 800 / CLS ≤ 0,1 (`VITALS_STRICT=1` memblokir) — ADR-0048.
+- Abuse-case & soak (Phase 3): `benchmarks/results/phase3-abuse.json` (`pnpm bench:security`,
+  `SOAK_SECONDS=<detik>` untuk durasi) — skenario serangan + RSS proses server (anak) via `/proc`
+  **dan breakdown `heapUsed`/`external`/`arrayBuffers`**; CI meng-upload seluruh
+  `benchmarks/results/` sebagai artefak. Interpretasi: `external` datar = tidak ada kebocoran
+  native; heap sawtooth = GC periodik (RSS high-water karena GC malas — batasi heap di produksi).
+
+## 6. Acceptance criteria (target eksperimen — bukan hasil)
+
+| Area | Kriteria awal |
+| --- | --- |
+| Framework overhead | Ukur baseline routing + middleware minimal terlebih dahulu |
+| HTTP reliability | Contoh target error rate <1% pada workload valid; sesuaikan untuk production |
+| Tail latency | Tetapkan batas p95/p99 per workload setelah baseline ada |
+| Memory stability | Tidak ada pertumbuhan memori tak terkendali pada soak test |
+| Correctness | Response & error behavior sesuai spesifikasi |
+| Security | Semua security acceptance test yang ditetapkan lulus |
+
+Angka final ditetapkan per workload setelah baseline Phase 1 ada. SLO produksi mengikuti kebutuhan
+aplikasi masing-masing.
+
+## docs/releasing.md
+
+# Panduan Rilis — Checklist Pra-Publikasi
+
+- Status: **TERBIT** — **0.1.1** (2026-10-18, 14 paket termasuk `@ramonyx/devtools`, **dengan
+  provenance**; GitHub Release v0.1.1) di atas 0.1.0 (2026-10-18, 13 paket). Verifikasi registry
+  end-to-end lolos untuk keduanya. Kebijakan ADR-0039/0049 di bawah berlaku untuk rilis berikutnya.
+- Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
+  binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
+  `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).
+
+## Prasyarat pemilik (belum bisa diotomasi dari repo)
+
+1. **Remote GitHub** — repo belum punya remote; tanpa itu `release.yml` tidak bisa jalan dan
+   provenance npm tidak mungkin. Push `main`, lalu tag.
+2. **Scope npm** `@ramonyx` dan nama `ramonyx` / `create-ramonyx-app` atas akun/org pemilik.
+3. **`NPM_TOKEN`** (automation token, 2FA-safe) sebagai secret repo bernama `NPM_TOKEN`.
+4. **Keputusan tag pertama** — mis. `v0.1.0-alpha.1` (dist-tag `alpha`) untuk uji registry,
+   promosikan setelah yakin; atau langsung `v0.1.0` (dist-tag `latest`).
+
+## Kebijakan (ditegakkan workflow)
+
+- **Sumber versi = `Cargo.toml` root.** Workflow menolak bila tag ≠ versi paket
+  (mis. tag `v0.1.0` wajib versi `0.1.0`).
+- **Dist-tag dari nama tag**: `-alpha` → `alpha`, `-beta` → `beta`, `-rc` → `rc`, selain itu
+  `latest`.
+- **Publish memakai tarball terverifikasi** (unduhan artefak job `artifacts`) — bukan build
+  ulang; bit yang terbit = bit yang diuji di proyek konsumen.
+- **Provenance** aktif otomatis bila repo publik (`id-token: write` + `--provenance`); repo
+  privat → publish tanpa provenance (dicatat di log).
+- `REPOSITORY` di `scripts/release.mjs` sudah menunjuk remote resmi
+  (`https://github.com/RamonyxJS/ramonyx`).
+
+## Langkah
+
+```bash
+# 1. Samakan versi di Cargo.toml (sumber) + package.json paket, commit.
+# 2. Dry-run lokal (tanpa kredensial):
+pnpm release && pnpm release:verify
+for t in dist/npm/*.tgz; do npm publish --dry-run "$t"; done
+# 3. Tag & push → memicu workflow:
+git tag v0.1.0-alpha.1 && git push origin main --tags
+# 4. Pantau job `artifacts` (build+verifikasi) lalu `publish-npm` (butuh NPM_TOKEN).
+# 5. Verifikasi dari registry (setelah job hijau):
+pnpm dlx create-ramonyx-app@alpha demo-app
+cd demo-app && pnpm install && pnpm build && pnpm start
+```
+
+## Hasil rilis pertama (2026-10-18)
+
+- Publish lokal via automation token (2FA akun aktif → publish interaktif butuh OTP).
+- npm memberi stub `0.0.0-stage` per paket baru (placeholder internal) dan sempat menunda
+  propagasi scope ±3 menit — normal.
+- `npm dist-tag add <pkg>@0.1.0 latest` dijalankan eksplisit untuk memastikan seluruh paket
+  konsisten (satu paket sempat `latest: 0.0.0-stage` karena propagasi).
+- Verifikasi registry: `pnpm dlx create-ramonyx-app@alpha demo-app` → `pnpm install` (template
+  `^0.1.0` + `allowBuilds` esbuild) → `pnpm build` → `pnpm start` → halaman SSR + payload
+  hydration + CSP nonce + API route template ✓.
+- **Workflow `release.yml` dieksekusi sukses** pada tag `v0.1.0` (2026-10-18): 14 artefak +
+  verifikasi penuh (scaffold build/start/SSR dari tarball) + **GitHub Release** (16 aset);
+  job publish skip (versi sudah ada; idempoten). Secret `NPM_TOKEN` (automation) terpasang
+  untuk rilis berikutnya — rilis baru cukup: bump versi di `Cargo.toml` → commit → tag `vX.Y.Z`.
+- Catatan higiene: jangan pernah menempelkan nilai token sebagai **nama** `gh secret set`
+  (nama secret terlihat di pengaturan repo — token harus dianggap terekspos dan dirotasi).
+
+## Hasil rilis 0.1.1 (2026-10-18)
+
+- Tag `v0.1.1` → workflow: 15 artefak + verifikasi + **publish 14 paket dengan provenance**
+  (repo publik + `id-token: write`) + GitHub Release.
+- Acceptance dari registry di direktori bersih: scaffold `create-ramonyx-app@0.1.1` →
+  `pnpm install` (bin `ramonyx` terpasang) → `ramonyx build` → `ramonyx start` → SSR + API
+  (403/404) + `ramonyx doctor` ✓ — template baru tanpa boilerplate.
+- Catatan operasional: metadata npm untuk paket yang baru dipublikasikan butuh beberapa menit
+  untuk terlihat di CDN; pnpm yang menyimpan cache metadata lama perlu dibersihkan/install ulang
+  (`--prefer-offline` tidak membantu; hapus `~/.cache/pnpm/**ramonyx**` atau tunggu TTL).
+
+## Catatan jujur
+
+- `release.yml` dieksekusi pertama kali lewat tag `v0.1.0` (setelah repo publik dibuat);
+  rancangan awal bahkan tidak bisa jalan (job publish menulis ke `dist/npm/*/` yang tidak pernah
+  dibuat di job itu) — ADR-0049 memperbaiki: publish dari artefak terverifikasi + guard versi +
+  dist-tag + provenance kondisional + **publish idempoten** (versi yang sudah ada dilewati,
+  sehingga tag ulang aman).
+- Unpublish npm masih mungkin dalam 72 jam; **nama/versi yang sudah ditarik tetap terkunci**.
+  Karena itu tag pertama sebaiknya memakai dist-tag `alpha`/`next` bila ingin ruang koreksi.
+- **pnpm ≥10 memblokir build script dependensi** — `esbuild` (loader runtime) butuh postinstall;
+  template sudah membawa `pnpm-workspace.yaml` dengan `allowBuilds: { esbuild: true }`, dan proyek
+  konsumen `release:verify` menyetel hal yang sama. npm/yarn tidak memblokir.
+
+## docs/coding-standards.md
+
+# Standar Kode — Ramonyx
+
+- Status: draft (Phase 0); berlaku untuk semua paket begitu kode dimulai.
+
+## 1. TypeScript
+
+- `strict: true`; baseline tambahan: `noUncheckedIndexedAccess`, `noImplicitOverride`,
+  `verbatimModuleSyntax`, `isolatedModules` — dipin di `tsconfig.base.json` (dibuat Phase 1).
+- ESM-only; tidak ada output CJS baru (ADR-0002).
+- Dilarang `any`; pakai `unknown` + penyempitan. `as` hanya dengan alasan jelas;
+  `@ts-expect-error` wajib disertai komentar alasan.
+- API publik: inferensi tipe adalah fitur — kontrak tipe penting diuji (type test, mis. `expectTypeOf`).
+- Bahasa: identifier + JSDoc API publik **Inggris**; komentar penjelas internal boleh Indonesia;
+  pesan error yang dilihat pengguna **Inggris**.
+
+## 2. Batas & dependensi
+
+- Semua input eksternal divalidasi schema di trust boundary; tidak ada validasi ad-hoc tersebar.
+- Hanya `packages/adapter-runtime` (dan tooling dev) yang boleh mengimpor `node:*`; paket lain
+  memakai kontrak `RuntimeHost` — ditegakkan lint.
+- **API browser hanya di `packages/react/src/client.ts`** (satu-satunya file client runtime);
+  `lib: DOM` aktif di tsconfig, jadi aturan ini konvensi + review (penegakan lint menyusul).
+- Dependency runtime baru butuh alasan tertulis; lockfile di-commit; audit berjalan di CI.
+
+## 3. Error & logging
+
+- Error terstruktur; `HttpError` untuk respons HTTP; dilarang catch kosong/menelan error.
+- Response produksi tidak memuat stack, detail internal, atau secrets; detail masuk log.
+- Structured logging; dilarang menulis secrets/PII ke log.
+
+## 4. Testing
+
+- Unit colocated dengan sumber; integration di `tests/`; setiap poin
+  `docs/api/core-contract.md` punya test.
+- Nama test menjelaskan perilaku (bukan nomor); fixture app minimal lewat `packages/testing`.
+- Property-based/fuzz untuk router matching, parser, dan validasi saat harness tersedia (Phase 1→3).
+- Bug fix dimulai dengan test yang gagal (regression test).
+
+## 5. Rust (Phase 4+)
+
+- Default `#![forbid(unsafe_code)]` per crate; bila `unsafe` tak terhindarkan: invarian
+  didokumentasikan + diaudit (BLUEPRINT §5 aturan 4).
+- FFI minimal, teruji, dan terdokumentasi.
+
+## 6. Git
+
+- Branch utama `main`; commit: prefix konvensional (`feat:`, `fix:`, `docs:`, `chore:`, `test:`) +
+  deskripsi singkat.
+- Perubahan kontrak API menyertakan ADR dan/atau pembaruan dokumen terkait dalam commit yang sama.
+
+## AGENTS.md
+
+# AGENTS.md — Ramonyx
+
+Framework full-stack TypeScript + runtime eksperimental (Rust + V8) — dua proyek yang terintegrasi
+tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V8 baru Phase 4+
+(ADR-0001).
+
+## Baca dulu, berurutan
+
+1. `docs/BLUEPRINT.md` — sumber kebenaran teknis: arsitektur, stack, threat model, roadmap fase.
+2. `docs/architecture.md` — ringkasan arsitektur, peta package, kontrak `RuntimeHost`.
+3. `docs/api/core-contract.md` — kontrak API v0 + catatan implementasi (§10).
+4. `docs/roadmap/phase-0-1.md` — status kerja & langkah berikutnya.
+5. `docs/PRD.md` — level produk; pertanyaan terbuka sudah direkonsiliasi (ADR-0018).
+
+## Perintah
+
+- `pnpm lint` — Biome; antara lain melarang impor `node:*` di luar `packages/adapter-runtime`/`packages/compiler`.
+- `pnpm typecheck` — `tsc --noEmit` (TypeScript 7: `baseUrl` dihapus, `paths` wajib relatif `./`).
+- `pnpm test` / `pnpm bench` / `pnpm dev` / `pnpm build` — semuanya lewat
+  `node --import ./tools/register.mjs` (loader esbuild: TS + JSX automatic; ADR-0006). Butuh Node ≥24.
+- `pnpm dev` — dev server: Vite (5173) dengan HMR → SSR (3000); **tanpa build**.
+- `pnpm build` + `pnpm start` — produksi: bundle client ke `apps/playground/dist/client/`, lalu SSR di 3000.
+- `pnpm test:e2e` — Playwright terhadap build produksi (`pnpm build` + `pnpm start`); browser:
+  CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
+- `pnpm create:app <dir>` — scaffold aplikasi Ramonyx baru (template minimal yang berjalan).
+- `pnpm docs` — situs dokumentasi lokal (dogfood **penuh**: SSR React + hydration/soft navigation
+  atas `docs/**`) di http://127.0.0.1:4000 (build klien + start).
+- `pnpm docs:export` — ekspor statis situs docs (`apps/docs/export.ts`) untuk hosting;
+  workflow `pages.yml` memakai `--base /ramonyx` → https://ramonyxjs.github.io/ramonyx/ (ADR-0052).
+- CLI devtools (`@ramonyx/devtools`, ADR-0053): di repo jalankan lewat loader —
+  `node --import ./tools/register.mjs packages/devtools/src/cli.ts <dev|build|start|doctor> --app <dir>`;
+  aplikasi (template) memakai `ramonyx dev|build|start` dengan konvensi `src/app.ts` `createApp()`.
+- `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
+  di `dist/`; **15 artefak** — 14 paket npm termasuk `create-ramonyx-app` + binary runtime); `pnpm release:verify` — verifikasi
+  instalasi di proyek konsumen bersih (Node polos), termasuk scaffold `create-ramonyx-app`.
+  Publikasi: `docs/releasing.md` (checklist pemilik; workflow publish dari tarball terverifikasi —
+  ADR-0049).
+- `benchmarks/runtime-startup.sh` — baseline startup runtime Rust (median wall/startup/load/eval
+  dari `RUNS` eksekusi; hasil → `benchmarks/results/runtime-startup.json`; butuh build release).
+- `pnpm bench:report` — benchmark HTTP **report-only** (bandingkan vs baseline tanpa menimpanya;
+  artefak `benchmarks/results/latest-http.json`; gate belum memblokir — ADR-0045).
+- `pnpm bench:ssr` / `pnpm bench:ssr:report` — bench SSR in-process (sinkron vs streaming;
+  warm-up + 9 ulangan; paritas byte-per-byte + suspense; `NODE_ENV=production` + `--expose-gc`)
+  — report-only, baseline `ssr-baseline.json` (ADR-0048).
+- `pnpm bench` — autocannon HTTP baseline (**protokol §8 penuh**: warm-up 3 s + 5 ulangan,
+  median/spread; menulis ulang baseline ter-commit — eksplisit); `pnpm bench:security` — abuse-case + soak
+  (spawn server terpisah, RSS via /proc; `SOAK_SECONDS=300` untuk soak panjang). Hasil di
+  `benchmarks/results/`.
+- `pnpm audit --audit-level high` — audit dependency (juga berjalan di CI + cron mingguan).
+- Rust (runtime eksperimental): `cargo fmt --all`, `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace`; jalankan: `cargo run -p ramonyx-runtime-cli -- run src/main.ts`
+  (ESM + transpile TS via deno_ast). **Default deny-all** — akses fs/env/net butuh flag
+  `--allow-read/write/net/env[=daftar]`; `serve()` butuh `--allow-net`.
+- pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
+  Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
+
+## Jebakan yang paling mudah kena
+
+- **Blueprint §4/§5 sebagian sudah diimplementasikan; sisanya (mis. server actions, code
+  splitting) masih rancangan — jangan diasumsikan ada.** Yang nyata:
+  `packages/*` (termasuk `@ramonyx/devtools` — CLI `ramonyx`), `apps/playground`, `apps/docs`,
+  `apps/create-app`, `benchmarks/*`. File routing (API + halaman), SSR React (sinkron + streaming),
+  hydration, bundler, dev server/HMR, dan CLI devtools v1 sudah ada — cek kode, jangan asumsikan.
+- **Syntax harus erasable.** Paket diekspor sebagai `.ts` dan dijalankan Node type stripping:
+  dilarang `enum`, `namespace`, parameter property; `erasableSyntaxOnly` + `verbatimModuleSyntax`
+  menegakkannya. Impor relatif wajib berekstensi `.ts`.
+- **JSX hanya lewat loader dev.** Node type stripping tidak memproses JSX; jalankan app/test dengan
+  `node --import ./tools/register.mjs` (script `test`/`bench`/`dev` sudah begitu — ADR-0006).
+  Paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
+- **Test server wajib `close()` di `finally`.** Assert yang gagal tanpa `finally` membocorkan
+  listener dan `node --test` menggantung tanpa batas (pernah terjadi di CI); script `test` memakai
+  `--test-timeout=120000` + `--test-force-exit` sebagai jaring pengaman, dan adapter menormalkan
+  loopback `::1` → `127.0.0.1`.
+- **Situs docs di subpath** (`/ramonyx/`): tautan halaman harus **relatif** (`dokumen/…`, `.`) —
+  `<base href>` menegakkannya; tautan markdown `*.md` ditulis ulang otomatis (ADR-0052). Deploy
+  hanya dari `main` (`pages.yml`).
+- **Produksi = `NODE_ENV=production`.** Skrip `start`/`docs`/bench SSR + template `create-app`
+  sudah men-set-nya; tanpa itu React berjalan build dev (pernah terjadi di server produksi —
+  ADR-0048).
+- **SSR streaming (ADR-0047):** opt-in `streaming: true` di `createPageRoutes`/`createApp`;
+  renderer React memakai `react-dom/server.edge` — **jangan** `server.browser` (MessageChannel
+  level-modul menahan proses Node: test/CLI menggantung). Error setelah byte pertama = koneksi
+  diputus (status/error page hanya berlaku sebelum byte pertama).
+- **Hydration:** di dev `pnpm dev` sudah otomatis (entry via Vite); di produksi jalankan
+  `pnpm build` dulu lalu `pnpm start` (tanpa build, `/assets/client.js` 404). Payload
+  `window.__RAMONYX__` + container `#ramonyx-root`; loader data wajib JSON-serializable;
+  halaman error tidak di-hydrate (ADR-0007).
+- **Limit default (ADR-0011/0012).** Body request dibatasi **1 MiB → 413**; handler/loader timeout
+  **10s → 503** (+ `request.signal` abort); request bersamaan **100 → 503 + Retry-After**
+  (load shedding). Aplikasi menyesuaikan lewat opsi `createHandler`
+  (`maxBodyBytes`, `timeoutMs`, `maxConcurrent`).
+- **Versi dependency baru menunggu 24 jam** (`minimumReleaseAge` di `pnpm-workspace.yaml`) — kalau
+  versi rilis baru tidak langsung bisa dipasang, itu disengaja (kebijakan supply chain, ADR-0016).
+- **Runtime Rust itu eksperimental & terpisah**: `runtime/` (Cargo workspace) tidak boleh diimpor
+  paket TS dan sebaliknya; toolchain dipin `1.99.0` via `rust-toolchain.toml` (rustup mengunduh
+  otomatis). `js-engine` mendukung **ESM + TypeScript** (import relatif + fallback ekstensi), API
+  `ramonyx.*` (sleep/fs/env/**HTTP server pull-model**, bind 127.0.0.1) dengan **permission model
+  deny-all** (`--allow-read/write/net/env`) serta **cancellation** (`request.signal` saat klien
+  putus), **keep-alive**, **streaming respons** (`body` AsyncIterable → chunked), dan **resolusi
+  `node_modules` ESM v1** (`exports`/`module`/`main`), **`web_shim`** (URL, TextEncoder,
+  Headers/Request/Response, setTimeout, MessageChannel — ADR-0027/0029), **compatibility suite v1**
+  (pipeline framework nyata — ADR-0028), **interop CommonJS v1 + demo SSR React**
+  (`react` + `react-dom/server.browser` di runtime — ADR-0029), **`fetch` + `ReadableStream`
+  + body streaming** (POST body, SSR streaming `renderToReadableStream` — ADR-0030), serta
+  **builtin subset `node:net`/`node:dns/promises` + `crypto` + subset `@ramonyx/security`**
+  (securityHeaders/cspNonce/csrf/rateLimit/guardedFetch — ADR-0031), **resource limits**
+  (`--max-heap-mb`, `--timeout-ms`, `ramonyx.permissions.get()/revoke()` — ADR-0033), serta
+  **isolasi worker + kuota** (`ramonyx.worker`: thread + isolate V8 terpisah, pesan JSON,
+  permission irisan anti-eskalasi, kill switch — ADR-0034), serta **streaming request + batas
+  body server** (`payload.body` stream pull-model, `maxBodyBytes` default 1 MiB, 413 dini —
+  ADR-0035), **`fetch` https + redirect otomatis** (TLS diverifikasi, CA kustom `--tls-ca`,
+  follow/manual/error, permission per hop — ADR-0036), **kuota CPU per-thread + RSS proses**
+  (`--max-cpu-ms`/`--max-rss-mb` — ADR-0038), **isolasi level proses untuk plugin**
+  (`ramonyx.spawn` + `--plugin`, protokol JSON stdin/stdout, permission irisan, kill — ADR-0040),
+  **supervisi restart plugin** (`restart` + `plugin.stats()` — ADR-0043), serta **health-check
+  plugin** (`healthCheck` + `ramonyx.heartbeat()` — ADR-0044), serta **perf report gate**
+  (`pnpm bench:report`, report-only — ADR-0045) + **source map produksi** (ADR-0046),
+  **backoff eksponensial + health-check otomatis plugin** (ADR-0050), serta **sandbox OS
+  plugin** (Landlock: FS + TCP kernel-level, ADR-0051). Publikasi npm **selesai** (13 paket
+  @ 0.1.0); sisa kandidat: evaluasi `--strict` bench + hosting dokumentasi;
+  **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
+  dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
+  **subset** (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak
+  dengan pesan jelas) — jangan diklaim lebih. Build pertama V8/deno_core+deno_ast+hyper ±3 menit;
+  biarkan `target/` cache.
+- **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
+  `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
+- **Nama proyek: `ramonyx` (final).**
+- **Disiplin klaim (BLUEPRINT §10).** Jangan menulis klaim performa/keamanan tanpa bukti yang bisa
+  dijalankan.
+- **Bahasa.** Dokumen internal Bahasa Indonesia; teks publik (README npm, docs situs, pesan error) Inggris.
+- **Jangan lompat fase.** Phase 2 dulu (framework di Node), runtime Rust+V8 baru Phase 4–5.
+
+## Batas arsitektur yang harus dijaga
+
+- Framework core tidak bergantung pada internal runtime, dan sebaliknya; keduanya harus dapat diuji terpisah.
+- Runtime MVP = Node.js. Runtime sendiri = host Rust + engine V8 (bukan menulis engine JS dari nol).
+- Compiler menghasilkan artefak eksplisit: client bundle, server bundle, route manifest, metadata build.
+- FFI adalah batas yang diaudit: minimalkan `unsafe`, dokumentasikan invariant.
+- Jangan bangun sistem reactive UI, compiler frontend, ORM, dan package manager sekaligus; UI lewat
+  adapter yang dapat diganti (pertama: React, ADR-0003).
+- Keamanan: validasi schema runtime di trust boundary; permission berbasis capability eksplisit;
+  JS context terpisah bukan sandbox; isolasi plugin di level proses/OS; SSR butuh timeout/kanselasi/limit.
+
+## Baseline teknis (blueprint §6, ADR-0002)
+
+TypeScript strict · ESM-only · source-first (exports `.ts`) · pnpm workspaces · Node ≥24 ·
+loader dev esbuild (ADR-0006) · adapter UI pertama React (ADR-0003) · bundler Vite (ADR-0005/0007) ·
+host runtime Rust + V8 (Phase 4+) · CI: lint → typecheck → test → build → security checks.
+
+## Benchmark (blueprint §8)
+
+Baseline (mesin dev; **bukan klaim publik**): `phase1-baseline.json` (HTTP),
+`ssr-baseline.json` (SSR sinkron vs streaming), `phase2-web-vitals.json` (median 3 load).
+Warm-up + beberapa ulangan, laporkan distribusi/median — bukan rata-rata. Gate **report-only**:
+`pnpm bench:report`, `pnpm bench:ssr:report`, vitals di e2e (`VITALS_STRICT=1` untuk memblokir).
+`--strict` sahih **hanya di mesin baseline** (guard menolak lintas-mesin; CI ±3× lebih cepat
+ dari mesin dev — evaluasi di ADR-0045).
+
+## Status & langkah berikutnya
+
+Phase 0–3 **selesai** (2026-10-18); keputusan pemilik juga selesai — lisensi **MIT**, scope
+**`@ramonyx/*`**, browser matrix evergreen 2 versi terakhir, rekonsiliasi PRD (ADR-0018).
+**Phase 4 (runtime alpha) berjalan**: R0 selesai (workspace Cargo, CLI `ramonyx-runtime`, config,
+structured logging — ADR-0019), **R1**: V8 via `deno_core` (ADR-0020) + module loader ESM &
+transpile TypeScript via `deno_ast` (ADR-0021), **R2a**: I/O dasar + HTTP server pull-model
+(ADR-0022), **R2b**: cancellation klien + keep-alive (ADR-0024), **R2c**: streaming respons
+chunked (ADR-0025), **R3a**: permission model deny-all dengan flag `--allow-*` (ADR-0023), **resolusi `node_modules`
+ESM v1** (ADR-0026), **`web_shim`** (URL/TextEncoder/Headers/Request/Response — ADR-0027),
+**compatibility suite v1** (pipeline framework nyata berjalan di runtime — ADR-0028),
+**interop CommonJS v1 + demo SSR React** (`react` + `react-dom/server.browser` di runtime —
+ADR-0029), **`fetch` + `ReadableStream` + body streaming** (POST body, SSR streaming —
+ADR-0030), **builtin subset + subset `@ramonyx/security` di runtime** (`node:net`/
+`node:dns/promises`, `crypto.getRandomValues`, middleware security + guardedFetch/SSRF —
+ADR-0031), **jembatan `serveHandler` + playground subset** (halaman SSR + API + POST +
+security berjalan end-to-end lewat HTTP — ADR-0032), **resource limits** (kuota heap V8,
+watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker + kuota**
+(thread + isolate V8 terpisah, pesan JSON, permission irisan, kill switch — ADR-0034), dan
+**streaming request + batas body server** (body pull-model + 413 dini — ADR-0035), dan
+**`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036), **R4 profiling startup**
+(timings per fase, metrik op, baseline; snapshot V8 ditolak dengan alasan terukur — ADR-0037),
+**kuota CPU per-thread + RSS proses** (ADR-0038), **release pipeline v1** (paket 0.1.0, tarball npm
++ binary runtime, verifikasi instalasi konsumen — ADR-0039), **isolasi level proses untuk plugin**
+(`ramonyx.spawn`, protokol JSON, permission irisan, kill, **supervisi restart** — ADR-0040/0043,
+**health-check heartbeat** — ADR-0044, **backoff eksponensial + health-check otomatis
+(watchdog)** — ADR-0050, **sandbox OS (Landlock)** — ADR-0051),
+**scaffolder aplikasi**
+(`pnpm create:app` — template file-routing **SSR React + hydration**, ADR-0041), **SSR streaming
+Node** (`renderToReadableStream` via `react-dom/server.edge` — ADR-0047; jalur sinkron tetap
+untuk halaman error), **bench SSR + ambang Web Vitals** (report-only — ADR-0048), **pra-publikasi**
+(publish dari tarball terverifikasi + guard tag↔versi + dist-tag + `create-ramonyx-app` — ADR-0049),
+dan **situs
+dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042),
+**di-host di GitHub Pages** (ekspor statis + `<base href>` subpath — ADR-0052) —
+semuanya diverifikasi test + smoke.
+**Exit criteria Phase 4 tercapai**; **publikasi npm selesai** (0.1.0 pada 2026-10-18; **0.1.1**
+sore harinya: **14 paket** — kini termasuk `@ramonyx/devtools` — dengan **provenance**, GitHub
+Release v0.1.1; verifikasi registry end-to-end lewat alur CLI ✓).
+Sisa kandidat: baseline bench per-lingkungan di CI, migrasi playground/docs ke CLI (opsional),
+watch mode.
+Ringkas Phase 3: limits body/timeout/concurrency +
+rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
+output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
+abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
+(ADR-0016); 161 tes Node + 5 e2e + 111 test Rust hijau.
+

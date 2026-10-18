@@ -1,0 +1,535 @@
+{
+  "schemaVersion": 1,
+  "items": [
+    {
+      "id": "p0-server-actions",
+      "title": "Server actions & form handling (mutasi first-class)",
+      "theme": "data",
+      "priority": "p0",
+      "size": "L",
+      "status": "open",
+      "what": "API `action()` untuk mutasi dari form/komponen: validasi schema di trust boundary, error kembali ke form, progressive enhancement (bekerja tanpa JS), revalidasi data setelah mutasi.",
+      "why": "Tanpa mutasi first-class setiap aplikasi harus merakit API route + fetch manual + state client; framework pesaing menjadikan mutasi sebagai jalur utama sehingga CRUD sederhana pun jauh lebih ringkas di sana.",
+      "done": [
+        "Action didefinisikan di file rute dan dapat dipanggil dari form tanpa JavaScript (progressive enhancement)",
+        "Validasi Standard Schema + error terstruktur yang bisa ditampilkan per field",
+        "Revalidasi loader setelah mutasi sukses",
+        "Test unit + e2e (dengan dan tanpa JS) + halaman docs"
+      ],
+      "areas": ["packages/core", "packages/server", "packages/ssr", "packages/react"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js Server Actions; Remix/React Router `action` per route; SvelteKit form actions; Nuxt server routes + $fetch.",
+      "source": "gap §3 (mutations)",
+      "strategic": true
+    },
+    {
+      "id": "p0-static-generation",
+      "title": "Static generation (SSG) + ekspor statis first-class",
+      "theme": "rendering",
+      "priority": "p0",
+      "size": "L",
+      "status": "open",
+      "what": "Opsi `prerender` per rute (dan global) + `ramonyx build --static` yang menghasilkan HTML per rute + aset siap host statis — bukan skrip bespoke seperti ekspor situs docs saat ini.",
+      "why": "Sebagian besar proyek pertama (marketing, blog, dokumentasi) di-deploy statis; tanpa jalur ini pengguna harus pindah framework atau menulis skrip sendiri, dan situs docs kami sendiri membuktikan kebutuhan ini nyata.",
+      "done": [
+        "API prerender per rute dan global (interaksi dengan loader dinamis terdokumentasi)",
+        "CLI `ramonyx build --static` menghasilkan output siap upload (Pages/Netlify/S3) termasuk 404",
+        "Situs docs memakai fitur framework ini (dogfood), e2e terhadap output statis",
+        "Halaman docs + benchmark ukuran/waktu build"
+      ],
+      "areas": ["packages/ssr", "packages/compiler", "packages/devtools", "packages/bundler"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js `output: export`; SvelteKit adapter-static; Astro (default statis); Nuxt `nuxt generate`.",
+      "source": "gap §3 (SSG)",
+      "strategic": true
+    },
+    {
+      "id": "p0-serverless-adapters",
+      "title": "Adapter serverless/edge (Cloudflare Workers, Vercel, Deno Deploy)",
+      "theme": "deploy",
+      "priority": "p0",
+      "size": "L",
+      "status": "open",
+      "what": "Adapter yang menghasilkan entry fetch-handler (Request→Response) untuk platform serverless/edge populer + perintah build per-target.",
+      "why": "Kebebasan deploy adalah alasan utama memilih framework; saat ini hanya Node standalone, sementara pesaing dapat deploy ke platform populer dengan satu perintah/adapter.",
+      "done": [
+        "Minimal satu platform nyata (mis. Cloudflare Workers) berjalan dengan smoke test di CI",
+        "`ramonyx build --target <platform>` menghasilkan artefak yang benar",
+        "Dokumentasi deploy per platform + contoh"
+      ],
+      "areas": ["packages/adapter-runtime", "packages/devtools", "packages/bundler"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js (Vercel/self-host); SvelteKit adapters (node/cloudflare/vercel); Nuxt Nitro presets; Astro adapters.",
+      "source": "gap §3 (adapters)",
+      "strategic": true
+    },
+    {
+      "id": "p0-http-production-basics",
+      "title": "Dasar HTTP produksi: kompresi, ETag, fingerprinting aset, helper cache",
+      "theme": "perf",
+      "priority": "p0",
+      "size": "M",
+      "status": "open",
+      "what": "Kompresi gzip/brotli (Accept-Encoding) + ETag/304 di server standalone; hash nama aset build + Cache-Control immutable; helper Cache-Control/revalidate untuk handler.",
+      "why": "Server tanpa kompresi dan aset tanpa hash (template memakai `cache-control: no-store`) adalah regresi langsung terhadap Core Web Vitals dan bandwidth — pesaing menangani ini secara default tanpa konfigurasi.",
+      "done": [
+        "Kompresi respons HTML/JS/CSS + test (termasuk klien tanpa Accept-Encoding)",
+        "ETag + 304 untuk aset statis + test",
+        "Aset build ber-hash dan disajikan `immutable` (template ikut diperbarui)",
+        "Benchmark Web Vitals/HTTP sebelum-sesudah dicatat"
+      ],
+      "areas": ["packages/adapter-runtime", "packages/bundler", "packages/core"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js/SvelteKit/Astro/Nuxt: aset ber-hash + cache immutable dan kompresi di produksi secara default.",
+      "source": "gap §3 (compression/asset)",
+      "quickWin": true
+    },
+    {
+      "id": "p1-middleware-per-route",
+      "title": "Middleware per-folder + route groups `(grup)`",
+      "theme": "routing",
+      "priority": "p1",
+      "size": "M",
+      "status": "open",
+      "what": "`middleware.ts` per folder yang dieksekusi berurutan dari root, dapat mengganti request/response; konvensi route group `(grup)` untuk organisasi folder tanpa segmen URL.",
+      "why": "Middleware app-level memaksa pencocokan path manual dan mudah bocor (proteksi area admin harus diingat di satu tempat); struktur per-folder adalah cara berpikir standar di framework pesaing.",
+      "done": [
+        "Compiler menemukan dan mengurutkan middleware per folder",
+        "Middleware dapat mengganti request (nonce) dan response (redirect) + test",
+        "Route group `(grup)` tidak muncul di URL + test",
+        "Halaman docs"
+      ],
+      "areas": ["packages/compiler", "packages/server"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js middleware (per-project + matcher); SvelteKit hooks + layout server load; Nuxt route rules/middleware.",
+      "source": "gap §3 (middleware)",
+      "strategic": false
+    },
+    {
+      "id": "p1-typed-routes",
+      "title": "Typed routes (codegen tipe dari manifest)",
+      "theme": "dx",
+      "priority": "p1",
+      "size": "M",
+      "status": "open",
+      "what": "Generate tipe rute dari manifest (literal path + params bertipe) sehingga `href` dan `params` salah tertangkap saat typecheck, bukan runtime.",
+      "why": "Inferensi TypeScript adalah alasan utama memilih framework TypeScript-first; Next/Nuxt/SvelteKit sudah memberi tipe rute ter-generate, dan tanpa itu Ramonyx tertinggal di DX inti.",
+      "done": [
+        "Codegen tipe saat dev/build (tanpa memperlambat startup signifikan)",
+        "Komponen Link/href hanya menerima rute nyata; params bertipe sesuai pola",
+        "Test typecheck negatif (rute/params salah = error compile)",
+        "Halaman docs"
+      ],
+      "areas": ["packages/compiler", "packages/react", "packages/router"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js typedRoutes; Nuxt typedPages; SvelteKit $types.",
+      "source": "gap §3 (typed routes)"
+    },
+    {
+      "id": "p1-metadata-seo",
+      "title": "Metadata halaman lengkap + helper SEO (sitemap/robots)",
+      "theme": "rendering",
+      "priority": "p1",
+      "size": "M",
+      "status": "open",
+      "what": "API metadata per halaman (description, canonical, Open Graph/Twitter) + injeksi `<head>` per halaman + helper sitemap.xml/robots.txt.",
+      "why": "Situs publik butuh SEO dan kartu berbagi tautan yang benar; saat ini hanya `title`/`status`, sehingga setiap situs publik langsung butuh akal-akalan.",
+      "done": [
+        "Metadata memperluas PageMetadata (description/OG/Twitter/canonical)",
+        "Renderer menyuntikkan `<head>` per halaman + test SSR",
+        "Helper sitemap/robots memakai manifest rute + test",
+        "Halaman docs SEO"
+      ],
+      "areas": ["packages/core", "packages/ssr", "packages/react"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js Metadata API; Nuxt useSeoMeta; SvelteKit `<svelte:head>` + pustaka SEO; Astro integrations.",
+      "source": "gap §3 (head/metadata)"
+    },
+    {
+      "id": "p1-auth-session",
+      "title": "Primitif autentikasi: cookie ter-sign + session",
+      "theme": "security",
+      "priority": "p1",
+      "size": "M",
+      "status": "open",
+      "what": "Helper cookie (sign/verify, opsi aman default) + antarmuka session store + contoh alur login/logout yang memakai CSRF dan rate limit yang sudah ada.",
+      "why": "Hampir semua aplikasi nyata butuh auth; menyediakan primitif aman mencegah setiap pengguna merakit sendiri (dan salah) — sekaligus memperkuat posisi keamanan Ramonyx.",
+      "done": [
+        "Cookie helper dengan tanda tangan (Web Crypto) + test",
+        "Contoh alur login/logout end-to-end (session + CSRF + rate limit)",
+        "Halaman docs auth dengan peringatan yang jelas"
+      ],
+      "areas": ["packages/security", "packages/core"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js + Auth.js; Remix cookie sessions; SvelteKit cookies + Lucia; Nuxt nuxt-auth-utils.",
+      "source": "gap §3 (auth)",
+      "strategic": true
+    },
+    {
+      "id": "p1-revalidate",
+      "title": "Revalidasi data (ISR-lite): `revalidate()` + cache server",
+      "theme": "data",
+      "priority": "p1",
+      "size": "L",
+      "status": "open",
+      "what": "Cache loader/rute dengan TTL + stale-while-revalidate, dan invalidasi on-demand (API/action) — tanpa rebuild penuh.",
+      "why": "Konten semi-statis (beranda, katalog) adalah kasus paling umum di produksi; parity ISR/route-rules adalah pembeda antara \"bisa dipakai\" dan \"dipakai serius\".",
+      "done": [
+        "`revalidate(seconds)` per loader/rute + stale-while-revalidate + test",
+        "Invalidasi on-demand (tag/path) dari action/API + test",
+        "Dokumentasi interaksi dengan SSG dan streaming"
+      ],
+      "areas": ["packages/ssr", "packages/core", "packages/server"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js ISR + revalidateTag; Nuxt route rules + SWR; Astro (di level adapter/CDN).",
+      "dependsOn": ["p0-static-generation"],
+      "source": "gap §3 (ISR/caching)",
+      "strategic": true
+    },
+    {
+      "id": "p1-prefetch",
+      "title": "Prefetch halaman saat hover/viewport",
+      "theme": "rendering",
+      "priority": "p1",
+      "size": "S",
+      "status": "open",
+      "what": "Prefetch payload/HTML halaman tujuan saat tautan di-hover atau masuk viewport, lalu soft navigation memakai cache tersebut.",
+      "why": "Navigasi instan adalah ekspektasi dasar pengguna web modern; Next.js melakukannya default dan soft navigation kami akan terasa lambat tanpa ini.",
+      "done": [
+        "Prefetch saat hover/viewport dengan batas konkurensi",
+        "Soft navigation memakai payload ter-prefetch + test e2e",
+        "Tidak menggandakan request saat klik cepat"
+      ],
+      "areas": ["packages/react"],
+      "adrs": [],
+      "competitor": "Next.js Link prefetch (default); SvelteKit preload on hover; Nuxt NuxtLink prefetch.",
+      "source": "gap §3 (soft navigation)",
+      "quickWin": true
+    },
+    {
+      "id": "p1-boundary-lint",
+      "title": "Analisis + penegakan batas server/client",
+      "theme": "quality",
+      "priority": "p1",
+      "size": "M",
+      "status": "open",
+      "what": "Konvensi modul server (`*.server.ts`) + analisis build yang menolak impor API server (node:*, rahasia) dari modul yang masuk bundle client, dengan pesan error jelas.",
+      "why": "Utang yang diakui di audit dokumentasi: tanpa penegakan, kebocoran server→client adalah bug keamanan yang menunggu terjadi; pesaing punya konvensi + tooling untuk ini.",
+      "done": [
+        "Konvensi ditetapkan dan didokumentasikan (rules.json diperbarui)",
+        "Analisis build menolak impor server dari modul client + test negatif",
+        "Pesan error menunjuk file dan solusi"
+      ],
+      "areas": ["packages/compiler", "packages/bundler", "packages/core"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js `server-only` + error boundary Turbopack; SvelteKit $env/static/private; Nuxt folder .server.",
+      "source": "utang (audit)",
+      "strategic": false
+    },
+    {
+      "id": "p1-docs-tutorial",
+      "title": "Tutorial getting-started end-to-end di situs docs",
+      "theme": "docs",
+      "priority": "p1",
+      "size": "S",
+      "status": "open",
+      "what": "Tutorial naratif: scaffold → rute + layout → loader → API + validasi → form → build → deploy, memakai perintah yang benar-benar dijalankan.",
+      "why": "Jalur adopsi pertama adalah tutorial, bukan referensi; README kami padat namun tidak menggantikan pengalaman langkah demi langkah yang dimiliki semua pesaing.",
+      "done": [
+        "Halaman tutorial di situs docs (tautan dari README)",
+        "Setiap perintah diverifikasi berjalan (diuji saat menulis + di CI smoke bila murah)",
+        "Contoh akhir yang bisa di-scaffold"
+      ],
+      "areas": ["docs", "apps/docs"],
+      "adrs": [],
+      "competitor": "Next.js Learn; React Router tutorial; SvelteKit tutorial; Nuxt getting started; Astro tutorial.",
+      "source": "gap §3 (docs)",
+      "quickWin": true
+    },
+    {
+      "id": "p2-plugin-ecosystem",
+      "title": "Ekosistem plugin/module tingkat framework",
+      "theme": "ecosystem",
+      "priority": "p2",
+      "size": "L",
+      "status": "open",
+      "what": "Kontrak plugin untuk build + dev + server hooks (pembungkus Vite plugin + hook Ramonyx) + contoh plugin + panduan publikasi.",
+      "why": "Ekosistem adalah moat framework besar (Nuxt modules, Astro integrations); tanpa kontrak, setiap kebutuhan pengguna dirakit sendiri dan tidak ada yang bisa dibagikan.",
+      "done": [
+        "Kontrak plugin stabil + hooks terdokumentasi",
+        "Minimal satu plugin contoh (mis. analytics/SEO) dipakai di playground",
+        "Panduan menulis + mempublikasikan plugin"
+      ],
+      "areas": ["packages/bundler", "packages/core", "packages/devtools"],
+      "adrs": ["ADR baru"],
+      "competitor": "Nuxt modules; Astro integrations; SvelteKit Vite plugins; Next.js plugins (terbatas).",
+      "source": "gap §3 (ekosistem)",
+      "strategic": true
+    },
+    {
+      "id": "p2-observability",
+      "title": "Observability: request logging + trace-id + metrik",
+      "theme": "quality",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Paket/middleware observability: log request terstruktur, trace-id yang diteruskan ke handler, hook metrik (durasi, status) siap diekspor ke OTel.",
+      "why": "Produksi tanpa visibilitas = debugging buta; kompetitor menyediakan integrasi observability (instrumentation, devtools) sebagai jalur resmi.",
+      "done": [
+        "Middleware logging + trace-id + test",
+        "Hook metrik terdokumentasi (durasi/status/route)",
+        "Contoh ekspor ke OTel atau format JSON"
+      ],
+      "areas": ["packages/server", "packages/core"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js instrumentation + OTel; Nuxt devtools/OTel; SvelteKit hooks + adapter-node logs.",
+      "source": "gap §3 (observability)"
+    },
+    {
+      "id": "p2-bench-env-baseline",
+      "title": "Baseline benchmark per-lingkungan + jalur gate blocking",
+      "theme": "perf",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Baseline benchmark per-lingkungan (runner CI) + skrip pembanding; keputusan ADR apakah gate dapat naik dari report-only menjadi blocking di lingkungan dengan baseline cocok.",
+      "why": "Utang yang diakui: gate report-only tidak menahan regresi; CI ±3× lebih cepat dari mesin dev sehingga `--strict` tidak sahih lintas-mesin tanpa baseline terpisah.",
+      "done": [
+        "Baseline per-lingkungan ter-commit + prosedur regenerasi",
+        "`--strict`/blocking hanya aktif saat baseline cocok (guard diperkuat) + test",
+        "Keputusan blocking dicatat sebagai ADR (perbarui ADR-0045)"
+      ],
+      "areas": ["benchmarks", ".github/workflows"],
+      "adrs": ["ADR-0045 (perbarui)"],
+      "competitor": "Turbopack benchmarks, SvelteKit bench, Nuxt bundle metrics — semuanya punya gate performa di CI.",
+      "source": "utang (ADR-0045) + kandidat lama",
+      "strategic": true
+    },
+    {
+      "id": "p2-ip-pinning",
+      "title": "IP-pinning guardedFetch (anti DNS-rebinding)",
+      "theme": "security",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Resolusi DNS sekali lalu sambung ke alamat IP yang divalidasi (bukan resolve ulang oleh klien HTTP), dengan validasi Host/SNI — menutup jendela rebinding.",
+      "why": "Celah yang diakui sejak ADR-0031: guard SSRF tanpa pinning masih bisa dibypass lewat DNS rebinding; pesaing umumnya tidak menyediakan guard ini sama sekali, jadi menutupnya memperkuat diferensiasi keamanan.",
+      "done": [
+        "Resolusi + pin alamat pada guardedFetch + test dengan DNS tiruan (rebinding)",
+        "Perilaku redirect tetap aman (pin per hop) + test",
+        "Dokumentasi + perbarui security.json/ADR-0031"
+      ],
+      "areas": ["packages/security"],
+      "adrs": ["ADR-0031 (lanjutan)"],
+      "competitor": "Tidak umum di framework JS — diferensiasi keamanan bila selesai dengan bukti.",
+      "source": "utang (ADR-0031)"
+    },
+    {
+      "id": "p2-pentest-plugin",
+      "title": "Pentest/penilaian escape isolasi plugin",
+      "theme": "security",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Penilaian sistematis skenario escape (fs, net, CPU/memori, komunikasi antar-plugin) terhadap worker + proses + Landlock, dengan laporan hasil dan celah.",
+      "why": "Sandbox kernel adalah klaim keamanan terkuat kami; tanpa penilaian formal klaim itu rapuh dan tidak boleh dipakai di materi publik.",
+      "done": [
+        "Skenario escape diuji (fs/net/CPU/kill switch) + hasil terdokumentasi",
+        "Celah ditemukan dicatat di security.json + TODO lanjutan",
+        "Ringkasan publik yang jujur (apa yang terbukti, apa yang tidak)"
+      ],
+      "areas": ["runtime/crates/js-engine", "docs/security"],
+      "adrs": ["ADR-0051 (lanjutan)"],
+      "competitor": "Tidak ada pembanding langsung — menjadi diferensiasi hanya jika terbukti dan didokumentasikan.",
+      "source": "utang (audit)"
+    },
+    {
+      "id": "p2-asset-pipeline",
+      "title": "Pipeline aset: komponen Image + font self-host",
+      "theme": "rendering",
+      "priority": "p2",
+      "size": "L",
+      "status": "open",
+      "what": "Komponen `<Image>` (resize/format modern, width/height otomatis) + helper font (self-host + preload + fallback metrik) + impor aset dari komponen.",
+      "why": "Gambar dan font adalah penyebab utama CLS/LCP buruk; Next/Nuxt/Astro semuanya menyediakan pipeline bawaan, dan tanpa itu pengguna harus merakit sendiri.",
+      "done": [
+        "Image komponen + optimasi saat build (minimal resize + format) + test",
+        "Font helper + preload + docs",
+        "Benchmark LCP/CLS playground sebelum-sesudah"
+      ],
+      "areas": ["packages/bundler", "packages/react", "packages/devtools"],
+      "adrs": ["ADR baru"],
+      "competitor": "next/image + next/font; @nuxt/image + @nuxt/fonts; Astro `<Image>` + fontsource.",
+      "source": "gap §3 (assets)",
+      "strategic": true
+    },
+    {
+      "id": "p2-error-dx",
+      "title": "DX error: overlay dev + tautan docs + kode error stabil",
+      "theme": "dx",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Overlay error di dev untuk kegagalan SSR/loader (bukan hanya client), pesan error dengan tautan ke halaman docs terkait, dan kode error stabil untuk pencarian.",
+      "why": "Kualitas pesan error adalah faktor adopsi yang nyata (pengalaman pertama debugging); pesaing berinvestasi besar di overlay dan pesan yang menuntun.",
+      "done": [
+        "Overlay menampilkan stack + sumber untuk error SSR/loader di dev",
+        "Setiap error publik punya tautan docs + kode stabil + test",
+        "Halaman docs troubleshooting"
+      ],
+      "areas": ["packages/compiler", "packages/bundler", "packages/ssr"],
+      "adrs": [],
+      "competitor": "Next.js error overlay; SvelteKit enhanced error pages; Nuxt error page + devtools.",
+      "source": "gap §3 (DX error)"
+    },
+    {
+      "id": "p2-watch-mode",
+      "title": "`ramonyx build --watch` (rebuild otomatis)",
+      "theme": "dx",
+      "priority": "p2",
+      "size": "S",
+      "status": "open",
+      "what": "Mode watch untuk build: bundel ulang client + restart server produksi saat file berubah, untuk alur kerja non-Vite/produksi-like.",
+      "why": "Kandidat lama yang teridentifikasi; melengkapi dev server Vite untuk skenario yang membutuhkan perilaku produksi (mis. menguji build sebelum deploy).",
+      "done": [
+        "`ramonyx build --watch` + restart server dengan debounce + test manual terdokumentasi",
+        "Dokumentasi perbedaan dev vs watch"
+      ],
+      "areas": ["packages/devtools"],
+      "adrs": [],
+      "competitor": "`vite build --watch`, `nuxt build --watch`, `astro dev`/`astro preview` — semua punya loop rebuild.",
+      "source": "kandidat lama",
+      "quickWin": true
+    },
+    {
+      "id": "p2-mcp-docs-server",
+      "title": "MCP docs server (tools untuk agen)",
+      "theme": "docs",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Server MCP cakupan minimal (stdio, tanpa hosting): tools search docs, get page, get feature status, get rules — membaca machine layer + docs.",
+      "why": "Riset §2: Svelte/Nuxt/Astro menjalankan docs MCP; kami menundanya karena infrastruktur, tetapi versi stdio lokal menghapus biaya hosting dan menambah kanal agen yang nyata.",
+      "done": [
+        "Paket MCP (stdio) dengan ≥3 tools yang membaca docs/machine + docs/**",
+        "Diuji dengan klien MCP (protocol-level test)",
+        "Dokumentasi pemasangan (Claude Code/Cursor/OpenCode)"
+      ],
+      "areas": ["packages (baru)", "docs/machine"],
+      "adrs": ["ADR baru"],
+      "competitor": "Svelte mcp.svelte.dev; Nuxt nuxt.com/mcp; Astro mcp.docs.astro.build; Next.js runtime MCP (bukan docs).",
+      "source": "riset §2",
+      "strategic": true
+    },
+    {
+      "id": "p2-context7",
+      "title": "Daftarkan repo ke Context7",
+      "theme": "docs",
+      "priority": "p2",
+      "size": "S",
+      "status": "open",
+      "what": "Ajukan repo RamonyxJS/ramonyx ke Context7 (kanal dokumentasi pihak ketiga untuk agen).",
+      "why": "Riset: kelima framework besar terdaftar di Context7; gratis, tanpa infrastruktur, dan langsung memberi agen sumber docs yang familiar.",
+      "done": [
+        "Listing Context7 aktif dan diuji (query Ramonyx mengembalikan docs)",
+        "Dicatat di README + llms.txt"
+      ],
+      "areas": ["docs"],
+      "adrs": [],
+      "competitor": "Next.js, Svelte, Nuxt, Astro, React Router semuanya terdaftar.",
+      "source": "riset §2",
+      "quickWin": true
+    },
+    {
+      "id": "p2-cli-migration",
+      "title": "Migrasi playground & docs ke CLI `ramonyx`",
+      "theme": "quality",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Ganti skrip ad-hoc repo (build/dev/start playground & docs) dengan CLI `ramonyx` — dogfood CLI di aplikasi nyata milik repo sendiri.",
+      "why": "Kandidat lama; dogfooding membuktikan CLI cukup untuk aplikasi nyata dan menutup celah antara template dan praktik repo (dokumen dan CLI tidak boleh divergen).",
+      "done": [
+        "apps/playground + apps/docs berjalan lewat `ramonyx dev|build|start`",
+        "e2e + situs docs tetap hijau (termasuk ekspor Pages)",
+        "Dokumen repo diperbarui"
+      ],
+      "areas": ["apps/playground", "apps/docs", "packages/devtools"],
+      "adrs": [],
+      "competitor": "Dogfooding CLI adalah standar framework (create-next-app memakai next, Nuxt memakai nuxi, SvelteKit memakai vite/svelte-kit).",
+      "source": "kandidat lama"
+    },
+    {
+      "id": "p2-testing-docs",
+      "title": "Panduan testing aplikasi (paket testing + pola)",
+      "theme": "docs",
+      "priority": "p2",
+      "size": "S",
+      "status": "open",
+      "what": "Halaman docs testing: memakai `@ramonyx/testing` (handler in-process), mengetes loader/action, e2e dengan Playwright, pola data.",
+      "why": "DX testing adalah faktor retensi; pesaing punya dokumentasi testing yang dalam, sedangkan paket testing kami belum terdokumentasi publik.",
+      "done": [
+        "Halaman docs testing dengan contoh yang dijalankan di CI",
+        "README paket testing"
+      ],
+      "areas": ["docs", "packages/testing"],
+      "adrs": [],
+      "competitor": "SvelteKit testing docs; Nuxt @nuxt/test-utils; Next.js testing setup.",
+      "source": "gap §3 (testing docs)",
+      "quickWin": true
+    },
+    {
+      "id": "p3-i18n",
+      "title": "i18n routing + helper terjemahan",
+      "theme": "routing",
+      "priority": "p3",
+      "size": "L",
+      "status": "open",
+      "what": "Routing locale (prefix/domain), negosiasi Accept-Language, helper terjemahan server/client.",
+      "why": "Paritas untuk produk global; tidak mendesak untuk adopsi awal, tetapi menjadi syarat untuk pasar tertentu.",
+      "done": [
+        "Routing locale + negosiasi + test",
+        "Helper terjemahan + docs + contoh"
+      ],
+      "areas": ["packages/router", "packages/compiler", "packages/core"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js i18n routing; Nuxt i18n module; SvelteKit paraglide; Astro i18n routing.",
+      "source": "gap §3 (i18n)"
+    },
+    {
+      "id": "p3-devtools-ui",
+      "title": "Panel devtools (rute, timing loader, hydration)",
+      "theme": "dx",
+      "priority": "p3",
+      "size": "L",
+      "status": "open",
+      "what": "Panel di dev server: daftar rute + manifest, timing loader/render per request, status hydration, ukuran bundle.",
+      "why": "Devtools meningkatkan retensi dan kecepatan debugging; pesaing besar memilikinya, tetapi ini bukan blocker adopsi.",
+      "done": [
+        "Panel dev + data timing nyata + docs"
+      ],
+      "areas": ["packages/devtools", "packages/bundler"],
+      "adrs": ["ADR baru"],
+      "competitor": "Nuxt DevTools; Next.js devtools MCP; Vite inspector.",
+      "source": "gap §3 (DX)"
+    },
+    {
+      "id": "p3-docs-domain",
+      "title": "Domain kustom + preview PR untuk situs docs",
+      "theme": "docs",
+      "priority": "p3",
+      "size": "S",
+      "status": "open",
+      "what": "Domain kustom (ramonyx.dev atau serupa) + preview deploy per PR untuk situs docs.",
+      "why": "Profesionalisme dan kepercayaan; GitHub Pages subpath sudah jalan, jadi ini peningkatan kenyamanan, bukan kebutuhan.",
+      "done": [
+        "Domain kustom aktif dengan HTTPS + redirect dari Pages",
+        "Preview PR (atau keputusan sadar untuk tidak, dicatat)"
+      ],
+      "areas": [".github/workflows", "docs"],
+      "adrs": [],
+      "competitor": "Semua docs resmi framework besar berada di domain sendiri.",
+      "source": "kandidat lama"
+    }
+  ]
+}

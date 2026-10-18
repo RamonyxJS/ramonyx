@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ramonyx glossary",
+  "description": "Glosarium + peta konsep: istilah yang dipakai di seluruh dokumentasi, dengan definisi singkat dan rujukan.",
+  "type": "object",
+  "required": ["schemaVersion", "terms"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "terms": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["term", "definition"],
+        "additionalProperties": false,
+        "properties": {
+          "term": { "type": "string", "minLength": 2 },
+          "aliases": { "type": "array", "items": { "type": "string" } },
+          "definition": { "type": "string", "minLength": 10 },
+          "related": { "type": "array", "items": { "type": "string" } },
+          "docs": { "type": "string" }
+        }
+      }
+    }
+  }
+}

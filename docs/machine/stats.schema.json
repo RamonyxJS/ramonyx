@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ramonyx stats",
+  "description": "SATU-SATUNYA tempat angka (versi, jumlah paket, ADR, test). Digenerate `pnpm docs:stats` (menjalankan suite). Versi/paket/ADR diverifikasi statis oleh `pnpm docs:validate`.",
+  "type": "object",
+  "required": ["schemaVersion", "version", "generatedAt", "commit", "node", "packages", "adrs", "tests"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+" },
+    "generatedAt": { "type": "string", "minLength": 10 },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{7,40}$" },
+    "node": { "type": "string", "minLength": 2 },
+    "packages": {
+      "type": "object",
+      "required": ["workspace", "npm", "names"],
+      "additionalProperties": false,
+      "properties": {
+        "workspace": { "type": "integer", "minimum": 1 },
+        "npm": { "type": "integer", "minimum": 1 },
+        "names": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "adrs": { "type": "integer", "minimum": 1 },
+    "tests": {
+      "type": "object",
+      "required": ["node", "rust", "e2eSpecFiles"],
+      "additionalProperties": false,
+      "properties": {
+        "node": { "type": "integer", "minimum": 0 },
+        "rust": { "type": "integer", "minimum": 0 },
+        "e2eSpecFiles": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

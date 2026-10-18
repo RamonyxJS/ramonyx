@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "erasable-syntax",
+      "rule": "Tulis TypeScript yang erasable: dilarang `enum`, `namespace`, parameter property, dan `import =`. Tipe harus hilang saat transpile.",
+      "rationale": "Paket framework diekspor sebagai `.ts` dan dijalankan Node type stripping (tanpa transpile). Sintaks non-erasable gagal saat runtime.",
+      "scope": "framework",
+      "good": "export type Status = \"ok\" | \"error\";\nconst STATUS = { ok: \"ok\" } as const;",
+      "bad": "enum Status { Ok, Error }\nclass X { constructor(private y: number) {} }",
+      "enforcement": "tsconfig `erasableSyntaxOnly` + `verbatimModuleSyntax`; `pnpm typecheck`",
+      "adrs": ["ADR-0002", "ADR-0006"]
+    },
+    {
+      "id": "relative-imports-extension",
+      "rule": "Impor relatif memakai ekstensi eksplisit: `./x.ts` / `./x.tsx` (bukan `./x`).",
+      "rationale": "Node ESM tidak menebak ekstensi; paket diekspor sebagai sumber `.ts` dan dijalankan langsung.",
+      "scope": "framework",
+      "good": "import { createApp } from \"./app.ts\";",
+      "bad": "import { createApp } from \"./app\";",
+      "enforcement": "Konsisten di seluruh repo; test loader akan gagal bila salah",
+      "adrs": ["ADR-0002"]
+    },
+    {
+      "id": "node-builtins-boundary",
+      "rule": "Impor `node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan `packages/security` (guard SSRF). Di kode aplikasi: boleh di sisi server, DILARANG di modul yang masuk bundle client.",
+      "rationale": "Menjaga core framework portable dan bundle client bersih dari API server.",
+      "scope": "framework",
+      "good": "// packages/security/src/ssrf.ts\nimport { lookup } from \"node:dns/promises\";",
+      "bad": "// packages/core/src/route.ts\nimport { readFile } from \"node:fs/promises\";",
+      "enforcement": "Lint (Biome) melarang `node:*` di luar paket yang diizinkan",
+      "adrs": ["ADR-0002", "ADR-0015"]
+    },
+    {
+      "id": "no-jsx-in-framework",
+      "rule": "Paket framework tidak berisi JSX; JSX hanya di kode aplikasi (`.tsx`) yang dijalankan lewat loader dev/test.",
+      "rationale": "Node type stripping tidak memproses JSX; paket framework harus berjalan di Node murni tanpa loader.",
+      "scope": "framework",
+      "good": "// packages/react/src/renderer.ts — fungsi murni tanpa JSX\nreturn createElement(page.component, props);",
+      "bad": "// packages/react/src/renderer.ts\nreturn <page.component {...props} />;",
+      "enforcement": "Struktur repo (tidak ada `.tsx` di packages/*/src) + test",
+      "adrs": ["ADR-0006"]
+    },
+    {
+      "id": "test-server-close-finally",
+      "rule": "Setiap server yang dijalankan test WAJIB `close()` di blok `finally`.",
+      "rationale": "Assert gagal sebelum `close()` membocorkan listener → `node --test` menggantung tanpa batas (pernah terjadi di CI).",
+      "scope": "repo",
+      "good": "const server = await start();\ntry { ...assert... } finally { await server.close(); }",
+      "bad": "const server = await start();\nassert.equal(...); // gagal → server tidak pernah ditutup\nawait server.close();",
+      "enforcement": "`--test-timeout=120000` + `--test-force-exit` sebagai jaring pengaman; konvensi review",
+      "adrs": []
+    },
+    {
+      "id": "node-env-production",
+      "rule": "Produksi WAJIB `NODE_ENV=production` (skrip `start`/`docs`/bench dan template `create-app` sudah men-set).",
+      "rationale": "Tanpa itu React berjalan build dev — pernah terjadi di server produksi (ADR-0048).",
+      "scope": "app",
+      "good": "\"start\": \"NODE_ENV=production node --import ./tools/register.mjs src/server.ts\"",
+      "bad": "\"start\": \"node src/server.ts\"",
+      "enforcement": "Template + skrip repo sudah benar; CI menjalankan build produksi di e2e",
+      "adrs": ["ADR-0048"]
+    },
+    {
+      "id": "loader-data-json",
+      "rule": "Data loader halaman harus JSON-serializable.",
+      "rationale": "Payload hydration ditanam inline ke HTML (`window.__RAMONYX__`); nilai non-JSON (function/class/Date) hilang atau error.",
+      "scope": "app",
+      "good": "export function load() { return { items: [\"a\", \"b\"] }; }",
+      "bad": "export function load() { return { when: new Date(), fn: () => 1 }; }",
+      "enforcement": "Serialisasi payload saat render; test SSR",
+      "adrs": ["ADR-0007"]
+    },
+    {
+      "id": "streaming-server-edge",
+      "rule": "SSR streaming memakai `react-dom/server.edge`; JANGAN `react-dom/server.browser` di Node.",
+      "rationale": "`server.browser` membuat MessageChannel level-modul yang menahan proses Node (test/CLI menggantung).",
+      "scope": "framework",
+      "good": "import { renderToReadableStream } from \"react-dom/server.edge\";",
+      "bad": "import { renderToReadableStream } from \"react-dom/server.browser\";",
+      "enforcement": "Impor langsung di `packages/ssr`; test streaming + e2e",
+      "adrs": ["ADR-0047"]
+    },
+    {
+      "id": "error-pages-not-hydrated",
+      "rule": "Jangan mengandalkan interaktivitas client di halaman error — halaman error tidak di-hydrate.",
+      "rationale": "Payload/hydration hanya untuk halaman sukses (ADR-0007); halaman error adalah HTML statis.",
+      "scope": "app",
+      "good": "// error.tsx: tautan <a href> biasa",
+      "bad": "// error.tsx: useEffect(() => fetch(...)) berharap hydration jalan",
+      "enforcement": "Renderer tidak menyuntikkan script client di halaman error; e2e errors.spec",
+      "adrs": ["ADR-0007"]
+    },
+    {
+      "id": "docs-relative-links",
+      "rule": "Tautan di dalam `docs/**` (situs docs) harus relatif — jangan absolut (`/dokumen/...`).",
+      "rationale": "Situs di-host di subpath `/ramonyx/`; `<base href>` menegakkan tautan relatif (ADR-0052).",
+      "scope": "docs",
+      "good": "[arsitektur](../architecture.md)",
+      "bad": "[arsitektur](/dokumen/architecture)",
+      "enforcement": "Rewriter tautan markdown otomatis + validasi `pnpm docs:validate`",
+      "adrs": ["ADR-0052"]
+    },
+    {
+      "id": "numbers-single-source",
+      "rule": "Jangan mengetik angka (versi, jumlah test/ADR/paket) di dokumen; rujuk `docs/machine/stats.json`.",
+      "rationale": "Angka duplikat menjadi basi (audit menemukan 128/101 vs 161/111). Satu sumber = tidak bisa drift.",
+      "scope": "docs",
+      "good": "Angka aktual: `docs/machine/stats.json` (generate: `pnpm docs:stats`).",
+      "bad": "Repo punya 161 tes Node dan 111 tes Rust.",
+      "enforcement": "`pnpm docs:validate` + review",
+      "adrs": ["ADR-0054"]
+    },
+    {
+      "id": "claims-need-evidence",
+      "rule": "Klaim performa/keamanan wajib punya bukti yang bisa dijalankan (test, benchmark, ADR). Tanpa itu tulis \"belum\".",
+      "rationale": "Disiplin klaim BLUEPRINT §10 — kredibilitas proyek dibangun dari bukti, bukan klaim.",
+      "scope": "docs",
+      "good": "\"Body >1 MiB → 413 (test: tests/security/server-hardening.test.ts)\"",
+      "bad": "\"Ramonyx sangat aman dan cepat.\"",
+      "enforcement": "Review + `pnpm docs:validate` (semua bukti di features.json harus ada)",
+      "adrs": []
+    },
+    {
+      "id": "adr-for-decisions",
+      "rule": "Keputusan arsitektur (API publik, format, protokol, dependency baru) ditulis sebagai ADR di `docs/adr/` + indeks diperbarui.",
+      "rationale": "Jejak keputusan yang bisa diaudit; ADR = sumber kebenaran untuk \"kenapa\", kode untuk \"apa\".",
+      "scope": "repo",
+      "good": "docs/adr/0054-machine-readable-docs.md + baris di docs/adr/README.md",
+      "bad": "Mengubah format publik tanpa catatan keputusan.",
+      "enforcement": "Konvensi review; `pnpm docs:validate` memeriksa indeks ADR lengkap",
+      "adrs": []
+    },
+    {
+      "id": "bench-strict-local-only",
+      "rule": "`--strict` pada benchmark hanya sahih di mesin baseline; jangan mengaktifkan gate blocking di CI lintas-mesin.",
+      "rationale": "CI ±3× lebih cepat dari mesin dev; guard menolak lintas-mesin (ADR-0045).",
+      "scope": "repo",
+      "good": "pnpm bench:report   # CI: report-only",
+      "bad": "VITALS_STRICT=1 di CI tanpa baseline per-lingkungan",
+      "enforcement": "Guard `cpuModel` di runner bench",
+      "adrs": ["ADR-0045", "ADR-0048"]
+    },
+    {
+      "id": "dependency-quarantine",
+      "rule": "Dependency baru menunggu 24 jam sebelum dipasang (`minimumReleaseAge` di `pnpm-workspace.yaml`). Jangan bypass.",
+      "rationale": "Kebijakan supply chain (ADR-0016) — mitigasi paket berbahaya yang baru dirilis.",
+      "scope": "repo",
+      "good": "Tunggu ≥24 jam setelah rilis versi baru sebelum menaikkan dependency.",
+      "bad": "pnpm add lib@latest && pnpm install --config.minimumReleaseAge=0",
+      "enforcement": "`pnpm-workspace.yaml` + review",
+      "adrs": ["ADR-0016"]
+    },
+    {
+      "id": "node-version",
+      "rule": "Butuh Node ≥24. Jalankan app/test dengan loader: `node --import ./tools/register.mjs` (atau CLI `ramonyx`).",
+      "rationale": "Fitur Node 24 (type stripping stabil) menjadi baseline; JSX butuh loader esbuild.",
+      "scope": "app",
+      "good": "node --import ./tools/register.mjs src/server.ts",
+      "bad": "node src/server.tsx   # JSX tidak diproses Node murni",
+      "enforcement": "`engines` di package.json; loader publik `@ramonyx/compiler/register`",
+      "adrs": ["ADR-0002", "ADR-0006"]
+    },
+    {
+      "id": "client-server-boundary",
+      "rule": "Modul yang diimpor entry client tidak boleh menyentuh API server (node:*, fs, env rahasia). Pisahkan modul server/client.",
+      "rationale": "Bundle client dikirim ke browser; kebocoran API server = bug keamanan. Analisis batas otomatis belum ada (dicatat di TODO).",
+      "scope": "app",
+      "good": "// data.server.ts (hanya server) vs komponen presentasional di halaman",
+      "bad": "import { readFile } from \"node:fs/promises\" di komponen yang di-hydrate",
+      "enforcement": "BELUM ditegakkan lint — kandidat TODO (analisis batas server/client)",
+      "adrs": []
+    }
+  ]
+}

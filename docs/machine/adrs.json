@@ -1,0 +1,554 @@
+{
+  "schemaVersion": 1,
+  "adrs": [
+    {
+      "id": "ADR-0001",
+      "file": "0001-runtime-strategy.md",
+      "title": "Strategi Runtime — Node.js Baseline + Rust/V8 Eksperimental",
+      "status": "accepted",
+      "statusDetail": "Accepted",
+      "date": "2026-10-18",
+      "decision": "Runtime MVP = Node.js; runtime Rust/V8 dibangun terpisah sebagai eksperimen Phase 4+ dan tidak boleh saling bergantung.",
+      "features": ["adapter-node", "runtime-http-server"]
+    },
+    {
+      "id": "ADR-0002",
+      "file": "0002-baseline-tooling.md",
+      "title": "Baseline Tooling, Bahasa, dan CI",
+      "status": "accepted",
+      "statusDetail": "Accepted",
+      "date": "2026-10-18",
+      "decision": "Baseline: TypeScript strict, ESM-only, source-first, pnpm workspaces, Node ≥24, CI lint→typecheck→test→build→security.",
+      "features": ["jsx-loader"]
+    },
+    {
+      "id": "ADR-0003",
+      "file": "0003-ui-adapter-react.md",
+      "title": "Adapter UI Pertama — React",
+      "status": "accepted",
+      "statusDetail": "Accepted (keputusan pemilik, 2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "UI lewat adapter yang dapat diganti; adapter pertama React (react + react-dom/server).",
+      "features": ["ssr-sync", "hydration"]
+    },
+    {
+      "id": "ADR-0004",
+      "file": "0004-schema.md",
+      "title": "Kontrak Schema Validasi — Standard Schema",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Validasi runtime memakai kontrak Standard Schema sehingga zod/valibot/arktype dapat dipakai sebagai adapter.",
+      "features": ["schema-validation"]
+    },
+    {
+      "id": "ADR-0005",
+      "file": "0005-bundler.md",
+      "title": "Bundler Awal",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Bundler awal Vite; compiler menghasilkan artefak eksplisit (client bundle, manifest rute, metadata build).",
+      "features": ["client-bundle"]
+    },
+    {
+      "id": "ADR-0006",
+      "file": "0006-jsx-loader.md",
+      "title": "Loader JSX Dev/Test — esbuild Sendiri (bukan tsx)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Loader dev/test memakai esbuild sendiri (JSX automatic) karena Node type stripping tidak memproses JSX; paket framework tetap tanpa JSX.",
+      "features": ["jsx-loader"]
+    },
+    {
+      "id": "ADR-0007",
+      "file": "0007-hydration.md",
+      "title": "Hydration — Payload Inline + Satu Bundle Client + `hydrateRoot`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Hydration lewat payload inline `window.__RAMONYX__` + satu bundle client + `hydrateRoot`; halaman error tidak di-hydrate.",
+      "features": ["hydration"]
+    },
+    {
+      "id": "ADR-0008",
+      "file": "0008-client-navigation.md",
+      "title": "Client Navigation — Soft Navigation (Fetch HTML → Swap → Re-hydrate)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Navigasi klien = soft navigation (fetch HTML → swap → re-hydrate) tanpa framework data client tambahan.",
+      "features": ["soft-navigation"]
+    },
+    {
+      "id": "ADR-0009",
+      "file": "0009-dev-server.md",
+      "title": "Dev Server — Vite Front + Proxy Manual + `ssrLoadModule`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Dev server: Vite sebagai front (HMR) mem-proxy ke SSR Node via `ssrLoadModule` — tanpa build.",
+      "features": ["dev-server-hmr"]
+    },
+    {
+      "id": "ADR-0010",
+      "file": "0010-browser-e2e.md",
+      "title": "Browser E2E — Playwright + Baseline Web Vitals",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "E2E browser memakai Playwright terhadap build produksi + baseline Web Vitals (median 3 load).",
+      "features": ["e2e-playwright"]
+    },
+    {
+      "id": "ADR-0011",
+      "file": "0011-resource-limits.md",
+      "title": "Resource Limits Secure-by-Default (Body 1 MiB, Timeout 10s)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Default aman: body ≤1 MiB → 413, handler/loader timeout 10s → 503 (+ request.signal abort); dapat dikonfigurasi.",
+      "features": ["resource-limits"]
+    },
+    {
+      "id": "ADR-0012",
+      "file": "0012-concurrency-limit.md",
+      "title": "Concurrency Limit (Load Shedding) — Default 100, Balas 503 + `Retry-After`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Batas 100 request bersamaan → 503 + Retry-After (load shedding), dapat dikonfigurasi.",
+      "features": ["resource-limits"]
+    },
+    {
+      "id": "ADR-0013",
+      "file": "0013-security-package.md",
+      "title": "Paket Security — Security Headers + CSRF Double-Submit (Web Crypto)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Paket `@ramonyx/security`: security headers + CSRF double-submit memakai Web Crypto (tanpa dependency crypto).",
+      "features": ["security-headers", "csrf"]
+    },
+    {
+      "id": "ADR-0014",
+      "file": "0014-csp-nonce.md",
+      "title": "CSP Nonce + Request Replacement di Middleware",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "CSP nonce per request + middleware dapat mengganti request (request replacement) untuk meneruskan nonce.",
+      "features": ["csp-nonce", "middleware-global"]
+    },
+    {
+      "id": "ADR-0015",
+      "file": "0015-ssrf-guard-output-limit.md",
+      "title": "SSRF Guard (`guardedFetch`) + Output Limit Dokumen SSR",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`guardedFetch` memvalidasi host/IP (blokir privat, redirect per-hop) + batas ukuran output dokumen SSR.",
+      "features": ["ssrf-guard", "output-limit"]
+    },
+    {
+      "id": "ADR-0016",
+      "file": "0016-dependency-policy.md",
+      "title": "Kebijakan Dependency & Supply Chain",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Dependency baru menunggu 24 jam (`minimumReleaseAge`), audit CI + Dependabot, justifikasi tertulis per tambahan.",
+      "features": []
+    },
+    {
+      "id": "ADR-0017",
+      "file": "0017-rate-limiting.md",
+      "title": "Rate Limiting per Klien — Identitas dari Adapter + `trustProxy` Opt-in",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Rate limit token bucket per klien; identitas dari adapter, `trustProxy` opt-in untuk X-Forwarded-For.",
+      "features": ["rate-limit"]
+    },
+    {
+      "id": "ADR-0018",
+      "file": "0018-owner-decisions.md",
+      "title": "Keputusan Pemilik — Lisensi, Scope, Browser Matrix, Rekonsiliasi PRD",
+      "status": "accepted",
+      "statusDetail": "Accepted (keputusan pemilik, 2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Lisensi MIT, scope npm `@ramonyx/*`, browser matrix evergreen 2 versi terakhir, PRD direkonsiliasi.",
+      "features": []
+    },
+    {
+      "id": "ADR-0019",
+      "file": "0019-runtime-r0.md",
+      "title": "Runtime R0 — Workspace Rust, CLI, Konfigurasi, Logging",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Runtime R0: workspace Cargo terpisah, CLI `ramonyx-runtime`, konfigurasi, structured logging.",
+      "features": ["runtime-permissions"]
+    },
+    {
+      "id": "ADR-0020",
+      "file": "0020-v8-engine.md",
+      "title": "Engine JavaScript — V8 via `deno_core`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Engine V8 di-embed lewat `deno_core` (bukan menulis engine sendiri).",
+      "features": ["runtime-http-server"]
+    },
+    {
+      "id": "ADR-0021",
+      "file": "0021-module-loader.md",
+      "title": "Module Loader ESM + Transpile TypeScript (R1)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Runtime memuat ESM + transpile TypeScript via `deno_ast`, dengan fallback ekstensi.",
+      "features": ["runtime-compat-suite"]
+    },
+    {
+      "id": "ADR-0022",
+      "file": "0022-runtime-io.md",
+      "title": "Runtime I/O (R2a) — Timer, Filesystem, Env, HTTP Server Pull-Model",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "I/O dasar (timer/fs/env) + HTTP server pull-model dengan API `ramonyx.*`, bind 127.0.0.1.",
+      "features": ["runtime-http-server"]
+    },
+    {
+      "id": "ADR-0023",
+      "file": "0023-permission-model.md",
+      "title": "Permission Model (R3a) — Secure by Default, Flag `--allow-*`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Permission deny-all secara default; akses fs/env/net hanya via flag `--allow-read/write/net/env[=daftar]`.",
+      "features": ["runtime-permissions"]
+    },
+    {
+      "id": "ADR-0024",
+      "file": "0024-http-cancellation.md",
+      "title": "Runtime HTTP R2b — Cancellation Klien + Keep-Alive",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Cancellation saat klien putus (`request.signal`) + keep-alive koneksi.",
+      "features": ["runtime-http-server"]
+    },
+    {
+      "id": "ADR-0025",
+      "file": "0025-response-streaming.md",
+      "title": "Runtime HTTP R2c — Streaming Respons (Chunked)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Respons streaming: `body` sebagai AsyncIterable dikirim chunked.",
+      "features": ["runtime-streaming"]
+    },
+    {
+      "id": "ADR-0026",
+      "file": "0026-node-modules.md",
+      "title": "Resolusi `node_modules` (ESM) — Versi 1",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Resolusi `node_modules` ESM v1 mendukung field `exports`/`module`/`main`.",
+      "features": ["runtime-compat-suite"]
+    },
+    {
+      "id": "ADR-0027",
+      "file": "0027-web-shim.md",
+      "title": "Web Platform Basics (`web_shim`) untuk Runtime",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`web_shim` menyediakan URL, TextEncoder, Headers/Request/Response, setTimeout, MessageChannel.",
+      "features": ["runtime-http-server"]
+    },
+    {
+      "id": "ADR-0028",
+      "file": "0028-compat-suite.md",
+      "title": "Compatibility Suite v1 — Pipeline Framework di Runtime",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Compatibility suite menjalankan pipeline framework nyata di runtime sebagai bukti kesesuaian.",
+      "features": ["runtime-compat-suite"]
+    },
+    {
+      "id": "ADR-0029",
+      "file": "0029-commonjs-interop.md",
+      "title": "Interop CommonJS v1 — Graf `require` Statis + Demo SSR React",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Interop CommonJS subset (graf `require` statis) + demo SSR React (`react-dom/server.browser`) berjalan di runtime.",
+      "features": ["runtime-cjs-interop"]
+    },
+    {
+      "id": "ADR-0030",
+      "file": "0030-fetch-readablestream.md",
+      "title": "`fetch` Client + `ReadableStream` + Body Streaming (Runtime)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Runtime menyediakan `fetch` + `ReadableStream` + body streaming (POST body, SSR streaming `renderToReadableStream`).",
+      "features": ["runtime-fetch", "runtime-streaming"]
+    },
+    {
+      "id": "ADR-0031",
+      "file": "0031-builtins-crypto-security.md",
+      "title": "Builtin Subset (`node:net`/`node:dns/promises`) + `crypto` + Security di Runtime",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Builtin subset node:net/dns + crypto.getRandomValues + subset @ramonyx/security berjalan di runtime; IP-pinning dicatat menyusul.",
+      "features": ["runtime-fetch", "ssrf-guard"]
+    },
+    {
+      "id": "ADR-0032",
+      "file": "0032-servehandler-playground.md",
+      "title": "Jembatan `serveHandler` + Playground Subset Berjalan di Runtime",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Jembatan `serveHandler` memungkinkan handler framework berjalan end-to-end di runtime (halaman SSR + API + POST + security).",
+      "features": ["runtime-http-server", "runtime-compat-suite"]
+    },
+    {
+      "id": "ADR-0033",
+      "file": "0033-resource-limits.md",
+      "title": "Resource Limits — Kuota Heap, Watchdog Timeout, Pencabutan Permission",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Kuota heap V8 (`--max-heap-mb`), watchdog timeout (`--timeout-ms`), dan `ramonyx.permissions.get()/revoke()`.",
+      "features": ["runtime-quotas"]
+    },
+    {
+      "id": "ADR-0034",
+      "file": "0034-worker-isolation.md",
+      "title": "Isolasi Worker + Kuota (Isolate Terpisah per Worker)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Worker berjalan di thread + isolate V8 terpisah, pesan JSON, permission irisan anti-eskalasi, kill switch.",
+      "features": ["runtime-worker-isolation"]
+    },
+    {
+      "id": "ADR-0035",
+      "file": "0035-streaming-request.md",
+      "title": "Streaming Request + Batas Body Server",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Body request pull-model + batas body default 1 MiB dengan penolakan 413 dini.",
+      "features": ["runtime-streaming", "resource-limits"]
+    },
+    {
+      "id": "ADR-0036",
+      "file": "0036-fetch-tls-redirect.md",
+      "title": "`fetch` https (TLS Diverifikasi) + Redirect Otomatis",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`fetch` https dengan TLS diverifikasi (CA kustom `--tls-ca`) + redirect follow/manual/error dengan permission per hop.",
+      "features": ["runtime-fetch"]
+    },
+    {
+      "id": "ADR-0037",
+      "file": "0037-r4-profiling-startup.md",
+      "title": "R4 — Profiling Startup (Timings + Metrik Op + Baseline)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Profiling startup: timings per fase + metrik operasi + baseline; snapshot V8 ditolak dengan alasan terukur.",
+      "features": ["observability-metrics", "observability-logger"]
+    },
+    {
+      "id": "ADR-0038",
+      "file": "0038-cpu-rss-quotas.md",
+      "title": "Kuota CPU (Per-Thread) + RSS Proses — Menutup Gap Memori Eksternal",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Kuota CPU per-thread (`--max-cpu-ms`) + RSS proses (`--max-rss-mb`) menutup gap memori di luar heap V8.",
+      "features": ["runtime-quotas"]
+    },
+    {
+      "id": "ADR-0039",
+      "file": "0039-release-pipeline.md",
+      "title": "Release Pipeline v1 — Artefak, Verifikasi Instalasi, Rilis 0.1.0",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Rilis = build paket → tarball npm + binary runtime + SHA256SUMS/manifest → verifikasi instalasi di proyek konsumen bersih.",
+      "features": []
+    },
+    {
+      "id": "ADR-0040",
+      "file": "0040-plugin-process-isolation.md",
+      "title": "Isolasi Level Proses untuk Plugin (`ramonyx.spawn`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Plugin berjalan di proses terpisah via `ramonyx.spawn` + protokol JSON stdin/stdout, permission irisan, kill.",
+      "features": ["runtime-plugin-process"]
+    },
+    {
+      "id": "ADR-0041",
+      "file": "0041-create-app.md",
+      "title": "`apps/create-app` — Scaffolder Aplikasi",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`pnpm create:app` men-scaffold aplikasi Ramonyx (template file-routing SSR React + hydration).",
+      "features": ["scaffolder"]
+    },
+    {
+      "id": "ADR-0042",
+      "file": "0042-docs-app.md",
+      "title": "`apps/docs` — Situs Dokumentasi (Dogfood SSR React)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Situs dokumentasi adalah aplikasi Ramonyx (dogfood penuh: SSR + hydration + soft navigation atas docs/**).",
+      "features": ["docs-site"]
+    },
+    {
+      "id": "ADR-0043",
+      "file": "0043-plugin-supervision.md",
+      "title": "Supervisi Restart untuk Plugin (`restart` pada `ramonyx.spawn`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Plugin dapat disupervisi: `restart` + `plugin.stats()` untuk pemulihan otomatis.",
+      "related": ["ADR-0040"],
+      "features": ["runtime-plugin-supervision"]
+    },
+    {
+      "id": "ADR-0044",
+      "file": "0044-plugin-health-check.md",
+      "title": "Health-Check Plugin (Heartbeat + Deteksi Senyap)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Health-check plugin via `ramonyx.heartbeat()` + deteksi plugin senyap.",
+      "related": ["ADR-0040", "ADR-0043"],
+      "features": ["runtime-plugin-supervision"]
+    },
+    {
+      "id": "ADR-0045",
+      "file": "0045-perf-regression-gate.md",
+      "title": "Performance Regression Gate (Report-Only)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Gate performa report-only (`pnpm bench:report`) dengan guard lintas-mesin; `--strict` hanya sahih di mesin baseline.",
+      "features": ["benchmark-gates"]
+    },
+    {
+      "id": "ADR-0046",
+      "file": "0046-source-maps.md",
+      "title": "Source Map Produksi (Client Bundle + Paket npm)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Source map produksi untuk client bundle + paket npm.",
+      "features": ["source-maps"]
+    },
+    {
+      "id": "ADR-0047",
+      "file": "0047-ssr-streaming-node.md",
+      "title": "SSR Streaming di Runtime Node (`renderToReadableStream`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "SSR streaming Node memakai `react-dom/server.edge` (bukan server.browser — MessageChannel menahan proses); opt-in `streaming: true`.",
+      "related": ["ADR-0030", "ADR-0048"],
+      "features": ["ssr-streaming"]
+    },
+    {
+      "id": "ADR-0048",
+      "file": "0048-bench-ssr-vitals.md",
+      "title": "Bench SSR (Sinkron vs Streaming) + Ambang Web Vitals + `NODE_ENV` Produksi",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Bench SSR in-process (sinkron vs streaming, paritas byte-per-byte) + ambang Web Vitals di e2e; produksi wajib `NODE_ENV=production`.",
+      "related": ["ADR-0045", "ADR-0047"],
+      "features": ["benchmark-gates", "e2e-playwright"]
+    },
+    {
+      "id": "ADR-0049",
+      "file": "0049-pra-publikasi.md",
+      "title": "Kesiapan Pra-Publikasi — Publish dari Artefak Terverifikasi + Dist-Tag + `create-ramonyx-app`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Publikasi hanya dari tarball terverifikasi (guard tag↔versi, dist-tag, provenance), termasuk `create-ramonyx-app`.",
+      "related": ["ADR-0039"],
+      "features": ["scaffolder"]
+    },
+    {
+      "id": "ADR-0050",
+      "file": "0050-plugin-backoff-watchdog.md",
+      "title": "Backoff Eksponensial + Health-Check Otomatis (Watchdog) untuk Plugin",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Restart plugin memakai backoff eksponensial dengan reset stabil + watchdog health-check otomatis.",
+      "updates": ["ADR-0043", "ADR-0044"],
+      "features": ["runtime-plugin-supervision"]
+    },
+    {
+      "id": "ADR-0051",
+      "file": "0051-plugin-sandbox-landlock.md",
+      "title": "Sandbox OS Plugin (Landlock LSM)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Plugin disandbox di level kernel via Landlock (FS + TCP); net deny mencakup TCP saja, bukan UDP/DNS.",
+      "related": ["ADR-0040"],
+      "features": ["runtime-plugin-sandbox"]
+    },
+    {
+      "id": "ADR-0052",
+      "file": "0052-docs-hosting-pages.md",
+      "title": "Ekspor Statis & Hosting Dokumentasi (GitHub Pages)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Situs docs diekspor statis (`pnpm docs:export`, `--base /ramonyx`) dan di-host di GitHub Pages; tautan halaman wajib relatif.",
+      "related": ["ADR-0042"],
+      "features": ["docs-site", "static-export"]
+    },
+    {
+      "id": "ADR-0053",
+      "file": "0053-devtools-cli.md",
+      "title": "CLI `ramonyx` — `@ramonyx/devtools` v1",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "CLI `ramonyx` v1: `dev|build|start|doctor` dengan konvensi `src/app.ts` `createApp()`.",
+      "features": ["cli-devtools"]
+    },
+    {
+      "id": "ADR-0054",
+      "file": "0054-machine-readable-docs.md",
+      "title": "Lapisan Dokumentasi Machine-Readable (`docs/machine/`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Lapisan dokumentasi machine-readable JSON di `docs/machine/` (fitur/ADR/aturan/keamanan/glosarium/stats/llms) dengan validator blocking di CI; JSON dipilih agar tanpa dependency parser baru.",
+      "related": ["ADR-0016", "ADR-0042"],
+      "features": ["machine-docs", "llms-txt", "agent-skill"]
+    }
+  ]
+}

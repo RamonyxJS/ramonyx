@@ -1,0 +1,36 @@
+# Ramonyx
+
+> Framework full-stack TypeScript (runtime MVP Node.js) dengan SSR React, hydration, soft navigation, keamanan bawaan, dan runtime Rust/V8 eksperimental. Disiplin bukti: setiap klaim punya ADR/test/benchmark.
+
+Dokumentasi lengkap: https://ramonyxjs.github.io/ramonyx/ . Fakta terstruktur (sumber kebenaran status/angka): https://ramonyxjs.github.io/ramonyx/machine/ .
+
+## Machine-readable (sumber kebenaran fakta)
+
+- [features.json](https://ramonyxjs.github.io/ramonyx/machine/features.json): status setiap fitur (implemented/partial/experimental/planned) + paket + bukti + batasan
+- [adrs.json](https://ramonyxjs.github.io/ramonyx/machine/adrs.json): indeks 54 ADR — keputusan satu kalimat + relasi
+- [rules.json](https://ramonyxjs.github.io/ramonyx/machine/rules.json): aturan menulis aplikasi di atas Ramonyx, dengan contoh benar/salah
+- [security.json](https://ramonyxjs.github.io/ramonyx/machine/security.json): kontrol keamanan + status + celah yang diakui
+- [glossary.json](https://ramonyxjs.github.io/ramonyx/machine/glossary.json): istilah + peta konsep
+- [stats.json](https://ramonyxjs.github.io/ramonyx/machine/stats.json): versi, jumlah paket/ADR/test — satu-satunya tempat angka
+- [api.json](https://ramonyxjs.github.io/ramonyx/machine/api.json) dan [cli.json](https://ramonyxjs.github.io/ramonyx/machine/cli.json): referensi API/CLI hasil ekstraksi kode
+- [config.schema.json](https://ramonyxjs.github.io/ramonyx/machine/config.schema.json): bentuk ramonyx.config.ts (diverifikasi test)
+
+## Dokumen inti
+
+- [README](https://ramonyxjs.github.io/ramonyx/dokumen/README/): ikhtisar, instalasi, perintah
+- [Architecture](https://ramonyxjs.github.io/ramonyx/dokumen/architecture/): peta paket + kontrak RuntimeHost
+- [Core contract (API v0)](https://ramonyxjs.github.io/ramonyx/dokumen/api/core-contract/): kontrak API
+- [BLUEPRINT](https://ramonyxjs.github.io/ramonyx/dokumen/BLUEPRINT/): sumber kebenaran teknis
+- [Threat model](https://ramonyxjs.github.io/ramonyx/dokumen/security/threat-model/)
+- [Benchmark protocol](https://ramonyxjs.github.io/ramonyx/dokumen/benchmark-protocol/)
+- [Releasing](https://ramonyxjs.github.io/ramonyx/dokumen/releasing/)
+- [Roadmap](https://ramonyxjs.github.io/ramonyx/dokumen/roadmap/phase-0-1/)
+- [Status implementasi](https://ramonyxjs.github.io/ramonyx/dokumen/IMPLEMENTATION_STATUS/)
+- [ADR index](https://ramonyxjs.github.io/ramonyx/dokumen/adr/README/)
+
+## Untuk agen
+
+- [llms-full.txt](https://ramonyxjs.github.io/ramonyx/llms-full.txt): seluruh machine layer + dokumen inti dalam satu berkas
+- Markdown per halaman: tambahkan `.md` pada URL halaman (mis. https://ramonyxjs.github.io/ramonyx/dokumen/architecture.md) — discovery via `<link rel="alternate" type="text/markdown">`
+- [sitemap.md](https://ramonyxjs.github.io/ramonyx/sitemap.md): indeks semua halaman
+- Skill agen: `.agents/skills/ramonyx/SKILL.md` di repo

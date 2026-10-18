@@ -5,10 +5,10 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
 > **Status: Phase 4 (runtime alpha) berjalan** — Phase 0–3 selesai. Runtime Rust: R0 (CLI,
-> konfigurasi, logging), R1 (V8, ESM, TypeScript), R2a (I/O + HTTP server), R2b (cancellation
-> + keep-alive), R2c (streaming respons chunked), R3a (permission model **deny-all**).
-> Framework Node tetap baseline produksi; runtime eksperimental sampai compatibility/security
-> testing lolos. Klaim mengikuti aturan BLUEPRINT §10.
+> konfigurasi, logging), R1 (V8, ESM, TypeScript, resolusi `node_modules` ESM v1), R2a (I/O +
+> HTTP server), R2b (cancellation + keep-alive), R2c (streaming respons chunked), R3a (permission
+> model **deny-all**). Framework Node tetap baseline produksi; runtime eksperimental sampai
+> compatibility/security testing lolos. Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

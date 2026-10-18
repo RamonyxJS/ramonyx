@@ -106,7 +106,11 @@ Phase 4 (runtime alpha).
 - [x] **R1** — Module loader ESM (resolusi relatif + fallback ekstensi/index) + **transpile
       TypeScript** via `deno_ast` (ADR-0021); `run main.ts` dengan import relatif `.ts` berjalan
       end-to-end lewat V8; bare specifier ditolak dengan pesan jelas (ADR-0021)
-- [ ] **R1 sisa** — resolusi paket `node_modules` (exports/conditions), import JSON/WASM
+- [x] **R1 sisa (parsial)** — resolusi paket `node_modules` **ESM v1** (ADR-0026): walk-up,
+      `exports` (kondisi import/module/default, subpath, wildcard), fallback `module`/`main`/
+      `index.js`; CJS ditolak dengan pesan jelas; diuji 5 unit + 1 integrasi engine
+- [ ] **Sisa package compat** — interop CommonJS, kondisi `imports`/self-reference, urutan key
+      penuh; import JSON/WASM
 - [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
       **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,
       handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end

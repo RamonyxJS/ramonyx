@@ -33,3 +33,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0023](0023-permission-model.md) | Permission model (R3a): secure by default, flag `--allow-*` | Accepted |
 | [0024](0024-http-cancellation.md) | Runtime HTTP R2b: cancellation klien + keep-alive | Accepted |
 | [0025](0025-response-streaming.md) | Runtime HTTP R2c: streaming respons (chunked) | Accepted |
+| [0026](0026-node-modules.md) | Resolusi `node_modules` ESM (versi 1) | Accepted |

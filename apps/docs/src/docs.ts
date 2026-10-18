@@ -70,14 +70,16 @@ export function readDoc(slug: string): LoadedDoc | null {
   };
 }
 
-/** Katalog lengkap (judul + HTML ter-render) untuk `setCatalog` di `app.ts`. */
+/** Katalog lengkap (judul + HTML ter-render + teks mentah) untuk `setCatalog` di `app.ts`. */
 export function loadCatalog(): CatalogDoc[] {
   return listDocs().map((entry) => {
     const doc = readDoc(entry.slug);
+    const text = doc?.markdown ?? "";
     return {
       slug: entry.slug,
       title: entry.title,
-      html: renderMarkdown(doc?.markdown ?? ""),
+      html: renderMarkdown(text),
+      text,
     };
   });
 }

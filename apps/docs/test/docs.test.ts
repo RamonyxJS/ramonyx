@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { createApp } from "../src/app.ts";
+import { searchCatalog, setCatalog } from "../src/catalog.ts";
 import { listDocs, readDoc } from "../src/docs.ts";
 import { extractTitle, renderMarkdown } from "../src/markdown.ts";
 
@@ -41,6 +42,21 @@ test("katalog: slug, judul, dan guard traversal", () => {
   assert.match(doc.markdown, /Interop CommonJS/);
 });
 
+test("pencarian katalog: judul diprioritaskan, excerpt isi, limit", () => {
+  setCatalog([
+    { slug: "a/pertama", title: "Panduan Alpha", html: "", text: "isi tentang topik khusus" },
+    { slug: "b/kedua", title: "Panduan Beta", html: "", text: "panduan alpha juga ada di isi" },
+    { slug: "c/ketiga", title: "Lain", html: "", text: "tidak ada" },
+  ]);
+
+  const hasil = searchCatalog("alpha", 10);
+  assert.equal(hasil[0]?.slug, "a/pertama", "judul diprioritaskan");
+  assert.equal(hasil[1]?.slug, "b/kedua", "cocok isi ikut");
+  assert.ok(hasil[1]?.excerpt.toLowerCase().includes("alpha"), "excerpt memuat kata kunci");
+  assert.equal(searchCatalog("tidak-ada-kata", 10).length, 0);
+  assert.equal(searchCatalog("alpha", 1).length, 1, "limit dihormati");
+});
+
 test("app: index, halaman dokumen, hydration, 404, traversal, API", async () => {
   const app = await createApp();
 
@@ -54,6 +70,7 @@ test("app: index, halaman dokumen, hydration, 404, traversal, API", async () => 
   assert.match(html, /id="ramonyx-payload"/, "payload hydration ada");
   assert.match(html, /window\.__RAMONYX__/, "payload di-inline");
   assert.match(html, /src="\/assets\/client\.js"/, "script klien ada");
+  assert.match(html, /aria-label="Cari dokumen"/, "kotak pencarian ada");
 
   const page = await app(new Request("http://uji/dokumen/adr/0029-commonjs-interop"));
   assert.equal(page.status, 200);
@@ -72,6 +89,29 @@ test("app: index, halaman dokumen, hydration, 404, traversal, API", async () => 
   const data = (await api.json()) as { dokumen: { slug: string; title: string }[] };
   assert.ok(data.dokumen.length >= 20);
   assert.ok(data.dokumen.every((entry) => entry.slug.length > 0 && entry.title.length > 0));
+
+  // Pencarian isi: `GET /api/cari?q=...`.
+  const cari = await app(new Request("http://uji/api/cari?q=interop"));
+  assert.equal(cari.status, 200);
+  const hasil = (await cari.json()) as { hasil: { slug: string; excerpt: string }[] };
+  assert.ok(
+    hasil.hasil.some((hit) => hit.slug === "adr/0029-commonjs-interop"),
+    "ADR-0029 ditemukan lewat pencarian",
+  );
+
+  const isi = await app(new Request("http://uji/api/cari?q=kredensial"));
+  const hasilIsi = (await isi.json()) as { hasil: { excerpt: string }[] };
+  assert.ok(hasilIsi.hasil.length >= 1, "cocok isi ditemukan");
+  assert.match(hasilIsi.hasil[0]?.excerpt.toLowerCase() ?? "", /kredensial/);
+
+  const kosong = await app(new Request("http://uji/api/cari?q=zzz-tidak-ada"));
+  assert.deepEqual(((await kosong.json()) as { hasil: unknown[] }).hasil, []);
+
+  const tanpaQ = await app(new Request("http://uji/api/cari"));
+  assert.equal(tanpaQ.status, 400, "q wajib");
+
+  const pendek = await app(new Request("http://uji/api/cari?q=a"));
+  assert.equal(pendek.status, 400, "q minimal 2 karakter");
 });
 
 test("build klien: bundel hydrate + soft navigation disajikan sebagai aset", async () => {

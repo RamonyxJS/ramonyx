@@ -19,6 +19,9 @@ const GAYA = `
   h2 { margin-top: 36px; border-bottom: 1px solid var(--garis); padding-bottom: 6px; }
   h3 { margin-top: 28px; }
   .pengantar { color: var(--redup); }
+  .cari { width: 100%; margin: 18px 0 22px; padding: 10px 14px; font: inherit;
+    color: var(--fg); background: #161a22; border: 1px solid var(--garis); border-radius: 8px; }
+  .cari:focus { outline: 2px solid var(--aksen); outline-offset: 1px; }
   .daftar { list-style: none; padding: 0; display: grid; gap: 6px; }
   .daftar li { display: flex; justify-content: space-between; gap: 16px; align-items: baseline;
     border: 1px solid var(--garis); border-radius: 8px; padding: 10px 14px; }

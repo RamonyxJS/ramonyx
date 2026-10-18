@@ -236,6 +236,45 @@ test("app hasil scaffold: build --static (SSG + 404 HTML + aset)", async () => {
   );
 });
 
+test("app hasil scaffold: build --target edge + artefak berjalan sebagai fetch handler", async () => {
+  mkdirSync(workDir, { recursive: true });
+  const target = join(workDir, "app-edge");
+  runCli([target]);
+
+  const output = runDevtools(target, ["build", "--target", "edge"]);
+  assert.match(output, /edge: .*index\.js/, "artefak edge dilaporkan");
+  assert.ok(existsSync(join(target, "dist/edge/index.js")), "dist/edge/index.js ada");
+
+  writeFileSync(
+    join(target, "edge.mjs"),
+    `const mod = await import("./dist/edge/index.js");
+const handler = mod.default.fetch;
+
+const halaman = await handler(new Request("http://edge.local/"));
+if (halaman.status !== 200) throw new Error("status halaman: " + halaman.status);
+const html = await halaman.text();
+if (!html.includes("Halo dari SSR Ramonyx")) throw new Error("SSR tidak jalan");
+if (!html.includes("/assets/client-")) throw new Error("script klien ber-hash hilang");
+
+const api = await handler(new Request("http://edge.local/api/halo/edge"));
+if (api.status !== 200) throw new Error("status api: " + api.status);
+if ((await api.json()).halo !== "edge") throw new Error("isi api salah");
+
+const form = new FormData();
+form.set("nama", "Edge");
+const aksi = await handler(new Request("http://edge.local/", { method: "POST", body: form }));
+if (aksi.status !== 200) throw new Error("status action: " + aksi.status);
+if (!(await aksi.text()).includes("Halo, Edge!")) throw new Error("action tidak jalan");
+
+const hilang = await handler(new Request("http://edge.local/tidak-ada"));
+if (hilang.status !== 404) throw new Error("status 404: " + hilang.status);
+console.log("EDGE OK");
+`,
+  );
+  const smoke = runNode("edge.mjs", target);
+  assert.match(smoke, /EDGE OK/);
+});
+
 test("help menampilkan penggunaan", () => {
   const output = runCli(["--help"]);
   assert.match(output, /create-ramonyx-app/);

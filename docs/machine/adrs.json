@@ -745,6 +745,25 @@
         "mutations-server-actions",
         "forms"
       ]
+    },
+    {
+      "id": "ADR-0058",
+      "file": "0058-edge-target.md",
+      "title": "Target Build Edge/Serverless + Pemisahan `guardedFetch`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`ramonyx build --target edge` menghasilkan satu berkas ESM kontrak `{ fetch }` dari codegen entry server (impor statis, tanpa node:fs) dengan guard node:*; React adapter memakai react-dom/server.edge untuk sinkron+streaming; guardedFetch pindah ke @ramonyx/security/ssrf dan middleware.ts wajib edge-safe.",
+      "related": [
+        "ADR-0001",
+        "ADR-0047",
+        "ADR-0031",
+        "ADR-0015"
+      ],
+      "features": [
+        "adapter-serverless-edge",
+        "adapter-node"
+      ]
     }
   ]
 }

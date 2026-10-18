@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { test } from "node:test";
-import { guardedFetch, SsrfError } from "../src/index.ts";
+import { guardedFetch, SsrfError } from "../src/ssrf.ts";
 
 test("alamat privat/loopback/link-local literal ditolak sebelum fetch", async () => {
   const targets = [

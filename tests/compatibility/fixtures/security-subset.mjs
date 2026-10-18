@@ -6,14 +6,8 @@
 // Dipakai oleh runtime/crates/js-engine/tests/compat_security.rs.
 
 import { route } from "@ramonyx/core";
-import {
-  cspNonce,
-  csrfProtection,
-  guardedFetch,
-  rateLimit,
-  SsrfError,
-  securityHeaders,
-} from "@ramonyx/security";
+import { cspNonce, csrfProtection, rateLimit, securityHeaders } from "@ramonyx/security";
+import { guardedFetch, SsrfError } from "@ramonyx/security/ssrf";
 import { createHandler } from "@ramonyx/server";
 
 const server = ramonyx.serve(0, async (request) => ({

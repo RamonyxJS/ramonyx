@@ -1,0 +1,7 @@
+# Konfigurasi pnpm untuk aplikasi Ramonyx.
+#
+# `esbuild` (loader runtime `@ramonyx/compiler/register`) menjalankan postinstall untuk
+# memverifikasi binary platform; pnpm ≥10 memblokir build script dependensi secara default.
+# npm/yarn tidak memblokir → baris ini hanya relevan untuk pengguna pnpm.
+allowBuilds:
+  esbuild: true

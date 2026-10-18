@@ -1,10 +1,10 @@
 import type { ElementDescriptor, Renderer } from "@ramonyx/ssr";
 import { createElement, type ElementType, type ReactElement } from "react";
-import { renderToString } from "react-dom/server";
-// Build edge: `renderToReadableStream` (Web Streams) berjalan di Node maupun runtime Rust
-// dengan jalur yang sama (ADR-0030/0047). Build `browser` **tidak** dipakai karena membuat
-// MessageChannel level-modul yang menahan event loop Node (proses test/CLI tidak pernah keluar).
-import { renderToReadableStream } from "react-dom/server.edge";
+// Build **edge** untuk keduanya (renderToString + renderToReadableStream): Web Streams,
+// berjalan di Node maupun runtime edge/serverless (ADR-0047/0058). Build `server` (Node)
+// tidak dipakai agar bundel edge tidak menarik `node:stream`; build `browser` tidak dipakai
+// karena MessageChannel level-modul menahan event loop Node (proses test/CLI menggantung).
+import { renderToReadableStream, renderToString } from "react-dom/server.edge";
 
 function toReactElement(descriptor: ElementDescriptor): ReactElement {
   return createElement(

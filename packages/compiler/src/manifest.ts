@@ -86,6 +86,37 @@ async function collectRouteFiles(dir: string, apiDir: string): Promise<RouteFile
   return files;
 }
 
+/** Satu file route API + method HTTP yang diekspornya (untuk codegen server/edge — ADR-0058). */
+export interface ApiRouteFile {
+  readonly file: string;
+  readonly routePath: string;
+  readonly methods: readonly HttpMethod[];
+}
+
+/**
+ * Daftar file `src/routes/api/**` beserta method yang diekspor (memvalidasi ekspor).
+ * Dipakai `createRouteManifest` (runtime Node) dan codegen entry server/edge.
+ */
+export async function listApiRoutes(options: CreateRouteManifestOptions): Promise<ApiRouteFile[]> {
+  const apiDir = options.apiDir ?? "api";
+  const importer = options.importer ?? nativeImporter;
+  const files = await collectRouteFiles(options.dir, apiDir);
+  const result: ApiRouteFile[] = [];
+
+  for (const file of files) {
+    const module = await importer(file.absolute, `route ${file.routePath}`);
+    const methods = HTTP_METHODS.filter((method) => module[method] !== undefined);
+    if (methods.length === 0) {
+      throw new RouteManifestError(
+        `Route ${file.routePath} (${file.absolute}) tidak mengekspor HTTP method. Ekspor salah satu: ${HTTP_METHODS.join(", ")}.`,
+      );
+    }
+    result.push({ file: file.absolute, routePath: file.routePath, methods });
+  }
+
+  return result;
+}
+
 /**
  * Memindai `src/routes/api/**` dan membangun manifest `RouteEntry[]`.
  *
@@ -95,21 +126,14 @@ async function collectRouteFiles(dir: string, apiDir: string): Promise<RouteFile
 export async function createRouteManifest(
   options: CreateRouteManifestOptions,
 ): Promise<RouteEntry[]> {
-  const apiDir = options.apiDir ?? "api";
   const importer = options.importer ?? nativeImporter;
-  const files = await collectRouteFiles(options.dir, apiDir);
+  const apiRoutes = await listApiRoutes(options);
   const entries: RouteEntry[] = [];
 
-  for (const file of files) {
-    const module = await importer(file.absolute, `route ${file.routePath}`);
-    const exported = HTTP_METHODS.filter((method) => module[method] !== undefined);
-    if (exported.length === 0) {
-      throw new RouteManifestError(
-        `Route ${file.routePath} (${file.absolute}) tidak mengekspor HTTP method. Ekspor salah satu: ${HTTP_METHODS.join(", ")}.`,
-      );
-    }
-
-    for (const method of exported) {
+  for (const file of apiRoutes) {
+    // Modul sudah termuat di `listApiRoutes` (cache importer) — ambil definisinya.
+    const module = await importer(file.file, `route ${file.routePath}`);
+    for (const method of file.methods) {
       const definition = module[method];
       if (!isRouteDefinition(definition)) {
         throw new RouteManifestError(

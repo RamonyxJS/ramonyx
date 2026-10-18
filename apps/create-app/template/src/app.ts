@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import { serveStatic } from "@ramonyx/adapter-runtime";
 import { createRouteManifest, loadPageRoutes, type ModuleImporter } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
@@ -6,6 +7,11 @@ import { createPageRoutes } from "@ramonyx/ssr";
 import type { FetchHandler } from "ramonyx";
 
 import middleware from "./routes/middleware.ts";
+
+// Aset statis hanya untuk host Node (edge: platform menyajikan aset; `middleware.ts` tetap
+// edge-safe agar `ramonyx build --target edge` bisa membundelnya — ADR-0058).
+const clientDir = fileURLToPath(new URL("../dist/client", import.meta.url));
+const staticAssets = serveStatic({ dir: clientDir, prefix: "/assets", immutable: true });
 
 export interface CreateAppOptions {
   /** URL bundle klien (produksi "/assets/client.js"; dev via entry Vite). */
@@ -51,7 +57,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
           streaming: options.streaming,
         }),
       ],
-      middleware,
+      middleware: [...middleware, staticAssets],
       strictValidation: options.strictValidation,
     });
   };

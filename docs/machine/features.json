@@ -354,10 +354,12 @@
       "evidence": [
         "packages/security/src/ssrf.ts",
         "packages/security/test/ssrf.test.ts",
-        "docs/adr/0015-ssrf-guard-output-limit.md"
+        "docs/adr/0015-ssrf-guard-output-limit.md",
+        "docs/adr/0058-edge-target.md"
       ],
       "limitations": [
-        "IP-pinning (anti DNS-rebinding) menyusul — dicatat di ADR-0031"
+        "IP-pinning (anti DNS-rebinding) menyusul — dicatat di ADR-0031",
+        "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)"
       ]
     },
     {
@@ -654,17 +656,27 @@
     },
     {
       "id": "adapter-serverless-edge",
-      "name": "Adapter serverless/edge (Vercel, Cloudflare, Deno Deploy)",
-      "status": "planned",
+      "name": "Target build edge/serverless (`--target edge`, kontrak fetch handler)",
+      "status": "partial",
       "since": null,
-      "priority": "p1",
-      "packages": [],
+      "priority": "p0",
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/compiler",
+        "@ramonyx/devtools"
+      ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/adapter-runtime/src/node.ts"
+        "packages/bundler/src/edge.ts",
+        "packages/compiler/src/server-entry.ts",
+        "apps/create-app/test/create-app.test.ts",
+        "docs/deploy-edge.md",
+        "docs/adr/0058-edge-target.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Deploy platform nyata belum diuji CI (TODO p2-edge-platform-smoke)",
+        "Binding env platform belum diteruskan (TODO p2-edge-env-bindings)",
+        "Preset Vercel/Deno Deploy belum"
       ]
     },
     {

@@ -212,6 +212,18 @@
       "adrs": [
         "ADR-0057"
       ]
+    },
+    {
+      "id": "middleware-edge-safe",
+      "rule": "`src/routes/middleware.ts` harus edge-safe (tanpa `node:*`); urusan host Node (serveStatic, logger, dll.) dipasang di `src/app.ts`.",
+      "rationale": "Middleware ikut dibundel ke artefak edge (`ramonyx build --target edge`); impor `node:*` membuat build gagal (guard) atau runtime edge error.",
+      "scope": "app",
+      "good": "// routes/middleware.ts\nexport default [securityHeaders(), cspNonce()];",
+      "bad": "// routes/middleware.ts\nimport { serveStatic } from \"@ramonyx/adapter-runtime\"; // node:fs → gagal di edge",
+      "enforcement": "Guard build edge menolak `node:*` dengan pesan jelas",
+      "adrs": [
+        "ADR-0058"
+      ]
     }
   ]
 }

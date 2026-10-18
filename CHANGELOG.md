@@ -2,6 +2,33 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikuti semver.
 
+## [Unreleased]
+
+Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server actions, target edge.
+
+### Framework (baseline produksi)
+
+- **Dasar HTTP produksi** (ADR-0055): kompresi brotli/gzip di adapter Node (flush per chunk agar
+  streaming tetap progresif), aset build **ber-hash** + manifest `ramonyx.assets.json`
+  (`readClientScript`), middleware **`serveStatic`** (ETag/304, `immutable` untuk aset
+  ber-fingerprint, guard traversal), helper **`cacheControl()`**.
+- **Static generation** (ADR-0056): `prerenderRoutes` + **`ramonyx build --static`** — rute statis,
+  `getStaticPaths` untuk rute dinamis, `404.html` dari halaman `metadata.status: 404`, aset disalin;
+  situs docs memakai fitur ini (dogfood) dan `NODE_ENV=production` kini diset sejak awal di
+  build/ekspor (memperbaiki mismatch React dev/prod).
+- **Server actions** (ADR-0057): `export const action` per halaman (POST ke path yang sama),
+  `actionSchema` (Standard Schema) untuk validasi FormData, redirect **303** (PRG), render ulang
+  dengan prop `action` + payload hydration; klien mengintersepsi submit form (tanpa reload) dan
+  tetap berfungsi **tanpa JavaScript**.
+- **Target edge/serverless** (ADR-0058): `ramonyx build --target edge` → `dist/edge/index.js`
+  (kontrak `{ fetch }`); codegen entry server (impor statis, tanpa `node:fs`); React adapter
+  memakai `react-dom/server.edge` untuk sinkron + streaming; guard build menolak `node:*`.
+
+### Perubahan API (pra-1.0)
+
+- **`@ramonyx/security`**: `guardedFetch`/`SsrfError` pindah ke subpath **`@ramonyx/security/ssrf`**
+  (Node-only); index kini edge-safe (headers/CSP/CSRF/rate-limit saja).
+
 ## [0.1.1] — 2026-10-18
 
 Rilis cepat setelah 0.1.0: **CLI `ramonyx`**, template scaffolder berbasis CLI, perbaikan

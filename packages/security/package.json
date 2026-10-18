@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ssrf": "./src/ssrf.ts"
   },
   "dependencies": {
     "@ramonyx/core": "workspace:*"

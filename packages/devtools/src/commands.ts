@@ -8,7 +8,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { createNodeHost } from "@ramonyx/adapter-runtime";
-import { buildClient, createDevServer, prerenderRoutes, readAssetManifest } from "@ramonyx/bundler";
+import {
+  buildClient,
+  buildEdge,
+  createDevServer,
+  prerenderRoutes,
+  readAssetManifest,
+} from "@ramonyx/bundler";
 import { loadPageRoutes } from "@ramonyx/compiler";
 
 import { loadConfigFile, loadCreateApp } from "./load.ts";
@@ -19,6 +25,8 @@ Pemakaian:
   ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)
   ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)
   ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)
+  ramonyx build --target edge
+                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)
   ramonyx start            Server produksi (NODE_ENV=production, SSR)
   ramonyx doctor           Diagnostik konfigurasi & lingkungan
   ramonyx version          Versi CLI
@@ -30,6 +38,7 @@ Opsi:
   --port <n>        Override port server SSR
   --dev-port <n>    Override port Vite (default 5173)
   --static          (build) Prerender rute statis + getStaticPaths → dist/static
+  --target <nama>   (build) Target tambahan: "edge" → dist/edge (serverless/edge)
 
 Konvensi:
   src/app.ts        mengekspor createApp(options?) → FetchHandler
@@ -43,6 +52,7 @@ interface Flags {
   readonly port?: number;
   readonly devPort?: number;
   readonly static?: boolean;
+  readonly target?: string;
 }
 
 function readVersion(): string {
@@ -63,6 +73,7 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
   let port: number | undefined;
   let devPort: number | undefined;
   let isStatic = false;
+  let target: string | undefined;
   let help = false;
 
   const numeric = (value: string | undefined, flag: string): number => {
@@ -91,6 +102,12 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
       case "--static":
         isStatic = true;
         break;
+      case "--target":
+        target = argv[++index];
+        if (target === undefined || target.length === 0) {
+          throw new Error("--target butuh nilai (mis. --target edge)");
+        }
+        break;
       case "--help":
       case "-h":
         help = true;
@@ -106,7 +123,7 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
     }
   }
 
-  return { command, flags: { appDir, configPath, port, devPort, static: isStatic }, help };
+  return { command, flags: { appDir, configPath, port, devPort, static: isStatic, target }, help };
 }
 
 async function commandBuild(flags: Flags): Promise<number> {
@@ -120,6 +137,20 @@ async function commandBuild(flags: Flags): Promise<number> {
   }
   const result = await buildClient({ appDir, pages });
   console.log(`✓ client bundle: ${result.scriptPath} (${result.outDir})`);
+
+  if (flags.target !== undefined) {
+    if (flags.target !== "edge") {
+      throw new Error(`target tidak dikenal: "${flags.target}" (yang tersedia: edge)`);
+    }
+    if (flags.static === true) {
+      throw new Error("--target edge dan --static tidak dapat digabung (artefak berbeda)");
+    }
+    const edge = await buildEdge({ appDir });
+    console.log(
+      `✓ edge: ${edge.outputFile} (${(edge.bytes / 1024).toFixed(1)} KB) — kontrak fetch handler (ADR-0058)`,
+    );
+    return 0;
+  }
 
   if (flags.static === true) {
     const createApp = await loadCreateApp(appDir);

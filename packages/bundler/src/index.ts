@@ -7,6 +7,8 @@ export {
 } from "./build.ts";
 export type { DevServer, DevServerOptions } from "./dev.ts";
 export { createDevServer } from "./dev.ts";
+export type { BuildEdgeOptions, BuildEdgeResult } from "./edge.ts";
+export { buildEdge } from "./edge.ts";
 export type {
   PrerenderOptions,
   PrerenderResult,

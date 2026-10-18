@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T21:01:34.830Z",
+  "generatedAt": "2026-10-18T21:15:10.646Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -32,6 +32,7 @@
       "values": [
         "CLIENT_MANIFEST_FILE",
         "buildClient",
+        "buildEdge",
         "createDevServer",
         "prerenderRoutes",
         "readAssetManifest",
@@ -41,6 +42,8 @@
         "AssetManifest",
         "BuildClientOptions",
         "BuildClientResult",
+        "BuildEdgeOptions",
+        "BuildEdgeResult",
         "DevServer",
         "DevServerOptions",
         "PrerenderOptions",
@@ -58,12 +61,16 @@
         "RouteManifestError",
         "createRouteManifest",
         "generateClientEntry",
+        "generateServerEntry",
+        "listApiRoutes",
         "loadPageRoutes",
         "nativeImporter"
       ],
       "types": [
+        "ApiRouteFile",
         "CreateRouteManifestOptions",
         "GenerateClientEntryOptions",
+        "GenerateServerEntryOptions",
         "HttpMethod",
         "LoadPageRoutesOptions",
         "ModuleImporter"
@@ -211,18 +218,15 @@
       "version": "0.1.1",
       "source": "packages/security/src/index.ts",
       "values": [
-        "SsrfError",
         "cspNonce",
         "csrfProtection",
         "defaultContentSecurityPolicy",
-        "guardedFetch",
         "rateLimit",
         "securityHeaders"
       ],
       "types": [
         "CspNonceOptions",
         "CsrfOptions",
-        "GuardedFetchOptions",
         "RateLimitOptions",
         "SecurityHeadersOptions"
       ],

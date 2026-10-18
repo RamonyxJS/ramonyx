@@ -56,7 +56,12 @@ Catatan implementasi Phase 1:
   dimuat ulang via `ssrLoadModule` (tanpa restart); live reload diverifikasi di browser
 - [x] Client navigation (navigasi tanpa reload, ADR-0008): fetch HTML → swap `#ramonyx-root` →
   re-hydrate → `pushState`/`popstate`; diverifikasi di browser nyata
-- [ ] Browser test otomatis + baseline Web Vitals
+- [x] Browser test otomatis (Playwright, ADR-0010): hydration, soft navigation + back/forward
+  (sentinel), halaman error 404/400; baseline Web Vitals → `benchmarks/results/phase2-web-vitals.json`
+
+**Phase 2 selesai** (2026-10-18). Berikutnya: keputusan pemilik (scope npm & lisensi, matrix
+browser, rekonsiliasi PRD) dan/atau Phase 3 — security & performance hardening (fuzzing,
+abuse-case, load test, limits, dependency audit, security regression suite).
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

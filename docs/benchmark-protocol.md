@@ -46,6 +46,8 @@
 - Skrip per area di `benchmarks/<area>/` (router, http, scalar, ssr, startup, memory).
 - Hasil JSON + ringkasan disimpan sebagai **artefak CI**.
 - Baseline Phase 1 di-commit (mis. `benchmarks/results/phase1-baseline.json`) sebagai pembanding regresi.
+- Web Vitals (Phase 2): `benchmarks/results/phase2-web-vitals.json` dari spec e2e (artefak,
+  bukan klaim; threshold per workload menyusul).
 
 ## 6. Acceptance criteria (target eksperimen — bukan hasil)
 

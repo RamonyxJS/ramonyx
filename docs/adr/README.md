@@ -17,3 +17,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0007](0007-hydration.md) | Hydration: payload inline + satu bundle client | Accepted |
 | [0008](0008-client-navigation.md) | Client navigation: soft navigation (fetch → swap → re-hydrate) | Accepted |
 | [0009](0009-dev-server.md) | Dev server: Vite front + proxy manual + ssrLoadModule | Accepted |
+| [0010](0010-browser-e2e.md) | Browser E2E Playwright + baseline Web Vitals | Accepted |

@@ -4,10 +4,9 @@ Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangka
 proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
-> **Status: Phase 2 berjalan — file routing + SSR React + hydration + client navigation + dev server HMR**:
-> halaman `page.tsx`/`layout.tsx`/`error.tsx` + loader, endpoint `src/routes/api/**`, payload
-> hydration + bundle Vite, navigasi tanpa reload, dan `pnpm dev` (Vite 5173 → SSR 3000).
-> Berikutnya: browser test otomatis + Web Vitals; runtime Rust menyusul sesuai roadmap.
+> **Status: Phase 2 selesai** — file routing + SSR React + hydration + client navigation +
+> dev server HMR + e2e Playwright (hydration/navigasi/error) + baseline Web Vitals.
+> Berikutnya: Phase 3 hardening dan keputusan pemilik (scope npm, lisensi, matrix browser, PRD).
 > Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
@@ -20,6 +19,7 @@ pnpm lint
 pnpm dev           # dev: Vite+HMR di 5173 → SSR di 3000 (tanpa build)
 pnpm build         # produksi: bundle client ke dist/client
 pnpm start         # produksi: SSR di http://localhost:3000 (setelah build)
+pnpm test:e2e      # e2e Playwright (hydration, navigasi, error, Web Vitals)
 pnpm bench         # baseline autocannon
 ```
 

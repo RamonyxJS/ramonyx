@@ -45,9 +45,9 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `runtime/crates/*` | Host Rust + V8 (runtime-core, module-loader, permissions, net, fs, cli) | Phase 4+ | belum dibuat |
 | `benchmarks/*` | Skrip benchmark per area | Phase 1 | belum dibuat |
 
-Status Phase 2 (berjalan): file routing API + halaman (loader/layout/error), SSR React, hydration
-(Vite bundle + payload inline, ADR-0007), client navigation (ADR-0008), dan dev server HMR
-(Vite + `ssrLoadModule`, ADR-0009) sudah berfungsi; tersisa browser test otomatis + Web Vitals.
+Status Phase 2 (selesai, 2026-10-18): file routing API + halaman (loader/layout/error), SSR React,
+hydration (ADR-0007), client navigation (ADR-0008), dev server HMR (ADR-0009), dan e2e browser +
+baseline Web Vitals (ADR-0010) sudah berfungsi. Tersisa: keputusan pemilik + Phase 3 hardening.
 
 Status Phase 1: `core`, `router`, `schema`, `adapter-runtime`, `server`, `testing`, `ramonyx`,
 `apps/playground`, dan `benchmarks/http` sudah diimplementasikan (source-first TypeScript via

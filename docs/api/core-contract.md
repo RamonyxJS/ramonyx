@@ -151,3 +151,5 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
 - Dev server (ADR-0009): Vite di 5173 (transform + HMR) dengan proxy manual ke SSR di 3000;
   manifest/halaman dimuat ulang via `ssrLoadModule` + `reloadManifests` → edit file berlaku
   tanpa restart; watcher `src/routes` meregenerasi entry + full-reload.
+- Browser e2e (ADR-0010): Playwright terhadap build produksi — `apps/playground/e2e/` (hydration,
+  soft navigation + back/forward, error 404/400, baseline Web Vitals).

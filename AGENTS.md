@@ -20,6 +20,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   `node --import ./tools/register.mjs` (loader esbuild: TS + JSX automatic; ADR-0006). Butuh Node ≥24.
 - `pnpm dev` — dev server: Vite (5173) dengan HMR → SSR (3000); **tanpa build**.
 - `pnpm build` + `pnpm start` — produksi: bundle client ke `apps/playground/dist/client/`, lalu SSR di 3000.
+- `pnpm test:e2e` — Playwright terhadap build produksi (`pnpm build` + `pnpm start`); browser:
+  CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
 - Hasil bench di `benchmarks/results/`.
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
@@ -71,7 +73,7 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 2 berjalan — file routing (API + halaman), SSR React, hydration, client navigation, dan
-dev server HMR (ADR-0009) selesai; 77 tes hijau + verifikasi browser. Berikutnya: browser test
-otomatis + baseline Web Vitals. Keputusan terbuka:
+Phase 2 **selesai** (2026-10-18) — file routing (API + halaman), SSR React, hydration, client
+navigation, dev server HMR, dan browser test otomatis + baseline Web Vitals; 77 tes Node + 4 e2e
+hijau. Berikutnya: Phase 3 (hardening) dan keputusan terbuka pemilik:
 scope npm & lisensi, matrix browser, rekonsiliasi PRD (lihat `docs/roadmap/phase-0-1.md`).

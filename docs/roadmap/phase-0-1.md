@@ -112,7 +112,11 @@ Phase 4 (runtime alpha).
       handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end
 - [ ] **R2 sisa** — streaming body, cancellation, keep-alive, network client (fetch),
       graceful shutdown; limit ukuran/resource (bersama R3)
-- [ ] **R3** — Permission model + isolasi; **R4** — optimasi startup/profiling
+- [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
+      `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
+      petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI
+- [ ] **R3 sisa** — worker isolation, quota CPU/memori, pencabutan permission, shutdown terkoordinasi
+- [ ] **R4** — optimasi startup/profiling
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

@@ -28,7 +28,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm audit --audit-level high` — audit dependency (juga berjalan di CI + cron mingguan).
 - Rust (runtime eksperimental): `cargo fmt --all`, `cargo clippy --workspace --all-targets -- -D warnings`,
   `cargo test --workspace`; jalankan: `cargo run -p ramonyx-runtime-cli -- run src/main.ts`
-  (ESM + transpile TS via deno_ast; bare specifier/paket npm belum).
+  (ESM + transpile TS via deno_ast). **Default deny-all** — akses fs/env/net butuh flag
+  `--allow-read/write/net/env[=daftar]`; `serve()` butuh `--allow-net`.
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
 
@@ -56,9 +57,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - **Runtime Rust itu eksperimental & terpisah**: `runtime/` (Cargo workspace) tidak boleh diimpor
   paket TS dan sebaliknya; toolchain dipin `1.99.0` via `rust-toolchain.toml` (rustup mengunduh
   otomatis). `js-engine` mendukung **ESM + TypeScript** (import relatif + fallback ekstensi), API
-  `ramonyx.*` (sleep/fs/env/**HTTP server pull-model**, bind 127.0.0.1) — tetapi **belum**: resolusi
-  paket `node_modules`/bare specifier, WHATWG fetch, streaming, cancellation, permission model
-  (R3) — jangan diklaim. Build pertama V8/deno_core+deno_ast+hyper ±3 menit; biarkan `target/` cache.
+  `ramonyx.*` (sleep/fs/env/**HTTP server pull-model**, bind 127.0.0.1) dengan **permission model
+  deny-all** (`--allow-read/write/net/env`) — tetapi **belum**: resolusi paket `node_modules`/bare
+  specifier, WHATWG fetch, streaming, cancellation, worker/kuota (R3 sisa, ADR-0023) — jangan
+  diklaim. Build pertama V8/deno_core+deno_ast+hyper ±3 menit; biarkan `target/` cache.
 - **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
   `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
@@ -95,10 +97,11 @@ Phase 0–3 **selesai** (2026-10-18); keputusan pemilik juga selesai — lisensi
 **`@ramonyx/*`**, browser matrix evergreen 2 versi terakhir, rekonsiliasi PRD (ADR-0018).
 **Phase 4 (runtime alpha) berjalan**: R0 selesai (workspace Cargo, CLI `ramonyx-runtime`, config,
 structured logging — ADR-0019), **R1**: V8 via `deno_core` (ADR-0020) + module loader ESM &
-transpile TypeScript via `deno_ast` (ADR-0021), dan **R2a**: I/O dasar + HTTP server pull-model
-(`ramonyx.sleep/fs/env/serve` — ADR-0022, diverifikasi curl + test); sisa: node_modules, streaming,
-cancellation, permission (R3). Ringkas Phase 3: limits body/timeout/concurrency + rate limit per
+transpile TypeScript via `deno_ast` (ADR-0021), **R2a**: I/O dasar + HTTP server pull-model
+(`ramonyx.sleep/fs/env/serve` — ADR-0022), dan **R3a**: permission model deny-all dengan flag
+`--allow-*` (ADR-0023) — semuanya diverifikasi test + smoke; sisa: node_modules, streaming,
+cancellation, worker/kuota. Ringkas Phase 3: limits body/timeout/concurrency + rate limit per
 klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard + output limit
 (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`, abuse/soak
 `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 28 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 36 test Rust hijau.

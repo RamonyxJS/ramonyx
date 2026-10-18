@@ -30,8 +30,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Toolchain Rust (ikut rust-toolchain.toml)
-        uses: dtolnay/rust-toolchain@master
+      # Satu sumber versi: channel dibaca dari rust-toolchain.toml (action butuh input eksplisit).
+      - name: Baca channel Rust dari rust-toolchain.toml
+        id: rust
+        run: |
+          channel="$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)"
+          if [ -z "$channel" ]; then
+            echo "channel tidak ditemukan di rust-toolchain.toml"; exit 1
+          fi
+          echo "channel=${channel}" >> "$GITHUB_OUTPUT"
+          echo "Rust: ${channel}"
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.rust.outputs.channel }}
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: Aktifkan pnpm (corepack)
         run: corepack enable pnpm

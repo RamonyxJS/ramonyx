@@ -79,7 +79,7 @@ jobs:
       - name: Performance report SSR (report-only, non-blocking)
         run: pnpm bench:ssr:report
       - name: Upload benchmark artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-results
           path: |

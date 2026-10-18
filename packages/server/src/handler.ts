@@ -20,9 +20,24 @@ export interface CreateHandlerOptions {
   readonly logger?: Logger;
   /** false melonggarkan validasi output (input tetap ketat). Default true. */
   readonly strictValidation?: boolean;
+  /** Batas ukuran body request (byte). Default 1 MiB; lebih besar → 413. */
+  readonly maxBodyBytes?: number;
+  /** Timeout handler/loader per request (ms). Default 10_000; lewat batas → 503 + `request.signal` di-abort. */
+  readonly timeoutMs?: number;
 }
 
 const defaultEnv: EnvReader = { get: () => undefined };
+
+/** Secure by default (Phase 3 hardening). */
+const DEFAULT_MAX_BODY_BYTES = 1_048_576; // 1 MiB
+const DEFAULT_TIMEOUT_MS = 10_000;
+
+class TimeoutError extends Error {
+  constructor() {
+    super("Request timeout");
+    this.name = "TimeoutError";
+  }
+}
 
 function normalizeInit(init?: number | ResponseInit): ResponseInit | undefined {
   if (init === undefined) {
@@ -82,17 +97,56 @@ async function runMiddleware(
   return invoke(0);
 }
 
-async function parseBody(
+async function readBodyText(
   request: Request,
-): Promise<{ readonly ok: true; readonly value: unknown } | { readonly ok: false }> {
-  const text = await request.text();
-  if (text.trim() === "") {
+  maxBytes: number,
+): Promise<{ readonly ok: true; readonly text: string } | { readonly ok: false }> {
+  const declared = Number(request.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    return { ok: false };
+  }
+
+  const body = request.body;
+  if (body === null) {
+    return { ok: true, text: "" };
+  }
+
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let text = "";
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => undefined);
+      return { ok: false };
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+  text += decoder.decode();
+  return { ok: true, text };
+}
+
+type BodyReadResult =
+  | { readonly ok: true; readonly value: unknown }
+  | { readonly ok: false; readonly reason: "invalid-json" | "too-large" };
+
+async function parseBody(request: Request, maxBytes: number): Promise<BodyReadResult> {
+  const read = await readBodyText(request, maxBytes);
+  if (!read.ok) {
+    return { ok: false, reason: "too-large" };
+  }
+  if (read.text.trim() === "") {
     return { ok: true, value: undefined };
   }
   try {
-    return { ok: true, value: JSON.parse(text) };
+    return { ok: true, value: JSON.parse(read.text) };
   } catch {
-    return { ok: false };
+    return { ok: false, reason: "invalid-json" };
   }
 }
 
@@ -151,8 +205,18 @@ async function dispatch(
   env: EnvReader,
   logger: Logger,
   strictValidation: boolean,
+  maxBodyBytes: number,
 ): Promise<Response> {
   const url = new URL(request.url);
+
+  const method = request.method.toUpperCase();
+  if (method !== "GET" && method !== "HEAD") {
+    const declared = Number(request.headers.get("content-length") ?? "0");
+    if (Number.isFinite(declared) && declared > maxBodyBytes) {
+      return jsonResponse({ error: "Payload Too Large" }, 413);
+    }
+  }
+
   const match = matchRoute(table, request.method, url.pathname);
 
   if (match.kind === "not-found") {
@@ -183,9 +247,11 @@ async function dispatch(
 
   let bodyInput: unknown;
   if (definition.body !== undefined) {
-    const parsed = await parseBody(request);
+    const parsed = await parseBody(request, maxBodyBytes);
     if (!parsed.ok) {
-      return validationErrorResponse([{ path: [], message: "Body JSON tidak valid" }]);
+      return parsed.reason === "too-large"
+        ? jsonResponse({ error: "Payload Too Large" }, 413)
+        : validationErrorResponse([{ path: [], message: "Body JSON tidak valid" }]);
     }
     bodyInput = parsed.value;
   }
@@ -218,15 +284,34 @@ export function createHandler(options: CreateHandlerOptions): FetchHandler {
   const env = options.env ?? defaultEnv;
   const logger = options.logger ?? silentLogger;
   const strictValidation = options.strictValidation ?? true;
+  const maxBodyBytes = options.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
   return async function handle(request) {
-    const middlewareContext: MiddlewareContext = { request, env, log: logger };
+    const controller = new AbortController();
+    const wrapped = new Request(request, { signal: controller.signal });
+    const middlewareContext: MiddlewareContext = { request: wrapped, env, log: logger };
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
-      return await runMiddleware(middleware, middlewareContext, () =>
-        dispatch(table, request, env, logger, strictValidation),
-      );
+      return await Promise.race([
+        runMiddleware(middleware, middlewareContext, () =>
+          dispatch(table, wrapped, env, logger, strictValidation, maxBodyBytes),
+        ),
+        new Promise<never>((_resolve, reject) => {
+          controller.signal.addEventListener("abort", () => reject(new TimeoutError()), {
+            once: true,
+          });
+        }),
+      ]);
     } catch (error) {
+      if (error instanceof TimeoutError || controller.signal.aborted) {
+        logger.warn("Request timeout", { path: safePath(request), timeoutMs });
+        return jsonResponse({ error: "Service Unavailable" }, 503);
+      }
       return errorResponse(error, logger, request);
+    } finally {
+      clearTimeout(timer);
     }
   };
 }

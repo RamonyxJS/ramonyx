@@ -10,7 +10,13 @@ export function parseQuery(searchParams: URLSearchParams): QueryRecord {
     if (first === undefined) {
       continue;
     }
-    result[key] = values.length > 1 ? values : first;
+    // defineProperty: key "__proto__" menjadi milik sendiri, tidak menyentuh prototype objek.
+    Object.defineProperty(result, key, {
+      value: values.length > 1 ? values : first,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
   }
   return result;
 }

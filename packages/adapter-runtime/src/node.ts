@@ -1,28 +1,11 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { Readable } from "node:stream";
 import type { EnvReader, FetchHandler, Logger } from "@ramonyx/core";
 import type { RunningServer, RuntimeHost, ServeOptions } from "./types.ts";
 
 export interface NodeHostOptions {
   readonly env?: EnvReader;
   readonly onError?: (error: unknown) => void;
-}
-
-async function readBody(request: IncomingMessage): Promise<ArrayBuffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    request.on("data", (chunk: Buffer) => chunks.push(chunk));
-    request.on("end", () => {
-      const buffer = Buffer.concat(chunks);
-      // Salin ke ArrayBuffer milik sendiri agar valid sebagai BodyInit.
-      resolve(
-        buffer.buffer.slice(
-          buffer.byteOffset,
-          buffer.byteOffset + buffer.byteLength,
-        ) as ArrayBuffer,
-      );
-    });
-    request.on("error", reject);
-  });
 }
 
 async function toFetchRequest(request: IncomingMessage, origin: string): Promise<Request> {
@@ -40,8 +23,13 @@ async function toFetchRequest(request: IncomingMessage, origin: string): Promise
       headers.set(name, value);
     }
   }
-  const body = method === "GET" || method === "HEAD" ? undefined : await readBody(request);
-  return new Request(new URL(request.url ?? "/", origin), { method, headers, body });
+  const init: RequestInit & { duplex?: "half" } = { method, headers };
+  if (method !== "GET" && method !== "HEAD") {
+    // Body di-stream (bukan di-buffer): batas ukuran ditegakkan lapisan server dengan 413.
+    init.body = Readable.toWeb(request) as unknown as BodyInit;
+    init.duplex = "half";
+  }
+  return new Request(new URL(request.url ?? "/", origin), init);
 }
 
 async function writeResponse(target: ServerResponse, response: Response): Promise<void> {

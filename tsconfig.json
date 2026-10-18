@@ -12,5 +12,11 @@
       "ramonyx": ["./packages/ramonyx/src/index.ts"]
     }
   },
-  "include": ["packages/**/*.ts", "apps/**/*.ts", "benchmarks/**/*.ts"]
+  "include": [
+    "packages/**/*.ts",
+    "apps/**/*.ts",
+    "benchmarks/**/*.ts",
+    "tests/**/*.ts",
+    "playwright.config.ts"
+  ]
 }

@@ -86,3 +86,17 @@ Bukti: 4 test docs (SSR payload/script, build klien memuat hydration + soft navi
 200 `text/javascript`, traversal 404) dan e2e Playground **5/5 hijau**; verifikasi browser pada
 situs docs: penanda JS bertahan saat klik dokumen (tanpa full reload), `payloadPath` berubah
 ke `/dokumen/[...slug]`, konten dokumen tampil.
+
+## Diperbarui (2026-10-18, kedua): Pencarian Dokumen
+
+- **Filter instan di indeks** (klien, React state): menyaring judul/slug saat mengetik —
+  bekerja setelah hydration; tanpa JS, daftar penuh tetap tampil (progressive enhancement).
+- **Pencarian isi di server**: `GET /api/cari?q=…` (validasi schema di trust boundary: `q`
+  wajib ≥ 2 karakter) memindai markdown mentah — judul/slug diprioritaskan, disertai excerpt
+  di sekitar kata kunci, dibatasi 20 hasil. Markdown mentah disimpan di katalog
+  (browser-safe; data hanya hidup di server).
+
+Bukti: unit `searchCatalog` (prioritas judul, excerpt, limit) + API di smoke app
+(`interop` menemukan ADR-0029; `kredensial` cocok **isi**; q kosong/pendek → 400) + verifikasi
+browser: mengetik "plugin" → 1 hasil (`adr/0040-plugin-process-isolation`), "zzzz" → pesan
+"tidak ada dokumen cocok".

@@ -181,9 +181,10 @@ pekerjaan Phase 5.
       **hydration + soft navigation** + aset `/assets/*`) menyajikan seluruh `docs/**` (52
       dokumen) via catch-all `/dokumen/[...slug]`, indeks + API JSON, guard traversal, security
       middleware aktif; temuan: `DocumentRenderer` kustom menjatuhkan `scripts` & payload klien
-      basi setelah soft navigation (diperbaiki + dikunci e2e)
+      basi setelah soft navigation (diperbaiki + dikunci e2e); **pencarian**: filter instan di
+      indeks + `GET /api/cari?q=` (isi markdown, excerpt, validasi schema)
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
-      restart supervision plugin, sandbox OS (seccomp/namespace), pencarian di situs docs
+      restart supervision plugin, sandbox OS (seccomp/namespace)
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T03:29:30.291Z",
+  "generatedAt": "2026-10-18T03:34:11.668Z",
   "scenario": "GET / (build produksi, Chromium)",
   "viewport": {
     "width": 1280,
@@ -7,9 +7,9 @@
   },
   "note": "Baseline artefak — bukan klaim; threshold per workload menyusul (protokol benchmark §8)",
   "vitals": {
-    "lcp": 484,
+    "lcp": 284,
     "cls": 0,
-    "fcp": 484,
-    "ttfb": 203.5
+    "fcp": 284,
+    "ttfb": 33.700000000186265
   }
 }

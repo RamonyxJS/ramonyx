@@ -35,6 +35,8 @@
 9. SSRF: target privat/loopback/link-local ditolak; redirect privat ditolak per hop —
    `packages/security/test/ssrf.test.ts` — ADR-0015
 10. Output limit SSR: dokumen >2 MiB → 500 — `packages/ssr/test/pages.test.ts` — ADR-0015
+11. Dependency: audit high lolos di CI, quarantine rilis 24 jam, update via PR bergerbang —
+    `docs/security/dependency-policy.md` — ADR-0016
 
 ## Berikutnya
 

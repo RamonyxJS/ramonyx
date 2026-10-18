@@ -92,5 +92,7 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
   bisa diganti aplikasi; CSP default hanya menyala bila aplikasi memasang middleware-nya.
 - CSRF: ✅ primitif `csrfProtection()` (double-submit cookie + header, ADR-0013); verifikasi
   field form menyusul.
-- SSRF, path traversal (runtime/plugin), limit SSR penuh (output size), isolasi plugin: SSRF ✅
-  (ADR-0015); sisanya fase berikutnya (Phase 3 lanjutan / Phase 4).
+- Dependency compromise: ✅ lockfile + `pnpm audit --audit-level high` (push/PR + cron mingguan) +
+  `minimumReleaseAge` 24 jam + Dependabot (tanpa auto-merge) + kebijakan
+  `docs/security/dependency-policy.md` (ADR-0016); provenance menyusul saat publikasi.
+- Path traversal (runtime/plugin) + isolasi plugin: belum — Phase 4 (permission model runtime).

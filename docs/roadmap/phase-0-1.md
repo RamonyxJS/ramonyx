@@ -75,7 +75,9 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
       6 skenario serangan (oversized, JSON rusak, schema invalid, traversal, query raksasa, echo valid)
       semua sesuai ekspektasi tanpa 5xx/error; soak 20s+3s drain — RSS proses server dipantau via /proc
       (plateau saat beban berhenti; soak berjam-jam per protokol §8 masih diperlukan sebelum klaim)
-- [ ] Dependency audit berkelanjutan (CI sudah `pnpm audit`; tambah kebijakan & provenance)
+- [x] Dependency audit berkelanjutan (ADR-0016): audit high di push/PR + cron mingguan, Dependabot
+      (grup dev/prod, tanpa auto-merge), quarantine rilis 24 jam (`minimumReleaseAge`), kebijakan
+      `docs/security/dependency-policy.md`; provenance menyusul saat publikasi
 - [x] Pemetaan awal OWASP ASVS (`docs/security/asvs-mapping.md`) + primitif XSS/CSRF:
       `@ramonyx/security` — `securityHeaders()`, `cspNonce()` (CSP nonce, ADR-0014),
       `csrfProtection()` (ADR-0013)

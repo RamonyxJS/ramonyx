@@ -24,6 +24,7 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
 - `pnpm bench` — autocannon HTTP baseline; `pnpm bench:security` — abuse-case + soak
   (spawn server terpisah, RSS via /proc). Hasil di `benchmarks/results/`.
+- `pnpm audit --audit-level high` — audit dependency (juga berjalan di CI + cron mingguan).
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
 
@@ -46,6 +47,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   **10s → 503** (+ `request.signal` abort); request bersamaan **100 → 503 + Retry-After**
   (load shedding). Aplikasi menyesuaikan lewat opsi `createHandler`
   (`maxBodyBytes`, `timeoutMs`, `maxConcurrent`).
+- **Versi dependency baru menunggu 24 jam** (`minimumReleaseAge` di `pnpm-workspace.yaml`) — kalau
+  versi rilis baru tidak langsung bisa dipasang, itu disengaja (kebijakan supply chain, ADR-0016).
 - **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
   `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
@@ -78,8 +81,9 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 2 **selesai** (2026-10-18). **Phase 3 (hardening) berjalan** — limits body/timeout/concurrency
-(ADR-0011/0012), security headers + CSRF + CSP nonce + SSRF guard + output limit
-(`@ramonyx/security`, ADR-0013/0014/0015), fuzz fast-check, suite `tests/security/`, abuse/soak
-`pnpm bench:security`, pemetaan ASVS awal; 110 tes Node + 4 e2e hijau. Berikutnya: dependency
-audit, rate limiting per klien. Keputusan terbuka pemilik: scope npm & lisensi, matrix browser, PRD.
+Phase 2 **selesai** (2026-10-18). **Phase 3 (hardening) hampir selesai** — limits
+body/timeout/concurrency (ADR-0011/0012), security headers + CSRF + CSP nonce + SSRF guard +
+output limit (`@ramonyx/security`, ADR-0013/0014/0015), fuzz fast-check, suite `tests/security/`,
+abuse/soak `pnpm bench:security`, pemetaan ASVS awal, dependency policy + Dependabot + cron
+(ADR-0016); 110 tes Node + 4 e2e hijau. Sisa: rate limiting per klien (butuh keputusan identitas),
+verifikasi CSRF field form. Keputusan terbuka pemilik: scope npm & lisensi, matrix browser, PRD.

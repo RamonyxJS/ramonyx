@@ -4,8 +4,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use js_engine::Engine;
-use runtime_core::{LogLevel, Logger, load_config, version};
+use js_engine::{Engine, EngineOptions};
+use runtime_core::{LogLevel, Logger, Permission, Permissions, load_config, version};
 
 const USAGE: &str = "\
 ramonyx-runtime — runtime Ramonyx (R0: CLI/konfigurasi/logging; R1: eksekusi JS/TS via V8)
@@ -21,6 +21,11 @@ ENTRY:
     TypeScript ditranspile via deno_ast).
     .cjs/.cts dieksekusi sebagai script (tanpa import).
     Bare specifier (paket npm) belum didukung — akan error dengan pesan jelas.
+
+PERMISSIONS (default: semua ditolak):
+    --allow-read[=path,...]   --allow-write[=path,...]
+    --allow-net[=host,...]    --allow-env[=NAME,...]
+    Tanpa nilai (mis. --allow-read) berarti mengizinkan semua.
 ";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -34,6 +39,7 @@ enum Command {
         entry: Option<PathBuf>,
         config: Option<PathBuf>,
         log_level: Option<LogLevel>,
+        permissions: Permissions,
     },
 }
 
@@ -45,11 +51,15 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
 
     let mut config: Option<PathBuf> = None;
     let mut log_level: Option<LogLevel> = None;
+    let mut permissions = Permissions::default();
     let mut positional: Option<String> = None;
     let mut rest = iterator.peekable();
 
     while let Some(argument) = rest.next() {
-        match argument.as_str() {
+        let flag = argument.as_str();
+        let allow_value = |prefix: &str| -> Option<&str> { flag.strip_prefix(prefix) };
+
+        match flag {
             "--config" => {
                 let value = rest.next().ok_or("--config butuh nilai <path>")?;
                 config = Some(PathBuf::from(value));
@@ -58,6 +68,22 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
                 let value = rest.next().ok_or("--log-level butuh nilai")?;
                 log_level =
                     Some(LogLevel::parse(value).ok_or("--log-level harus debug|info|warn|error")?);
+            }
+            "--allow-read" => permissions.read = Permission::AllowAll,
+            "--allow-write" => permissions.write = Permission::AllowAll,
+            "--allow-net" => permissions.net = Permission::AllowAll,
+            "--allow-env" => permissions.env = Permission::AllowAll,
+            _ if allow_value("--allow-read=").is_some() => {
+                permissions.read = Permission::from_flag(allow_value("--allow-read="));
+            }
+            _ if allow_value("--allow-write=").is_some() => {
+                permissions.write = Permission::from_flag(allow_value("--allow-write="));
+            }
+            _ if allow_value("--allow-net=").is_some() => {
+                permissions.net = Permission::from_flag(allow_value("--allow-net="));
+            }
+            _ if allow_value("--allow-env=").is_some() => {
+                permissions.env = Permission::from_flag(allow_value("--allow-env="));
             }
             flag if flag.starts_with("--") => {
                 return Err(format!("flag tidak dikenal: {flag}"));
@@ -79,6 +105,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             entry: positional.map(PathBuf::from),
             config,
             log_level,
+            permissions,
         }),
         other => Err(format!("subcommand tidak dikenal: {other}")),
     }
@@ -112,6 +139,7 @@ fn run_command(command: Command) -> ExitCode {
             entry,
             config,
             log_level,
+            permissions,
         } => {
             let resolved = match load_config(config.as_deref()) {
                 Ok(resolved) => resolved,
@@ -157,14 +185,26 @@ fn run_command(command: Command) -> ExitCode {
                 }),
             );
 
+            logger.info(
+                "runtime.permissions",
+                &serde_json::json!({
+                    "read": permissions.read.as_label(),
+                    "write": permissions.write.as_label(),
+                    "net": permissions.net.as_label(),
+                    "env": permissions.env.as_label(),
+                }),
+            );
+
             let extension = entry_path
                 .extension()
                 .and_then(|value| value.to_str())
                 .unwrap_or("");
 
             let success = match extension {
-                "js" | "mjs" | "ts" | "tsx" | "mts" => execute_module(&entry_path, &mut logger),
-                "cjs" | "cts" => execute_script(&entry_path, &mut logger),
+                "js" | "mjs" | "ts" | "tsx" | "mts" => {
+                    execute_module(&entry_path, &mut logger, &permissions)
+                }
+                "cjs" | "cts" => execute_script(&entry_path, &mut logger, &permissions),
                 other => {
                     logger.error(
                         "entry.unsupported",
@@ -197,8 +237,10 @@ fn run_command(command: Command) -> ExitCode {
 }
 
 /// Eksekusi file sebagai modul ESM (JS/TS) lewat `js-engine`. Mengembalikan sukses/gagal.
-fn execute_module(entry_path: &Path, logger: &mut Logger) -> bool {
-    let mut engine = match Engine::new() {
+fn execute_module(entry_path: &Path, logger: &mut Logger, permissions: &Permissions) -> bool {
+    let mut engine = match Engine::with_options(EngineOptions {
+        permissions: permissions.clone(),
+    }) {
         Ok(engine) => engine,
         Err(error) => {
             logger.error(
@@ -236,7 +278,7 @@ fn execute_module(entry_path: &Path, logger: &mut Logger) -> bool {
 }
 
 /// Eksekusi file JS lewat V8 (`js-engine`). Mengembalikan sukses/gagal untuk exit code & log.
-fn execute_script(entry_path: &Path, logger: &mut Logger) -> bool {
+fn execute_script(entry_path: &Path, logger: &mut Logger, permissions: &Permissions) -> bool {
     let source = match fs::read_to_string(entry_path) {
         Ok(source) => source,
         Err(error) => {
@@ -252,7 +294,9 @@ fn execute_script(entry_path: &Path, logger: &mut Logger) -> bool {
         }
     };
 
-    let mut engine = match Engine::new() {
+    let mut engine = match Engine::with_options(EngineOptions {
+        permissions: permissions.clone(),
+    }) {
         Ok(engine) => engine,
         Err(error) => {
             logger.error(
@@ -324,6 +368,8 @@ mod tests {
             "rt.json",
             "--log-level",
             "debug",
+            "--allow-read=/tmp",
+            "--allow-net",
         ]));
         assert_eq!(
             parsed,
@@ -331,6 +377,11 @@ mod tests {
                 entry: Some(PathBuf::from("src/main.ts")),
                 config: Some(PathBuf::from("rt.json")),
                 log_level: Some(LogLevel::Debug),
+                permissions: Permissions {
+                    read: Permission::Allow(vec!["/tmp".to_string()]),
+                    net: Permission::AllowAll,
+                    ..Default::default()
+                },
             })
         );
     }

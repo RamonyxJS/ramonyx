@@ -16,6 +16,7 @@ use http_body_util::{BodyExt, Full};
 use hyper::body::Incoming;
 use hyper::service::service_fn;
 use hyper::{Request, Response};
+use runtime_core::Permissions;
 use serde::Serialize;
 use tokio::net::TcpListener;
 use tokio::sync::{mpsc, oneshot};
@@ -171,6 +172,10 @@ pub fn op_http_listen(
     #[string] host: String,
     #[smi] port: u16,
 ) -> Result<(u64, u16), JsErrorBox> {
+    state
+        .borrow::<Permissions>()
+        .check_net(&host)
+        .map_err(JsErrorBox::generic)?;
     let (actual_port, handle) = start_server(&host, port)?;
     let http = state.borrow_mut::<HttpState>();
     let server_id = http.next_server();

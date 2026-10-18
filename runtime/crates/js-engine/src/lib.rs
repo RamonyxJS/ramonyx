@@ -23,6 +23,7 @@ use deno_core::{
     RuntimeOptions, extension, op2, resolve_import, resolve_path,
 };
 use deno_error::JsErrorBox;
+use runtime_core::Permissions;
 
 mod http;
 
@@ -95,7 +96,14 @@ async fn op_sleep(#[smi] ms: u32) {
 
 #[op2(async(lazy), fast)]
 #[string]
-async fn op_read_text_file(#[string] path: String) -> Result<String, JsErrorBox> {
+async fn op_read_text_file(
+    state: Rc<RefCell<OpState>>,
+    #[string] path: String,
+) -> Result<String, JsErrorBox> {
+    let permissions = state.borrow().borrow::<Permissions>().clone();
+    permissions
+        .check_read(Path::new(&path))
+        .map_err(JsErrorBox::generic)?;
     tokio::fs::read_to_string(&path)
         .await
         .map_err(|error| JsErrorBox::generic(format!("gagal membaca {path}: {error}")))
@@ -103,9 +111,14 @@ async fn op_read_text_file(#[string] path: String) -> Result<String, JsErrorBox>
 
 #[op2(async(lazy), fast)]
 async fn op_write_text_file(
+    state: Rc<RefCell<OpState>>,
     #[string] path: String,
     #[string] text: String,
 ) -> Result<(), JsErrorBox> {
+    let permissions = state.borrow().borrow::<Permissions>().clone();
+    permissions
+        .check_write(Path::new(&path))
+        .map_err(JsErrorBox::generic)?;
     tokio::fs::write(&path, text)
         .await
         .map_err(|error| JsErrorBox::generic(format!("gagal menulis {path}: {error}")))
@@ -113,8 +126,12 @@ async fn op_write_text_file(
 
 #[op2]
 #[string]
-fn op_env_get(#[string] name: String) -> Option<String> {
-    std::env::var(name).ok()
+fn op_env_get(state: &mut OpState, #[string] name: String) -> Result<Option<String>, JsErrorBox> {
+    state
+        .borrow::<Permissions>()
+        .check_env(&name)
+        .map_err(JsErrorBox::generic)?;
+    Ok(std::env::var(name).ok())
 }
 
 extension!(
@@ -329,8 +346,18 @@ pub struct Engine {
     tokio: tokio::runtime::Runtime,
 }
 
+/// Opsi engine; default **deny-all** (secure by default, ADR-0023).
+#[derive(Debug, Clone, Default)]
+pub struct EngineOptions {
+    pub permissions: Permissions,
+}
+
 impl Engine {
     pub fn new() -> Result<Self, EngineError> {
+        Self::with_options(EngineOptions::default())
+    }
+
+    pub fn with_options(options: EngineOptions) -> Result<Self, EngineError> {
         let tokio = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
@@ -344,6 +371,8 @@ impl Engine {
         runtime
             .execute_script("[ramonyx:bootstrap]".to_string(), BOOTSTRAP.to_string())
             .map_err(|error| EngineError::new(format!("bootstrap gagal: {error}")))?;
+
+        runtime.op_state().borrow_mut().put(options.permissions);
 
         Ok(Self { runtime, tokio })
     }
@@ -518,7 +547,10 @@ globalThis.__io_ok = true;
         )
         .expect("write");
 
-        let mut engine = Engine::new().expect("engine");
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+        })
+        .expect("engine");
         engine.execute_module(&main).expect("module io");
         engine
             .execute(
@@ -533,6 +565,90 @@ globalThis.__io_ok = true;
                 .contains("runtime"),
             "file tertulis dari JS"
         );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn permission_denied_untuk_fs_env_dan_net() {
+        let directory = temp_dir("deny");
+        let file = directory.join("x.txt");
+        fs::write(&file, "isi").expect("write");
+        let file_literal = serde_json::to_string(file.to_str().expect("utf8")).expect("json");
+
+        let cases: Vec<(&str, String, &str)> = vec![
+            (
+                "read.mjs",
+                format!("await ramonyx.readTextFile({file_literal});"),
+                "--allow-read",
+            ),
+            (
+                "write.mjs",
+                format!("await ramonyx.writeTextFile({file_literal}, 'x');"),
+                "--allow-write",
+            ),
+            (
+                "env.mjs",
+                "ramonyx.env.get('HOME');".to_string(),
+                "--allow-env",
+            ),
+            (
+                "net.mjs",
+                "ramonyx.serve(0, () => ({ status: 200, body: 'x' }));".to_string(),
+                "--allow-net",
+            ),
+        ];
+
+        for (name, source, expected_flag) in cases {
+            let module = directory.join(name);
+            fs::write(&module, source).expect("write");
+            let error = Engine::new()
+                .expect("engine")
+                .execute_module(&module)
+                .expect_err("harus ditolak");
+            assert!(
+                error.to_string().contains(expected_flag),
+                "{name}: pesan memuat {expected_flag}: {error}"
+            );
+        }
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn permission_daftar_eksplisit_mengizinkan_sebagian() {
+        use runtime_core::Permission;
+
+        let directory = temp_dir("allow-list");
+        let allowed = directory.join("allowed");
+        fs::create_dir_all(&allowed).expect("mkdir");
+        let file = allowed.join("data.txt");
+        fs::write(&file, "isi-boleh").expect("write");
+        let file_literal = serde_json::to_string(file.to_str().expect("utf8")).expect("json");
+
+        let module = directory.join("main.mjs");
+        fs::write(
+            &module,
+            format!(
+                "const isi = await ramonyx.readTextFile({file_literal});\nglobalThis.__isi = isi;"
+            ),
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions {
+                read: Permission::Allow(vec![allowed.display().to_string()]),
+                ..Default::default()
+            },
+        })
+        .expect("engine");
+        engine.execute_module(&module).expect("diizinkan");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__isi !== 'isi-boleh') throw new Error('isi salah');",
+            )
+            .expect("verify");
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }
@@ -566,12 +682,14 @@ await ramonyx.writeTextFile({port_literal}, String(server.port));
 
         let (done_tx, done_rx) = std::sync::mpsc::channel();
         std::thread::spawn(move || {
-            let mut engine = Engine::new().expect("engine");
+            let mut engine = Engine::with_options(EngineOptions {
+                permissions: Permissions::allow_all(),
+            })
+            .expect("engine");
             let result = engine.execute_module(&main);
             let _ = done_tx.send(result.map_err(|error| error.to_string()));
         });
 
-        // Tunggu file port muncul.
         let mut port: Option<u16> = None;
         for _ in 0..100 {
             if let Ok(contents) = fs::read_to_string(&port_path)

@@ -9,6 +9,9 @@ use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+mod permissions;
+pub use permissions::{Permission, Permissions};
+
 pub const CONFIG_FILE_NAME: &str = "ramonyx.runtime.json";
 
 /// Level log dengan urutan prioritas debug < info < warn < error.

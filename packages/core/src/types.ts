@@ -53,5 +53,6 @@ export interface MiddlewareContext {
 
 export type Middleware = (
   context: MiddlewareContext,
-  next: () => Promise<Response>,
+  /** Panggil `next()` (lanjut dengan request saat ini) atau `next(requestBaru)` untuk menggantinya. */
+  next: (request?: Request) => Promise<Response>,
 ) => Response | Promise<Response>;

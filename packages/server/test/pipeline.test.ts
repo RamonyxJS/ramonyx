@@ -294,3 +294,27 @@ test("parseQuery: key tunggal dan berulang", () => {
   const parsed = parseQuery(new URLSearchParams("a=1&b=2&a=3&kosong="));
   assert.deepEqual(parsed, { a: ["1", "3"], b: "2", kosong: "" });
 });
+
+test("middleware dapat mengganti request untuk handler downstream", async () => {
+  const handler = createHandler({
+    routes: [
+      {
+        method: "GET",
+        path: "/",
+        definition: {
+          handler: ({ request, json }) => json({ nonce: request.headers.get("x-test-nonce") }),
+        },
+      },
+    ],
+    middleware: [
+      async (context, next) => {
+        const headers = new Headers(context.request.headers);
+        headers.set("x-test-nonce", "abc");
+        return next(new Request(context.request, { headers }));
+      },
+    ],
+  });
+
+  const response = await handler(new Request("http://test.local/"));
+  assert.deepEqual(await response.json(), { nonce: "abc" });
+});

@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { HttpError, type LoadedPage, type Logger, type PageModule } from "@ramonyx/core";
+import {
+  HttpError,
+  type LoadedPage,
+  type Logger,
+  NONCE_HEADER,
+  type PageModule,
+} from "@ramonyx/core";
 import { createHandler } from "@ramonyx/server";
 import { createPageRoutes, type ElementDescriptor, type Renderer } from "../src/index.ts";
 
@@ -248,6 +254,23 @@ test("tanpa client option: tidak ada payload/script hydration", async () => {
 
   assert.ok(!html.includes("window.__RAMONYX__"));
   assert.ok(!html.includes('type="module"'));
+});
+
+test("header nonce → atribut nonce pada payload script (CSP)", async () => {
+  const page = basePage("/", { default: Page, loader: async () => ({ ok: true }) });
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: fakeRenderer(),
+      client: { script: "/assets/client.js" },
+    }),
+  });
+
+  const html = await (
+    await handler(new Request("http://test.local/", { headers: { [NONCE_HEADER]: "abc123" } }))
+  ).text();
+
+  assert.ok(html.includes('id="ramonyx-payload" nonce="abc123"'));
 });
 
 test("client extraModules dimuat sebelum entry (untuk HMR client dev)", async () => {

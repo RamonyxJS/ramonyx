@@ -1,6 +1,7 @@
 import {
   HttpError,
   type LoadedPage,
+  NONCE_HEADER,
   type RouteEntry,
   type RouteHandlerContext,
   route,
@@ -77,15 +78,20 @@ function serializePayload(payload: unknown): string {
 /** Id script payload — dipakai `@ramonyx/react/client` untuk soft navigation. */
 export const PAYLOAD_SCRIPT_ID = "ramonyx-payload";
 
-function hydrationScripts(client: ClientOptions | undefined, payload: unknown): string {
+function hydrationScripts(
+  client: ClientOptions | undefined,
+  payload: unknown,
+  nonce: string | undefined,
+): string {
   if (client === undefined) {
     return "";
   }
   const extraModules = (client.extraModules ?? []).map(
     (url) => `<script type="module" src="${escapeHtml(url)}"></script>`,
   );
+  const nonceAttribute = nonce === undefined ? "" : ` nonce="${escapeHtml(nonce)}"`;
   return [
-    `<script id="${PAYLOAD_SCRIPT_ID}">window.__RAMONYX__=${serializePayload(payload)}</script>`,
+    `<script id="${PAYLOAD_SCRIPT_ID}"${nonceAttribute}>window.__RAMONYX__=${serializePayload(payload)}</script>`,
     ...extraModules,
     `<script type="module" src="${escapeHtml(client.script)}"></script>`,
   ].join("\n");
@@ -120,7 +126,11 @@ async function renderPage(
         title: page.page.metadata?.title ?? "",
         body,
         status: 200,
-        scripts: hydrationScripts(client, { path: page.path, params, data }),
+        scripts: hydrationScripts(
+          client,
+          { path: page.path, params, data },
+          context.request.headers.get(NONCE_HEADER) ?? undefined,
+        ),
       }),
       200,
     );

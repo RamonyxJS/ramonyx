@@ -1,4 +1,5 @@
 import type { Middleware } from "@ramonyx/core";
+import { randomHex, timingSafeEqual } from "./random.ts";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -24,28 +25,6 @@ function readCookie(header: string | null, name: string): string | undefined {
     }
   }
   return undefined;
-}
-
-function generateToken(bytes: number): string {
-  const buffer = new Uint8Array(bytes);
-  crypto.getRandomValues(buffer);
-  let token = "";
-  for (const byte of buffer) {
-    token += byte.toString(16).padStart(2, "0");
-  }
-  return token;
-}
-
-/** Perbandingan waktu-konstan sederhana (panjang sama → XOR akumulatif). */
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length || a.length === 0) {
-    return false;
-  }
-  let diff = 0;
-  for (let index = 0; index < a.length; index += 1) {
-    diff |= a.charCodeAt(index) ^ b.charCodeAt(index);
-  }
-  return diff === 0;
 }
 
 /**
@@ -83,7 +62,7 @@ export function csrfProtection(options: CsrfOptions = {}): Middleware {
       }
       response.headers.append(
         "set-cookie",
-        `${cookieName}=${generateToken(tokenBytes)}; ${attributes.join("; ")}`,
+        `${cookieName}=${randomHex(tokenBytes)}; ${attributes.join("; ")}`,
       );
     }
     return response;

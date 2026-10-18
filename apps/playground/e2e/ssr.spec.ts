@@ -1,7 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 test("SSR + hydration: konten server tampil, counter jadi interaktif", async ({ page }) => {
-  await page.goto("/");
+  const response = await page.goto("/");
+
+  const csp = response?.headers()["content-security-policy"] ?? "";
+  expect(csp).toContain("script-src 'self' 'nonce-");
 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Halo dari loader SSR");
   await expect(page.getByText("Ramonyx Playground").first()).toBeVisible();

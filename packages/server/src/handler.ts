@@ -83,21 +83,22 @@ function errorResponse(error: unknown, logger: Logger, request: Request): Respon
 async function runMiddleware(
   middleware: readonly Middleware[],
   context: MiddlewareContext,
-  terminal: () => Promise<Response>,
+  terminal: (request: Request) => Promise<Response>,
 ): Promise<Response> {
   let lastIndex = -1;
-  const invoke = async (index: number): Promise<Response> => {
+  const invoke = async (index: number, request: Request): Promise<Response> => {
     if (index <= lastIndex) {
       throw new Error("next() dipanggil lebih dari sekali dalam satu middleware");
     }
     lastIndex = index;
     const layer = middleware[index];
     if (layer === undefined) {
-      return terminal();
+      return terminal(request);
     }
-    return layer(context, () => invoke(index + 1));
+    const layerContext: MiddlewareContext = { request, env: context.env, log: context.log };
+    return layer(layerContext, (nextRequest) => invoke(index + 1, nextRequest ?? request));
   };
-  return invoke(0);
+  return invoke(0, context.request);
 }
 
 async function readBodyText(
@@ -313,8 +314,8 @@ export function createHandler(options: CreateHandlerOptions): FetchHandler {
 
     try {
       return await Promise.race([
-        runMiddleware(middleware, middlewareContext, () =>
-          dispatch(table, wrapped, env, logger, strictValidation, maxBodyBytes),
+        runMiddleware(middleware, middlewareContext, (request) =>
+          dispatch(table, request, env, logger, strictValidation, maxBodyBytes),
         ),
         new Promise<never>((_resolve, reject) => {
           controller.signal.addEventListener("abort", () => reject(new TimeoutError()), {

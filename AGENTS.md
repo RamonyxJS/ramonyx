@@ -147,7 +147,7 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042) —
 semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; sisa Phase 5: **publikasi npm sebenarnya** (butuh kredensial
-pemilik) dan kandidat lanjutan (restart supervision plugin, sandbox OS, hydration/pencarian docs).
+pemilik) dan kandidat lanjutan (restart supervision plugin, sandbox OS, pencarian docs).
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,

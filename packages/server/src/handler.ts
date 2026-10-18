@@ -24,6 +24,8 @@ export interface CreateHandlerOptions {
   readonly maxBodyBytes?: number;
   /** Timeout handler/loader per request (ms). Default 10_000; lewat batas → 503 + `request.signal` di-abort. */
   readonly timeoutMs?: number;
+  /** Batas request bersamaan (load shedding). Default 100; kelebihan → 503 + `Retry-After: 1`. */
+  readonly maxConcurrent?: number;
 }
 
 const defaultEnv: EnvReader = { get: () => undefined };
@@ -31,6 +33,7 @@ const defaultEnv: EnvReader = { get: () => undefined };
 /** Secure by default (Phase 3 hardening). */
 const DEFAULT_MAX_BODY_BYTES = 1_048_576; // 1 MiB
 const DEFAULT_TIMEOUT_MS = 10_000;
+const DEFAULT_MAX_CONCURRENT = 100;
 
 class TimeoutError extends Error {
   constructor() {
@@ -286,8 +289,23 @@ export function createHandler(options: CreateHandlerOptions): FetchHandler {
   const strictValidation = options.strictValidation ?? true;
   const maxBodyBytes = options.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const maxConcurrent = options.maxConcurrent ?? DEFAULT_MAX_CONCURRENT;
+  let inFlight = 0;
 
   return async function handle(request) {
+    if (inFlight >= maxConcurrent) {
+      logger.warn("Load shedding: concurrency limit", {
+        path: safePath(request),
+        maxConcurrent,
+        inFlight,
+      });
+      return jsonResponse(
+        { error: "Service Unavailable" },
+        { status: 503, headers: { "retry-after": "1" } },
+      );
+    }
+
+    inFlight += 1;
     const controller = new AbortController();
     const wrapped = new Request(request, { signal: controller.signal });
     const middlewareContext: MiddlewareContext = { request: wrapped, env, log: logger };
@@ -312,6 +330,7 @@ export function createHandler(options: CreateHandlerOptions): FetchHandler {
       return errorResponse(error, logger, request);
     } finally {
       clearTimeout(timer);
+      inFlight -= 1;
     }
   };
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T03:42:34.804Z",
+  "generatedAt": "2026-10-18T03:50:47.376Z",
   "scenario": "abuse-case + soak memori (playground; tanpa build client)",
   "environment": {
     "platform": "linux",
@@ -34,12 +34,12 @@
       "ok": true,
       "url": "http://localhost:3000/api/echo",
       "requests": {
-        "total": 720,
-        "perSecond": 360
+        "total": 962,
+        "perSecond": 481
       },
       "codes": {
         "twoxx": 0,
-        "fourxx": 720,
+        "fourxx": 962,
         "fivexx": 0
       },
       "errors": 0,
@@ -51,12 +51,12 @@
       "ok": true,
       "url": "http://localhost:3000/api/echo",
       "requests": {
-        "total": 1226,
-        "perSecond": 613
+        "total": 1409,
+        "perSecond": 704.5
       },
       "codes": {
         "twoxx": 0,
-        "fourxx": 1226,
+        "fourxx": 1409,
         "fivexx": 0
       },
       "errors": 0,
@@ -68,12 +68,12 @@
       "ok": true,
       "url": "http://localhost:3000/assets/..%2f..%2fpackage.json",
       "requests": {
-        "total": 1810,
-        "perSecond": 905
+        "total": 1965,
+        "perSecond": 982.5
       },
       "codes": {
         "twoxx": 0,
-        "fourxx": 1810,
+        "fourxx": 1965,
         "fivexx": 0
       },
       "errors": 0,
@@ -85,11 +85,11 @@
       "ok": true,
       "url": "http://localhost:3000/api/hello?k0=v&k1=v&k2=v&k3=v&k4=v&k5=v&k6=v&k7=v&k8=v&k9=v&k10=v&k11=v&k12=v&k13=v&k14=v&k15=v&k16=v&k17=v&k18=v&k19=v&k20=v&k21=v&k22=v&k23=v&k24=v&k25=v&k26=v&k27=v&k28=v&k29=v&k30=v&k31=v&k32=v&k33=v&k34=v&k35=v&k36=v&k37=v&k38=v&k39=v&k40=v&k41=v&k42=v&k43=v&k44=v&k45=v&k46=v&k47=v&k48=v&k49=v&k50=v&k51=v&k52=v&k53=v&k54=v&k55=v&k56=v&k57=v&k58=v&k59=v&k60=v&k61=v&k62=v&k63=v&k64=v&k65=v&k66=v&k67=v&k68=v&k69=v&k70=v&k71=v&k72=v&k73=v&k74=v&k75=v&k76=v&k77=v&k78=v&k79=v&k80=v&k81=v&k82=v&k83=v&k84=v&k85=v&k86=v&k87=v&k88=v&k89=v&k90=v&k91=v&k92=v&k93=v&k94=v&k95=v&k96=v&k97=v&k98=v&k99=v&k100=v&k101=v&k102=v&k103=v&k104=v&k105=v&k106=v&k107=v&k108=v&k109=v&k110=v&k111=v&k112=v&k113=v&k114=v&k115=v&k116=v&k117=v&k118=v&k119=v&k120=v&k121=v&k122=v&k123=v&k124=v&k125=v&k126=v&k127=v&k128=v&k129=v&k130=v&k131=v&k132=v&k133=v&k134=v&k135=v&k136=v&k137=v&k138=v&k139=v&k140=v&k141=v&k142=v&k143=v&k144=v&k145=v&k146=v&k147=v&k148=v&k149=v&k150=v&k151=v&k152=v&k153=v&k154=v&k155=v&k156=v&k157=v&k158=v&k159=v&k160=v&k161=v&k162=v&k163=v&k164=v&k165=v&k166=v&k167=v&k168=v&k169=v&k170=v&k171=v&k172=v&k173=v&k174=v&k175=v&k176=v&k177=v&k178=v&k179=v&k180=v&k181=v&k182=v&k183=v&k184=v&k185=v&k186=v&k187=v&k188=v&k189=v&k190=v&k191=v&k192=v&k193=v&k194=v&k195=v&k196=v&k197=v&k198=v&k199=v",
       "requests": {
-        "total": 971,
-        "perSecond": 485.5
+        "total": 1035,
+        "perSecond": 517.5
       },
       "codes": {
-        "twoxx": 971,
+        "twoxx": 1035,
         "fourxx": 0,
         "fivexx": 0
       },
@@ -102,11 +102,11 @@
       "ok": true,
       "url": "http://localhost:3000/api/echo",
       "requests": {
-        "total": 1408,
-        "perSecond": 704
+        "total": 1556,
+        "perSecond": 778
       },
       "codes": {
-        "twoxx": 1408,
+        "twoxx": 1556,
         "fourxx": 0,
         "fivexx": 0
       },
@@ -119,43 +119,43 @@
     "loadSeconds": 20,
     "drainSeconds": 3,
     "measurement": "RSS proses server (anak) via /proc/<pid>/status — bukan proses klien",
-    "requestsPerSecond": 1311.15,
+    "requestsPerSecond": 1364.25,
     "latency": {
-      "p50": 35,
-      "p99": 83
+      "p50": 33,
+      "p99": 79
     },
     "errors": 0,
     "rssMb": {
       "samples": [
-        244,
+        271,
+        272,
         279,
-        285,
-        286,
-        292,
-        298,
-        304,
-        305,
-        305,
-        314,
-        320,
-        321,
-        328,
-        334,
-        341,
-        347,
-        354,
-        360,
-        366,
-        373,
-        373,
-        373,
-        373
+        287,
+        294,
+        300,
+        300,
+        300,
+        310,
+        316,
+        323,
+        330,
+        336,
+        342,
+        349,
+        355,
+        356,
+        362,
+        369,
+        375,
+        375,
+        375,
+        375
       ],
-      "first": 244,
-      "last": 373,
-      "min": 244,
-      "max": 373,
-      "delta": 129
+      "first": 271,
+      "last": 375,
+      "min": 271,
+      "max": 375,
+      "delta": 104
     }
   }
 }

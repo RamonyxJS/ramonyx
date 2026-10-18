@@ -159,3 +159,46 @@ test("query berbahaya tidak mencemari prototype (end-to-end)", async () => {
   assert.equal(Object.getPrototypeOf(body.query), Object.prototype);
   assert.equal(({} as Record<string, unknown>).polluted, undefined, "tidak ada polusi global");
 });
+
+test("concurrency limit: kelebihan → 503 + Retry-After, slot pulih setelah selesai", async () => {
+  let release: (() => void) | undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let started = 0;
+
+  const handler = createHandler({
+    maxConcurrent: 2,
+    routes: [
+      {
+        method: "GET",
+        path: "/",
+        definition: {
+          handler: async () => {
+            started += 1;
+            await gate;
+            return new Response("ok");
+          },
+        },
+      },
+    ],
+  });
+
+  const first = handler(new Request("http://test.local/"));
+  const second = handler(new Request("http://test.local/"));
+  await new Promise((resolve) => setTimeout(resolve, 10));
+
+  const third = await handler(new Request("http://test.local/"));
+  assert.equal(third.status, 503);
+  assert.equal(third.headers.get("retry-after"), "1");
+  assert.deepEqual(await third.json(), { error: "Service Unavailable" });
+
+  release?.();
+  const [firstResponse, secondResponse] = await Promise.all([first, second]);
+  assert.equal(firstResponse.status, 200);
+  assert.equal(secondResponse.status, 200);
+  assert.equal(started, 2, "hanya dua handler yang mulai");
+
+  const after = await handler(new Request("http://test.local/"));
+  assert.equal(after.status, 200, "slot pulih setelah request selesai");
+});

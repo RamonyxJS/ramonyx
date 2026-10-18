@@ -36,3 +36,5 @@ pnpm-debug.log*
 # Playwright
 test-results/
 playwright-report/
+# create-app test artifacts
+apps/create-app/.tmp-test/

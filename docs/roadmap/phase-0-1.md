@@ -188,8 +188,12 @@ pekerjaan Phase 5.
       `receive()` melintasi restart, `plugin.stats()` (restarts/running/stopped/lastExit),
       `kill()` deterministik; temuan: regresi mode non-supervisi & camelCase `lastExit` (ketangkap
       test)
+- [x] **Health-check plugin** (ADR-0044): `healthCheck` (`true` = 5 s / `{ deadlineMs }`) +
+      `ramonyx.heartbeat()`; senyap saat induk menunggu → SIGKILL → restart (bila supervisor),
+      `stats.hangs`; temuan: mode non-supervisi perlu reap sendiri + tandai stopped (ketangkap
+      test)
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
-      sandbox OS (seccomp/namespace), health-check/heartbeat, backoff eksponensial
+      sandbox OS (seccomp/namespace), health-check otomatis, backoff eksponensial
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

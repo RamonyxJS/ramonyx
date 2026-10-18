@@ -82,7 +82,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   follow/manual/error, permission per hop — ADR-0036), **kuota CPU per-thread + RSS proses**
   (`--max-cpu-ms`/`--max-rss-mb` — ADR-0038), **isolasi level proses untuk plugin**
   (`ramonyx.spawn` + `--plugin`, protokol JSON stdin/stdout, permission irisan, kill — ADR-0040),
-  serta **supervisi restart plugin** (`restart` + `plugin.stats()` — ADR-0043) —
+  **supervisi restart plugin** (`restart` + `plugin.stats()` — ADR-0043), serta **health-check
+  plugin** (`healthCheck` + `ramonyx.heartbeat()` — ADR-0044) —
   tetapi **belum**: publikasi npm sebenarnya (kredensial), sandbox OS, health-check plugin;
   **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
   dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
@@ -143,15 +144,16 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 (timings per fase, metrik op, baseline; snapshot V8 ditolak dengan alasan terukur — ADR-0037),
 **kuota CPU per-thread + RSS proses** (ADR-0038), **release pipeline v1** (paket 0.1.0, tarball npm
 + binary runtime, verifikasi instalasi konsumen — ADR-0039), **isolasi level proses untuk plugin**
-(`ramonyx.spawn`, protokol JSON, permission irisan, kill, **supervisi restart** — ADR-0040/0043),
+(`ramonyx.spawn`, protokol JSON, permission irisan, kill, **supervisi restart** — ADR-0040/0043,
+**health-check heartbeat** — ADR-0044),
 **scaffolder aplikasi**
 (`pnpm create:app` — template file-routing **SSR React + hydration**, ADR-0041), dan **situs
 dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042) —
 semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; sisa Phase 5: **publikasi npm sebenarnya** (butuh kredensial
-pemilik) dan kandidat lanjutan (sandbox OS, health-check plugin, backoff eksponensial).
+pemilik) dan kandidat lanjutan (sandbox OS, health-check otomatis, backoff eksponensial).
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 128 tes Node + 5 e2e + 99 test Rust hijau.
+(ADR-0016); 128 tes Node + 5 e2e + 101 test Rust hijau.

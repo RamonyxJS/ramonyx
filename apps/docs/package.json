@@ -9,10 +9,13 @@
     "node": ">=24"
   },
   "scripts": {
-    "start": "node --import ../../tools/register.mjs src/main.ts"
+    "start": "node --import ../../tools/register.mjs src/main.ts",
+    "build": "node --import ../../tools/register.mjs build.ts"
   },
   "dependencies": {
     "@ramonyx/adapter-runtime": "workspace:*",
+    "@ramonyx/bundler": "workspace:*",
+    "@ramonyx/compiler": "workspace:*",
     "@ramonyx/react": "workspace:*",
     "@ramonyx/security": "workspace:*",
     "@ramonyx/server": "workspace:*",

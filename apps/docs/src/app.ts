@@ -1,60 +1,41 @@
+import { fileURLToPath } from "node:url";
+import { createRouteManifest, loadPageRoutes } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
-import { cspNonce, securityHeaders } from "@ramonyx/security";
 import { createHandler } from "@ramonyx/server";
 import { createPageRoutes } from "@ramonyx/ssr";
-import { HttpError, route } from "ramonyx";
+import type { FetchHandler } from "ramonyx";
 
-import { listDocs, readDoc } from "./docs.ts";
-import { renderMarkdown } from "./markdown.ts";
-import { DokumenPage, document as documentRenderer, ErrorPage, IndexPage } from "./pages.tsx";
+import { setCatalog } from "./catalog.ts";
+import { loadCatalog } from "./docs.ts";
+import { document as documentRenderer } from "./document.ts";
+import middleware from "./routes/middleware.ts";
 
-/** Aplikasi docs: halaman SSR dari `docs/**` + API katalog. */
-export function createApp() {
-  const pages = [
-    {
-      path: "/",
-      page: {
-        default: IndexPage,
-        loader: () => ({
-          entries: listDocs().map(({ slug, title }) => ({ slug, title })),
-        }),
-        metadata: { title: "Dokumentasi" },
-      },
-      layouts: [],
-      directory: "apps/docs/src/routes",
-    },
-    {
-      path: "/dokumen/[...slug]",
-      page: {
-        default: DokumenPage,
-        loader: ({ params }: { params: Record<string, string> }) => {
-          const slug = params.slug ?? "";
-          const doc = readDoc(slug);
-          if (doc === null) {
-            throw new HttpError(404, `Dokumen tidak ditemukan: ${slug}`);
-          }
-          return { slug, title: doc.entry.title, html: renderMarkdown(doc.markdown) };
-        },
-        metadata: { title: "Dokumen" },
-      },
-      layouts: [],
-      directory: "apps/docs/src/routes/dokumen",
-      error: { default: ErrorPage },
-    },
-  ];
+/**
+ * Situs dokumentasi Ramonyx — dogfood penuh: halaman SSR React dengan **hydration +
+ * soft navigation** (klien dibangun `build.ts`) atas berkas markdown di `docs/**`.
+ */
+export async function createApp(): Promise<FetchHandler> {
+  // Katalog diisi sekali di server (markdown → HTML) → modul halaman tetap browser-safe.
+  setCatalog(loadCatalog());
+
+  const dir = fileURLToPath(new URL("./routes", import.meta.url));
+
+  const [apiRoutes, pages] = await Promise.all([
+    createRouteManifest({ dir }),
+    loadPageRoutes({ dir }),
+  ]);
 
   return createHandler({
     strictValidation: true,
     routes: [
-      ...createPageRoutes({ pages, renderer: createReactRenderer(), document: documentRenderer }),
-      {
-        method: "GET",
-        path: "/api/dokumen",
-        definition: route({
-          handler: ({ json }) => json({ dokumen: listDocs() }),
-        }),
-      },
+      ...apiRoutes,
+      ...createPageRoutes({
+        pages,
+        renderer: createReactRenderer(),
+        document: documentRenderer,
+        client: { script: "/assets/client.js" },
+      }),
     ],
-    middleware: [securityHeaders(), cspNonce()],
+    middleware,
   });
 }

@@ -8,6 +8,10 @@ function readSentinel(): unknown {
   return (globalThis as unknown as Record<string, unknown>).__sentinel;
 }
 
+function readPayloadPath(): string | undefined {
+  return (globalThis as unknown as { __RAMONYX__?: { path?: string } }).__RAMONYX__?.path;
+}
+
 test("soft navigation tanpa full reload (sentinel bertahan, back/forward)", async ({ page }) => {
   await page.goto("/");
   await page.evaluate(setSentinel);
@@ -16,6 +20,8 @@ test("soft navigation tanpa full reload (sentinel bertahan, back/forward)", asyn
   await expect(page).toHaveURL(/\/users$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pengguna");
   expect(await page.evaluate(readSentinel)).toBe(42);
+  // Payload global ikut halaman aktif (bukan data halaman sebelumnya).
+  expect(await page.evaluate(readPayloadPath)).toBe("/users");
 
   await page.getByRole("link", { name: "Rina" }).click();
   await expect(page).toHaveURL(/3fa85f64-5717-4562-b3fc-2c963f66afa6$/);
@@ -26,4 +32,5 @@ test("soft navigation tanpa full reload (sentinel bertahan, back/forward)", asyn
   await expect(page).toHaveURL(/\/users$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pengguna");
   expect(await page.evaluate(readSentinel)).toBe(42);
+  expect(await page.evaluate(readPayloadPath)).toBe("/users");
 });

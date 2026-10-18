@@ -125,6 +125,9 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
       container.innerHTML = nextContainer.innerHTML;
       activeRoot = hydrateRoot(container, element);
 
+      // Payload global harus mencerminkan halaman AKTIF (kontrak `window.__RAMONYX__`);
+      // tanpa ini, kode yang membacanya setelah soft navigation melihat data basi.
+      window.__RAMONYX__ = payload;
       document.title = doc.title;
       if (push) {
         window.history.pushState({ ramonyx: true }, "", url);

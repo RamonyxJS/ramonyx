@@ -1,70 +1,6 @@
-// Halaman docs — dogfood: SSR React lewat `@ramonyx/ssr` + `@ramonyx/react`.
+// Gaya + dokumen HTML kustom untuk situs docs (dipakai `createPageRoutes`).
 
 import type { DocumentRenderer } from "@ramonyx/ssr";
-import type { ReactNode } from "react";
-
-import type { DocEntry } from "./docs.ts";
-
-export function Layout({ children }: { children?: ReactNode }) {
-  return (
-    <div className="shell">
-      <header className="topbar">
-        <a className="merek" href="/">
-          Ramonyx <span className="tag">docs</span>
-        </a>
-        <span className="meta">v0.1.0 · MIT</span>
-      </header>
-      {children}
-      <footer className="kaki">
-        Dirender oleh framework Ramonyx sendiri (SSR React) — sumber: <code>docs/</code> repo.
-      </footer>
-    </div>
-  );
-}
-
-export function IndexPage({ data }: { data: { entries: DocEntry[] } }) {
-  return (
-    <main className="utama">
-      <h1>Dokumentasi Ramonyx</h1>
-      <p className="pengantar">
-        Blueprint, arsitektur, kontrak API, ADR, dan roadmap — dirender langsung dari berkas
-        markdown di repo.
-      </p>
-      <ul className="daftar">
-        {data.entries.map((entry) => (
-          <li key={entry.slug}>
-            <a href={`/dokumen/${entry.slug}`}>{entry.title}</a>
-            <code className="slug">{entry.slug}</code>
-          </li>
-        ))}
-      </ul>
-    </main>
-  );
-}
-
-export function DokumenPage({ data }: { data: { slug: string; title: string; html: string } }) {
-  return (
-    <main className="utama">
-      <p className="remah">
-        <a href="/">← Semua dokumen</a> <code>{data.slug}</code>
-      </p>
-      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: HTML dari markdown repo sendiri (tepercaya); lihat markdown.ts */}
-      <article className="dokumen" dangerouslySetInnerHTML={{ __html: data.html }} />
-    </main>
-  );
-}
-
-export function ErrorPage({ error }: { error: { status: number; message: string } }) {
-  return (
-    <main className="utama">
-      <h1>{error.status}</h1>
-      <p>{error.message}</p>
-      <p>
-        <a href="/">← Semua dokumen</a>
-      </p>
-    </main>
-  );
-}
 
 const GAYA = `
   :root { --bg: #0f1115; --fg: #e6e8ee; --redup: #9aa2b1; --aksen: #7cc4ff; --garis: #262b36; }
@@ -100,17 +36,22 @@ const GAYA = `
     color: var(--redup); font-size: 13px; }
 `;
 
-/** Dokumen HTML kustom (judul + gaya + footer) untuk `createPageRoutes`. */
-export const document: DocumentRenderer = ({ title, body }) => `<!doctype html>
+/** Dokumen HTML kustom (judul + gaya + script hydration) untuk `createPageRoutes`. */
+export const document: DocumentRenderer = ({
+  title,
+  body,
+  head = "",
+  scripts = "",
+}) => `<!doctype html>
 <html lang="id">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${title.length > 0 ? `${title} · Ramonyx Docs` : "Ramonyx Docs"}</title>
-<style>${GAYA}</style>
+<style>${GAYA}</style>${head.length > 0 ? `\n${head}` : ""}
 </head>
 <body>
-<div id="ramonyx-root">${body}</div>
+<div id="ramonyx-root">${body}</div>${scripts.length > 0 ? `\n${scripts}` : ""}
 </body>
 </html>
 `;

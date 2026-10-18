@@ -6,7 +6,7 @@ import { createApp } from "./app.ts";
 
 const resolved = resolveConfig(config);
 const host = createNodeHost();
-const app = createApp();
+const app = await createApp();
 
 const server = await host.serve(app, {
   port: resolved.server.port,

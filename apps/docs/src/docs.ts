@@ -5,7 +5,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { extractTitle } from "./markdown.ts";
+import type { CatalogDoc } from "./catalog.ts";
+import { extractTitle, renderMarkdown } from "./markdown.ts";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const docsDir = join(repoRoot, "docs");
@@ -67,4 +68,16 @@ export function readDoc(slug: string): LoadedDoc | null {
     markdown,
     file: candidate,
   };
+}
+
+/** Katalog lengkap (judul + HTML ter-render) untuk `setCatalog` di `app.ts`. */
+export function loadCatalog(): CatalogDoc[] {
+  return listDocs().map((entry) => {
+    const doc = readDoc(entry.slug);
+    return {
+      slug: entry.slug,
+      title: entry.title,
+      html: renderMarkdown(doc?.markdown ?? ""),
+    };
+  });
 }

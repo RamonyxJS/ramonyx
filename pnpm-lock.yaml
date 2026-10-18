@@ -241,6 +241,12 @@ importers:
       '@ramonyx/adapter-runtime':
         specifier: workspace:*
         version: link:../../packages/adapter-runtime
+      '@ramonyx/bundler':
+        specifier: workspace:*
+        version: link:../../packages/bundler
+      '@ramonyx/compiler':
+        specifier: workspace:*
+        version: link:../../packages/compiler
       '@ramonyx/react':
         specifier: workspace:*
         version: link:../../packages/react

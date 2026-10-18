@@ -214,9 +214,11 @@ pekerjaan Phase 5.
       gagal), guard tag↔versi, dist-tag `alpha/beta/rc/latest`, provenance kondisional,
       `create-ramonyx-app` ikut dirilis + scaffold terverifikasi, dry-run npm ×13 bersih,
       README publik + `docs/releasing.md`
-- [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
-      sandbox OS (seccomp/namespace), health-check otomatis, backoff eksponensial,
-      evaluasi `--strict` bench setelah beberapa invokasi tenang lagi
+- [x] **Publikasi npm** (2026-10-18): 13 paket @ 0.1.0 terbit (`@ramonyx/*`, `ramonyx`,
+      `create-ramonyx-app`; dist-tag `latest`+`alpha`); verifikasi registry end-to-end
+      (scaffold → install → build → start → SSR/API/CSP); publish job rilis dibuat idempoten
+- [ ] **Fase 5 sisa** — kandidat lanjutan: sandbox OS (seccomp/namespace), health-check otomatis,
+      backoff eksponensial, evaluasi `--strict` bench setelah beberapa invokasi tenang lagi
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

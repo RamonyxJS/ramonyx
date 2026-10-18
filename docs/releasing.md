@@ -1,7 +1,8 @@
 # Panduan Rilis — Checklist Pra-Publikasi
 
-- Status: **siap secara lokal**; publikasi registry menunggu keputusan + kredensial pemilik
-  (ADR-0039/0049).
+- Status: **TERBIT** (2026-10-18) — 13 paket @ 0.1.0 di registry, dist-tag `latest` + `alpha`
+  (npm otomatis menetapkan `latest` pada publish pertama; verifikasi registry end-to-end lolos).
+  Kebijakan ADR-0039/0049 di bawah tetap berlaku untuk rilis berikutnya.
 - Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
   binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
   `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).
@@ -43,12 +44,24 @@ pnpm dlx create-ramonyx-app@alpha demo-app
 cd demo-app && pnpm install && pnpm build && pnpm start
 ```
 
+## Hasil rilis pertama (2026-10-18)
+
+- Publish lokal via automation token (2FA akun aktif → publish interaktif butuh OTP).
+- npm memberi stub `0.0.0-stage` per paket baru (placeholder internal) dan sempat menunda
+  propagasi scope ±3 menit — normal.
+- `npm dist-tag add <pkg>@0.1.0 latest` dijalankan eksplisit untuk memastikan seluruh paket
+  konsisten (satu paket sempat `latest: 0.0.0-stage` karena propagasi).
+- Verifikasi registry: `pnpm dlx create-ramonyx-app@alpha demo-app` → `pnpm install` (template
+  `^0.1.0` + `allowBuilds` esbuild) → `pnpm build` → `pnpm start` → halaman SSR + payload
+  hydration + CSP nonce + API route template ✓.
+
 ## Catatan jujur
 
-- `release.yml` **belum pernah dieksekusi di runner GitHub** (tidak ada remote saat dibuat).
-  Rancangan awal bahkan tidak bisa jalan (job publish menulis ke `dist/npm/*/` yang tidak pernah
-  dibuat di job itu); ADR-0049 memperbaiki: publish dari artefak terverifikasi + guard versi +
-  dist-tag + provenance kondisional.
+- `release.yml` dieksekusi pertama kali lewat tag `v0.1.0` (setelah repo publik dibuat);
+  rancangan awal bahkan tidak bisa jalan (job publish menulis ke `dist/npm/*/` yang tidak pernah
+  dibuat di job itu) — ADR-0049 memperbaiki: publish dari artefak terverifikasi + guard versi +
+  dist-tag + provenance kondisional + **publish idempoten** (versi yang sudah ada dilewati,
+  sehingga tag ulang aman).
 - Unpublish npm masih mungkin dalam 72 jam; **nama/versi yang sudah ditarik tetap terkunci**.
   Karena itu tag pertama sebaiknya memakai dist-tag `alpha`/`next` bila ingin ruang koreksi.
 - **pnpm ≥10 memblokir build script dependensi** — `esbuild` (loader runtime) butuh postinstall;

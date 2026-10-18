@@ -4,22 +4,20 @@ Framework full-stack TypeScript (Node ≥ 24) + runtime Rust/V8 **eksperimental*
 SSR React (+ streaming), hydration + soft navigation, middleware security, validasi schema di
 tepi kepercayaan, dan benchmark/gate reproducible.
 
-> **Status: alpha 0.1.0 — belum terbit di registry npm.** Pipeline rilis sudah siap
-> (`pnpm release` → 13 tarball npm + binary runtime + `SHA256SUMS`/manifest; `pnpm release:verify`
-> menguji instalasi di proyek konsumen bersih; `npm publish --dry-run` ×13 bersih). Publikasi
-> registry menunggu keputusan pemilik — checklist: [docs/releasing.md](docs/releasing.md).
-> Framework Node adalah baseline; runtime Rust/V8 eksperimental (Phase 4 selesai, Phase 5 berjalan).
+> **Status: alpha 0.1.0 — terbit di npm** (2026-10-18, `@ramonyx/*` + `ramonyx` +
+> `create-ramonyx-app`). Framework Node adalah baseline produksi; runtime Rust/V8 eksperimental
+> (Phase 4 selesai, Phase 5 berjalan). Verifikasi registry end-to-end: scaffold → install →
+> build → start → SSR. Checklist rilis: [docs/releasing.md](docs/releasing.md).
 
-## Mulai cepat (dari repo)
+## Mulai cepat
 
 ```bash
-corepack enable pnpm        # pnpm ≥ 10
-pnpm install                # butuh Node ≥ 24
-pnpm dev                    # http://localhost:5173 (Vite + HMR → SSR :3000)
-
-# scaffold aplikasi baru:
-pnpm create:app aplikasi-saya
+# scaffold aplikasi baru (dari registry):
+pnpm create ramonyx-app aplikasi-saya
 cd aplikasi-saya && pnpm install && pnpm build && pnpm start
+
+# atau dari repo (kontribusi framework):
+corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
 ```
 
 ## Yang sudah ada (terverifikasi)

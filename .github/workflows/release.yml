@@ -130,8 +130,16 @@ jobs:
             echo "tidak ada tarball di dist/npm — periksa unduhan artefak job sebelumnya."
             exit 1
           fi
-          echo "mempublikasikan ${#TARBALLS[@]} tarball terverifikasi:"
+          echo "memproses ${#TARBALLS[@]} tarball terverifikasi:"
           printf '  %s\n' "${TARBALLS[@]}"
           for tarball in "${TARBALLS[@]}"; do
+            # Idempoten: versi yang sudah ada di registry dilewati (tag ulang aman).
+            meta="$(tar -xzOf "$tarball" package/package.json)"
+            name="$(printf '%s' "$meta" | node -e "const m=JSON.parse(require('node:fs').readFileSync(0,'utf8'));process.stdout.write(m.name)")"
+            version="$(printf '%s' "$meta" | node -e "const m=JSON.parse(require('node:fs').readFileSync(0,'utf8'));process.stdout.write(m.version)")"
+            if npm view "${name}@${version}" version >/dev/null 2>&1; then
+              echo "  ↷ ${name}@${version} sudah ada di registry — dilewati"
+              continue
+            fi
             npm publish "$tarball" --access public --tag "$DIST_TAG" "${PROVENANCE[@]}"
           done

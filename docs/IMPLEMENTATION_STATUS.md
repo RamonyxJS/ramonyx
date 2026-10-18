@@ -141,7 +141,7 @@ ini kecuali disebut lain.
 | `NODE_ENV` produksi (ADR-0048) | `pnpm start`/`docs`/template + e2e | **PASS** | temuan: React dev dipakai di server produksi; kini `NODE_ENV=production` (e2e 5/5 di atas produksi) |
 | Benchmark keamanan/soak | `pnpm bench:security` | **NOT RUN** | Harness abuse+soak (menulis artefak & menjalankan soak) — di luar cakupan audit ini |
 | Baseline startup runtime | `benchmarks/runtime-startup.sh` | **NOT RUN** | Sama: menulis ulang `benchmarks/results/runtime-startup.json` |
-| Publikasi npm | `pnpm publish` / workflow rilis | **NOT RUN** | Publish nyata butuh keputusan/kredensial pemilik; **dry-run lokal ✓** (ADR-0049) |
+| Publikasi npm | `npm publish` ×13 tarball | **PASS (2026-10-18)** | 13 paket @ 0.1.0 terbit (`@ramonyx/*`, `ramonyx`, `create-ramonyx-app`; dist-tag `latest`+`alpha` — npm otomatis menetapkan `latest` pada publish pertama); verifikasi registry end-to-end: scaffold → install → build → start → SSR + API + CSP ✓ |
 
 ## 6. Keamanan
 
@@ -234,7 +234,7 @@ diukur ulang dalam audit ini:
 
 | Risiko / blocker | Dampak | Bukti | Mitigasi atau keputusan yang diperlukan |
 |---|---|---|---|
-| Publikasi npm belum dilakukan | Paket belum dapat dipasang dari registry; `pnpm create ramonyx-app` belum bisa | §5 (dry-run ✓), ADR-0039/0049 | **Siap lokal** (ADR-0049): publish dari tarball terverifikasi, guard tag↔versi, dist-tag `alpha/beta/rc/latest`, provenance kondisional, `create-ramonyx-app` + scaffold terverifikasi; sisa **pemilik**: remote + scope/token + tag — `docs/releasing.md` |
+| ~~Publikasi npm belum dilakukan~~ | — | — | **Selesai 2026-10-18**: 13 paket @ 0.1.0 terbit + verifikasi registry end-to-end (`pnpm dlx create-ramonyx-app` → install/build/start/SSR). Sisa opsional: provenance (rilis berikutnya via CI + repo publik sudah siap) |
 | ~~Tanpa performance-regression gate~~ | — | — | **Selesai**: gate report-only + kalibrasi protokol §8 (ADR-0045); `--strict` masih ditinjau |
 | ~~Advisory moderate dev-only (`uuid`)~~ | — | — | **Selesai**: override `hyperid@4.0.0` → `pnpm audit` bersih |
 | ~~Source map produksi tidak ada~~ | — | — | **Selesai**: ADR-0046 (client bundle + map di tarball npm) |
@@ -250,14 +250,11 @@ Tidak ada blocker teknis (P0): seluruh build/test/gate hijau pada commit audit.
 
 **P1 — Core (menuntaskan rilis):**
 
-1. **Publikasi npm 0.1.0 + eksekusi `release.yml` sekali.**
-   *Hasil diharapkan:* 13 tarball npm (11 `@ramonyx/*` + meta `ramonyx` + `create-ramonyx-app`)
-   terpasang dari registry; release GitHub berisi tarball + `SHA256SUMS` + manifest.
-   *Acceptance:* `pnpm dlx create-ramonyx-app`/install dari registry di mesin bersih menghasilkan
-   app yang `pnpm build && pnpm start` jalan; `ramonyx-runtime version` = 0.1.0 di platform yang
-   didukung. *Persiapan lokal selesai (ADR-0049):* dry-run ×13 bersih, publish dari tarball
-   terverifikasi, guard tag↔versi, dist-tag `alpha/beta/rc/latest` — sisa: remote + kredensial
-   pemilik (`docs/releasing.md`).
+1. ~~Publikasi npm 0.1.0 + eksekusi `release.yml` sekali.~~ — *npm **terbit 2026-10-18***:
+   13 paket @ 0.1.0 (npm otomatis menetapkan `latest` pada publish pertama; `alpha` juga ada).
+   Verifikasi registry end-to-end ✓ (`pnpm dlx create-ramonyx-app` → install → build → start →
+   SSR + API + CSP). Sisa: eksekusi `release.yml` via tag `v0.1.0` (artefak + GitHub Release;
+   publish job idempoten — versi yang sudah ada dilewati).
 2. ~~Perf regression gate (report-only dahulu)~~ — **selesai (ADR-0045/0048)**: gate report-only
    HTTP + SSR + Web Vitals dengan langkah CI non-blocking; baseline hanya berubah lewat perintah
    eksplisit (`pnpm bench`, `pnpm bench:ssr`).

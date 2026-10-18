@@ -38,7 +38,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
       - name: Ekspor
-        run: node --import ./tools/register.mjs apps/docs/export.ts --base /ramonyx
+        env:
+          NODE_ENV: production
+        run: node --import ./tools/register.mjs apps/docs/export.ts --base /ramonyx --origin https://ramonyxjs.github.io
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

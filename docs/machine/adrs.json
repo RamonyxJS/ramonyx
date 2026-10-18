@@ -764,6 +764,38 @@
         "adapter-serverless-edge",
         "adapter-node"
       ]
+    },
+    {
+      "id": "ADR-0059",
+      "file": "0059-metadata-seo.md",
+      "title": "Metadata Halaman & SEO (`sitemap.xml`/`robots.txt`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "PageMetadata diperluas (description/canonical/image/type/robots) dan disuntikkan ke <head>; helper sitemapXml/robotsTxt/createSeoRoutes membangun SEO dari manifest (exclude noindex + halaman error, origin dari request); fillRouteParams dipindah ke core.",
+      "related": [
+        "ADR-0007",
+        "ADR-0056"
+      ],
+      "features": [
+        "head-metadata",
+        "seo-helpers"
+      ]
+    },
+    {
+      "id": "ADR-0060",
+      "file": "0060-prefetch.md",
+      "title": "Prefetch Halaman Klien (Hover/Focus/Viewport)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Klien mem-prefetch tautan same-origin saat hover/focus/viewport (IntersectionObserver) dengan cache LRU 8 entri TTL 30s, maks 2 request bersamaan, sekali-pakai; navigasi memakai cache tanpa request.",
+      "related": [
+        "ADR-0008"
+      ],
+      "features": [
+        "soft-navigation"
+      ]
     }
   ]
 }

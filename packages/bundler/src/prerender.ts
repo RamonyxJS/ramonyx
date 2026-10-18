@@ -6,7 +6,12 @@
 
 import { cp, mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import type { FetchHandler, LoadedPage } from "@ramonyx/core";
+import {
+  type FetchHandler,
+  fillRouteParams,
+  hasDynamicSegment,
+  type LoadedPage,
+} from "@ramonyx/core";
 
 export interface PrerenderOptions {
   /** Handler aplikasi (hasil `createApp()` dengan `clientScript` produksi). */
@@ -44,32 +49,6 @@ export interface PrerenderResult {
   readonly routes: readonly PrerenderRouteInfo[];
   readonly skipped: readonly { readonly path: string; readonly reason: string }[];
   readonly notFoundFile: string | null;
-}
-
-const DYNAMIC_SEGMENT = /\[(\.\.\.)?([^\]]+)\]/;
-
-function hasDynamicSegment(path: string): boolean {
-  return DYNAMIC_SEGMENT.test(path);
-}
-
-/** Isi pola rute (`[slug]`, `[...slug]`) dengan peta param; `null` bila param kurang. */
-function fillParams(pattern: string, params: Record<string, string>): string | null {
-  let missing = false;
-  const filled = pattern.replace(
-    /\[(\.\.\.)?([^\]]+)\]/g,
-    (_match, _rest: string | undefined, name: string) => {
-      const value = params[name];
-      if (value === undefined) {
-        missing = true;
-        return "";
-      }
-      return value;
-    },
-  );
-  if (missing) {
-    return null;
-  }
-  return filled.replace(/\/{2,}/g, "/").replace(/\/$/, "") || "/";
 }
 
 function routeToFile(outDir: string, route: string, directoryIndex: boolean): string {
@@ -115,7 +94,7 @@ export async function prerenderRoutes(options: PrerenderOptions): Promise<Preren
       continue;
     }
     for (const params of await enumerate()) {
-      const filled = fillParams(page.path, params);
+      const filled = fillRouteParams(page.path, params);
       if (filled === null) {
         skipped.push({ path: page.path, reason: `param kurang: ${JSON.stringify(params)}` });
         continue;

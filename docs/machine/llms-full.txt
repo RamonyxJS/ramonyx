@@ -189,10 +189,12 @@
       "evidence": [
         "packages/react/src/client.ts",
         "apps/playground/e2e/navigation.spec.ts",
-        "docs/adr/0008-client-navigation.md"
+        "apps/playground/e2e/prefetch.spec.ts",
+        "docs/adr/0008-client-navigation.md",
+        "docs/adr/0060-prefetch.md"
       ],
       "limitations": [
-        "Belum ada prefetch saat hover/viewport"
+        "Belum dirilis di npm (setelah 0.1.1)"
       ]
     },
     {
@@ -255,9 +257,9 @@
     },
     {
       "id": "head-metadata",
-      "name": "Metadata halaman (title, status)",
-      "status": "partial",
-      "since": "0.1.0",
+      "name": "Metadata halaman (title, description, canonical, OG/Twitter, robots) + injeksi <head>",
+      "status": "implemented",
+      "since": null,
       "priority": "p1",
       "packages": [
         "@ramonyx/core",
@@ -265,10 +267,13 @@
       ],
       "evidence": [
         "packages/core/src/page.ts",
-        "packages/ssr/src/pages.ts"
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/pages.test.ts",
+        "docs/adr/0059-metadata-seo.md"
       ],
       "limitations": [
-        "Hanya title/status — tanpa description/OG/head injection per halaman"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Origin kanonik dari request (di belakang proxy: pastikan header benar)"
       ]
     },
     {
@@ -1127,6 +1132,25 @@
       "limitations": [
         "Belum dirilis di npm (setelah 0.1.1)"
       ]
+    },
+    {
+      "id": "seo-helpers",
+      "name": "Helper SEO (sitemap.xml + robots.txt dari manifest rute)",
+      "status": "implemented",
+      "since": null,
+      "priority": "p1",
+      "packages": [
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/ssr/src/seo.ts",
+        "packages/ssr/test/seo.test.ts",
+        "apps/docs/export.ts",
+        "docs/adr/0059-metadata-seo.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)"
+      ]
     }
   ]
 }
@@ -1901,6 +1925,38 @@
         "adapter-serverless-edge",
         "adapter-node"
       ]
+    },
+    {
+      "id": "ADR-0059",
+      "file": "0059-metadata-seo.md",
+      "title": "Metadata Halaman & SEO (`sitemap.xml`/`robots.txt`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "PageMetadata diperluas (description/canonical/image/type/robots) dan disuntikkan ke <head>; helper sitemapXml/robotsTxt/createSeoRoutes membangun SEO dari manifest (exclude noindex + halaman error, origin dari request); fillRouteParams dipindah ke core.",
+      "related": [
+        "ADR-0007",
+        "ADR-0056"
+      ],
+      "features": [
+        "head-metadata",
+        "seo-helpers"
+      ]
+    },
+    {
+      "id": "ADR-0060",
+      "file": "0060-prefetch.md",
+      "title": "Prefetch Halaman Klien (Hover/Focus/Viewport)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Klien mem-prefetch tautan same-origin saat hover/focus/viewport (IntersectionObserver) dengan cache LRU 8 entri TTL 30s, maks 2 request bersamaan, sekali-pakai; navigasi memakai cache tanpa request.",
+      "related": [
+        "ADR-0008"
+      ],
+      "features": [
+        "soft-navigation"
+      ]
     }
   ]
 }
@@ -2520,7 +2576,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T21:15:10.646Z",
+  "generatedAt": "2026-10-18T21:26:02.529Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2616,7 +2672,9 @@
         "REMOTE_ADDRESS_HEADER",
         "cacheControl",
         "defineConfig",
+        "fillRouteParams",
         "formDataToObject",
+        "hasDynamicSegment",
         "resolveConfig",
         "route",
         "silentLogger"
@@ -2775,16 +2833,22 @@
         "PAYLOAD_SCRIPT_ID",
         "RAMONYX_MOUNT_ID",
         "createPageRoutes",
+        "createSeoRoutes",
         "defaultDocument",
-        "escapeHtml"
+        "escapeHtml",
+        "robotsTxt",
+        "sitemapXml"
       ],
       "types": [
         "ClientOptions",
         "CreatePageRoutesOptions",
+        "CreateSeoRoutesOptions",
         "DocumentOptions",
         "DocumentRenderer",
         "ElementDescriptor",
-        "Renderer"
+        "Renderer",
+        "RobotsOptions",
+        "SitemapEntry"
       ],
       "reexports": []
     },
@@ -2808,7 +2872,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T21:15:19.458Z",
+  "generatedAt": "2026-10-18T21:26:03.693Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2877,8 +2941,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-18T21:14:17.249Z",
-  "commit": "5def32680b9006bbec4f12014f434580469e5e9c",
+  "generatedAt": "2026-10-18T21:25:09.111Z",
+  "commit": "ac1df1cadd3016e0d5b67802d42bb281218166d8",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -2900,11 +2964,11 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 58,
+  "adrs": 60,
   "tests": {
-    "node": 185,
+    "node": 191,
     "rust": 111,
-    "e2eSpecFiles": 5
+    "e2eSpecFiles": 6
   }
 }
 ```

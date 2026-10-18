@@ -155,6 +155,18 @@ if (!aksiHtml.includes('"action":{"ok":true')) throw new Error("payload action t
 
 const hilang = await app(new Request("http://uji/tidak-ada"));
 if (hilang.status !== 404) throw new Error("404: " + hilang.status);
+
+// SEO: sitemap.xml + robots.txt dari manifest (ADR-0059).
+const sitemap = await app(new Request("http://uji/sitemap.xml"));
+if (sitemap.status !== 200) throw new Error("status sitemap: " + sitemap.status);
+const sitemapXml = await sitemap.text();
+if (!sitemapXml.includes("<loc>http://uji/</loc>")) throw new Error("sitemap tanpa beranda");
+if (sitemapXml.includes("tidak-ada")) throw new Error("sitemap memuat halaman 404");
+const robots = await app(new Request("http://uji/robots.txt"));
+if (robots.status !== 200) throw new Error("status robots: " + robots.status);
+if (!(await robots.text()).includes("Sitemap: http://uji/sitemap.xml")) {
+  throw new Error("robots tanpa sitemap");
+}
 console.log("SMOKE APP OK");
 `,
   );

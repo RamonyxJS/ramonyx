@@ -5,6 +5,16 @@ export interface PageMetadata {
   readonly title?: string;
   /** Status HTTP respons halaman (default 200); mis. `404` untuk halaman not-found catch-all. */
   readonly status?: number;
+  /** Deskripsi untuk `<meta name="description">` + OG/Twitter. */
+  readonly description?: string;
+  /** URL kanonis absolut (mis. `https://contoh.dev/halaman`); opsional. */
+  readonly canonical?: string;
+  /** Gambar OG/Twitter (absolut atau path, mis. `/og.png`). */
+  readonly image?: string;
+  /** `og:type` (default `website`; mis. `article`). */
+  readonly type?: string;
+  /** `noindex` → halaman disembunyikan dari mesin pencari + dikeluarkan dari sitemap. */
+  readonly robots?: "index" | "noindex";
 }
 
 /** Konteks loader halaman (halaman hanya GET; tidak ada body). */

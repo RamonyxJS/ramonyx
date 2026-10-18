@@ -7,7 +7,7 @@ Dokumentasi lengkap: https://ramonyxjs.github.io/ramonyx/ . Fakta terstruktur (s
 ## Machine-readable (sumber kebenaran fakta)
 
 - [features.json](https://ramonyxjs.github.io/ramonyx/machine/features.json): status setiap fitur (implemented/partial/experimental/planned) + paket + bukti + batasan
-- [adrs.json](https://ramonyxjs.github.io/ramonyx/machine/adrs.json): indeks 58 ADR — keputusan satu kalimat + relasi
+- [adrs.json](https://ramonyxjs.github.io/ramonyx/machine/adrs.json): indeks 60 ADR — keputusan satu kalimat + relasi
 - [rules.json](https://ramonyxjs.github.io/ramonyx/machine/rules.json): aturan menulis aplikasi di atas Ramonyx, dengan contoh benar/salah
 - [security.json](https://ramonyxjs.github.io/ramonyx/machine/security.json): kontrol keamanan + status + celah yang diakui
 - [glossary.json](https://ramonyxjs.github.io/ramonyx/machine/glossary.json): istilah + peta konsep

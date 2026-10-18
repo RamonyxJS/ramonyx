@@ -69,6 +69,11 @@ export interface ClientNavigation {
   dispose(): void;
 }
 
+/** Cache prefetch halaman (soft navigation memakai HTML ini tanpa fetch ulang). */
+const PREFETCH_TTL_MS = 30_000;
+const PREFETCH_MAX_ENTRIES = 8;
+const PREFETCH_MAX_CONCURRENT = 2;
+
 function readPayloadFromDocument(doc: Document): HydrationPayload | null {
   const text = doc.getElementById(PAYLOAD_SCRIPT_ID)?.textContent ?? "";
   if (!text.startsWith(PAYLOAD_PREFIX)) {
@@ -90,6 +95,115 @@ function readPayloadFromDocument(doc: Document): HydrationPayload | null {
  */
 export function enableClientNavigation(registry: ClientRegistry): ClientNavigation {
   let controller: AbortController | null = null;
+
+  // ---------- Prefetch (hover/focus/viewport) ----------
+  const prefetchCache = new Map<string, { html: string; at: number }>();
+  const prefetchPending = new Set<string>();
+  let prefetchInFlight = 0;
+
+  const prefetch = (url: string): void => {
+    if (
+      prefetchCache.has(url) ||
+      prefetchPending.has(url) ||
+      prefetchInFlight >= PREFETCH_MAX_CONCURRENT
+    ) {
+      return;
+    }
+    prefetchPending.add(url);
+    prefetchInFlight += 1;
+    void fetch(url, {
+      headers: { "x-ramonyx-prefetch": "1" },
+      credentials: "same-origin",
+    })
+      .then(async (response) => {
+        const isHtml = (response.headers.get("content-type") ?? "").includes("text/html");
+        if (!response.ok || !isHtml) {
+          return;
+        }
+        const html = await response.text();
+        prefetchCache.set(url, { html, at: Date.now() });
+        while (prefetchCache.size > PREFETCH_MAX_ENTRIES) {
+          const oldest = prefetchCache.keys().next().value;
+          if (oldest === undefined) {
+            break;
+          }
+          prefetchCache.delete(oldest);
+        }
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        prefetchPending.delete(url);
+        prefetchInFlight -= 1;
+      });
+  };
+
+  /** URL navigasi yang layak di-prefetch dari sebuah anchor; `null` bila tidak. */
+  const navigableUrl = (anchor: HTMLAnchorElement): string | null => {
+    if (anchor.target !== "" && anchor.target !== "_self") {
+      return null;
+    }
+    if (anchor.hasAttribute("download")) {
+      return null;
+    }
+    let url: URL;
+    try {
+      url = new URL(anchor.href, window.location.href);
+    } catch {
+      return null;
+    }
+    if (url.origin !== window.location.origin) {
+      return null;
+    }
+    if (url.pathname === window.location.pathname && url.search === window.location.search) {
+      return null;
+    }
+    return url.href;
+  };
+
+  const prefetchAnchor = (anchor: HTMLAnchorElement): void => {
+    const url = navigableUrl(anchor);
+    if (url !== null) {
+      prefetch(url);
+    }
+  };
+
+  const prefetchFromEvent = (event: Event): void => {
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+    const anchor = event.target.closest("a");
+    if (anchor instanceof HTMLAnchorElement) {
+      prefetchAnchor(anchor);
+    }
+  };
+
+  // Viewport: tautan yang terlihat (perilaku mobile tanpa hover). Diamati ulang setelah swap.
+  const observed = new WeakSet<HTMLAnchorElement>();
+  const observer =
+    typeof IntersectionObserver === "undefined"
+      ? null
+      : new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting && entry.target instanceof HTMLAnchorElement) {
+                prefetchAnchor(entry.target);
+              }
+            }
+          },
+          { rootMargin: "200px" },
+        );
+
+  const observeLinks = (): void => {
+    if (observer === null) {
+      return;
+    }
+    for (const anchor of document.querySelectorAll("a[href]")) {
+      if (anchor instanceof HTMLAnchorElement && !observed.has(anchor)) {
+        observed.add(anchor);
+        observer.observe(anchor);
+      }
+    }
+  };
 
   const fullLoad = (url: string): void => {
     window.location.assign(url);
@@ -124,6 +238,7 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
     if (scroll) {
       window.scrollTo(0, 0);
     }
+    observeLinks();
     return true;
   };
 
@@ -131,6 +246,15 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
     controller?.abort();
     const current = new AbortController();
     controller = current;
+
+    // Prefetch hit: HTML sudah ada (hover/viewport) → langsung swap tanpa request.
+    const cached = prefetchCache.get(url);
+    if (cached !== undefined && Date.now() - cached.at < PREFETCH_TTL_MS) {
+      prefetchCache.delete(url);
+      if (applyHtml(cached.html, url, push)) {
+        return;
+      }
+    }
 
     try {
       const response = await fetch(url, {
@@ -261,13 +385,20 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
 
   document.addEventListener("click", onClick);
   document.addEventListener("submit", onSubmit);
+  document.addEventListener("pointerover", prefetchFromEvent);
+  document.addEventListener("focusin", prefetchFromEvent);
   window.addEventListener("popstate", onPopState);
+  observeLinks();
 
   return {
     dispose(): void {
       document.removeEventListener("click", onClick);
       document.removeEventListener("submit", onSubmit);
+      document.removeEventListener("pointerover", prefetchFromEvent);
+      document.removeEventListener("focusin", prefetchFromEvent);
       window.removeEventListener("popstate", onPopState);
+      observer?.disconnect();
+      prefetchCache.clear();
       controller?.abort();
     },
   };

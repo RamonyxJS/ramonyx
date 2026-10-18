@@ -65,3 +65,5 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0056](0056-static-generation.md) | Static generation: `prerenderRoutes` + `ramonyx build --static` (dogfood docs, 404 HTML, NODE_ENV produksi) | Accepted |
 | [0057](0057-server-actions.md) | Server actions: `action` per halaman (FormData, actionSchema, PRG 303, progressive enhancement) | Accepted |
 | [0058](0058-edge-target.md) | Target build edge/serverless (`--target edge`, kontrak fetch handler) + `guardedFetch` ke subpath | Accepted |
+| [0059](0059-metadata-seo.md) | Metadata halaman (description/OG/Twitter/robots) + `sitemap.xml`/`robots.txt` | Accepted |
+| [0060](0060-prefetch.md) | Prefetch halaman klien (hover/focus/viewport, cache LRU + TTL) | Accepted |

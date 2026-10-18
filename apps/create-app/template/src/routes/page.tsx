@@ -2,7 +2,10 @@ import type { PageProps } from "@ramonyx/react";
 import type { PageActionContext } from "ramonyx";
 import { useState } from "react";
 
-export const metadata = { title: "__APP_NAME__" };
+export const metadata = {
+  title: "__APP_NAME__",
+  description: "Aplikasi Ramonyx — SSR React, file routing, dan server actions.",
+};
 
 export async function loader() {
   return { pesan: "Halo dari SSR Ramonyx", fitur: ["SSR React", "hydration", "route API"] };

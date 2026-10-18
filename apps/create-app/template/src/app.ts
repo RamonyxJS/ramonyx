@@ -3,7 +3,7 @@ import { serveStatic } from "@ramonyx/adapter-runtime";
 import { createRouteManifest, loadPageRoutes, type ModuleImporter } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
-import { createPageRoutes } from "@ramonyx/ssr";
+import { createPageRoutes, createSeoRoutes } from "@ramonyx/ssr";
 import type { FetchHandler } from "ramonyx";
 
 import middleware from "./routes/middleware.ts";
@@ -46,10 +46,13 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
       createRouteManifest({ dir, importer: options.importer }),
       loadPageRoutes({ dir, importer: options.importer }),
     ]);
+    // /sitemap.xml + /robots.txt dari manifest halaman (ADR-0059).
+    const seoRoutes = await createSeoRoutes({ pages });
 
     return createHandler({
       routes: [
         ...apiRoutes,
+        ...seoRoutes,
         ...createPageRoutes({
           pages,
           renderer: createReactRenderer(),

@@ -4,6 +4,7 @@ import {
   type LoadedPage,
   NONCE_HEADER,
   type PageActionState,
+  type PageMetadata,
   type RouteEntry,
   type RouteHandlerContext,
   route,
@@ -148,6 +149,62 @@ function serializePayload(payload: unknown): string {
   return JSON.stringify(payload).replaceAll("<", "\\u003c");
 }
 
+/**
+ * Tag `<head>` dari metadata halaman (description, canonical, OG/Twitter, robots) — ADR-0059.
+ * URL absolut memakai origin request (di belakang proxy: pastikan origin publik benar).
+ */
+function metadataHead(metadata: PageMetadata | undefined, request: Request): string {
+  if (metadata === undefined) {
+    return "";
+  }
+  const url = new URL(request.url);
+  const absolute = (value: string): string =>
+    value.startsWith("http://") || value.startsWith("https://")
+      ? value
+      : `${url.origin}${value.startsWith("/") ? "" : "/"}${value}`;
+
+  const tags: string[] = [];
+  const meta = (property: string, content: string, attribute = "name"): void => {
+    tags.push(`<meta ${attribute}="${escapeHtml(property)}" content="${escapeHtml(content)}" />`);
+  };
+
+  if (metadata.description !== undefined) {
+    meta("description", metadata.description);
+  }
+  if (metadata.robots === "noindex") {
+    meta("robots", "noindex");
+  }
+  if (metadata.canonical !== undefined) {
+    tags.push(`<link rel="canonical" href="${escapeHtml(metadata.canonical)}" />`);
+  }
+
+  const og: Array<[string, string | undefined]> = [
+    ["og:title", metadata.title],
+    ["og:description", metadata.description],
+    ["og:type", metadata.type ?? "website"],
+    ["og:url", url.href],
+    ["og:image", metadata.image === undefined ? undefined : absolute(metadata.image)],
+  ];
+  for (const [property, content] of og) {
+    if (content !== undefined && content.length > 0) {
+      meta(property, content, "property");
+    }
+  }
+
+  meta("twitter:card", metadata.image === undefined ? "summary" : "summary_large_image");
+  for (const [property, content] of [
+    ["twitter:title", metadata.title],
+    ["twitter:description", metadata.description],
+    ["twitter:image", metadata.image === undefined ? undefined : absolute(metadata.image)],
+  ] as Array<[string, string | undefined]>) {
+    if (content !== undefined && content.length > 0) {
+      meta(property, content);
+    }
+  }
+
+  return tags.join("\n");
+}
+
 /** Id script payload — dipakai `@ramonyx/react/client` untuk soft navigation. */
 export const PAYLOAD_SCRIPT_ID = "ramonyx-payload";
 
@@ -207,6 +264,7 @@ async function renderPage(
         : 200;
 
     const title = page.page.metadata?.title ?? "";
+    const head = metadataHead(page.page.metadata, context.request);
     const scripts = hydrationScripts(
       client,
       { path: page.path, params, data, action: actionState },
@@ -215,7 +273,7 @@ async function renderPage(
     const renderStream = renderer.renderStream?.bind(renderer);
 
     if (streaming && renderStream !== undefined) {
-      const shell = documentRenderer({ title, body: BODY_MARKER, status, scripts });
+      const shell = documentRenderer({ title, body: BODY_MARKER, status, scripts, head });
       const markerIndex = shell.indexOf(BODY_MARKER);
       if (markerIndex !== -1) {
         const prefix = encoder.encode(shell.slice(0, markerIndex));
@@ -245,7 +303,7 @@ async function renderPage(
     }
 
     const body = await renderer.render(buildPageTree(page, data, params, actionState));
-    const document = documentRenderer({ title, body, status, scripts });
+    const document = documentRenderer({ title, body, status, scripts, head });
 
     if (document.length > maxDocumentBytes) {
       log.error("Output halaman melebihi batas", {

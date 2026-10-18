@@ -18,6 +18,7 @@ export {
   type PageMetadata,
   type PageModule,
 } from "./page.ts";
+export { fillRouteParams, hasDynamicSegment } from "./params.ts";
 export { route } from "./route.ts";
 export type {
   EnvReader,

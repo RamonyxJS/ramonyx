@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T21:15:10.646Z",
+  "generatedAt": "2026-10-18T21:26:02.529Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -96,7 +96,9 @@
         "REMOTE_ADDRESS_HEADER",
         "cacheControl",
         "defineConfig",
+        "fillRouteParams",
         "formDataToObject",
+        "hasDynamicSegment",
         "resolveConfig",
         "route",
         "silentLogger"
@@ -255,16 +257,22 @@
         "PAYLOAD_SCRIPT_ID",
         "RAMONYX_MOUNT_ID",
         "createPageRoutes",
+        "createSeoRoutes",
         "defaultDocument",
-        "escapeHtml"
+        "escapeHtml",
+        "robotsTxt",
+        "sitemapXml"
       ],
       "types": [
         "ClientOptions",
         "CreatePageRoutesOptions",
+        "CreateSeoRoutesOptions",
         "DocumentOptions",
         "DocumentRenderer",
         "ElementDescriptor",
-        "Renderer"
+        "Renderer",
+        "RobotsOptions",
+        "SitemapEntry"
       ],
       "reexports": []
     },

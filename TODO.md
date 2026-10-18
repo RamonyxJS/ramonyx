@@ -113,7 +113,7 @@
 
 ### `p1-metadata-seo` — Metadata halaman lengkap + helper SEO (sitemap/robots)
 
-*tema: rendering · ukuran: M · status: open · sumber: gap §3 (head/metadata)*
+*tema: rendering · ukuran: M · status: done · sumber: gap §3 (head/metadata) — selesai ADR-0059*
 
 - **Apa**: API metadata per halaman (description, canonical, Open Graph/Twitter) + injeksi `<head>` per halaman + helper sitemap.xml/robots.txt.
 - **Kenapa penting untuk bersaing**: Situs publik butuh SEO dan kartu berbagi tautan yang benar; saat ini hanya `title`/`status`, sehingga setiap situs publik langsung butuh akal-akalan.
@@ -156,7 +156,7 @@
 
 ### `p1-prefetch` — Prefetch halaman saat hover/viewport
 
-*tema: rendering · ukuran: S · status: open · sumber: gap §3 (soft navigation)*
+*tema: rendering · ukuran: S · status: done · sumber: gap §3 (soft navigation) — selesai ADR-0060*
 
 - **Apa**: Prefetch payload/HTML halaman tujuan saat tautan di-hover atau masuk viewport, lalu soft navigation memakai cache tersebut.
 - **Kenapa penting untuk bersaing**: Navigasi instan adalah ekspektasi dasar pengguna web modern; Next.js melakukannya default dan soft navigation kami akan terasa lambat tanpa ini.

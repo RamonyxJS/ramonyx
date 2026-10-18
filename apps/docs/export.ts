@@ -13,6 +13,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildClient, prerenderRoutes } from "@ramonyx/bundler";
 import { loadPageRoutes } from "@ramonyx/compiler";
+import { sitemapXml } from "@ramonyx/ssr";
 import { createApp } from "./src/app.ts";
 import { loadCatalog } from "./src/docs.ts";
 import { rewriteDocLinks } from "./src/markdown.ts";
@@ -26,6 +27,7 @@ const argValue = (name: string): string | undefined => {
 const appDir = fileURLToPath(new URL(".", import.meta.url));
 const repoRoot = resolve(appDir, "..", "..");
 const basePath = (argValue("--base") ?? "").replace(/\/$/, "");
+const originArg = argValue("--origin");
 const outArg = argValue("--out");
 const outDir = outArg === undefined ? join(appDir, "dist/static") : resolve(process.cwd(), outArg);
 
@@ -93,6 +95,19 @@ const sitemapLines = [
   "",
 ];
 await writeFile(join(outDir, "sitemap.md"), sitemapLines.join("\n"));
+
+// 4b. sitemap.xml (SEO) — bila origin publik diberikan (ADR-0059).
+if (originArg !== undefined) {
+  const paths = ["", ...catalog.map((doc) => `dokumen/${doc.slug}`)];
+  await writeFile(
+    join(outDir, "sitemap.xml"),
+    sitemapXml(
+      paths.map((path) => (path === "" ? `${basePath}/` : `${basePath}/${path}`)),
+      { origin: originArg },
+    ),
+  );
+  console.log("✓ sitemap.xml");
+}
 
 // 5. Machine layer + llms.txt (ADR-0054) — diterbitkan apa adanya.
 const machineDir = join(repoRoot, "docs/machine");

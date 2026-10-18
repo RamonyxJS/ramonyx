@@ -131,7 +131,7 @@
       "theme": "rendering",
       "priority": "p1",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "API metadata per halaman (description, canonical, Open Graph/Twitter) + injeksi `<head>` per halaman + helper sitemap.xml/robots.txt.",
       "why": "Situs publik butuh SEO dan kartu berbagi tautan yang benar; saat ini hanya `title`/`status`, sehingga setiap situs publik langsung butuh akal-akalan.",
       "done": [
@@ -143,7 +143,7 @@
       "areas": ["packages/core", "packages/ssr", "packages/react"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js Metadata API; Nuxt useSeoMeta; SvelteKit `<svelte:head>` + pustaka SEO; Astro integrations.",
-      "source": "gap §3 (head/metadata)"
+      "source": "gap §3 (head/metadata) — selesai ADR-0059"
     },
     {
       "id": "p1-auth-session",
@@ -192,7 +192,7 @@
       "theme": "rendering",
       "priority": "p1",
       "size": "S",
-      "status": "open",
+      "status": "done",
       "what": "Prefetch payload/HTML halaman tujuan saat tautan di-hover atau masuk viewport, lalu soft navigation memakai cache tersebut.",
       "why": "Navigasi instan adalah ekspektasi dasar pengguna web modern; Next.js melakukannya default dan soft navigation kami akan terasa lambat tanpa ini.",
       "done": [
@@ -203,7 +203,7 @@
       "areas": ["packages/react"],
       "adrs": [],
       "competitor": "Next.js Link prefetch (default); SvelteKit preload on hover; Nuxt NuxtLink prefetch.",
-      "source": "gap §3 (soft navigation)",
+      "source": "gap §3 (soft navigation) — selesai ADR-0060",
       "quickWin": true
     },
     {

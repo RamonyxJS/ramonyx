@@ -181,10 +181,12 @@
       "evidence": [
         "packages/react/src/client.ts",
         "apps/playground/e2e/navigation.spec.ts",
-        "docs/adr/0008-client-navigation.md"
+        "apps/playground/e2e/prefetch.spec.ts",
+        "docs/adr/0008-client-navigation.md",
+        "docs/adr/0060-prefetch.md"
       ],
       "limitations": [
-        "Belum ada prefetch saat hover/viewport"
+        "Belum dirilis di npm (setelah 0.1.1)"
       ]
     },
     {
@@ -247,9 +249,9 @@
     },
     {
       "id": "head-metadata",
-      "name": "Metadata halaman (title, status)",
-      "status": "partial",
-      "since": "0.1.0",
+      "name": "Metadata halaman (title, description, canonical, OG/Twitter, robots) + injeksi <head>",
+      "status": "implemented",
+      "since": null,
       "priority": "p1",
       "packages": [
         "@ramonyx/core",
@@ -257,10 +259,13 @@
       ],
       "evidence": [
         "packages/core/src/page.ts",
-        "packages/ssr/src/pages.ts"
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/pages.test.ts",
+        "docs/adr/0059-metadata-seo.md"
       ],
       "limitations": [
-        "Hanya title/status — tanpa description/OG/head injection per halaman"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Origin kanonik dari request (di belakang proxy: pastikan header benar)"
       ]
     },
     {
@@ -1115,6 +1120,25 @@
         "packages/adapter-runtime/src/static.ts",
         "packages/adapter-runtime/test/static.test.ts",
         "docs/adr/0055-http-production-basics.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)"
+      ]
+    },
+    {
+      "id": "seo-helpers",
+      "name": "Helper SEO (sitemap.xml + robots.txt dari manifest rute)",
+      "status": "implemented",
+      "since": null,
+      "priority": "p1",
+      "packages": [
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/ssr/src/seo.ts",
+        "packages/ssr/test/seo.test.ts",
+        "apps/docs/export.ts",
+        "docs/adr/0059-metadata-seo.md"
       ],
       "limitations": [
         "Belum dirilis di npm (setelah 0.1.1)"

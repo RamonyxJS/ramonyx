@@ -3,7 +3,11 @@ import { useState } from "react";
 
 import { listCatalog } from "../catalog.ts";
 
-export const metadata = { title: "Dokumentasi" };
+export const metadata = {
+  title: "Dokumentasi",
+  description:
+    "Blueprint, arsitektur, kontrak API, ADR, dan roadmap Ramonyx — dirender dari markdown di repo.",
+};
 
 export async function loader() {
   return { entries: listCatalog() };

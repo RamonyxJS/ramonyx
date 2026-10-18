@@ -184,7 +184,17 @@ test("export statis: halaman + tautan relatif + aset + 404 (base subpath)", asyn
 
   const output = execFileSync(
     process.execPath,
-    ["--import", loader, "export.ts", "--base", "/ramonyx", "--out", out],
+    [
+      "--import",
+      loader,
+      "export.ts",
+      "--base",
+      "/ramonyx",
+      "--origin",
+      "https://docs.example",
+      "--out",
+      out,
+    ],
     {
       cwd: appDir,
       encoding: "utf8",
@@ -235,6 +245,14 @@ test("export statis: halaman + tautan relatif + aset + 404 (base subpath)", asyn
 
   assert.ok(existsSync(join(out, "404.html")), "404.html diekspor");
   assert.ok(existsSync(join(out, ".nojekyll")), ".nojekyll ditulis");
+
+  // sitemap.xml (SEO, ADR-0059) dengan origin + base path.
+  const sitemap = readFileSync(join(out, "sitemap.xml"), "utf8");
+  assert.ok(sitemap.includes("<loc>https://docs.example/ramonyx/</loc>"), "beranda di sitemap");
+  assert.ok(
+    sitemap.includes("<loc>https://docs.example/ramonyx/dokumen/architecture</loc>"),
+    "halaman dokumen di sitemap",
+  );
 
   rmSync(out, { recursive: true, force: true });
 });

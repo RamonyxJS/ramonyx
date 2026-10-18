@@ -664,6 +664,45 @@ test("actionSchema: validasi FormData sebelum action dijalankan (Standard Schema
   assert.equal(actionDipanggil, 1);
 });
 
+test("metadata: description/canonical/OG/Twitter/robots disuntikkan ke <head>", async () => {
+  const page = basePage("/promo", {
+    default: Page,
+    metadata: {
+      title: "Promo",
+      description: "Promo spesial <Ramonyx>",
+      canonical: "https://ramonyxjs.github.io/promo",
+      image: "/og.png",
+      type: "article",
+      robots: "noindex",
+    },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+
+  const response = await handler(new Request("https://contoh.dev/promo?utm=1"));
+  const html = await response.text();
+
+  assert.ok(html.includes('<meta name="description" content="Promo spesial &lt;Ramonyx&gt;" />'));
+  assert.ok(html.includes('<meta name="robots" content="noindex" />'));
+  assert.ok(html.includes('<link rel="canonical" href="https://ramonyxjs.github.io/promo" />'));
+  assert.ok(html.includes('<meta property="og:title" content="Promo" />'));
+  assert.ok(html.includes('<meta property="og:type" content="article" />'));
+  assert.ok(html.includes('<meta property="og:url" content="https://contoh.dev/promo?utm=1" />'));
+  assert.ok(html.includes('<meta property="og:image" content="https://contoh.dev/og.png" />'));
+  assert.ok(html.includes('<meta name="twitter:card" content="summary_large_image" />'));
+});
+
+test("metadata: tanpa metadata tidak menambah tag head", async () => {
+  const page = basePage("/polos", { default: Page });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+  const html = await (await handler(new Request("http://test.local/polos"))).text();
+  assert.ok(!html.includes("og:title"));
+  assert.ok(!html.includes('name="description"'));
+});
+
 test("halaman tanpa action: POST → 405 Method Not Allowed", async () => {
   const page = basePage("/", { default: Page });
   const handler = createHandler({

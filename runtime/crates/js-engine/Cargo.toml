@@ -13,6 +13,7 @@ deno_error = "=0.7.1"
 http-body-util = "0.1"
 hyper = { version = "1", features = ["server", "client", "http1"] }
 hyper-util = { version = "0.1", features = ["tokio", "client-legacy", "http1"] }
+getrandom = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json.workspace = true
 runtime-core = { path = "../runtime-core" }

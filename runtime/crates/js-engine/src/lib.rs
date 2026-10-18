@@ -26,6 +26,7 @@ use deno_core::{
 use deno_error::JsErrorBox;
 use runtime_core::Permissions;
 
+mod builtins;
 mod cjs;
 mod http;
 mod http_client;
@@ -250,6 +251,8 @@ extension!(
         http::op_http_watch,
         http::op_http_close,
         http_client::op_fetch,
+        builtins::op_random_bytes,
+        builtins::op_dns_lookup,
     ],
     state = |state: &mut OpState| {
         state.put(http::HttpState::default());
@@ -322,7 +325,10 @@ impl ModuleLoader for FileModuleLoader {
             || specifier.starts_with('/')
             || specifier.starts_with("file:");
 
-        let resolved = if is_relative {
+        let resolved = if builtins::is_builtin_specifier(specifier) {
+            // `node:*` versi subset (ADR-0031) → modul sintetis bawaan runtime.
+            builtins::resolve_builtin(specifier)?
+        } else if is_relative {
             resolve_import(specifier, referrer).map_err(|error| {
                 JsErrorBox::generic(format!("tidak bisa me-resolve \"{specifier}\": {error}"))
             })?
@@ -330,6 +336,10 @@ impl ModuleLoader for FileModuleLoader {
             // Bare specifier → resolusi node_modules (ADR-0026).
             resolve_bare(specifier, referrer)?
         };
+
+        if resolved.scheme() == builtins::BUILTIN_SCHEME {
+            return Ok(resolved);
+        }
 
         let path = resolved
             .to_file_path()
@@ -370,6 +380,19 @@ impl ModuleLoader for FileModuleLoader {
             source_maps: SourceMapStore,
             module_specifier: &ModuleSpecifier,
         ) -> Result<ModuleSource, ModuleLoaderError> {
+            // Modul bawaan sintetis (ADR-0031) — bukan file di disk.
+            if module_specifier.scheme() == builtins::BUILTIN_SCHEME {
+                let source = builtins::source_for(module_specifier).ok_or_else(|| {
+                    JsErrorBox::generic(format!("modul bawaan tidak dikenal: {module_specifier}"))
+                })?;
+                return Ok(ModuleSource::new(
+                    ModuleType::JavaScript,
+                    ModuleSourceCode::String(deno_core::FastString::from_static(source)),
+                    module_specifier,
+                    None,
+                ));
+            }
+
             let path = module_specifier.to_file_path().map_err(|_| {
                 JsErrorBox::generic(format!("hanya file:// yang didukung: {module_specifier}"))
             })?;
@@ -1531,6 +1554,114 @@ globalThis.__fetch_ok = true;
             .execute_module(&main)
             .expect_err("harus ditolak");
         assert!(error.to_string().contains("--allow-net"), "{error}");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn modul_bawaan_net_dns_dan_crypto() {
+        let directory = temp_dir("builtins");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+import { isIP } from "node:net";
+import { lookup } from "node:dns/promises";
+
+if (isIP("127.0.0.1") !== 4) throw new Error("isIP v4: " + isIP("127.0.0.1"));
+if (isIP("::1") !== 6) throw new Error("isIP v6: " + isIP("::1"));
+if (isIP("2001:db8::1") !== 6) throw new Error("isIP v6 dua");
+if (isIP("256.1.1.1") !== 0) throw new Error("isIP rentang");
+if (isIP("01.2.3.4") !== 0) throw new Error("isIP leading zero");
+if (isIP("contoh") !== 0) throw new Error("isIP nama");
+if (isIP("1:2:3:4:5:6:7:8:9") !== 0) throw new Error("isIP v6 panjang");
+if (isIP("::ffff:127.0.0.1") !== 6) throw new Error("isIP mapped");
+
+const entries = await lookup("127.0.0.1", { all: true, verbatim: true });
+if (!Array.isArray(entries) || entries.length === 0) throw new Error("lookup kosong");
+if (entries[0].address !== "127.0.0.1" || entries[0].family !== 4) {
+  throw new Error("lookup isi: " + JSON.stringify(entries));
+}
+const satu = await lookup("127.0.0.1");
+if (satu.address !== "127.0.0.1") throw new Error("lookup tanpa all");
+
+const a = new Uint8Array(16);
+const b = new Uint8Array(16);
+crypto.getRandomValues(a);
+crypto.getRandomValues(b);
+let sama = true;
+for (let i = 0; i < 16; i += 1) {
+  if (a[i] !== b[i]) {
+    sama = false;
+    break;
+  }
+}
+if (sama) throw new Error("dua undian identik (praktis mustahil)");
+const uuid = crypto.randomUUID();
+if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(uuid)) {
+  throw new Error("uuid tidak valid: " + uuid);
+}
+globalThis.__builtin_ok = true;
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+        })
+        .expect("engine");
+        engine.execute_module(&main).expect("builtin module");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__builtin_ok !== true) throw new Error('builtin gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn modul_bawaan_tak_didukung_dan_dns_permission() {
+        let directory = temp_dir("builtin-error");
+
+        let fs_main = directory.join("fs.mjs");
+        fs::write(&fs_main, "import 'node:fs';\n").expect("write");
+        let error = Engine::new()
+            .expect("engine")
+            .execute_module(&fs_main)
+            .expect_err("node:fs ditolak");
+        let message = error.to_string();
+        assert!(message.contains("belum didukung"), "{message}");
+        assert!(message.contains("node:net"), "{message}");
+
+        let dns_main = directory.join("dns.mjs");
+        fs::write(
+            &dns_main,
+            "import { lookup } from 'node:dns/promises';\nawait lookup('127.0.0.1');\n",
+        )
+        .expect("write");
+        let error = Engine::new()
+            .expect("engine")
+            .execute_module(&dns_main)
+            .expect_err("dns tanpa permission");
+        assert!(error.to_string().contains("--allow-net"), "{error}");
+
+        // getRandomValues tidak butuh permission apa pun.
+        let random_main = directory.join("random.mjs");
+        fs::write(
+            &random_main,
+            "crypto.getRandomValues(new Uint8Array(4));\nglobalThis.__r = true;\n",
+        )
+        .expect("write");
+        let mut engine = Engine::new().expect("engine");
+        engine.execute_module(&random_main).expect("random");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__r !== true) throw new Error('random gagal');",
+            )
+            .expect("verify");
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }

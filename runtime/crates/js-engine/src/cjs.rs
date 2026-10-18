@@ -231,7 +231,7 @@ fn resolve_require(spec: &str, from: &Path) -> RequireTarget {
     let head = builtin.split('/').next().unwrap_or(builtin);
     if spec.starts_with("node:") || NODE_BUILTINS.contains(&head) {
         return RequireTarget::Error(format!(
-            "modul bawaan Node \"{spec}\" belum didukung runtime ini"
+            "modul bawaan Node \"{spec}\" belum didukung di require() (import ESM tersedia untuk node:net & node:dns/promises)"
         ));
     }
 

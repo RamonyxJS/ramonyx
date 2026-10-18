@@ -1,10 +1,10 @@
 //! Web shim minimal untuk runtime (dijalankan sebagai script sebelum BOOTSTRAP).
 //!
-//! Cakupan (ADR-0027/0030): `TextEncoder`/`TextDecoder` (UTF-8, mode stream), `URL`/
+//! Cakupan (ADR-0027/0030/0031): `TextEncoder`/`TextDecoder` (UTF-8, mode stream), `URL`/
 //! `URLSearchParams` (subset absolut+relatif), `Headers`/`Request`/`Response` (body streaming
 //! via `ReadableStream`), `ReadableStream` minimal (termasuk `type: "bytes"` untuk scheduler
-//! React), `fetch` (http:// saja, via `op_fetch`), `setTimeout`/`clearTimeout` (`op_sleep`),
-//! dan `MessageChannel`.
+//! React), `fetch` (http:// saja, via `op_fetch`), `crypto.getRandomValues`/`randomUUID`
+//! (via `op_random_bytes`), `setTimeout`/`clearTimeout` (`op_sleep`), dan `MessageChannel`.
 //!
 //! Semua global dipasang dengan pola `?? ` (tidak menimpa bila sudah ada) supaya dapat diganti
 //! implementasi native/deno_web di masa depan.
@@ -684,6 +684,37 @@ globalThis.fetch = globalThis.fetch ?? (async function fetch(input, init) {
   response.type = "basic";
   return response;
 });
+
+// `crypto` minimal (ADR-0031): `getRandomValues`/`randomUUID` dari OS via `op_random_bytes`.
+// `crypto.subtle` sengaja tidak disediakan (belum didukung — jangan diklaim).
+(() => {
+  if (globalThis.crypto !== undefined) {
+    return;
+  }
+  const shim = {
+    getRandomValues(array) {
+      if (!ArrayBuffer.isView(array)) {
+        throw new TypeError("getRandomValues membutuhkan typed array");
+      }
+      const bytes = new Uint8Array(array.buffer, array.byteOffset, array.byteLength);
+      const filled = Deno.core.ops.op_random_bytes(bytes.length);
+      bytes.set(filled);
+      return array;
+    },
+    randomUUID() {
+      const bytes = shim.getRandomValues(new Uint8Array(16));
+      bytes[6] = (bytes[6] & 0x0f) | 0x40;
+      bytes[8] = (bytes[8] & 0x3f) | 0x80;
+      const hex = [];
+      for (const byte of bytes) {
+        hex.push(byte.toString(16).padStart(2, "0"));
+      }
+      const value = hex.join("");
+      return `${value.slice(0, 8)}-${value.slice(8, 12)}-${value.slice(12, 16)}-${value.slice(16, 20)}-${value.slice(20)}`;
+    },
+  };
+  globalThis.crypto = shim;
+})();
 
 (() => {
   const timers = new Map();

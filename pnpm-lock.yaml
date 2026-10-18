@@ -184,6 +184,9 @@ importers:
       '@ramonyx/schema':
         specifier: workspace:*
         version: link:packages/schema
+      '@ramonyx/security':
+        specifier: workspace:*
+        version: link:packages/security
       '@ramonyx/server':
         specifier: workspace:*
         version: link:packages/server

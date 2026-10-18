@@ -31,3 +31,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0021](0021-module-loader.md) | Module loader ESM + transpile TypeScript (deno_ast) | Accepted |
 | [0022](0022-runtime-io.md) | Runtime I/O (R2a): timer, fs, env, HTTP server pull-model | Accepted |
 | [0023](0023-permission-model.md) | Permission model (R3a): secure by default, flag `--allow-*` | Accepted |
+| [0024](0024-http-cancellation.md) | Runtime HTTP R2b: cancellation klien + keep-alive | Accepted |

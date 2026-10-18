@@ -58,9 +58,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   paket TS dan sebaliknya; toolchain dipin `1.99.0` via `rust-toolchain.toml` (rustup mengunduh
   otomatis). `js-engine` mendukung **ESM + TypeScript** (import relatif + fallback ekstensi), API
   `ramonyx.*` (sleep/fs/env/**HTTP server pull-model**, bind 127.0.0.1) dengan **permission model
-  deny-all** (`--allow-read/write/net/env`) — tetapi **belum**: resolusi paket `node_modules`/bare
-  specifier, WHATWG fetch, streaming, cancellation, worker/kuota (R3 sisa, ADR-0023) — jangan
-  diklaim. Build pertama V8/deno_core+deno_ast+hyper ±3 menit; biarkan `target/` cache.
+  deny-all** (`--allow-read/write/net/env`) serta **cancellation** (`request.signal` saat klien
+  putus) dan **keep-alive** — tetapi **belum**: resolusi paket `node_modules`/bare specifier,
+  WHATWG fetch, **streaming body**, worker/kuota (R3 sisa) — jangan diklaim. Build pertama
+  V8/deno_core+deno_ast+hyper ±3 menit; biarkan `target/` cache.
 - **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
   `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
@@ -98,10 +99,10 @@ Phase 0–3 **selesai** (2026-10-18); keputusan pemilik juga selesai — lisensi
 **Phase 4 (runtime alpha) berjalan**: R0 selesai (workspace Cargo, CLI `ramonyx-runtime`, config,
 structured logging — ADR-0019), **R1**: V8 via `deno_core` (ADR-0020) + module loader ESM &
 transpile TypeScript via `deno_ast` (ADR-0021), **R2a**: I/O dasar + HTTP server pull-model
-(`ramonyx.sleep/fs/env/serve` — ADR-0022), dan **R3a**: permission model deny-all dengan flag
-`--allow-*` (ADR-0023) — semuanya diverifikasi test + smoke; sisa: node_modules, streaming,
-cancellation, worker/kuota. Ringkas Phase 3: limits body/timeout/concurrency + rate limit per
+(ADR-0022), **R2b**: cancellation klien + keep-alive (ADR-0024), dan **R3a**: permission model
+deny-all dengan flag `--allow-*` (ADR-0023) — semuanya diverifikasi test + smoke; sisa: streaming,
+node_modules, worker/kuota. Ringkas Phase 3: limits body/timeout/concurrency + rate limit per
 klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard + output limit
 (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`, abuse/soak
 `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 36 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 38 test Rust hijau.

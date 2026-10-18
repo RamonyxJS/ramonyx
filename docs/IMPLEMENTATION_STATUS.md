@@ -1,0 +1,278 @@
+# Ramonyx — Implementation Status
+
+> Laporan audit berbasis bukti repository. **Bukan** roadmap kerja (roadmap per fase tetap di
+> `docs/roadmap/phase-0-1.md`; file ini dibuat terpisah karena diminta sebagai snapshot status
+> implementasi dan tidak menggantikan dokumen tersebut).
+
+## 1. Ringkasan Eksekutif
+
+- **Tanggal audit:** 2026-10-18.
+- **Repository/branch:** `main`, commit terakhir `bf1a72e` (working tree bersih sebelum & sesudah
+  audit; tidak ada perubahan pengguna yang tertimpa).
+- **Fase saat ini (berdasarkan bukti):** Phase 0–3 **selesai**; **exit criteria Phase 4 tercapai**
+  (ADR-0032); **Phase 5 berjalan dengan sebagian besar item selesai** (isolasi worker, kuota
+  resource, streaming request, pipeline rilis, isolasi proses plugin + supervisi + health-check).
+  Sisa Phase 5: publikasi npm sebenarnya dan sandbox OS.
+- **Status keseluruhan:** seluruh gate yang dijalankan dalam audit **hijau** — lint, typecheck,
+  128 tes Node, 5 e2e, fmt/clippy, 101 tes Rust, build produksi, dan verifikasi rilis
+  (instalasi tarball di proyek konsumen bersih). Tidak ada TODO/FIXME di source.
+- **Kesimpulan:** repository adalah monorepo pnpm + Cargo workspace berisi framework TypeScript
+  (11 paket `@ramonyx/*` + meta `ramonyx` — 12 total, versi 0.1.0) dan runtime Rust/V8
+  eksperimental.
+  Framework Node adalah baseline produksi; runtime menyatakan dirinya eksperimental dengan
+  batasan terdokumentasi per ADR. Yang menghambat "rilis publik" bukan kode melainkan
+  keputusan/kredensial pemilik (publikasi npm).
+
+## 2. Status Fitur
+
+| Area | Status | Bukti aktual | Gap / catatan |
+|---|---|---|---|
+| 1. Foundation & monorepo | DONE | `pnpm-workspace.yaml` (`packages/*`, `apps/*`), `package.json` (`packageManager pnpm@12.14.0`, `engines node>=24`), `tsconfig.base.json` (strict, `erasableSyntaxOnly`, `verbatimModuleSyntax`), `biome.json`, `LICENSE` MIT, `CHANGELOG.md` 0.1.0, versi seragam 0.1.0 (`Cargo.toml`, paket) | — |
+| 2. Framework core & public API | DONE | `packages/core/src/*` (`route`, `HttpError`, `resolveConfig`, `defineConfig`, tipe `FetchHandler`/`Middleware`), meta `packages/ramonyx`; test `packages/core/test/{route,config,errors}.test.ts` | Auth/authz bukan bagian paket core (lihat §6) |
+| 3. Router & request lifecycle | DONE | `packages/router/src/match.ts` (statis, param, **catch-all `[...name]`**, 405 `method-not-allowed`), pipeline `packages/server/src/handler.ts`; test `packages/router/test/match.test.ts`, `match.fuzz.test.ts`, `packages/server/test/pipeline.test.ts` | — |
+| 4. Middleware, context, error, cancellation | DONE | `handler.ts` (`next(request?)`, `strictValidation`), timeout 10 s → 503 + abort `request.signal` (ADR-0011), `HttpError` → status publik; test `pipeline.test.ts`, `tests/security/server-hardening.test.ts` | — |
+| 5. Runtime schema validation | DONE | `packages/schema/src/validate.ts` (Standard Schema v1 struktural), adapter (`adapters.test.ts` termasuk zod), fuzz `validate.fuzz.test.ts`; validasi input+output di server (`validateInput`/`validateOutput`) | — |
+| 6. Server/client boundary & build output | DONE | `packages/bundler/src/build.ts` (Vite → `dist/client/client.js`), codegen entry `packages/compiler/src/client-entry.ts`; audit menjalankan `pnpm build` → `apps/playground/dist/client` | Belum ada code splitting/chunk manual (default Vite) |
+| 7. SSR, streaming, hydration, client navigation | DONE (dengan catatan) | `packages/ssr/src/pages.ts` (loader → render → dokumen + payload `window.__RAMONYX__`), `packages/react/src/{renderer,client}.ts` (hydrate + soft navigation + payload segar setelah navigasi); e2e `ssr.spec.ts`, `navigation.spec.ts` (5/5 lulus audit) | **SSR React di Node memakai `renderToString` (sinkron)**; streaming React (`renderToReadableStream`) hanya diverifikasi di runtime Rust (ADR-0030), belum diintegrasikan ke `@ramonyx/ssr` |
+| 8. Compiler, bundler, route manifest, source maps | PARTIAL | `packages/compiler/src/{manifest,pages,client-entry}.ts` (file routing API+halaman, `pageFile`/`layoutFiles`), test `manifest/pages/client-entry` (5 file test) | **Source map produksi belum diaktifkan** (`buildClient` tanpa `build.sourcemap`); error stack runtime tetap dapat `sourceURL` |
+| 9. Security baseline & threat-model | DONE (dengan catatan) | `packages/security` (headers, CSP nonce, CSRF double-submit, rate limit, SSRF guard) + limit body/timeout/concurrency di server; `docs/security/{threat-model,asvs-mapping,dependency-policy}.md`; test `packages/security/test/*` (5 file), `tests/security/`, fuzz; `pnpm audit --audit-level high` exit 0 | 1 advisory **moderate dev-only** (`uuid <11.1.1` via `autocannon → hyperid`); pentest/escape plugin belum dinilai (lihat §6) |
+| 10. Testing, compatibility, regression | DONE | 128 tes Node (termasuk fuzz fast-check), 5 e2e Playwright, 101 tes Rust (termasuk **8 file integrasi** compat: framework, SSR, SSR streaming, security, playground subset, TLS fetch, isolasi proses plugin, CLI) | Belum ada performance-regression gate di CI (§7) |
+| 11. Benchmark, profiling, memory, regression | PARTIAL | Artefak: `benchmarks/results/phase1-baseline.json`, `phase2-web-vitals.json`, `phase3-abuse.json`, `runtime-startup.json`; harness `benchmarks/{http,security}`, `benchmarks/runtime-startup.sh`; timings+metrik op runtime (ADR-0037) | **Tidak dijalankan ulang dalam audit** (akan menimpa baseline ter-commit); threshold/regression gate belum ada di CI |
+| 12. Developer tooling, CLI, dev server, diagnostics | DONE | `tools/register.mjs` (loader esbuild, ADR-0006), `apps/playground/src/dev.ts` (Vite+HMR→SSR), CLI runtime `ramonyx-runtime` (R0+flag permission/kuota/profiling), `apps/create-app` (scaffolder + smoke), `apps/docs` (dogfood SSR+hydration), `--op-metrics` + log `engine.executed` | — |
+| 13. Runtime host & engine integration | DONE (eksperimental) | `runtime/crates/{cli,js-engine,runtime-core}` (deno_core/V8, ADR-0020), compile & 101 tes Rust lulus | Klaim produksi tidak dibuat; lihat batasan per ADR |
+| 14. Runtime module loading/fs/net/permission | DONE (subset terdokumentasi) | ESM+TS+`node_modules` v1, interop CommonJS, `web_shim`, builtin `node:net`/`node:dns/promises`, HTTP server pull-model (streaming request+respons), permission deny-all + revoke, kuota heap/CPU/RSS/timeout, worker isolate, proses plugin + supervisi + health-check (ADR-0021–0044) | Batasan eksplisit: tanpa HTTPS server/h2, CommonJS subset, tanpa worker fairness/quota CPU lintas proses, sandbox OS belum (ADR-0040/0043/0044) |
+| 15. Docs, examples, CI, release readiness | DONE (publikasi belum) | 44 ADR (`docs/adr/`), BLUEPRINT/PRD/architecture/api-contract/security docs, situs docs `pnpm docs`, CI `.github/workflows/ci.yml` (lint→typecheck→test→build→e2e→security+audit), release pipeline `.github/workflows/release.yml` + `pnpm release` + `pnpm release:verify` (lulus audit) | **Belum dipublikasikan ke npm** (butuh keputusan/kredensial); workflow rilis belum pernah dieksekusi di runner (tanpa remote) |
+
+## 3. Implementasi yang Sudah Terverifikasi
+
+Berikut fitur dengan bukti **eksekusi** (bukan hanya keberadaan kode). Semua dijalankan pada audit
+ini kecuali disebut lain.
+
+1. **Pipeline HTTP framework (Node)**: routing + validasi + middleware + limit.
+   Bukti: `pnpm test` → 128/128 lulus; test kunci `packages/server/test/pipeline.test.ts`,
+   `tests/security/server-hardening.test.ts`.
+2. **SSR + hydration + soft navigation** di browser sungguhan.
+   Bukti: `pnpm test:e2e` (Playwright, 5/5, 10.2 s) — `ssr.spec.ts` (counter interaktif),
+   `navigation.spec.ts` (sentinel bertahan + payload segar), `errors.spec.ts`, `vitals.spec.ts`.
+3. **Build produksi** (client bundle Vite).
+   Bukti: `pnpm build` exit 0 → `apps/playground/dist/client/client.js`.
+4. **Rilis terpasang di konsumen bersih (Node polos, tanpa loader)**.
+   Bukti: `pnpm release:verify` exit 0 — 12 tarball npm + binary runtime; smoke
+   `SMOKE OK halo,dunia paket 24.22.0`; `ramonyx-runtime 0.1.0` + eksekusi skrip.
+5. **Runtime Rust/V8**: 101 tes Rust lulus termasuk integrasi compatibility
+   (`compat_framework.rs`, `compat_ssr.rs`, `compat_stream_ssr.rs`, `compat_security.rs`,
+   `compat_playground.rs`, `fetch_tls.rs`, `plugin_process.rs`) — pipeline framework, SSR, SSR
+   streaming, security, playground subset, TLS fetch, isolasi+supervisi+health-check plugin.
+6. **Hardening server**: 413 (batas body, termasuk chunked & content-length bohong), 503
+   timeout/concurrency — diuji di `tests/security/server-hardening.test.ts`.
+7. **Scaffolder & situs docs**: `apps/create-app/test/create-app.test.ts` (struktur + **smoke
+   app** + **build klien + aset**), `apps/docs/test/docs.test.ts` (SSR payload, pencarian,
+   guard traversal, build klien).
+
+## 4. Pekerjaan Parsial dan Gap
+
+1. **Performance regression gate (benchmark)** — *kondisi:* artefak baseline ada
+   (`benchmarks/results/*.json`), harness ada, tetapi CI hanya mengunggah artefak tanpa
+   membandingkan threshold, dan audit ini tidak menjalankan bench karena skrip menulis ulang
+   baseline ter-commit. *Dampak:* regresi performa tidak terdeteksi otomatis. *Langkah:*
+   tambahkan mode bench "report-only" (tanpa menimpa baseline), bandingkan p50/p90 terhadap
+   baseline dengan toleransi, jadikan gate non-blocking dahulu.
+2. **Source map produksi** — *kondisi:* `buildClient` tidak mengaktifkan `build.sourcemap`.
+   *Dampak:* stack trace produksi menunjuk ke bundel terminifikasi (minify juga off saat ini).
+   *Langkah:* opsi `sourcemap: true` + unggah `.map` sebagai artefak rilis; verifikasi dengan
+   memicu error di browser produksi.
+3. **SSR streaming di framework Node** — *kondisi:* `@ramonyx/ssr` memakai `renderToString`;
+   streaming hanya ada di runtime (React `renderToReadableStream`) dan respons chunked runtime.
+   *Dampak:* TTFB HTML besar tidak optimal di Node. *Langkah:* jalur `renderToReadableStream` →
+   `Response` stream di `@ramonyx/ssr`, test parity konten dengan jalur sinkron.
+4. **Advisory dependency dev-only** — *kondisi:* `pnpm audit` melaporkan 1 moderate
+   (`uuid <11.1.1`) melalui `autocannon → hyperid` (tooling benchmark, bukan artefak rilis).
+   *Dampak:* tidak masuk paket terbit; tetap muncul di audit. *Langkah:* tunggu rilis autocannon
+   yang memakai uuid ≥11.1.1, atau pin/hapus jalur tersebut saat tooling diperbarui.
+5. **Plugin: health-check kooperatif** — *kondisi:* deteksi hang memerlukan
+   `ramonyx.heartbeat()` dan hanya dievaluasi saat induk menunggu (`receive`). *Dampak:* plugin
+   idle panjang dapat dianggap hang bila salah konfigurasi. *Langkah:* health-check otomatis
+   (liveness dari sisi runtime) atau dokumentasi pola heartbeat lebih menonjol di template.
+6. **Sandbox OS untuk plugin** — *kondisi:* isolasi proses ada (ADR-0040) tetapi tanpa
+   seccomp/namespace. *Dampak:* plugin tetap berbagi kernel/FS host. *Langkah:* profil sandbox
+   opsional (`--sandbox`) dengan uji positif/negatif di Linux.
+
+## 5. Hasil Verifikasi
+
+| Pemeriksaan | Command / metode | Hasil | Catatan |
+|---|---|---|---|
+| Lint | `pnpm lint` | **PASS** | 155 file diperiksa; tanpa perbaikan |
+| Typecheck | `pnpm typecheck` | **PASS** | exit 0 |
+| Tes Node (unit+integration+fuzz+security) | `pnpm test` | **PASS** | 128 tes, 0 gagal |
+| Audit dependency | `pnpm audit --audit-level high` | **PASS** | exit 0; 1 moderate dev-only (`uuid` via `autocannon→hyperid`) |
+| Rust format | `cargo fmt --all --check` | **PASS** | exit 0 |
+| Rust lint | `cargo clippy --workspace --all-targets -- -D warnings` | **PASS** | exit 0 |
+| Tes Rust | `cargo test --workspace` | **PASS** | 101 lulus, 0 gagal |
+| Build produksi | `pnpm build` | **PASS** | `apps/playground/dist/client/client.js` |
+| Browser e2e | `PLAYWRIGHT_EXECUTABLE_PATH=<cache ms-playwright chromium-1248> pnpm test:e2e` | **PASS** | 5/5 (10.2 s) |
+| Verifikasi rilis | `pnpm release:verify` | **PASS** | tarball npm + binary runtime terpasang & jalan di proyek konsumen |
+| Benchmark HTTP | `pnpm bench` | **NOT RUN** | Skrip menulis ulang `benchmarks/results/phase1-baseline.json` (artefak ter-commit) — tidak dijalankan agar tidak mengubah artefak saat audit |
+| Benchmark keamanan/soak | `pnpm bench:security` | **NOT RUN** | Harness abuse+soak (menulis artefak & menjalankan soak) — di luar cakupan audit ini |
+| Baseline startup runtime | `benchmarks/runtime-startup.sh` | **NOT RUN** | Sama: menulis ulang `benchmarks/results/runtime-startup.json` |
+| Publikasi npm | `pnpm publish` / workflow rilis | **NOT RUN** | Butuh keputusan/kredensial pemilik; tidak dijalankan tanpa otorisasi |
+
+## 6. Keamanan
+
+**Implemented + tested** (bukti: test yang lulus pada audit `pnpm test`/`cargo test`):
+
+- **Input validation & limits**: limit body 1 MiB → 413 (termasuk kasus chunked dan
+  `content-length` bohong), timeout 10 s → 503 + abort `request.signal`, concurrency 100 → 503 +
+  `Retry-After` (`tests/security/server-hardening.test.ts`); validasi schema input **dan** output
+  (strictValidation) di `packages/server`.
+- **Rate limiting** per klien dengan header alamat dari adapter (anti-spoof) + `trustProxy`
+  opt-in (`packages/security/test/rate-limit.test.ts`).
+- **CSRF** double-submit + perbandingan waktu-konstan (`csrf.test.ts`); **CSP nonce** per request,
+  terintegrasi payload hydration (`csp.test.ts`; e2e memeriksa nonce).
+- **SSRF guard** `guardedFetch` (tolak privat/loopback/link-local, validasi ulang per hop,
+  `allowHosts` eksplisit) — `ssrf.test.ts` (5 skenario), dan di runtime Rust
+  (`compat_security.rs`).
+- **Path traversal**: guard pada aset `/assets/*` (template & situs docs diuji menolak `..%2F`);
+  guard slug docs (`readDoc` menolak keluar dari `docs/`).
+- **Dependency hygiene**: kebijakan `minimumReleaseAge: 1440` + Dependabot +
+  `pnpm audit` di CI; `docs/security/dependency-policy.md`.
+- **Permission boundary (runtime)**: default **deny-all**, flag `--allow-*`, pencabutan runtime
+  (`ramonyx.permissions.revoke`, hanya mengurangi), permission plugin/worker = irisan induk
+  (anti-eskalasi) — diuji di engine & `plugin_process.rs`.
+- **Error handling**: `HttpError` memisahkan pesan publik (4xx) dari detail internal (5xx);
+  log terstruktur tanpa menulis isi sensitif (fields eksplisit).
+
+**Not assessed / belum diklaim:**
+
+- Penetration testing independen dan audit pihak ketiga — belum ada.
+- Escape sandbox plugin (seccomp/namespace belum ada) — ADR-0040 menyatakan ini isolasi
+  crash/kapabilitas, **bukan** sandbox adversarial.
+- Kepatuhan penuh OWASP ASVS — pemetaan 12 kriteria teruji ada di
+  `docs/security/asvs-mapping.md`, bukan sertifikasi.
+- Autentikasi/otorisasi umum: **tidak ditemukan modul auth** di paket framework (di luar scope
+  fase yang diaudit; aplikasi memutuskan sendiri).
+- 1 advisory moderate dev-only (`uuid`) — lihat §4 butir 4.
+
+## 7. Benchmark dan Performa
+
+**Artefak yang ada (ter-commit, mesin dev)** — angka berikut berasal dari artefak, **tidak**
+diukur ulang dalam audit ini:
+
+| Artefak | Tanggal | Lingkup | Catatan |
+|---|---|---|---|
+| `benchmarks/results/phase1-baseline.json` | 2026-10-17 | HTTP baseline Phase 1 (autocannon) | env: linux x64, Node v24.22.0, 8 vCPU (AMD Ryzen 5 7520U) |
+| `benchmarks/results/phase2-web-vitals.json` | 2026-10-18 | Web Vitals beranda (Playwright) | "baseline artefak — bukan klaim; threshold menyusul" |
+| `benchmarks/results/phase3-abuse.json` | 2026-10-18 | Abuse-case + soak ringkas | env sama; "bukan klaim" |
+| `benchmarks/results/runtime-startup.json` | 2026-10-18 | Startup runtime (7 run, median) | `mini` ~42 ms wall; `four-workers` ~84 ms; detail breakdown `v8Ms/bootstrapMs/webShimMs` (ADR-0037) |
+
+- **Kesimpulan performa:** belum dapat dijadikan klaim publik; protokol ada
+  (`docs/benchmark-protocol.md`) dan artefak reproducible (`pnpm bench`,
+  `benchmarks/runtime-startup.sh`, `pnpm bench:security`), tetapi **threshold/regression gate
+  belum ditetapkan** dan audit ini tidak menjalankan ulang benchmark (alasan di §5).
+- **Profiling runtime** tersedia: `engine.executed` (timings per fase) + `--op-metrics`
+  (ADR-0037).
+
+## 8. Keputusan Arsitektur yang Sudah Ada
+
+**Terdokumentasi (44 ADR di `docs/adr/`, indeks `docs/adr/README.md`)** — yang paling menentukan:
+
+- ADR-0001 runtime dual-track (Node baseline, Rust/V8 eksperimental); ADR-0002 tooling
+  (TS strict, ESM, source-first, pnpm); ADR-0003 UI adapter pertama React; ADR-0004 schema
+  struktural; ADR-0005/0007/0008/0009 bundler Vite + hydration payload + soft navigation + dev
+  server; ADR-0006 loader esbuild; ADR-0010 e2e browser.
+- ADR-0011–0017 hardening (limit, concurrency, security package, CSP nonce, SSRF+output limit,
+  dependency policy, rate limit); ADR-0018 keputusan pemilik (MIT, scope `@ramonyx/*`, browser
+  matrix, rekonsiliasi PRD).
+- ADR-0019–0044 runtime (CLI, V8, loader, I/O+HTTP, permission deny-all, cancellation,
+  streaming, `node_modules`, `web_shim`, compatibility suite, CJS interop, fetch/streams,
+  builtin+crypto+security, playground subset, resource limits, worker, streaming request,
+  TLS+redirect, profiling, CPU/RSS quota, release pipeline, plugin proses + supervisi +
+  health-check, create-app, docs app).
+
+**Belum ditetapkan (usulan, tanpa mengubah arsitektur):**
+
+- **ADR: Publikasi npm & versioning rilis** — mekanisme publish (manual vs CI ber-token),
+  kebijakan semver antar-paket (versi tunggal vs independent), dan siapa pemegang kredensial.
+- **ADR: Strategi performance regression** — threshold per skenario, mode report-only, dan
+  kebijakan menaikkan baseline.
+- **ADR: Sandbox plugin** — apakah seccomp/namespace menjadi default atau opt-in, dan batasan
+  kompatibilitasnya.
+
+## 9. Risiko dan Blocker
+
+| Risiko / blocker | Dampak | Bukti | Mitigasi atau keputusan yang diperlukan |
+|---|---|---|---|
+| Publikasi npm belum dilakukan | Paket belum dapat dipasang dari registry; `pnpm create ramonyx-app` belum bisa | §5 (NOT RUN), ADR-0039 | Keputusan pemilik + kredensial; jalankan `release.yml` sekali pada tag |
+| Tanpa performance-regression gate | Regresi performa lolos CI | artefak ada, CI hanya upload (`ci.yml`) | Mode report-only + threshold (usulan ADR §8) |
+| Advisory moderate dev-only (`uuid`) | Noise audit; risiko tooling dev | `pnpm audit` | Ikuti rilis autocannon/hyperid yang patched |
+| Source map produksi tidak ada | Debug produksi sulit | `packages/bundler/src/build.ts` | Aktifkan `sourcemap` + unggah artefak |
+| Health-check plugin kooperatif | Plugin idle bisa dianggap hang | ADR-0044 §Batasan | Dokumentasi pola + health-check otomatis |
+| Sandbox OS belum ada untuk plugin | Plugin tidak terkurung kernel | ADR-0040 §Batasan | ADR sandbox + implementasi opt-in |
+| Workflow rilis belum pernah dieksekusi | Risiko failure saat rilis pertama | `.github/workflows/release.yml` | Dry-run pertama pada tag `v0.1.0` sebelum publikasi luas |
+
+Tidak ada blocker teknis (P0): seluruh build/test/gate hijau pada commit audit.
+
+## 10. Prioritas Berikutnya
+
+**P0 — Blocker:** tidak ada.
+
+**P1 — Core (menuntaskan rilis):**
+
+1. **Publikasi npm 0.1.0 + eksekusi `release.yml` sekali.**
+   *Hasil diharapkan:* 12 paket (11 `@ramonyx/*` + meta) terpasang dari registry; release GitHub berisi tarball +
+   `SHA256SUMS` + manifest. *Acceptance:* `pnpm dlx create-ramonyx-app`/install dari registry di
+   mesin bersih menghasilkan app yang `pnpm build && pnpm start` jalan; `ramonyx-runtime version`
+   = 0.1.0 di platform yang didukung.
+2. **Perf regression gate (report-only dahulu).**
+   *Hasil:* CI menjalankan bench tanpa menimpa baseline dan membandingkan p50/p90.
+   *Acceptance:* PR yang memperlambat skenario baseline >X% memunculkan peringatan; baseline
+   hanya berubah lewat perintah eksplisit.
+
+**P2 — Hardening:**
+
+3. **Source map produksi + unggah artefak rilis.**
+   *Acceptance:* error runtime produksi menunjuk sumber TS; `.map` ada di release.
+4. **Resolusi advisory `uuid` dev-only.**
+   *Acceptance:* `pnpm audit --audit-level high` tanpa moderate pada chain tooling.
+5. **SSR streaming Node (`renderToReadableStream` → Response stream).**
+   *Acceptance:* parity konten dengan jalur sinkron + e2e baru.
+
+**P3 — Future (runtime eksperimental):**
+
+6. Sandbox OS plugin (opt-in) — seccomp/namespace + uji positif/negatif.
+7. Health-check otomatis plugin (liveness sisi runtime) dan backoff eksponensial.
+8. Baseline benchmark publik di hardware/CI standar (bila ingin klaim performa §10 BLUEPRINT).
+
+## 11. Definition of Done untuk Fase Berikutnya (Rilis 0.1.0)
+
+- [ ] Versi & changelog siap (0.1.0 — sudah ada; pastikan tag `v0.1.0` konsisten).
+- [ ] `pnpm release` menghasilkan 13 artefak (12 npm + 1 runtime) + `SHA256SUMS` + manifest.
+- [ ] `pnpm release:verify` lulus di mesin bersih (Node polos, tanpa loader).
+- [ ] Workflow `.github/workflows/release.yml` dieksekusi sekali pada tag dan sukses
+      (termasuk GitHub Release).
+- [ ] Publikasi npm sukses (bila diotorisasi) **atau** keputusan tertulis untuk menunda
+      publikasi (dengan alasan) — tanpa klaim "terbit" sebelum benar-benar terbit.
+- [ ] Gate CI hijau pada commit tag: lint, typecheck, 128 tes Node, 5 e2e, 101 tes Rust,
+      `pnpm audit --audit-level high`.
+- [ ] Tidak ada klaim benchmark/keamanan baru tanpa data reproducible (BLUEPRINT §10).
+
+## 12. Catatan Audit dan Keterbatasan
+
+- **Dokumen progres lama:** `docs/roadmap/phase-0-1.md` sudah ada (checklist per fase, diperbarui
+  selama pengembangan). Audit ini **tidak menghapus/menggantikannya**; `docs/IMPLEMENTATION_STATUS.md`
+  adalah snapshot berbasis bukti, dan keduanya saling merujuk.
+- **Benchmark tidak dijalankan ulang** karena ketiga skrip (`pnpm bench`, `pnpm bench:security`,
+  `benchmarks/runtime-startup.sh`) menulis ulang artefak baseline yang ter-commit; menjalankannya
+  saat audit akan mengubah file repository. Angka di §7 dikutip dari artefak yang ada, bukan
+  pengukuran baru.
+- **Soak panjang** (`SOAK_SECONDS=300`) dan abuse-case lengkap tidak dijalankan dalam audit
+  (durasi & penulisan artefak).
+- **e2e** memakai Chromium dari cache Playwright lokal (`~/.cache/ms-playwright/chromium-1248`),
+  bukan `playwright install` baru.
+- **Tanpa remote/CI runner:** workflow rilis tidak dapat dieksekusi di sini; verifikasi rilis
+  dilakukan lokal lewat script yang sama.
+- **Platform audit:** linux x64, Node v24.22.0, pnpm 12.14.0, Rust 1.99.0 (toolchain dipin).
+  Hasil di platform lain belum diverifikasi (kuota CPU/RSS runtime memang Linux-only).
+- **Auth/authz, i18n, database/ORM, dan plugin sandbox OS** tidak dinilai (tidak ada
+  implementasinya di repository pada commit ini).
+- Tidak ada secret/kredensial yang dibaca atau ditampilkan; variabel yang relevan hanya nama
+  (`NPM_TOKEN` untuk publikasi).

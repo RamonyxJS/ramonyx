@@ -18,3 +18,13 @@ const server = await host.serve(app, {
 });
 
 console.log(`playground berjalan di ${server.url}`);
+
+// Instrumentasi soak (dipakai `pnpm bench:security`): breakdown memori tiap detik ke stdout.
+if (process.env.RAMONYX_MEMORY_LOG === "1") {
+  setInterval(() => {
+    const usage = process.memoryUsage();
+    console.log(
+      `[mem] rss=${Math.round(usage.rss / 1048576)} heapUsed=${Math.round(usage.heapUsed / 1048576)} heapTotal=${Math.round(usage.heapTotal / 1048576)} external=${Math.round(usage.external / 1048576)} arrayBuffers=${Math.round(usage.arrayBuffers / 1048576)}`,
+    );
+  }, 1000).unref();
+}

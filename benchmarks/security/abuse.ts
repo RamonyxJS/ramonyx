@@ -25,6 +25,7 @@ interface Scenario {
 
 const DURATION_SECONDS = 2;
 const SCENARIO_CONNECTIONS = 5;
+const SOAK_SECONDS = Number(process.env.SOAK_SECONDS ?? "20");
 /** > default 1 MiB (ADR-0011). */
 const BIG_BODY = "x".repeat(1_200_000);
 
@@ -45,8 +46,41 @@ const registerPath = fileURLToPath(new URL("../../tools/register.mjs", import.me
 const serverProcess = spawn(
   process.execPath,
   ["--import", registerPath, "apps/playground/src/main.ts"],
-  { cwd: repoRoot, stdio: ["ignore", "ignore", "pipe"] },
+  {
+    cwd: repoRoot,
+    stdio: ["ignore", "pipe", "pipe"],
+    env: { ...process.env, RAMONYX_MEMORY_LOG: "1" },
+  },
 );
+
+// Anak menulis baris `[mem] ...` tiap detik → dipakai untuk breakdown heap/external.
+const memorySamples: {
+  rss: number;
+  heapUsed: number;
+  heapTotal: number;
+  external: number;
+  arrayBuffers: number;
+}[] = [];
+serverProcess.stdout?.on("data", (chunk: Buffer) => {
+  for (const line of chunk.toString().split("\n")) {
+    const match =
+      /^\[mem\] rss=(\d+) heapUsed=(\d+) heapTotal=(\d+) external=(\d+) arrayBuffers=(\d+)/.exec(
+        line.trim(),
+      );
+    if (match !== null) {
+      memorySamples.push({
+        rss: Number(match[1]),
+        heapUsed: Number(match[2]),
+        heapTotal: Number(match[3]),
+        external: Number(match[4]),
+        arrayBuffers: Number(match[5]),
+      });
+    }
+  }
+});
+serverProcess.stderr?.on("data", () => {
+  // drain agar tidak memblokir pipe anak; detail error sudah dicatat log server
+});
 
 const base = "http://localhost:3000";
 {
@@ -192,7 +226,7 @@ const sampler = setInterval(() => {
 const soakResult = await autocannon({
   url: `${base}/api/hello`,
   connections: 50,
-  duration: 20,
+  duration: SOAK_SECONDS,
   pipelining: 1,
 });
 clearInterval(sampler);
@@ -216,6 +250,7 @@ const payload = {
     platform: process.platform,
     arch: process.arch,
     node: process.version,
+    nodeOptions: process.env.NODE_OPTIONS ?? null,
     cpus: cpus().length,
     cpuModel: cpus()[0]?.model ?? "unknown",
   },
@@ -224,7 +259,7 @@ const payload = {
   results,
   soak: {
     connections: 50,
-    loadSeconds: 20,
+    loadSeconds: SOAK_SECONDS,
     drainSeconds: 3,
     measurement: "RSS proses server (anak) via /proc/<pid>/status — bukan proses klien",
     requestsPerSecond: soakResult.requests.average,
@@ -238,6 +273,7 @@ const payload = {
       max: Math.max(...rssSamples),
       delta: rssLast - rssFirst,
     },
+    breakdown: memorySamples,
   },
 };
 

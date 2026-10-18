@@ -125,11 +125,20 @@ async function renderPage(
             log,
           });
 
+    const configuredStatus = page.page.metadata?.status;
+    const status =
+      typeof configuredStatus === "number" &&
+      Number.isInteger(configuredStatus) &&
+      configuredStatus >= 100 &&
+      configuredStatus <= 599
+        ? configuredStatus
+        : 200;
+
     const body = await renderer.render(buildPageTree(page, data, params));
     const document = documentRenderer({
       title: page.page.metadata?.title ?? "",
       body,
-      status: 200,
+      status,
       scripts: hydrationScripts(
         client,
         { path: page.path, params, data },
@@ -153,7 +162,7 @@ async function renderPage(
       );
     }
 
-    return htmlResponse(document, 200);
+    return htmlResponse(document, status);
   } catch (error) {
     const publicError = toPublicError(error);
     if (!(error instanceof HttpError)) {

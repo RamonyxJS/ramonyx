@@ -11,3 +11,10 @@ test("halaman error dari loader: 404 dan 400", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("400");
   await expect(page.getByText("ID pengguna tidak valid")).toBeVisible();
 });
+
+test("catch-all: path tak dikenal → 404 HTML dengan halaman kustom", async ({ page }) => {
+  const response = await page.goto("/halaman-hilang/bertingkat");
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("404");
+  await expect(page.getByText(/Halaman tidak ditemukan/)).toBeVisible();
+});

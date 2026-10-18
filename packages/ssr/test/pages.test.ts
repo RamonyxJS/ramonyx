@@ -256,6 +256,32 @@ test("tanpa client option: tidak ada payload/script hydration", async () => {
   assert.ok(!html.includes('type="module"'));
 });
 
+test("metadata.status menetapkan status respons (halaman 404 kustom)", async () => {
+  const page = basePage("/[...notFound]", {
+    default: Page,
+    metadata: { title: "Tidak ditemukan", status: 404 },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+
+  const response = await handler(new Request("http://test.local/apa/saja"));
+  assert.equal(response.status, 404);
+  assert.match(await response.text(), /<title>Tidak ditemukan<\/title>/);
+
+  const root = createHandler({
+    routes: createPageRoutes({
+      pages: [basePage("/", { default: Page, metadata: { status: 999 } })],
+      renderer: fakeRenderer(),
+    }),
+  });
+  assert.equal(
+    (await root(new Request("http://test.local/"))).status,
+    200,
+    "status tidak valid → 200",
+  );
+});
+
 test("output limit: dokumen melebihi batas → 500 + log", async () => {
   const { logger, lines } = makingLogger();
   const page = basePage("/", {

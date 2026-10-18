@@ -2,6 +2,8 @@ import type { EnvReader, Logger } from "./types.ts";
 
 export interface PageMetadata {
   readonly title?: string;
+  /** Status HTTP respons halaman (default 200); mis. `404` untuk halaman not-found catch-all. */
+  readonly status?: number;
 }
 
 /** Konteks loader halaman (halaman hanya GET; tidak ada body). */

@@ -98,7 +98,13 @@ test("playground halaman SSR (layout, loader, error boundary)", async () => {
     assert.equal(invalid.status, 400);
     assert.ok((await invalid.text()).includes("ID pengguna tidak valid"));
 
-    assert.equal(lines.filter((line) => line.message === "request").length, 5);
+    const unknownPage = await server.fetch("/halaman-hilang/bertingkat");
+    assert.equal(unknownPage.status, 404);
+    const unknownHtml = (await unknownPage.text()).replaceAll("<!-- -->", "");
+    assert.ok(unknownHtml.includes("Halaman tidak ditemukan: /halaman-hilang/bertingkat"));
+    assert.ok(unknownHtml.includes("<title>404 — Ramonyx Playground</title>"));
+
+    assert.equal(lines.filter((line) => line.message === "request").length, 6);
   } finally {
     await server.close();
   }

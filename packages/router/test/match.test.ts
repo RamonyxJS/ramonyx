@@ -84,3 +84,46 @@ test("405 dengan daftar Allow terurut", () => {
   const result = matchRoute(table, "DELETE", "/api/hello");
   assert.deepEqual(result, { kind: "method-not-allowed", allow: ["GET", "POST", "PUT"] });
 });
+
+test("catch-all [...name]: menyerap sisa segmen (minimal satu)", () => {
+  const table = createRouteTable([entry("GET", "/[...notFound]")]);
+
+  const match = matchRoute(table, "GET", "/a/b/c");
+  assert.equal(match.kind, "match");
+  if (match.kind === "match") {
+    assert.deepEqual(match.params, { notFound: "a/b/c" });
+  }
+
+  assert.deepEqual(matchRoute(table, "GET", "/"), { kind: "not-found" });
+});
+
+test("catch-all kalah dari statis/parameter; 405 ikut; decoding per segmen", () => {
+  const table = createRouteTable([
+    entry("GET", "/[...notFound]"),
+    entry("GET", "/api/hello"),
+    entry("GET", "/users/[id]"),
+    entry("POST", "/internal/[...sisa]"),
+  ]);
+
+  const hello = matchRoute(table, "GET", "/api/hello");
+  assert.equal(hello.kind, "match");
+  if (hello.kind === "match") assert.equal(hello.entry.path, "/api/hello");
+
+  const user = matchRoute(table, "GET", "/users/42");
+  assert.equal(user.kind, "match");
+  if (user.kind === "match") assert.equal(user.entry.path, "/users/[id]");
+
+  const fallback = matchRoute(table, "GET", "/apa/saja/disini");
+  assert.equal(fallback.kind, "match");
+  if (fallback.kind === "match") assert.equal(fallback.entry.path, "/[...notFound]");
+
+  const internalOnly = createRouteTable([entry("POST", "/internal/[...sisa]")]);
+  assert.deepEqual(matchRoute(internalOnly, "GET", "/internal/x"), {
+    kind: "method-not-allowed",
+    allow: ["POST"],
+  });
+
+  const decoded = matchRoute(table, "GET", "/hal%20o/%2Fz");
+  assert.equal(decoded.kind, "match");
+  if (decoded.kind === "match") assert.deepEqual(decoded.params, { notFound: "hal o//z" });
+});

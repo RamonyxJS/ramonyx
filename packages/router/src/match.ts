@@ -15,6 +15,9 @@ interface CompiledEntry {
   readonly method: string;
 }
 
+/** Segmen pola catch-all `[...name]` — hanya valid di posisi terakhir. */
+const CATCH_ALL = /^\[\.\.\.([A-Za-z0-9_]+)\]$/;
+
 export interface RouteTable {
   readonly entries: readonly RouteEntry[];
   readonly compiled: readonly CompiledEntry[];
@@ -57,7 +60,16 @@ export function matchRoute(table: RouteTable, method: string, pathname: string):
   let best: { entry: RouteEntry; params: Record<string, string>; score: number } | undefined;
 
   for (const candidate of table.compiled) {
-    if (candidate.segments.length !== segments.length) {
+    const lastPattern = candidate.segments.at(-1);
+    const catchAll = lastPattern === undefined ? null : CATCH_ALL.exec(lastPattern);
+    const fixedLength = candidate.segments.length - (catchAll === null ? 0 : 1);
+
+    // Tanpa catch-all: panjang harus sama. Dengan catch-all `[...name]`: minimal 1 segmen sisa.
+    if (
+      catchAll === null
+        ? candidate.segments.length !== segments.length
+        : segments.length < fixedLength + 1
+    ) {
       continue;
     }
 
@@ -65,7 +77,7 @@ export function matchRoute(table: RouteTable, method: string, pathname: string):
     let score = 0;
     let matched = true;
 
-    for (let index = 0; index < candidate.segments.length; index += 1) {
+    for (let index = 0; index < fixedLength; index += 1) {
       const pattern = candidate.segments[index];
       const value = segments[index];
       if (pattern === undefined || value === undefined) {
@@ -81,6 +93,11 @@ export function matchRoute(table: RouteTable, method: string, pathname: string):
         matched = false;
         break;
       }
+    }
+
+    if (matched && catchAll?.[1] !== undefined) {
+      // Catch-all menambah skor 0 → selalu kalah dari pola statis/parameter yang cocok.
+      params[catchAll[1]] = segments.slice(fixedLength).map(safeDecode).join("/");
     }
 
     if (!matched) {

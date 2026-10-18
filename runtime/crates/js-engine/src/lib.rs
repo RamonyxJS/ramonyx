@@ -33,6 +33,7 @@ mod cjs;
 mod http;
 mod http_client;
 mod metrics;
+mod plugin;
 mod resolve;
 mod web_shim;
 mod worker;
@@ -148,16 +149,36 @@ globalThis.ramonyx = {
       },
     };
   },
-  // Sisi worker: bicara dengan induk.
+  // Sisi worker/plugin: bicara dengan induk (kanal worker atau stdio `--plugin`).
   parent: {
     send: async (value) => {
-      await Deno.core.ops.op_worker_self_send(JSON.stringify(value));
+      await Deno.core.ops.op_parent_send(JSON.stringify(value));
     },
     receive: async () => {
-      const hasil = await Deno.core.ops.op_worker_self_receive();
+      const hasil = await Deno.core.ops.op_parent_receive();
       return hasil.text === null ? null : JSON.parse(hasil.text);
     },
   },
+  // Plugin: proses terpisah (isolasi level OS — crash plugin tidak menjatuhkan induk).
+  spawn: async (entry, options) => {
+    const id = await Deno.core.ops.op_plugin_spawn(String(entry), options ?? {});
+    return {
+      id,
+      send: async (value) => {
+        await Deno.core.ops.op_plugin_send(id, JSON.stringify(value));
+      },
+      receive: async () => {
+        const hasil = await Deno.core.ops.op_plugin_receive(id);
+        return hasil.text === null ? null : JSON.parse(hasil.text);
+      },
+      kill: async () => {
+        const hasil = await Deno.core.ops.op_plugin_kill(id);
+        return hasil.text === null ? null : Number(hasil.text);
+      },
+    };
+  },
+  // Keluar dari proses ini (dipakai plugin untuk menyelesaikan diri).
+  exit: (code) => Deno.core.ops.op_process_exit(Math.max(0, Math.trunc(Number(code) || 0))),
   serve: (port, handler, options) => {
     // Batas body server (default 1 MiB, selaras ADR-0011): content-length lebih besar →
     // 413 dini; chunked yang melebihi batas → error saat dibaca (ADR-0035).
@@ -385,13 +406,20 @@ extension!(
         worker::op_worker_send,
         worker::op_worker_receive,
         worker::op_worker_terminate,
-        worker::op_worker_self_send,
-        worker::op_worker_self_receive,
+        plugin::op_plugin_spawn,
+        plugin::op_plugin_send,
+        plugin::op_plugin_receive,
+        plugin::op_plugin_kill,
+        plugin::op_process_exit,
+        plugin::op_parent_send,
+        plugin::op_parent_receive,
     ],
     state = |state: &mut OpState| {
         state.put(http::HttpState::default());
         state.put(worker::WorkerRegistry::default());
         state.put(worker::WorkerSelfChannel::default());
+        state.put(plugin::PluginRegistry::default());
+        state.put(plugin::ProcessBridge::default());
     },
 );
 
@@ -780,6 +808,9 @@ pub struct EngineOptions {
     /// Kuota RSS **proses** (MiB, Linux): menutup gap memori eksternal V8 (ArrayBuffer)
     /// yang tidak dihitung kuota heap (ADR-0038).
     pub max_rss_mb: Option<usize>,
+    /// Aktifkan jembatan stdio `ramonyx.parent` (mode `--plugin`; ADR-0040). Nonaktif =
+    /// stdin host tidak pernah dibaca.
+    pub ipc_stdio: bool,
 }
 
 impl Engine {
@@ -881,6 +912,9 @@ impl Engine {
                 max_rss_mb: options.max_rss_mb,
             });
             op_state.put(fetch_state);
+            if options.ipc_stdio {
+                op_state.put(plugin::ProcessBridge::enabled());
+            }
         }
 
         Ok(Self {

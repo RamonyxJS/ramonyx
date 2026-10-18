@@ -34,6 +34,8 @@ RESOURCE LIMITS (opsional):
     --op-metrics          Log metrik op (jumlah + waktu) setelah eksekusi (profiling).
     --max-cpu-ms <ms>     Kuota CPU proses (Linux); menunggu I/O tidak memakan kuota.
     --max-rss-mb <MiB>    Kuota memori proses (Linux); menutup gap memori eksternal V8.
+    --plugin              Mode plugin: `ramonyx.parent` lewat stdin/stdout (JSON per baris),
+                          log ke stderr. Dipakai `ramonyx.spawn` (isolasi proses).
 ";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -57,6 +59,7 @@ enum Command {
         op_metrics: bool,
         max_cpu_ms: Option<u64>,
         max_rss_mb: Option<usize>,
+        plugin: bool,
     },
 }
 
@@ -75,6 +78,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
     let mut op_metrics = false;
     let mut max_cpu_ms: Option<u64> = None;
     let mut max_rss_mb: Option<usize> = None;
+    let mut plugin = false;
     let mut positional: Option<String> = None;
     let mut rest = iterator.peekable();
 
@@ -102,6 +106,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
                 max_heap_mb = Some(parsed);
             }
             "--op-metrics" => op_metrics = true,
+            "--plugin" => plugin = true,
             "--max-cpu-ms" => {
                 let value = rest.next().ok_or("--max-cpu-ms butuh nilai <ms>")?;
                 let parsed = value
@@ -176,6 +181,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             op_metrics,
             max_cpu_ms,
             max_rss_mb,
+            plugin,
         }),
         other => Err(format!("subcommand tidak dikenal: {other}")),
     }
@@ -216,6 +222,7 @@ fn run_command(command: Command) -> ExitCode {
             op_metrics,
             max_cpu_ms,
             max_rss_mb,
+            plugin,
         } => {
             let resolved = match load_config(config.as_deref()) {
                 Ok(resolved) => resolved,
@@ -226,7 +233,12 @@ fn run_command(command: Command) -> ExitCode {
             };
 
             let level = log_level.unwrap_or(resolved.log_level);
-            let mut logger = Logger::stdout(level);
+            // Mode plugin: stdout adalah kanal protokol JSON — log wajib ke stderr.
+            let mut logger = if plugin {
+                Logger::stderr(level)
+            } else {
+                Logger::stdout(level)
+            };
 
             let entry_path = entry.or(resolved.entry);
             let Some(entry_path) = entry_path else {
@@ -304,6 +316,7 @@ fn run_command(command: Command) -> ExitCode {
                 op_metrics,
                 max_cpu_ms,
                 max_rss_mb,
+                ipc_stdio: plugin,
             };
 
             let extension = entry_path
@@ -554,6 +567,7 @@ mod tests {
             "250",
             "--max-rss-mb",
             "512",
+            "--plugin",
         ]));
         assert_eq!(
             parsed,
@@ -572,6 +586,7 @@ mod tests {
                 op_metrics: true,
                 max_cpu_ms: Some(250),
                 max_rss_mb: Some(512),
+                plugin: true,
             })
         );
     }

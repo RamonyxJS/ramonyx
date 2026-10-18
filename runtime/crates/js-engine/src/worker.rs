@@ -34,17 +34,22 @@ const MAX_WORKERS: usize = 8;
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub struct WorkerOptions {
-    /// Permission yang diminta worker; **default deny-all**; selalu diiris dengan permission induk.
-    allow: Option<WorkerAllow>,
-    /// Kuota heap V8 worker (MiB); default mengikuti induk.
-    max_heap_mb: Option<usize>,
-    /// Batas waktu wall-clock worker (ms); default tanpa batas.
-    timeout_ms: Option<u64>,
+    /// Permission yang diminta worker/plugin; **default deny-all**; selalu diiris dengan
+    /// permission induk.
+    pub(crate) allow: Option<WorkerAllow>,
+    /// Kuota heap V8 (MiB); default mengikuti induk.
+    pub(crate) max_heap_mb: Option<usize>,
+    /// Batas waktu wall-clock (ms); default tanpa batas (worker) / diteruskan sebagai flag (plugin).
+    pub(crate) timeout_ms: Option<u64>,
+    /// Kuota CPU (ms); default mengikuti induk (plugin meneruskan sebagai flag).
+    pub(crate) max_cpu_ms: Option<u64>,
+    /// Kuota RSS (MiB); default mengikuti induk (plugin meneruskan sebagai flag).
+    pub(crate) max_rss_mb: Option<usize>,
 }
 
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase", default)]
-struct WorkerAllow {
+pub(crate) struct WorkerAllow {
     read: Option<PermissionSpec>,
     write: Option<PermissionSpec>,
     net: Option<PermissionSpec>,
@@ -68,7 +73,10 @@ impl PermissionSpec {
     }
 }
 
-fn resolve_permissions(parent: &Permissions, allow: Option<&WorkerAllow>) -> Permissions {
+pub(crate) fn resolve_permissions(
+    parent: &Permissions,
+    allow: Option<&WorkerAllow>,
+) -> Permissions {
     let requested = |spec: Option<&PermissionSpec>| {
         spec.map(PermissionSpec::to_permission)
             .unwrap_or(Permission::Deny)
@@ -107,8 +115,8 @@ pub struct WorkerRegistry {
 /// Kanal sisi-worker (ada di semua engine; `to_parent` hanya terisi di dalam worker).
 #[derive(Default)]
 pub struct WorkerSelfChannel {
-    to_parent: Option<UnboundedSender<String>>,
-    from_parent: Option<UnboundedReceiver<String>>,
+    pub(crate) to_parent: Option<UnboundedSender<String>>,
+    pub(crate) from_parent: Option<UnboundedReceiver<String>>,
 }
 
 /// Amplop pesan untuk return op2 (Option<String> tidak didukung langsung).
@@ -172,6 +180,7 @@ pub async fn op_worker_spawn(
         // Kuota CPU/RSS diwarisi dari induk (pelindung proses yang sama).
         max_cpu_ms: parent_cpu,
         max_rss_mb: parent_rss,
+        ipc_stdio: false,
     };
 
     let (to_worker_tx, to_worker_rx) = unbounded_channel::<String>();
@@ -310,46 +319,6 @@ pub fn op_worker_terminate(state: &mut OpState, #[smi] worker_id: u64) -> Result
     // Menutup `to_worker`/`from_worker` → `receive()` di kedua sisi berakhir.
     drop(handle);
     Ok(())
-}
-
-/// Kirim pesan ke induk (hanya dari dalam worker).
-#[op2(fast)]
-pub fn op_worker_self_send(state: &mut OpState, #[string] text: String) -> Result<(), JsErrorBox> {
-    check_message_size(&text)?;
-    let channel = state.borrow_mut::<WorkerSelfChannel>();
-    let Some(sender) = channel.to_parent.as_ref() else {
-        return Err(JsErrorBox::generic(
-            "ramonyx.parent hanya tersedia di dalam worker",
-        ));
-    };
-    sender
-        .send(text)
-        .map_err(|_| JsErrorBox::generic("induk sudah berhenti (pesan tidak terkirim)"))
-}
-
-/// Terima pesan dari induk (hanya di dalam worker); `text: null` bila induk menutup channel.
-#[op2(async(lazy), fast)]
-#[serde]
-pub async fn op_worker_self_receive(
-    state: Rc<RefCell<OpState>>,
-) -> Result<WorkerMessage, JsErrorBox> {
-    let mut receiver = {
-        let mut op_state = state.borrow_mut();
-        let channel = op_state.borrow_mut::<WorkerSelfChannel>();
-        let Some(receiver) = channel.from_parent.take() else {
-            return Err(JsErrorBox::generic(
-                "ramonyx.parent hanya tersedia di dalam worker",
-            ));
-        };
-        receiver
-    };
-
-    let result = receiver.recv().await;
-
-    let mut op_state = state.borrow_mut();
-    let channel = op_state.borrow_mut::<WorkerSelfChannel>();
-    channel.from_parent = Some(receiver);
-    Ok(WorkerMessage { text: result })
 }
 
 #[cfg(test)]

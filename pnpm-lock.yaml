@@ -361,6 +361,21 @@ importers:
         specifier: workspace:*
         version: link:../schema
 
+  packages/devtools:
+    dependencies:
+      '@ramonyx/adapter-runtime':
+        specifier: workspace:*
+        version: link:../adapter-runtime
+      '@ramonyx/bundler':
+        specifier: workspace:*
+        version: link:../bundler
+      '@ramonyx/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      ramonyx:
+        specifier: workspace:*
+        version: link:../ramonyx
+
   packages/ramonyx:
     dependencies:
       '@ramonyx/core':

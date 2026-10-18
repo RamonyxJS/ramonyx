@@ -38,7 +38,7 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`, `generateClientEntry`), transformasi & analisis batas server/client | Phase 2 | file routing + halaman + codegen selesai |
 | `packages/bundler` | Pembungkus Vite (ADR-0005): build client + dev server (ADR-0009) | Phase 2 | selesai |
 | `packages/security` | Header keamanan + CSRF double-submit (ADR-0013) | Phase 3 | selesai (CSP nonce menyusul) |
-| `packages/devtools` | CLI, dev server, diagnostics | Phase 2–3 | belum dibuat |
+| `packages/devtools` | CLI `ramonyx` (dev/build/start/doctor), dev server, diagnostics | Phase 2–3 | **v1 selesai** (ADR-0053) |
 | `apps/playground` | App demo/uji end-to-end | Phase 1 | belum dibuat |
 | `apps/docs` | Dokumentasi publik | Phase 2 | belum dibuat |
 | `apps/create-app` | CLI scaffolding | Phase 2–3 | belum dibuat |

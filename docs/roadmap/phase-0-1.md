@@ -231,8 +231,11 @@ pekerjaan Phase 5.
 - [x] **Evaluasi `--strict` bench** (ADR-0045): SSR sahih same-machine (5 run bersih; strict
       lokal lulus), HTTP rentan drift ambient tooling dev (+68–74% tanpa perubahan kode), CI ±3×
       lebih cepat → strict-CI tumpul; **guard lintas-mesin** menolak strict bila `cpuModel` beda
+- [x] **CLI devtools v1** (ADR-0053): `@ramonyx/devtools` — `ramonyx dev|build|start|doctor`,
+      register loader programatik (tanpa flag), konvensi `src/app.ts` `createApp(options?)`,
+      template create-app dirombak ke CLI, verify rilis memakai alur CLI; 161 test Node
 - [ ] **Fase 5 sisa** — kandidat lanjutan: baseline benchmark **per-lingkungan** di CI (baru
-      setelah itu strict di CI bermakna)
+      setelah itu strict di CI bermakna), migrasi playground/docs ke CLI (opsional), watch mode
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

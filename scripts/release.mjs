@@ -98,12 +98,22 @@ function stagePackage(entry, releaseVersion) {
       typeof range === "string" && range.startsWith("workspace:") ? `^${releaseVersion}` : range;
   }
 
+  // Bin (mis. `ramonyx` dari @ramonyx/devtools): target `./src/x.ts` → `./dist/x.js`
+  // (tsc mempertahankan shebang) — ADR-0053.
+  const binEntries = {};
+  for (const [name, target] of Object.entries(source.bin ?? {})) {
+    binEntries[name] = String(target)
+      .replace(/^\.\/src\//, "./dist/")
+      .replace(/\.ts$/, ".js");
+  }
+
   const staged = {
     name: source.name,
     version: releaseVersion,
     description: source.description ?? "Paket framework Ramonyx.",
     license: source.license ?? "MIT",
     type: source.type ?? "module",
+    ...(Object.keys(binEntries).length > 0 ? { bin: binEntries } : {}),
     exports: exportsMap,
     files: ["dist", "README.md", "LICENSE"],
     engines: { node: ">=24" },

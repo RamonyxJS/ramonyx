@@ -27,6 +27,8 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
 - **Framework**: file routing (`src/routes`), lifecycle loader → render → dokumen; **SSR React**
   dengan **streaming** (opt-in, `createPageRoutes({ streaming: true })`) + payload hydration
   `window.__RAMONYX__` + soft navigation.
+- **CLI devtools** (`@ramonyx/devtools`): `ramonyx dev` (Vite + HMR), `ramonyx build`,
+  `ramonyx start` (produksi), `ramonyx doctor` — konvensi `src/app.ts` `createApp(options?)`.
 - **Server**: middleware `next(request?)`, timeout 10 dtk → 503, batas body 1 MiB → 413, load
   shedding (concurrency 100), rate limit per klien, validasi schema (Standard Schema) di tepi.
 - **Security**: security headers, CSP nonce, CSRF double-submit, SSRF guard (`@ramonyx/security`).
@@ -49,7 +51,7 @@ pnpm audit --audit-level high              # bersih
 
 | Path | Isi |
 | --- | --- |
-| `packages/*` | framework: `core`, `router`, `schema`, `server`, `ssr`, `react`, `compiler`, `bundler`, `security`, `adapter-runtime`, `testing`, meta `ramonyx` |
+| `packages/*` | framework: `core`, `router`, `schema`, `server`, `ssr`, `react`, `compiler`, `bundler`, `security`, `adapter-runtime`, `testing`, `devtools` (CLI), meta `ramonyx` |
 | `apps/playground` | app demo (SSR + hydration + streaming + security) |
 | `apps/docs` | situs dokumentasi (dogfood penuh: SSR + soft navigation) |
 | `apps/create-app` | scaffolder (`create-ramonyx-app`) |

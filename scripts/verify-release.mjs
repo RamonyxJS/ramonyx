@@ -9,7 +9,7 @@
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const distDir = join(root, "dist");
@@ -45,7 +45,24 @@ function tarballs() {
 }
 
 /** Pecah skrip npm sederhana (`[ENV=..] node args…`) menjadi env + argumen node. */
-function scriptToNode(script) {
+/** Cari bin di `node_modules/.bin` (naik ke direktori induk, seperti resolusi npm). */
+function resolveBin(appDir, name) {
+  let current = appDir;
+  for (;;) {
+    const candidate = join(current, "node_modules", ".bin", name);
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+    const parent = dirname(current);
+    if (parent === current) {
+      return undefined;
+    }
+    current = parent;
+  }
+}
+
+/** Resolusi skrip npm (`[ENV=..] node|ramonyx args…`) → perintah + args + env. */
+function resolveScript(appDir, script) {
   const parts = script.split(/\s+/).filter(Boolean);
   const env = { ...process.env };
   let index = 0;
@@ -54,16 +71,24 @@ function scriptToNode(script) {
     env[parts[index].slice(0, separator)] = parts[index].slice(separator + 1);
     index += 1;
   }
-  if (parts[index] !== "node") {
-    fail(`skrip tidak dijalankan lewat node langsung: ${script}`);
+  const command = parts[index];
+  if (command === "node") {
+    return { command: process.execPath, args: parts.slice(index + 1), env };
   }
-  return { args: parts.slice(index + 1), env };
+  if (command === "ramonyx") {
+    const bin = resolveBin(appDir, "ramonyx");
+    if (bin === undefined) {
+      fail(`bin 'ramonyx' tidak ditemukan dari ${appDir} — @ramonyx/devtools terpasang?`);
+    }
+    return { command: bin, args: parts.slice(index + 1), env };
+  }
+  fail(`skrip tidak dikenali (harus 'node …' atau 'ramonyx …'): ${script}`);
 }
 
 /** Jalankan skrip `start` template, tunggu URL-nya, lalu ambil halaman beranda (SSR). */
 async function startAndFetch(appDir, startScript) {
-  const { args, env } = scriptToNode(startScript);
-  const child = spawn(process.execPath, args, {
+  const { command, args, env } = resolveScript(appDir, startScript);
+  const child = spawn(command, args, {
     cwd: appDir,
     env,
     stdio: ["ignore", "pipe", "pipe"],
@@ -269,9 +294,9 @@ console.log("SMOKE OK halo,dunia paket", process.versions.node);
     if (typeof scripts.build !== "string" || typeof scripts.start !== "string") {
       fail("template tanpa skrip build/start");
     }
-    const buildPlan = scriptToNode(scripts.build);
+    const buildPlan = resolveScript(target, scripts.build);
     if (buildPlan.args.length === 0) fail("skrip build kosong");
-    run(process.execPath, buildPlan.args, { cwd: target, env: buildPlan.env });
+    run(buildPlan.command, buildPlan.args, { cwd: target, env: buildPlan.env });
     if (!existsSync(join(target, "dist", "client", "client.js"))) {
       fail("build klien app scaffold tidak menghasilkan dist/client/client.js");
     }

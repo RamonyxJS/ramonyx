@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { createRouteManifest, loadPageRoutes } from "@ramonyx/compiler";
+import { createRouteManifest, loadPageRoutes, type ModuleImporter } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
 import { createPageRoutes } from "@ramonyx/ssr";
@@ -7,32 +7,57 @@ import type { FetchHandler } from "ramonyx";
 
 import middleware from "./routes/middleware.ts";
 
+export interface CreateAppOptions {
+  /** URL bundle klien (produksi "/assets/client.js"; dev via entry Vite). */
+  readonly clientScript?: string;
+  /** Modul tambahan sebelum entry (mis. "/@vite/client"). */
+  readonly clientModules?: readonly string[];
+  /** Importer modul (dev: module graph Vite). */
+  readonly importer?: ModuleImporter;
+  /** Bangun ulang manifest tiap request (dev, tanpa restart). */
+  readonly reloadManifests?: boolean;
+  readonly strictValidation?: boolean;
+  /** SSR streaming untuk halaman (ADR-0047). */
+  readonly streaming?: boolean;
+}
+
 /**
  * Aplikasi __APP_NAME__: route API + halaman SSR React dari `src/routes` (file routing),
- * dengan hydration klien (`/assets/client.js` — jalankan `pnpm build` dulu).
+ * dengan hydration klien.
  *
- * Konvensi folder `src/routes`:
- * - `page.tsx` — halaman (loader + komponen React; boleh `layout.tsx`, `error.tsx`);
- * - `api/*.ts` — route API (`export const GET = route({ ... })`).
+ * Dijalankan lewat CLI: `ramonyx dev` (Vite + HMR), `ramonyx build` (bundle klien),
+ * `ramonyx start` (produksi — `NODE_ENV=production` otomatis).
  */
-export async function createApp(): Promise<FetchHandler> {
+export async function createApp(options: CreateAppOptions = {}): Promise<FetchHandler> {
   const dir = fileURLToPath(new URL("./routes", import.meta.url));
+  const client =
+    options.clientScript === undefined
+      ? undefined
+      : { script: options.clientScript, extraModules: options.clientModules };
 
-  const [apiRoutes, pages] = await Promise.all([
-    createRouteManifest({ dir }),
-    loadPageRoutes({ dir }),
-  ]);
+  const build = async (): Promise<FetchHandler> => {
+    const [apiRoutes, pages] = await Promise.all([
+      createRouteManifest({ dir, importer: options.importer }),
+      loadPageRoutes({ dir, importer: options.importer }),
+    ]);
 
-  return createHandler({
-    strictValidation: true,
-    routes: [
-      ...apiRoutes,
-      ...createPageRoutes({
-        pages,
-        renderer: createReactRenderer(),
-        client: { script: "/assets/client.js" },
-      }),
-    ],
-    middleware,
-  });
+    return createHandler({
+      routes: [
+        ...apiRoutes,
+        ...createPageRoutes({
+          pages,
+          renderer: createReactRenderer(),
+          client,
+          streaming: options.streaming,
+        }),
+      ],
+      middleware,
+      strictValidation: options.strictValidation,
+    });
+  };
+
+  if (options.reloadManifests === true) {
+    return async (request) => (await build())(request);
+  }
+  return build();
 }

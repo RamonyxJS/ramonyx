@@ -27,8 +27,11 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   atas `docs/**`) di http://127.0.0.1:4000 (build klien + start).
 - `pnpm docs:export` — ekspor statis situs docs (`apps/docs/export.ts`) untuk hosting;
   workflow `pages.yml` memakai `--base /ramonyx` → https://ramonyxjs.github.io/ramonyx/ (ADR-0052).
+- CLI devtools (`@ramonyx/devtools`, ADR-0053): di repo jalankan lewat loader —
+  `node --import ./tools/register.mjs packages/devtools/src/cli.ts <dev|build|start|doctor> --app <dir>`;
+  aplikasi (template) memakai `ramonyx dev|build|start` dengan konvensi `src/app.ts` `createApp()`.
 - `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
-  di `dist/`; **14 artefak** termasuk `create-ramonyx-app`); `pnpm release:verify` — verifikasi
+  di `dist/`; **15 artefak** — 14 paket npm termasuk `create-ramonyx-app` + binary runtime); `pnpm release:verify` — verifikasi
   instalasi di proyek konsumen bersih (Node polos), termasuk scaffold `create-ramonyx-app`.
   Publikasi: `docs/releasing.md` (checklist pemilik; workflow publish dari tarball terverifikasi —
   ADR-0049).
@@ -54,9 +57,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 ## Jebakan yang paling mudah kena
 
 - **Blueprint §4/§5 masih rancangan, belum semuanya diimplementasikan.** Yang nyata:
-  `packages/*`, `apps/playground`, `apps/docs`, `apps/create-app`, `benchmarks/*`. File routing
-  (API + halaman), SSR React (sinkron + streaming), hydration, bundler, dev server/HMR sudah ada;
-  `packages/devtools` belum — cek kode, jangan asumsikan.
+  `packages/*` (termasuk `@ramonyx/devtools` — CLI `ramonyx`), `apps/playground`, `apps/docs`,
+  `apps/create-app`, `benchmarks/*`. File routing (API + halaman), SSR React (sinkron + streaming),
+  hydration, bundler, dev server/HMR, dan CLI devtools v1 sudah ada — cek kode, jangan asumsikan.
 - **Syntax harus erasable.** Paket diekspor sebagai `.ts` dan dijalankan Node type stripping:
   dilarang `enum`, `namespace`, parameter property; `erasableSyntaxOnly` + `verbatimModuleSyntax`
   menegakkannya. Impor relatif wajib berekstensi `.ts`.
@@ -198,4 +201,4 @@ Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 156 tes Node + 5 e2e + 111 test Rust hijau.
+(ADR-0016); 161 tes Node + 5 e2e + 111 test Rust hijau.

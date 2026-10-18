@@ -8,17 +8,19 @@ Aplikasi [Ramonyx](https://github.com/ramonyx/ramonyx) — framework full-stack 
 
 ```bash
 pnpm install
-pnpm build     # bundel klien (wajib sebelum start)
-pnpm start     # http://127.0.0.1:3000 (React build produksi: NODE_ENV=production)
-pnpm dev       # mode watch (jalankan `pnpm build` setelah mengubah UI klien)
+pnpm dev       # Vite + HMR (http://localhost:5173) → SSR :3000
+pnpm build     # bundel klien (wajib sebelum start produksi)
+pnpm start     # http://127.0.0.1:3000 (NODE_ENV=production otomatis)
 ```
+
+Perintah memakai CLI **`ramonyx`** (`@ramonyx/devtools`): `ramonyx dev|build|start|doctor`.
 
 ## Struktur
 
+- `src/app.ts` — mengekspor `createApp(options?)` (dipakai CLI)
 - `src/routes/page.tsx` — halaman (loader + komponen React; `layout.tsx`/`error.tsx` opsional)
 - `src/routes/api/halo/[nama].ts` — route API (`export const GET = route({ ... })`)
 - `src/routes/middleware.ts` — security headers + CSP nonce + aset `/assets/*`
-- `build.ts` — bundel klien (Vite) lewat `@ramonyx/bundler`
 - `ramonyx.config.ts` — port/host + strict validation
 
 ## Endpoint contoh

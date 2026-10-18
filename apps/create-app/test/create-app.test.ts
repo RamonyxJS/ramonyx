@@ -33,6 +33,17 @@ function runNode(script: string, cwd: string): string {
   });
 }
 
+// CLI devtools dijalankan dari source (repo) memakai loader repo; aplikasi hasil scaffold
+// memakai konvensi CLI (`src/app.ts` + `ramonyx.config.ts`) — ADR-0053.
+const devtoolsCli = join(root, "packages", "devtools", "src", "cli.ts");
+function runDevtools(cwd: string, args: string[]): string {
+  return execFileSync(process.execPath, ["--import", loader, devtoolsCli, ...args, "--app", cwd], {
+    cwd,
+    encoding: "utf8",
+    timeout: 240_000,
+  });
+}
+
 function collectFiles(directory: string, found: string[] = []): string[] {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
@@ -61,11 +72,9 @@ test("scaffold membuat struktur dan mengganti placeholder", () => {
   for (const relative of [
     "package.json",
     "ramonyx.config.ts",
-    "build.ts",
     "README.md",
     ".gitignore",
     "src/app.ts",
-    "src/main.ts",
     "src/routes/middleware.ts",
     "src/routes/layout.tsx",
     "src/routes/page.tsx",
@@ -83,7 +92,7 @@ test("scaffold membuat struktur dan mengganti placeholder", () => {
   assert.equal(manifest.name, "hello-app");
   assert.ok(manifest.dependencies.ramonyx, "dependensi ramonyx ada");
   assert.ok(manifest.dependencies["@ramonyx/react"], "dependensi react ada");
-  assert.ok(manifest.dependencies["@ramonyx/bundler"], "dependensi bundler ada");
+  assert.ok(manifest.dependencies["@ramonyx/devtools"], "dependensi devtools ada");
   assert.match(readFileSync(join(target, "README.md"), "utf8"), /hello-app/);
 
   // Tidak ada placeholder yang tersisa di berkas mana pun.
@@ -115,7 +124,7 @@ test("app hasil scaffold: SSR + hydration payload + API", async () => {
   writeFileSync(
     join(target, "smoke.mjs"),
     `import { createApp } from "./src/app.ts";
-const app = await createApp();
+const app = await createApp({ clientScript: "/assets/client.js" });
 
 const halaman = await app(new Request("http://uji/"));
 if (halaman.status !== 200) throw new Error("status halaman: " + halaman.status);
@@ -150,8 +159,8 @@ test("app hasil scaffold: build klien + aset disajikan", async () => {
   const target = join(workDir, "app-build");
   runCli([target]);
 
-  // Bundel klien sungguhan (Vite lewat @ramonyx/bundler).
-  const buildOutput = runNode("build.ts", target);
+  // Bundel klien sungguhan (Vite lewat CLI devtools).
+  const buildOutput = runDevtools(target, ["build"]);
   assert.match(buildOutput, /client bundle/);
   assert.ok(existsSync(join(target, "dist/client/client.js")), "client.js ter-build");
 
@@ -171,7 +180,7 @@ test("app hasil scaffold: build klien + aset disajikan", async () => {
   writeFileSync(
     join(target, "assets.mjs"),
     `import { createApp } from "./src/app.ts";
-const app = await createApp();
+const app = await createApp({ clientScript: "/assets/client.js" });
 const aset = await app(new Request("http://uji/assets/client.js"));
 if (aset.status !== 200) throw new Error("status aset: " + aset.status);
 if (aset.headers.get("content-type") !== "text/javascript; charset=utf-8") {

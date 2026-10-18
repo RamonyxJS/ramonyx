@@ -1,15 +1,15 @@
-import type { ServerResponse } from "node:http";
 import { mkdir, writeFile } from "node:fs/promises";
-import { join, relative, sep } from "node:path";
+import type { ServerResponse } from "node:http";
+import { join, relative } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import {
   generateClientEntry,
   loadPageRoutes,
-  RouteManifestError,
   type ModuleImporter,
+  RouteManifestError,
 } from "@ramonyx/compiler";
-import { createServer, type Connect } from "vite";
+import { type Connect, createServer } from "vite";
 
 export interface DevServerOptions {
   readonly appDir: string;
@@ -40,7 +40,13 @@ function isViteRequest(url: string): boolean {
   );
 }
 
-const HOP_BY_HOP = new Set(["connection", "keep-alive", "transfer-encoding", "content-length", "content-encoding"]);
+const HOP_BY_HOP = new Set([
+  "connection",
+  "keep-alive",
+  "transfer-encoding",
+  "content-length",
+  "content-encoding",
+]);
 
 /**
  * Proxy manual ke SSR (bukan `server.proxy` Vite): request non-Vite diteruskan dengan `fetch`,

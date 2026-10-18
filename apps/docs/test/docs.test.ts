@@ -129,6 +129,12 @@ test("build klien: bundel hydrate + soft navigation disajikan sebagai aset", asy
   assert.match(bundle, /hydrate/, "bundel memuat hydration");
   assert.match(bundle, /enableClientNavigation|popstate/, "bundel memuat soft navigation");
 
+  // Source map produksi (ADR-0046).
+  const peta = JSON.parse(readFileSync(`${bundlePath}.map`, "utf8")) as {
+    sourcesContent?: string[];
+  };
+  assert.ok((peta.sourcesContent?.length ?? 0) > 0, "source map memuat sourcesContent");
+
   const app = await createApp();
   const aset = await app(new Request("http://uji/assets/client.js"));
   assert.equal(aset.status, 200);

@@ -159,6 +159,12 @@ test("app hasil scaffold: build klien + aset disajikan", async () => {
     "bundel memuat hydration",
   );
 
+  // Source map produksi: ada dan memuat sumber asli (sourcesContent) — ADR-0046.
+  const peta = JSON.parse(readFileSync(join(target, "dist/client/client.js.map"), "utf8")) as {
+    sourcesContent?: string[];
+  };
+  assert.ok((peta.sourcesContent?.length ?? 0) > 0, "source map memuat sourcesContent");
+
   // Aset disajikan middleware template, traversal ditolak.
   writeFileSync(
     join(target, "assets.mjs"),

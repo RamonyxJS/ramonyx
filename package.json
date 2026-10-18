@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "biome check .",
     "typecheck": "tsc --project tsconfig.json --noEmit",
-    "test": "node --import ./tools/register.mjs --test \"packages/*/test/**/*.test.ts\" \"packages/*/test/**/*.test.tsx\" \"apps/*/test/**/*.test.ts\" \"apps/*/test/**/*.test.tsx\" \"tests/**/*.test.ts\"",
+    "test": "node --import ./tools/register.mjs --test \"packages/*/test/**/*.test.ts\" \"packages/*/test/**/*.test.tsx\" \"apps/*/test/**/*.test.ts\" \"apps/*/test/**/*.test.tsx\" \"tests/**/*.test.ts\" \"benchmarks/**/*.test.ts\"",
     "build": "node --import ./tools/register.mjs apps/playground/build.ts",
     "bench": "node --import ./tools/register.mjs benchmarks/http/bench.ts",
     "bench:security": "node --import ./tools/register.mjs benchmarks/security/abuse.ts",
@@ -21,7 +21,8 @@
     "release:build": "node scripts/build-packages.mjs",
     "release:verify": "node scripts/verify-release.mjs",
     "create:app": "node --import ./tools/register.mjs apps/create-app/src/cli.ts",
-    "docs": "node --import ./tools/register.mjs apps/docs/build.ts && node --import ./tools/register.mjs apps/docs/src/main.ts"
+    "docs": "node --import ./tools/register.mjs apps/docs/build.ts && node --import ./tools/register.mjs apps/docs/src/main.ts",
+    "bench:report": "node --import ./tools/register.mjs benchmarks/http/bench.ts --out benchmarks/results/latest-http.json --compare --tolerance-pct 25"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

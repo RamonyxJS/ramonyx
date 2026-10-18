@@ -165,6 +165,15 @@ console.log("SMOKE OK halo,dunia paket", process.versions.node);
   if (!smoke.includes("SMOKE OK")) fail(`smoke gagal: ${smoke}`);
   console.log(`  ✓ npm: ${smoke.trim().split("\n").pop()}`);
 
+  // Source map paket (ADR-0046): ada di tarball dan memuat sumber asli.
+  const mapPath = join(workDir, "node_modules", "@ramonyx", "server", "dist", "index.js.map");
+  if (!existsSync(mapPath)) fail("source map @ramonyx/server tidak ada di tarball");
+  const peta = JSON.parse(readFileSync(mapPath, "utf8"));
+  if (!Array.isArray(peta.sourcesContent) || peta.sourcesContent.length === 0) {
+    fail("source map paket tanpa sourcesContent");
+  }
+  console.log(`  ✓ npm: source map (${peta.sources.length} sumber)`);
+
   // Binary runtime dari tarball rilis
   if (existsSync(runtimeDir)) {
     const bundle = readdirSync(runtimeDir).find(

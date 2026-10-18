@@ -9,6 +9,8 @@ export interface BuildClientOptions {
   readonly pages: readonly LoadedPage[];
   /** Relatif terhadap appDir; default "dist/client". */
   readonly outDir?: string;
+  /** Hasilkan source map (`.js.map` + `sourcesContent`); default true. */
+  readonly sourcemap?: boolean;
   /** URL publik bundle untuk `<script type="module">`; default "/assets/client.js". */
   readonly scriptPath?: string;
   readonly minify?: boolean;
@@ -42,6 +44,9 @@ export async function buildClient(options: BuildClientOptions): Promise<BuildCli
       emptyOutDir: true,
       target: "es2022",
       minify: options.minify ?? false,
+      // Source map produksi (default aktif): `sourcesContent` di-embed agar map tetap
+      // berguna walau sumber TS tidak ikut disajikan (ADR-0046).
+      sourcemap: options.sourcemap ?? true,
       modulePreload: false,
       rollupOptions: {
         input: entryFile,

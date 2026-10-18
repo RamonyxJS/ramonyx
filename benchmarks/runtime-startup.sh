@@ -39,7 +39,7 @@ console.log("worker:", hasil.join(","));
 EOF
 
 mkdir -p "$(dirname "$OUT")"
-python3 - "$BIN" "$RUNS" "$TMP" "$OUT" <<'PY'
+python3 - "$BIN" "$RUNS" "$TMP" "$OUT" "$ROOT/benchmarks/results/runtime-startup.json" <<'PY'
 import json
 import statistics
 import subprocess
@@ -47,7 +47,7 @@ import sys
 import time
 from datetime import datetime, timezone
 
-binary, runs, tmp, out_path = sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4]
+binary, runs, tmp, out_path, baseline_path = sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4], sys.argv[5]
 
 
 def measure(script, extra=()):
@@ -120,4 +120,38 @@ with open(out_path, "w") as handle:
     handle.write("\n")
 
 print(json.dumps(hasil, indent=2))
+
+# Perbandingan report-only vs baseline (ADR-0045): tidak pernah menulis ulang baseline.
+import os
+
+if os.path.exists(baseline_path) and os.path.abspath(baseline_path) != os.path.abspath(out_path):
+    with open(baseline_path) as handle:
+        baseline = json.load(handle)
+    tolerance = float(os.environ.get("TOLERANCE_PCT", "25"))
+    strict = os.environ.get("STRICT") == "1"
+    print(
+        f"\nperbandingan startup vs baseline (toleransi {tolerance:g}%, report-only):"
+    )
+    breached = False
+    for scenario in ("mini", "four-workers"):
+        for key in ("wallMs", "engineStartupMs"):
+            base = baseline.get("scenarios", {}).get(scenario, {}).get(key, {})
+            cur = hasil["scenarios"].get(scenario, {}).get(key, {})
+            base_median = base.get("median")
+            cur_median = cur.get("median")
+            if base_median in (None, 0) or cur_median is None:
+                continue
+            delta = (cur_median - base_median) / base_median * 100
+            regresi = delta > tolerance
+            breached = breached or regresi
+            tanda = "!" if regresi else "ok"
+            print(
+                f"  [{tanda}] {scenario}.{key}: {base_median} -> {cur_median} ms ({delta:+.1f}%)"
+            )
+    if breached:
+        print("  catatan: ada metrik melewati toleransi (gate belum memblokir).")
+        if strict:
+            sys.exit(1)
+else:
+    print("\n(perbandingan dilewati: baseline tidak ada atau out == baseline)")
 PY

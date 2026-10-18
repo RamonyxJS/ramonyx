@@ -97,7 +97,10 @@ function writeConfig(pkg, packages) {
       noEmit: false,
       declaration: true,
       declarationMap: false,
-      sourceMap: false,
+      // Source map produksi: `inlineSources` menanam sumber TS ke dalam map agar tetap
+      // dapat dipakai konsumen tanpa mengirim `src/` (ADR-0046).
+      sourceMap: true,
+      inlineSources: true,
       outDir: relative(configDir, join(buildDir, pkg.short)),
       rootDir: relative(configDir, join(pkg.dir, "src")),
       rewriteRelativeImportExtensions: true,

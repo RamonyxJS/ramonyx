@@ -153,3 +153,6 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
   tanpa restart; watcher `src/routes` meregenerasi entry + full-reload.
 - Browser e2e (ADR-0010): Playwright terhadap build produksi — `apps/playground/e2e/` (hydration,
   soft navigation + back/forward, error 404/400, baseline Web Vitals).
+- Hardening (Phase 3, ADR-0011): `maxBodyBytes` default 1 MiB → **413** (dicek via content-length
+  sebelum routing + streaming byte-count); `timeoutMs` default 10s → **503** + `request.signal`
+  abort; body dibaca streaming; `parseQuery` aman untuk `__proto__`.

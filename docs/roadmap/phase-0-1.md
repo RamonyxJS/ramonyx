@@ -59,9 +59,22 @@ Catatan implementasi Phase 1:
 - [x] Browser test otomatis (Playwright, ADR-0010): hydration, soft navigation + back/forward
   (sentinel), halaman error 404/400; baseline Web Vitals → `benchmarks/results/phase2-web-vitals.json`
 
-**Phase 2 selesai** (2026-10-18). Berikutnya: keputusan pemilik (scope npm & lisensi, matrix
-browser, rekonsiliasi PRD) dan/atau Phase 3 — security & performance hardening (fuzzing,
-abuse-case, load test, limits, dependency audit, security regression suite).
+**Phase 2 selesai** (2026-10-18).
+
+## Phase 3 — Security & performance hardening (berjalan)
+
+Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9).
+
+- [x] Resource limits (ADR-0011): body 1 MiB → 413 (content-length sebelum routing + streaming),
+      timeout 10s → 503 + `request.signal`
+- [x] Body adapter Node streaming (tanpa buffer penuh)
+- [x] Prototype pollution: `parseQuery` aman untuk `__proto__`/`constructor`
+- [x] Fuzz/property test (fast-check): router matching, query parsing, normalisasi schema
+- [x] Suite keamanan `tests/security/` (413, timeout+abort, pollution, default limit)
+- [ ] Abuse-case & load test (skenario serangan di autocannon/k6); soak test memori
+- [ ] Dependency audit berkelanjutan (CI sudah `pnpm audit`; tambah kebijakan & provenance)
+- [ ] Pemetaan OWASP ASVS → acceptance criteria + perluasan security regression suite
+- [ ] Keputusan menyusul: rate limiting / concurrency limit per route
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

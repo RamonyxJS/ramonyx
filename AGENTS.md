@@ -41,6 +41,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   `pnpm build` dulu lalu `pnpm start` (tanpa build, `/assets/client.js` 404). Payload
   `window.__RAMONYX__` + container `#ramonyx-root`; loader data wajib JSON-serializable;
   halaman error tidak di-hydrate (ADR-0007).
+- **Limit default (ADR-0011).** Body request dibatasi **1 MiB → 413**, handler/loader timeout
+  **10s → 503** (+ `request.signal` abort). Aplikasi menaikkan lewat opsi `createHandler`
+  (`maxBodyBytes`, `timeoutMs`).
 - **`node:*` hanya di `packages/adapter-runtime` dan `packages/compiler` (build-time)**, plus
   test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
@@ -73,7 +76,7 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 2 **selesai** (2026-10-18) — file routing (API + halaman), SSR React, hydration, client
-navigation, dev server HMR, dan browser test otomatis + baseline Web Vitals; 77 tes Node + 4 e2e
-hijau. Berikutnya: Phase 3 (hardening) dan keputusan terbuka pemilik:
-scope npm & lisensi, matrix browser, rekonsiliasi PRD (lihat `docs/roadmap/phase-0-1.md`).
+Phase 2 **selesai** (2026-10-18). **Phase 3 (hardening) berjalan** — limits body/timeout
+(ADR-0011), streaming body, fuzz fast-check, suite `tests/security/`; 89 tes Node + 4 e2e hijau.
+Berikutnya: abuse/load test, dependency audit berkelanjutan, pemetaan OWASP ASVS. Keputusan
+terbuka pemilik: scope npm & lisensi, matrix browser, rekonsiliasi PRD.

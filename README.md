@@ -4,10 +4,10 @@ Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangka
 proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
-> **Status: Phase 2 selesai** — file routing + SSR React + hydration + client navigation +
-> dev server HMR + e2e Playwright (hydration/navigasi/error) + baseline Web Vitals.
-> Berikutnya: Phase 3 hardening dan keputusan pemilik (scope npm, lisensi, matrix browser, PRD).
-> Klaim mengikuti aturan BLUEPRINT §10.
+> **Status: Phase 3 (hardening) berjalan** — Phase 2 selesai (SSR + hydration + navigasi +
+> dev server HMR + e2e). Kini: batas body 1 MiB (413) & timeout 10s (503) secure-by-default,
+> body streaming, fuzz test, suite keamanan `tests/security/`. Berikutnya: abuse/load test,
+> audit dependensi berkelanjutan, pemetaan OWASP ASVS. Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

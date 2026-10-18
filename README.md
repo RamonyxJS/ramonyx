@@ -17,10 +17,11 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 > irisan anti-eskalasi, kill switch), **streaming request + batas body server** (body
 > pull-model, 413 dini), **`fetch` https + redirect otomatis** (TLS diverifikasi, CA kustom),
 > **profiling startup** (timings per fase + metrik op opsional), **kuota CPU per-thread +
-> RSS proses** (menutup gap memori eksternal), dan **pipeline rilis v1** (paket npm 0.1.0 +
-> binary runtime + verifikasi instalasi — `pnpm release` / `pnpm release:verify`). Framework
-> Node tetap baseline produksi; sisa Phase 5: isolasi level proses untuk plugin dan publikasi
-> npm sebenarnya. Klaim mengikuti aturan BLUEPRINT §10.
+> RSS proses** (menutup gap memori eksternal), **pipeline rilis v1** (paket npm 0.1.0 +
+> binary runtime + verifikasi instalasi — `pnpm release` / `pnpm release:verify`), dan
+> **isolasi level proses untuk plugin** (`ramonyx.spawn` — crash plugin tidak menjatuhkan
+> induk). Framework Node tetap baseline produksi; sisa Phase 5: publikasi npm sebenarnya
+> (butuh kredensial). Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

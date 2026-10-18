@@ -168,8 +168,13 @@ pekerjaan Phase 5.
       ekstensi), staging + tarball npm, tarball binary runtime, `SHA256SUMS` +
       `release-manifest.json`; **verifikasi instalasi di proyek konsumen bersih dengan Node polos**
       (`pnpm release:verify`); workflow CI rilis (belum dieksekusi — tanpa remote)
-- [ ] **Fase 5 lanjutan** — isolasi level proses untuk plugin; publikasi npm sebenarnya
-      (butuh kredensial)
+- [x] **Isolasi level proses untuk plugin** (ADR-0040): `ramonyx.spawn` → proses
+      `ramonyx-runtime --plugin` terpisah, protokol JSON per baris (stdout bersih, log ke stderr),
+      `ramonyx.parent.*` terpadu (worker & plugin), permission irisan anti-eskalasi, kuota
+      diteruskan sebagai flag, `kill()` + `ramonyx.exit()`; bukti: crash/exit/kill plugin tidak
+      menjatuhkan induk
+- [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
+      restart supervision plugin, sandbox OS (seccomp/namespace)
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

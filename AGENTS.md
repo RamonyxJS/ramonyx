@@ -76,9 +76,11 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   permission irisan anti-eskalasi, kill switch — ADR-0034), serta **streaming request + batas
   body server** (`payload.body` stream pull-model, `maxBodyBytes` default 1 MiB, 413 dini —
   ADR-0035), **`fetch` https + redirect otomatis** (TLS diverifikasi, CA kustom `--tls-ca`,
-  follow/manual/error, permission per hop — ADR-0036), serta **kuota CPU per-thread + RSS proses**
-  (`--max-cpu-ms`/`--max-rss-mb`, menutup gap memori eksternal heap V8 — ADR-0038) — tetapi
-  **belum**: isolasi level proses untuk plugin; **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
+  follow/manual/error, permission per hop — ADR-0036), **kuota CPU per-thread + RSS proses**
+  (`--max-cpu-ms`/`--max-rss-mb` — ADR-0038), serta **isolasi level proses untuk plugin**
+  (`ramonyx.spawn` + `--plugin`, protokol JSON stdin/stdout, permission irisan, kill — ADR-0040) —
+  tetapi **belum**: publikasi npm sebenarnya (kredensial), restart supervision plugin, sandbox OS;
+  **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
   dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
   **subset** (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak
   dengan pesan jelas) — jangan diklaim lebih. Build pertama V8/deno_core+deno_ast+hyper ±3 menit;
@@ -135,13 +137,14 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 **streaming request + batas body server** (body pull-model + 413 dini — ADR-0035), dan
 **`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036), **R4 profiling startup**
 (timings per fase, metrik op, baseline; snapshot V8 ditolak dengan alasan terukur — ADR-0037),
-serta **kuota CPU per-thread + RSS proses** (ADR-0038), dan **release pipeline v1** (paket 0.1.0,
-tarball npm + binary runtime, verifikasi instalasi konsumen — ADR-0039) — semuanya diverifikasi
-test + smoke.
-**Exit criteria Phase 4 tercapai**; sisa Phase 5: isolasi level proses untuk plugin dan publikasi
-npm sebenarnya (butuh kredensial).
+**kuota CPU per-thread + RSS proses** (ADR-0038), **release pipeline v1** (paket 0.1.0, tarball npm
++ binary runtime, verifikasi instalasi konsumen — ADR-0039), serta **isolasi level proses untuk
+plugin** (`ramonyx.spawn`, protokol JSON, permission irisan, kill — ADR-0040) — semuanya
+diverifikasi test + smoke.
+**Exit criteria Phase 4 tercapai**; sisa Phase 5: **publikasi npm sebenarnya** (butuh kredensial
+pemilik) dan kandidat lanjutan (restart supervision, sandbox OS).
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 90 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 96 test Rust hijau.

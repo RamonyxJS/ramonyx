@@ -6,9 +6,9 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "node build.ts",
-    "start": "NODE_ENV=production node src/main.ts",
-    "dev": "node --watch src/main.ts"
+    "build": "node --import @ramonyx/compiler/register build.ts",
+    "start": "NODE_ENV=production node --import @ramonyx/compiler/register src/main.ts",
+    "dev": "node --watch --import @ramonyx/compiler/register src/main.ts"
   },
   "dependencies": {
     "@ramonyx/adapter-runtime": "^0.1.0",

@@ -24,8 +24,10 @@ function runCli(args: string[], allowFail = false): string {
   }
 }
 
+// Skrip app dijalankan dengan loader PAKET (`@ramonyx/compiler/register`) — mekanisme yang
+// sama dengan aplikasi hasil instalasi npm; loader repo hanya untuk menjalankan CLI dari source.
 function runNode(script: string, cwd: string): string {
-  return execFileSync(process.execPath, ["--import", loader, script], {
+  return execFileSync(process.execPath, ["--import", "@ramonyx/compiler/register", script], {
     cwd,
     encoding: "utf8",
   });

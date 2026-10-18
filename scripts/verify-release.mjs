@@ -6,7 +6,7 @@
 // Prasyarat: `node scripts/release.mjs` sudah dijalankan (dist/npm/*.tgz + dist/runtime/*.tar.gz).
 // Jalankan: node scripts/verify-release.mjs
 
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -25,6 +25,7 @@ function fail(message) {
 function run(command, args, options = {}) {
   return execFileSync(command, args, {
     cwd: options.cwd ?? root,
+    env: options.env ?? process.env,
     encoding: "utf8",
     stdio: options.capture ? "pipe" : "inherit",
   });
@@ -43,7 +44,68 @@ function tarballs() {
     .sort();
 }
 
-function main() {
+/** Pecah skrip npm sederhana (`[ENV=..] node args…`) menjadi env + argumen node. */
+function scriptToNode(script) {
+  const parts = script.split(/\s+/).filter(Boolean);
+  const env = { ...process.env };
+  let index = 0;
+  while (index < parts.length && /^[A-Z_][A-Z0-9_]*=/.test(parts[index])) {
+    const separator = parts[index].indexOf("=");
+    env[parts[index].slice(0, separator)] = parts[index].slice(separator + 1);
+    index += 1;
+  }
+  if (parts[index] !== "node") {
+    fail(`skrip tidak dijalankan lewat node langsung: ${script}`);
+  }
+  return { args: parts.slice(index + 1), env };
+}
+
+/** Jalankan skrip `start` template, tunggu URL-nya, lalu ambil halaman beranda (SSR). */
+async function startAndFetch(appDir, startScript) {
+  const { args, env } = scriptToNode(startScript);
+  const child = spawn(process.execPath, args, {
+    cwd: appDir,
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  let output = "";
+  try {
+    const url = await new Promise((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error(`server scaffold tidak siap dalam 15 dtk:\n${output}`)),
+        15_000,
+      );
+      const onData = (chunk) => {
+        output += String(chunk);
+        const match = /(http:\/\/[^\s]+)/.exec(output);
+        if (match !== null) {
+          clearTimeout(timer);
+          resolve(match[1]);
+        }
+      };
+      child.stdout.on("data", onData);
+      child.stderr.on("data", onData);
+      child.on("exit", (code) => {
+        clearTimeout(timer);
+        reject(new Error(`server scaffold keluar (${code}):\n${output}`));
+      });
+    });
+
+    const response = await fetch(url);
+    const html = await response.text();
+    if (response.status !== 200) fail(`halaman scaffold status ${response.status}`);
+    if (!html.includes("ramonyx-root")) fail("halaman scaffold tanpa #ramonyx-root");
+  } finally {
+    child.kill("SIGTERM");
+    await new Promise((resolve) => {
+      child.once("exit", resolve);
+      setTimeout(resolve, 3_000).unref();
+    });
+  }
+}
+
+async function main() {
   const releaseVersion = version();
   const files = tarballs();
   if (files.length === 0) fail("tidak ada tarball npm di dist/npm");
@@ -85,12 +147,16 @@ function main() {
     )}\n`,
   );
 
-  // pnpm ≥12 membaca overrides dari `pnpm-workspace.yaml`: dependensi internal
-  // `@ramonyx/*@^<versi>` harus diresolusi ke tarball lokal, bukan registry.
+  // pnpm ≥12 membaca konfigurasi dari `pnpm-workspace.yaml`: dependensi internal
+  // `@ramonyx/*@^<versi>` harus diresolusi ke tarball lokal, bukan registry; `allowBuilds`
+  // mengizinkan postinstall esbuild (loader runtime `@ramonyx/compiler/register`).
   const overrides = Object.entries(dependencies)
     .map(([name, value]) => `  ${JSON.stringify(name)}: ${JSON.stringify(value)}`)
     .join("\n");
-  writeFileSync(join(workDir, "pnpm-workspace.yaml"), `overrides:\n${overrides}\n`);
+  writeFileSync(
+    join(workDir, "pnpm-workspace.yaml"),
+    `overrides:\n${overrides}\n\nallowBuilds:\n  esbuild: true\n`,
+  );
 
   writeFileSync(
     join(workDir, "smoke.mjs"),
@@ -196,6 +262,21 @@ console.log("SMOKE OK halo,dunia paket", process.versions.node);
       fail("template halaman tidak tersalin oleh create-ramonyx-app");
     }
     console.log("  ✓ create-ramonyx-app: scaffold app-baru (placeholder nama terganti)");
+
+    // Acceptance rilis: skrip template benar-benar jalan dengan Node polos — build klien (Vite),
+    // lalu `start` + halaman SSR; menguji loader `@ramonyx/compiler/register` dari tarball.
+    const scripts = appManifest.scripts ?? {};
+    if (typeof scripts.build !== "string" || typeof scripts.start !== "string") {
+      fail("template tanpa skrip build/start");
+    }
+    const buildPlan = scriptToNode(scripts.build);
+    if (buildPlan.args.length === 0) fail("skrip build kosong");
+    run(process.execPath, buildPlan.args, { cwd: target, env: buildPlan.env });
+    if (!existsSync(join(target, "dist", "client", "client.js"))) {
+      fail("build klien app scaffold tidak menghasilkan dist/client/client.js");
+    }
+    await startAndFetch(target, scripts.start);
+    console.log("  ✓ create-ramonyx-app: build + start + SSR halaman (Node polos, dari tarball)");
   }
 
   // Binary runtime dari tarball rilis
@@ -224,4 +305,7 @@ console.log("SMOKE OK halo,dunia paket", process.versions.node);
   console.log("\nverifikasi rilis selesai");
 }
 
-main();
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});

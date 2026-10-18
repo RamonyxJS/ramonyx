@@ -133,7 +133,8 @@ ini kecuali disebut lain.
 | Kalibrasi bench (protokol §8) | `pnpm bench:report` ×2 + `pnpm bench` (refresh baseline) | **PASS** | median p50 33–35 ms (stabil ≤ ~9% antar-invokasi); perbandingan lanjutan ≤ 5.6% |
 | Refresh baseline HTTP | `pnpm bench` | **PASS** | baseline baru: p50 34 / p90 48 / p99 72 / rps 1318 (5 ulangan + warm-up 3 s) |
 | Dry-run npm pra-publikasi (ADR-0049) | `npm publish --dry-run` ×13 tarball | **PASS** | exit 0 tanpa warning; nama/versi benar; `create-ramonyx-app` memuat bin 755 + shebang + template |
-| Verifikasi rilis (ADR-0049) | `pnpm release` + `release:verify` | **PASS** | 14 artefak; konsumen bersih + source map + **scaffold `app-baru`** via `create-ramonyx-app` + runtime jalan |
+| Verifikasi rilis (ADR-0049) | `pnpm release` + `release:verify` | **PASS** | 14 artefak; konsumen bersih + source map + **scaffold `app-baru`** + **build + start + SSR halaman dengan Node polos dari tarball** + runtime jalan |
+| Loader runtime publik (ADR-0049) | `node --import @ramonyx/compiler/register` | **PASS** | app hasil scaffold jalan tanpa loader repo (Node menolak type-strip .ts di node_modules); pnpm `allowBuilds: esbuild` disertakan template |
 | Benchmark HTTP | `pnpm bench` | **NOT RUN** | Skrip menulis ulang `benchmarks/results/phase1-baseline.json` (artefak ter-commit) — tidak dijalankan agar tidak mengubah artefak saat audit |
 | Bench SSR (ADR-0048) | `pnpm bench:ssr` + `bench:ssr:report` ×3 | **PASS** | paritas byte-per-byte ✓ (small/medium/large); 2 report berturut-turut semua dalam toleransi; baseline pada skala 0,6–415 KB + suspense |
 | Web Vitals (ADR-0048) | e2e + refresh baseline eksplisit | **PASS** | baseline baru: LCP 84 / FCP 84 / TTFB 11,1 / CLS 0 (median 3 load, produksi); report berikutnya semua dalam toleransi; ambang absolut ✓ |

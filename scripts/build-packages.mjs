@@ -8,8 +8,8 @@
 // Jalankan: node scripts/build-packages.mjs
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const packagesDir = join(root, "packages");
@@ -133,6 +133,21 @@ function rewriteDeclarationExtensions(directory) {
   }
 }
 
+/** Salin berkas non-TS (mis. loader `register.mjs`) apa adanya ke keluaran build. */
+function copyRuntimeFiles(sourceDir, targetDir) {
+  for (const entry of readdirSync(sourceDir, { withFileTypes: true })) {
+    const source = join(sourceDir, entry.name);
+    const target = join(targetDir, entry.name);
+    if (entry.isDirectory()) {
+      copyRuntimeFiles(source, target);
+      continue;
+    }
+    if (!entry.name.endsWith(".mjs")) continue;
+    mkdirSync(dirname(target), { recursive: true });
+    copyFileSync(source, target);
+  }
+}
+
 function main() {
   rmSync(buildDir, { recursive: true, force: true });
   mkdirSync(configDir, { recursive: true });
@@ -146,6 +161,7 @@ function main() {
   for (const pkg of ordered) {
     const configPath = writeConfig(pkg, packages);
     execFileSync(tsc, ["-p", configPath], { stdio: "inherit" });
+    copyRuntimeFiles(join(pkg.dir, "src"), join(buildDir, pkg.short));
     console.log(`  ✓ ${pkg.name} → dist/build/${pkg.short}`);
   }
   rewriteDeclarationExtensions(buildDir);

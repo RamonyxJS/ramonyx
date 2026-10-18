@@ -25,7 +25,8 @@
   ulang; bit yang terbit = bit yang diuji di proyek konsumen.
 - **Provenance** aktif otomatis bila repo publik (`id-token: write` + `--provenance`); repo
   privat → publish tanpa provenance (dicatat di log).
-- `REPOSITORY` di `scripts/release.mjs` harus diganti ke remote sebenarnya sebelum tag.
+- `REPOSITORY` di `scripts/release.mjs` sudah menunjuk remote resmi
+  (`https://github.com/RamonyxJS/ramonyx`).
 
 ## Langkah
 
@@ -50,3 +51,6 @@ cd demo-app && pnpm install && pnpm build && pnpm start
   dist-tag + provenance kondisional.
 - Unpublish npm masih mungkin dalam 72 jam; **nama/versi yang sudah ditarik tetap terkunci**.
   Karena itu tag pertama sebaiknya memakai dist-tag `alpha`/`next` bila ingin ruang koreksi.
+- **pnpm ≥10 memblokir build script dependensi** — `esbuild` (loader runtime) butuh postinstall;
+  template sudah membawa `pnpm-workspace.yaml` dengan `allowBuilds: { esbuild: true }`, dan proyek
+  konsumen `release:verify` menyetel hal yang sama. npm/yarn tidak memblokir.

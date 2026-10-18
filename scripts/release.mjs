@@ -28,7 +28,7 @@ const runtimeDir = join(distDir, "runtime");
 const skipBuild = process.argv.includes("--skip-build");
 const skipRuntime = process.argv.includes("--skip-runtime");
 
-const REPOSITORY = "https://github.com/ramonyx/ramonyx";
+const REPOSITORY = "https://github.com/RamonyxJS/ramonyx";
 
 function fail(message) {
   console.error(`error: ${message}`);
@@ -78,9 +78,14 @@ function stagePackage(entry, releaseVersion) {
 
   const exportsMap = {};
   for (const [key, target] of Object.entries(source.exports ?? { ".": "./src/index.ts" })) {
-    const base = String(target)
-      .replace(/^\.\/src\//, "")
-      .replace(/\.ts$/, "");
+    // Target `.mjs` (mis. loader `@ramonyx/compiler/register`) diteruskan apa adanya:
+    // JS polos tanpa deklarasi tipe; Node memuatnya langsung dari node_modules (ADR-0049).
+    const text = String(target);
+    if (text.endsWith(".mjs")) {
+      exportsMap[key] = { default: `./dist/${text.replace(/^\.\/src\//, "")}` };
+      continue;
+    }
+    const base = text.replace(/^\.\/src\//, "").replace(/\.ts$/, "");
     exportsMap[key] = {
       types: `./dist/${base}.d.ts`,
       default: `./dist/${base}.js`,

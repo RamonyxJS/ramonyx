@@ -1,0 +1,87 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { type MiddlewareContext, silentLogger } from "@ramonyx/core";
+import { csrfProtection } from "../src/index.ts";
+
+function context(request: Request): MiddlewareContext {
+  return { request, env: { get: () => undefined }, log: silentLogger };
+}
+
+const nextOk = async () => new Response("ok");
+
+test("GET tanpa cookie → set cookie token (SameSite=Lax, bukan HttpOnly)", async () => {
+  const response = await csrfProtection()(context(new Request("http://t/")), nextOk);
+
+  const setCookies = response.headers.getSetCookie();
+  assert.equal(setCookies.length, 1);
+  const cookie = setCookies[0] ?? "";
+  assert.match(cookie, /^ramonyx-csrf=[0-9a-f]{64}; Path=\/; SameSite=Lax$/);
+  assert.ok(!cookie.includes("HttpOnly"), "double-submit butuh bisa dibaca JS");
+});
+
+test("GET dengan cookie yang sudah ada → tidak set ulang", async () => {
+  const request = new Request("http://t/", { headers: { cookie: "ramonyx-csrf=existing" } });
+  const response = await csrfProtection()(context(request), nextOk);
+
+  assert.equal(response.headers.getSetCookie().length, 0);
+});
+
+test("POST tanpa cookie → 403, handler tidak dipanggil", async () => {
+  let called = false;
+  const response = await csrfProtection()(
+    context(new Request("http://t/", { method: "POST" })),
+    async () => {
+      called = true;
+      return new Response("ok");
+    },
+  );
+
+  assert.equal(response.status, 403);
+  assert.deepEqual(await response.json(), { error: "CSRF token tidak valid" });
+  assert.equal(called, false);
+});
+
+test("POST dengan cookie + header cocok → lolos", async () => {
+  const token = "a".repeat(64);
+  const request = new Request("http://t/", {
+    method: "POST",
+    headers: { cookie: `ramonyx-csrf=${token}`, "x-csrf-token": token },
+  });
+  const response = await csrfProtection()(context(request), nextOk);
+
+  assert.equal(response.status, 200);
+  assert.equal(await response.text(), "ok");
+});
+
+test("POST token tidak cocok / kosong → 403", async () => {
+  const token = "a".repeat(64);
+  const mismatched = new Request("http://t/", {
+    method: "POST",
+    headers: { cookie: `ramonyx-csrf=${token}`, "x-csrf-token": "b".repeat(64) },
+  });
+  assert.equal((await csrfProtection()(context(mismatched), nextOk)).status, 403);
+
+  const empty = new Request("http://t/", {
+    method: "POST",
+    headers: { cookie: `ramonyx-csrf=${token}` },
+  });
+  assert.equal((await csrfProtection()(context(empty), nextOk)).status, 403);
+});
+
+test("opsi secure → cookie memuat Secure; nama cookie/header bisa dikustom", async () => {
+  const middleware = csrfProtection({
+    secure: true,
+    cookieName: "xsrf",
+    headerName: "x-xsrf-token",
+  });
+
+  const getResponse = await middleware(context(new Request("http://t/")), nextOk);
+  assert.match(getResponse.headers.getSetCookie()[0] ?? "", /; Secure$/);
+
+  const token = "c".repeat(64);
+  const postRequest = new Request("http://t/", {
+    method: "POST",
+    headers: { cookie: `xsrf=${token}`, "x-xsrf-token": token },
+  });
+  assert.equal((await middleware(context(postRequest), nextOk)).status, 200);
+});

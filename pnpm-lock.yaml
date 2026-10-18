@@ -211,6 +211,9 @@ importers:
       '@ramonyx/react':
         specifier: workspace:*
         version: link:../../packages/react
+      '@ramonyx/security':
+        specifier: workspace:*
+        version: link:../../packages/security
       '@ramonyx/server':
         specifier: workspace:*
         version: link:../../packages/server
@@ -322,6 +325,12 @@ importers:
       zod:
         specifier: 4.6.7
         version: 4.6.7
+
+  packages/security:
+    dependencies:
+      '@ramonyx/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/server:
     dependencies:

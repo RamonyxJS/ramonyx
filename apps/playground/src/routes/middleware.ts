@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { securityHeaders } from "@ramonyx/security";
 import type { Middleware } from "ramonyx";
 
 const clientDir = fileURLToPath(new URL("../../dist/client", import.meta.url));
@@ -52,4 +53,4 @@ const requestLogger: Middleware = async (context, next) => {
   return response;
 };
 
-export default [staticAssets, requestLogger] satisfies Middleware[];
+export default [securityHeaders(), staticAssets, requestLogger] satisfies Middleware[];

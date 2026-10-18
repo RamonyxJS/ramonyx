@@ -7,6 +7,7 @@
     "@ramonyx/adapter-runtime": "workspace:*",
     "@ramonyx/compiler": "workspace:*",
     "@ramonyx/react": "workspace:*",
+    "@ramonyx/security": "workspace:*",
     "@ramonyx/server": "workspace:*",
     "@ramonyx/ssr": "workspace:*",
     "ramonyx": "workspace:*",

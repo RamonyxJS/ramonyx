@@ -15,6 +15,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use deno_ast::{MediaType, ParseParams, SourceMapOption};
@@ -22,7 +23,7 @@ use deno_core::error::ModuleLoaderError;
 use deno_core::{
     JsRuntime, ModuleLoadOptions, ModuleLoadReferrer, ModuleLoadResponse, ModuleLoader,
     ModuleSource, ModuleSourceCode, ModuleSpecifier, ModuleType, OpState, ResolutionKind,
-    RuntimeOptions, extension, op2, resolve_import, resolve_path,
+    RuntimeOptions, extension, op2, resolve_import, resolve_path, v8,
 };
 use deno_error::JsErrorBox;
 use runtime_core::Permissions;
@@ -122,6 +123,10 @@ globalThis.ramonyx = {
   readTextFile: (path) => Deno.core.ops.op_read_text_file(path),
   writeTextFile: (path, text) => Deno.core.ops.op_write_text_file(path, text),
   env: { get: (name) => Deno.core.ops.op_env_get(name) ?? undefined },
+  permissions: {
+    get: () => Deno.core.ops.op_permissions_get(),
+    revoke: (kind) => Deno.core.ops.op_permissions_revoke(String(kind)),
+  },
   serve: (port, handler) => {
     const [serverId, actualPort] = Deno.core.ops.op_http_listen("127.0.0.1", port);
     const server = {
@@ -311,6 +316,8 @@ extension!(
         http_client::op_fetch,
         builtins::op_random_bytes,
         builtins::op_dns_lookup,
+        builtins::op_permissions_get,
+        builtins::op_permissions_revoke,
     ],
     state = |state: &mut OpState| {
         state.put(http::HttpState::default());
@@ -557,15 +564,66 @@ impl ModuleLoader for FileModuleLoader {
     }
 }
 
+/// Alasan penghentian paksa (kuota/timeout) — dibaca setelah eksekusi berakhir.
+#[derive(Default)]
+struct LimitState {
+    reason: Mutex<Option<String>>,
+}
+
+impl LimitState {
+    fn set_reason(&self, reason: String) {
+        let mut slot = self
+            .reason
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if slot.is_none() {
+            *slot = Some(reason);
+        }
+    }
+
+    fn get_reason(&self) -> Option<String> {
+        self.reason
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .clone()
+    }
+}
+
+/// Penjaga batas waktu: thread yang men-`terminate_execution()` V8 bila timeout terlampaui.
+/// Dihentikan (dan di-join) saat `Drop` — jadi setiap eksekusi selalu membersihkan thread-nya.
+struct Watchdog {
+    cancel: Option<std::sync::mpsc::Sender<()>>,
+    join: Option<std::thread::JoinHandle<()>>,
+}
+
+impl Drop for Watchdog {
+    fn drop(&mut self) {
+        if let Some(cancel) = self.cancel.take() {
+            let _ = cancel.send(());
+        }
+        if let Some(join) = self.join.take() {
+            let _ = join.join();
+        }
+    }
+}
+
 pub struct Engine {
     runtime: JsRuntime,
     tokio: tokio::runtime::Runtime,
+    limit_state: Arc<LimitState>,
+    timeout: Option<Duration>,
 }
 
 /// Opsi engine; default **deny-all** (secure by default, ADR-0023).
 #[derive(Debug, Clone, Default)]
 pub struct EngineOptions {
     pub permissions: Permissions,
+    /// Batas heap V8 dalam MiB (`None` = default V8). Pelanggaran → eksekusi dihentikan
+    /// dengan error jelas, bukan abort proses (ADR-0033).
+    pub max_heap_mb: Option<usize>,
+    /// Batas waktu wall-clock per eksekusi (`None` = tanpa batas). Berlaku untuk
+    /// `execute` dan `execute_module` (ADR-0033).
+    pub timeout: Option<Duration>,
 }
 
 impl Engine {
@@ -579,6 +637,14 @@ impl Engine {
             .build()
             .map_err(|error| EngineError::new(format!("gagal membuat tokio runtime: {error}")))?;
 
+        let max_heap_bytes = options.max_heap_mb.map(|mb| mb.saturating_mul(1024 * 1024));
+        let create_params = max_heap_bytes.map(|max| {
+            let initial = (max / 4).clamp(2 * 1024 * 1024, 16 * 1024 * 1024).min(max);
+            v8::CreateParams::default().heap_limits(initial, max)
+        });
+
+        let limit_state = Arc::new(LimitState::default());
+
         // Isolate HARUS dibuat di dalam konteks tokio: V8 dapat memposting delayed
         // task kapan saja (mis. GC memory reducer); deno_core men-abort proses bila
         // isolate terdaftar tanpa handle tokio untuk menghormati delay tersebut.
@@ -587,9 +653,29 @@ impl Engine {
             JsRuntime::new(RuntimeOptions {
                 module_loader: Some(Rc::new(FileModuleLoader::new())),
                 extensions: vec![ramonyx_engine::init()],
+                create_params,
                 ..Default::default()
             })
         };
+
+        // Kuota heap: callback near-limit menghentikan eksekusi dengan alasan jelas
+        // (tanpa ini V8 meng-abort proses — footgun yang tidak diinginkan). Limit
+        // sementara dinaikkan agar V8 dapat meng-unwind ke interrupt check berikutnya;
+        // terminasi V8 tidak bisa ditangkap kode JS, jadi ruang ini hanya untuk unwind.
+        if let Some(max) = max_heap_bytes {
+            let handle = runtime.v8_isolate().thread_safe_handle();
+            let state = limit_state.clone();
+            let max_mb = max / (1024 * 1024);
+            runtime.add_near_heap_limit_callback(move |current_limit, _initial_limit| {
+                state.set_reason(format!(
+                    "batas heap V8 ({max_mb} MiB) terlampaui (limit saat ini {} MiB)",
+                    current_limit / (1024 * 1024),
+                ));
+                handle.terminate_execution();
+                current_limit + 16 * 1024 * 1024
+            });
+        }
+
         runtime
             .execute_script("[ramonyx:bootstrap]".to_string(), BOOTSTRAP.to_string())
             .map_err(|error| EngineError::new(format!("bootstrap gagal: {error}")))?;
@@ -599,15 +685,53 @@ impl Engine {
 
         runtime.op_state().borrow_mut().put(options.permissions);
 
-        Ok(Self { runtime, tokio })
+        Ok(Self {
+            runtime,
+            tokio,
+            limit_state,
+            timeout: options.timeout,
+        })
+    }
+
+    /// Mulai watchdog timeout (bila dikonfigurasi). Dihentikan saat nilai kembali di-drop.
+    fn start_watchdog(&mut self) -> Option<Watchdog> {
+        let limit = self.timeout?;
+        let handle = self.runtime.v8_isolate().thread_safe_handle();
+        let state = self.limit_state.clone();
+        let (cancel, wait) = std::sync::mpsc::channel::<()>();
+        let join = std::thread::spawn(move || {
+            if wait.recv_timeout(limit).is_err() {
+                state.set_reason(format!("timeout {} ms terlampaui", limit.as_millis()));
+                handle.terminate_execution();
+            }
+        });
+        Some(Watchdog {
+            cancel: Some(cancel),
+            join: Some(join),
+        })
+    }
+
+    /// Hasil eksekusi + alasan penghentian paksa (bila ada) → error yang jelas.
+    fn finish(&self, result: Result<(), String>) -> Result<(), EngineError> {
+        match result {
+            Ok(()) => Ok(()),
+            Err(message) => match self.limit_state.get_reason() {
+                Some(reason) => Err(EngineError::new(format!("program dihentikan: {reason}"))),
+                None => Err(EngineError::new(message)),
+            },
+        }
     }
 
     /// Jalankan script JS (tanpa `import`); error dikembalikan sebagai `EngineError`.
     pub fn execute(&mut self, name: &str, source: &str) -> Result<(), EngineError> {
-        self.runtime
+        let watchdog = self.start_watchdog();
+        let result = self
+            .runtime
             .execute_script(name.to_string(), source.to_string())
             .map(|_| ())
-            .map_err(|error| EngineError::new(error.to_string()))
+            .map_err(|error| error.to_string());
+        drop(watchdog);
+        self.finish(result)
     }
 
     /// Jalankan modul ESM dari file (relatif/absolut). Mendukung `.js/.mjs` dan
@@ -618,22 +742,25 @@ impl Engine {
         let main_module = resolve_path(&entry.display().to_string(), &current_dir)
             .map_err(|error| EngineError::new(format!("entry tidak valid: {error}")))?;
 
-        let Engine { runtime, tokio } = self;
-        tokio.block_on(async move {
-            let module_id = runtime
-                .load_main_es_module(&main_module)
-                .await
-                .map_err(|error| EngineError::new(error.to_string()))?;
+        let watchdog = self.start_watchdog();
+        let result = {
+            let Engine { runtime, tokio, .. } = self;
+            tokio.block_on(async move {
+                let module_id = runtime
+                    .load_main_es_module(&main_module)
+                    .await
+                    .map_err(|error| error.to_string())?;
 
-            let evaluation = runtime.mod_evaluate(module_id);
-            runtime
-                .run_event_loop(Default::default())
-                .await
-                .map_err(|error| EngineError::new(error.to_string()))?;
-            evaluation
-                .await
-                .map_err(|error| EngineError::new(error.to_string()))
-        })
+                let evaluation = runtime.mod_evaluate(module_id);
+                runtime
+                    .run_event_loop(Default::default())
+                    .await
+                    .map_err(|error| error.to_string())?;
+                evaluation.await.map_err(|error| error.to_string())
+            })
+        };
+        drop(watchdog);
+        self.finish(result)
     }
 }
 
@@ -777,6 +904,7 @@ mod tests {
 
         let mut engine = Engine::with_options(EngineOptions {
             permissions: Permissions::allow_all(),
+            ..Default::default()
         })
         .expect("engine");
         engine.execute_module(&main).expect("import paket");
@@ -813,6 +941,7 @@ globalThis.__io_ok = true;
 
         let mut engine = Engine::with_options(EngineOptions {
             permissions: Permissions::allow_all(),
+            ..Default::default()
         })
         .expect("engine");
         engine.execute_module(&main).expect("module io");
@@ -904,6 +1033,7 @@ globalThis.__io_ok = true;
                 read: Permission::Allow(vec![allowed.display().to_string()]),
                 ..Default::default()
             },
+            ..Default::default()
         })
         .expect("engine");
         engine.execute_module(&module).expect("diizinkan");
@@ -948,6 +1078,7 @@ await ramonyx.writeTextFile({port_literal}, String(server.port));
         std::thread::spawn(move || {
             let mut engine = Engine::with_options(EngineOptions {
                 permissions: Permissions::allow_all(),
+                ..Default::default()
             })
             .expect("engine");
             let result = engine.execute_module(&main);
@@ -1026,6 +1157,7 @@ await ramonyx.writeTextFile({port_literal}, String(server.port));
         std::thread::spawn(move || {
             let mut engine = Engine::with_options(EngineOptions {
                 permissions: Permissions::allow_all(),
+                ..Default::default()
             })
             .expect("engine");
             let result = engine.execute_module(&main);
@@ -1108,6 +1240,7 @@ await ramonyx.writeTextFile({port_literal}, String(server.port));
         std::thread::spawn(move || {
             let mut engine = Engine::with_options(EngineOptions {
                 permissions: Permissions::allow_all(),
+                ..Default::default()
             })
             .expect("engine");
             let result = engine.execute_module(&main);
@@ -1177,6 +1310,7 @@ server.close();
         std::thread::spawn(move || {
             let mut engine = Engine::with_options(EngineOptions {
                 permissions: Permissions::allow_all(),
+                ..Default::default()
             })
             .expect("engine");
             let result = engine.execute_module(&main);
@@ -1588,6 +1722,7 @@ globalThis.__fetch_ok = true;
 
         let mut engine = Engine::with_options(EngineOptions {
             permissions: Permissions::allow_all(),
+            ..Default::default()
         })
         .expect("engine");
         engine.execute_module(&main).expect("fetch module");
@@ -1666,6 +1801,7 @@ globalThis.__builtin_ok = true;
 
         let mut engine = Engine::with_options(EngineOptions {
             permissions: Permissions::allow_all(),
+            ..Default::default()
         })
         .expect("engine");
         engine.execute_module(&main).expect("builtin module");
@@ -1787,6 +1923,7 @@ globalThis.__bridge_ok = true;
 
         let mut engine = Engine::with_options(EngineOptions {
             permissions: Permissions::allow_all(),
+            ..Default::default()
         })
         .expect("engine");
         engine.execute_module(&main).expect("serve bridge module");
@@ -1794,6 +1931,131 @@ globalThis.__bridge_ok = true;
             .execute(
                 "[verify]",
                 "if (globalThis.__bridge_ok !== true) throw new Error('serveHandler gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn timeout_menghentikan_loop_tak_berujung() {
+        let directory = temp_dir("timeout");
+        let main = directory.join("main.mjs");
+        fs::write(&main, "while (true) {}\n").expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            timeout: Some(Duration::from_millis(300)),
+            ..Default::default()
+        })
+        .expect("engine");
+
+        let start = std::time::Instant::now();
+        let error = engine.execute_module(&main).expect_err("harus timeout");
+        let elapsed = start.elapsed();
+        let message = error.to_string();
+        assert!(message.contains("timeout"), "pesan timeout: {message}");
+        assert!(
+            elapsed < Duration::from_secs(5),
+            "watchdog terlalu lambat: {elapsed:?}"
+        );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn batas_heap_menghasilkan_error_jelas_tanpa_abort() {
+        let directory = temp_dir("heap-limit");
+        let main = directory.join("main.mjs");
+        // Alokasi heap bertahap (objek + string kecil) — bukan satu alokasi raksasa:
+        // alokasi raksasa tunggal bisa menabrak jalur OOM fatal V8 sebelum terminasi
+        // sempat diproses (batasan yang dicatat di ADR-0033).
+        fs::write(
+            &main,
+            r#"
+const arr = [];
+for (;;) {
+  const bagian = [];
+  for (let i = 0; i < 1000; i += 1) {
+    bagian.push({ i, s: "x".repeat(50) });
+  }
+  arr.push(bagian);
+}
+"#,
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            max_heap_mb: Some(16),
+            ..Default::default()
+        })
+        .expect("engine");
+
+        let error = engine
+            .execute_module(&main)
+            .expect_err("harus kena batas heap");
+        let message = error.to_string();
+        assert!(message.contains("batas heap V8"), "pesan heap: {message}");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn permissions_get_dan_revoke() {
+        let directory = temp_dir("permissions-revoke");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+const awal = ramonyx.permissions.get();
+if (awal.net !== "allow-all" || awal.read !== "allow-all") {
+  throw new Error("snapshot awal salah: " + JSON.stringify(awal));
+}
+ramonyx.permissions.revoke("net");
+const setelah = ramonyx.permissions.get();
+if (setelah.net !== "deny") {
+  throw new Error("revoke net tidak berlaku: " + JSON.stringify(setelah));
+}
+
+let ditolak = false;
+try {
+  await fetch("http://127.0.0.1:9/");
+} catch (error) {
+  ditolak = String(error).includes("--allow-net");
+}
+if (!ditolak) throw new Error("fetch seharusnya ditolak setelah revoke");
+
+ramonyx.permissions.revoke("read");
+let bacaDitolak = false;
+try {
+  await ramonyx.readTextFile("/etc/hostname");
+} catch (error) {
+  bacaDitolak = String(error).includes("--allow-read");
+}
+if (!bacaDitolak) throw new Error("read seharusnya ditolak setelah revoke");
+
+let jenisSalah = false;
+try {
+  ramonyx.permissions.revoke("dns");
+} catch (error) {
+  jenisSalah = String(error).includes("tidak dikenal");
+}
+if (!jenisSalah) throw new Error("revoke jenis salah seharusnya error");
+
+globalThis.__perm_ok = true;
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+            ..Default::default()
+        })
+        .expect("engine");
+        engine.execute_module(&main).expect("permissions module");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__perm_ok !== true) throw new Error('permission gagal');",
             )
             .expect("verify");
 

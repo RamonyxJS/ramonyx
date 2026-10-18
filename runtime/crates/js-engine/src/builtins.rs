@@ -9,7 +9,7 @@ use std::rc::Rc;
 
 use deno_core::{ModuleSpecifier, OpState, op2};
 use deno_error::JsErrorBox;
-use runtime_core::Permissions;
+use runtime_core::{Permission, Permissions};
 use serde::Serialize;
 
 /// Skema URL sintetis untuk modul bawaan (mis. `ramonyx-builtin:net`).
@@ -42,6 +42,49 @@ pub fn source_for(specifier: &ModuleSpecifier) -> Option<&'static str> {
         "dns/promises" => Some(NODE_DNS_PROMISES),
         _ => None,
     }
+}
+
+/// Ringkasan permission untuk `ramonyx.permissions.get()`.
+#[derive(Serialize)]
+pub struct PermissionsSnapshot {
+    read: String,
+    write: String,
+    net: String,
+    env: String,
+}
+
+#[op2]
+#[serde]
+pub fn op_permissions_get(state: &mut OpState) -> PermissionsSnapshot {
+    let permissions = state.borrow::<Permissions>();
+    PermissionsSnapshot {
+        read: permissions.read.as_label(),
+        write: permissions.write.as_label(),
+        net: permissions.net.as_label(),
+        env: permissions.env.as_label(),
+    }
+}
+
+/// Pencabutan permission saat runtime (ADR-0033): hanya bisa **mengurangi** akses —
+/// kode JS tidak dapat memberi dirinya sendiri izin baru.
+#[op2(fast)]
+pub fn op_permissions_revoke(
+    state: &mut OpState,
+    #[string] kind: String,
+) -> Result<(), JsErrorBox> {
+    let permissions = state.borrow_mut::<Permissions>();
+    match kind.as_str() {
+        "read" => permissions.read = Permission::Deny,
+        "write" => permissions.write = Permission::Deny,
+        "net" => permissions.net = Permission::Deny,
+        "env" => permissions.env = Permission::Deny,
+        other => {
+            return Err(JsErrorBox::generic(format!(
+                "permission tidak dikenal: \"{other}\" (read|write|net|env)"
+            )));
+        }
+    }
+    Ok(())
 }
 
 /// Byte acak dari OS — dipakai `crypto.getRandomValues` di web shim.

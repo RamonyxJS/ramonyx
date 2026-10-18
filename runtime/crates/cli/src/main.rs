@@ -26,6 +26,10 @@ PERMISSIONS (default: semua ditolak):
     --allow-read[=path,...]   --allow-write[=path,...]
     --allow-net[=host,...]    --allow-env[=NAME,...]
     Tanpa nilai (mis. --allow-read) berarti mengizinkan semua.
+
+RESOURCE LIMITS (opsional):
+    --max-heap-mb <MiB>   Batas heap V8; pelanggaran → error jelas (bukan abort).
+    --timeout-ms <ms>     Batas waktu wall-clock per eksekusi (watchdog V8).
 ";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -40,6 +44,8 @@ enum Command {
         config: Option<PathBuf>,
         log_level: Option<LogLevel>,
         permissions: Permissions,
+        max_heap_mb: Option<usize>,
+        timeout_ms: Option<u64>,
     },
 }
 
@@ -52,6 +58,8 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
     let mut config: Option<PathBuf> = None;
     let mut log_level: Option<LogLevel> = None;
     let mut permissions = Permissions::default();
+    let mut max_heap_mb: Option<usize> = None;
+    let mut timeout_ms: Option<u64> = None;
     let mut positional: Option<String> = None;
     let mut rest = iterator.peekable();
 
@@ -68,6 +76,24 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
                 let value = rest.next().ok_or("--log-level butuh nilai")?;
                 log_level =
                     Some(LogLevel::parse(value).ok_or("--log-level harus debug|info|warn|error")?);
+            }
+            "--max-heap-mb" => {
+                let value = rest.next().ok_or("--max-heap-mb butuh nilai <MiB>")?;
+                let parsed = value
+                    .parse::<usize>()
+                    .ok()
+                    .filter(|mb| *mb > 0)
+                    .ok_or("--max-heap-mb harus bilangan > 0")?;
+                max_heap_mb = Some(parsed);
+            }
+            "--timeout-ms" => {
+                let value = rest.next().ok_or("--timeout-ms butuh nilai <ms>")?;
+                let parsed = value
+                    .parse::<u64>()
+                    .ok()
+                    .filter(|ms| *ms > 0)
+                    .ok_or("--timeout-ms harus bilangan > 0")?;
+                timeout_ms = Some(parsed);
             }
             "--allow-read" => permissions.read = Permission::AllowAll,
             "--allow-write" => permissions.write = Permission::AllowAll,
@@ -106,6 +132,8 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             config,
             log_level,
             permissions,
+            max_heap_mb,
+            timeout_ms,
         }),
         other => Err(format!("subcommand tidak dikenal: {other}")),
     }
@@ -140,6 +168,8 @@ fn run_command(command: Command) -> ExitCode {
             config,
             log_level,
             permissions,
+            max_heap_mb,
+            timeout_ms,
         } => {
             let resolved = match load_config(config.as_deref()) {
                 Ok(resolved) => resolved,
@@ -195,6 +225,22 @@ fn run_command(command: Command) -> ExitCode {
                 }),
             );
 
+            if max_heap_mb.is_some() || timeout_ms.is_some() {
+                logger.info(
+                    "runtime.limits",
+                    &serde_json::json!({
+                        "maxHeapMb": max_heap_mb,
+                        "timeoutMs": timeout_ms,
+                    }),
+                );
+            }
+
+            let engine_options = EngineOptions {
+                permissions: permissions.clone(),
+                max_heap_mb,
+                timeout: timeout_ms.map(std::time::Duration::from_millis),
+            };
+
             let extension = entry_path
                 .extension()
                 .and_then(|value| value.to_str())
@@ -202,9 +248,9 @@ fn run_command(command: Command) -> ExitCode {
 
             let success = match extension {
                 "js" | "mjs" | "ts" | "tsx" | "mts" => {
-                    execute_module(&entry_path, &mut logger, &permissions)
+                    execute_module(&entry_path, &mut logger, &engine_options)
                 }
-                "cjs" | "cts" => execute_script(&entry_path, &mut logger, &permissions),
+                "cjs" | "cts" => execute_script(&entry_path, &mut logger, &engine_options),
                 other => {
                     logger.error(
                         "entry.unsupported",
@@ -237,10 +283,8 @@ fn run_command(command: Command) -> ExitCode {
 }
 
 /// Eksekusi file sebagai modul ESM (JS/TS) lewat `js-engine`. Mengembalikan sukses/gagal.
-fn execute_module(entry_path: &Path, logger: &mut Logger, permissions: &Permissions) -> bool {
-    let mut engine = match Engine::with_options(EngineOptions {
-        permissions: permissions.clone(),
-    }) {
+fn execute_module(entry_path: &Path, logger: &mut Logger, options: &EngineOptions) -> bool {
+    let mut engine = match Engine::with_options(options.clone()) {
         Ok(engine) => engine,
         Err(error) => {
             logger.error(
@@ -278,7 +322,7 @@ fn execute_module(entry_path: &Path, logger: &mut Logger, permissions: &Permissi
 }
 
 /// Eksekusi file JS lewat V8 (`js-engine`). Mengembalikan sukses/gagal untuk exit code & log.
-fn execute_script(entry_path: &Path, logger: &mut Logger, permissions: &Permissions) -> bool {
+fn execute_script(entry_path: &Path, logger: &mut Logger, options: &EngineOptions) -> bool {
     let source = match fs::read_to_string(entry_path) {
         Ok(source) => source,
         Err(error) => {
@@ -294,9 +338,7 @@ fn execute_script(entry_path: &Path, logger: &mut Logger, permissions: &Permissi
         }
     };
 
-    let mut engine = match Engine::with_options(EngineOptions {
-        permissions: permissions.clone(),
-    }) {
+    let mut engine = match Engine::with_options(options.clone()) {
         Ok(engine) => engine,
         Err(error) => {
             logger.error(
@@ -370,6 +412,10 @@ mod tests {
             "debug",
             "--allow-read=/tmp",
             "--allow-net",
+            "--max-heap-mb",
+            "64",
+            "--timeout-ms",
+            "1500",
         ]));
         assert_eq!(
             parsed,
@@ -382,6 +428,8 @@ mod tests {
                     net: Permission::AllowAll,
                     ..Default::default()
                 },
+                max_heap_mb: Some(64),
+                timeout_ms: Some(1500),
             })
         );
     }
@@ -392,6 +440,10 @@ mod tests {
         assert!(parse_args(&args(&["run", "x", "--log-level", "verbose"])).is_err());
         assert!(parse_args(&args(&["tidak-ada"])).is_err());
         assert!(parse_args(&args(&[])).is_err());
+        assert!(parse_args(&args(&["run", "x", "--max-heap-mb", "0"])).is_err());
+        assert!(parse_args(&args(&["run", "x", "--max-heap-mb", "banyak"])).is_err());
+        assert!(parse_args(&args(&["run", "x", "--timeout-ms", "-5"])).is_err());
+        assert!(parse_args(&args(&["run", "x", "--timeout-ms"])).is_err());
     }
 
     #[test]

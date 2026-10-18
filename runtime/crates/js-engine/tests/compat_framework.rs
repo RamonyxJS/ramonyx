@@ -27,6 +27,7 @@ fn pipeline_framework_berjalan_di_runtime() {
 
     let mut engine = Engine::with_options(EngineOptions {
         permissions: Permissions::allow_all(),
+        ..Default::default()
     })
     .expect("engine");
 

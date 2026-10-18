@@ -3,7 +3,10 @@ name = "js-engine"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Spike engine JavaScript (V8 via deno_core) — R1, lihat ADR-0019/R1."
+description = "Engine JavaScript (V8 via deno_core): script + ESM/TypeScript (R1)."
 
 [dependencies]
+deno_ast = { version = "=0.53.3", features = ["transpiling"] }
 deno_core = "0.412.0"
+deno_error = "=0.7.1"
+tokio = { version = "1", features = ["full"] }

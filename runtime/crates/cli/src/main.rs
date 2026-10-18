@@ -8,7 +8,7 @@ use js_engine::Engine;
 use runtime_core::{LogLevel, Logger, load_config, version};
 
 const USAGE: &str = "\
-ramonyx-runtime — runtime Ramonyx (R0: CLI/konfigurasi/logging; R1-lite: eksekusi JS via V8)
+ramonyx-runtime — runtime Ramonyx (R0: CLI/konfigurasi/logging; R1: eksekusi JS/TS via V8)
 
 USAGE:
     ramonyx-runtime version
@@ -17,8 +17,10 @@ USAGE:
     ramonyx-runtime help
 
 ENTRY:
-    .js/.cjs/.mjs dieksekusi lewat V8 (script mode; ESM import menyusul).
-    .ts/.tsx menunggu transform TypeScript (sisa R1) — hanya divalidasi dan dicatat.
+    .js/.mjs/.ts/.tsx/.mts dieksekusi sebagai modul ESM (import relatif + fallback ekstensi;
+    TypeScript ditranspile via deno_ast).
+    .cjs/.cts dieksekusi sebagai script (tanpa import).
+    Bare specifier (paket npm) belum didukung — akan error dengan pesan jelas.
 ";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -161,33 +163,16 @@ fn run_command(command: Command) -> ExitCode {
                 .unwrap_or("");
 
             let success = match extension {
-                "js" | "cjs" => execute_script(&entry_path, &mut logger),
-                "mjs" => {
-                    logger.warn(
-                        "esm.module_loader_pending",
-                        &serde_json::json!({
-                            "stage": "R1",
-                            "note": "mjs dijalankan sebagai script; module loader ESM menyusul",
-                        }),
-                    );
-                    execute_script(&entry_path, &mut logger)
-                }
-                "ts" | "tsx" | "mts" | "cts" => {
-                    logger.warn(
-                        "transform.not_implemented",
-                        &serde_json::json!({
-                            "stage": "R1",
-                            "note": "transform TypeScript sebelum eksekusi menyusul",
-                        }),
-                    );
-                    true
-                }
+                "js" | "mjs" | "ts" | "tsx" | "mts" => execute_module(&entry_path, &mut logger),
+                "cjs" | "cts" => execute_script(&entry_path, &mut logger),
                 other => {
                     logger.error(
                         "entry.unsupported",
                         &serde_json::json!({ "extension": other }),
                     );
-                    eprintln!("error: entry tidak didukung: .{other} (pakai .js/.cjs/.mjs)");
+                    eprintln!(
+                        "error: entry tidak didukung: .{other} (pakai .js/.mjs/.ts/.tsx/.mts/.cjs)"
+                    );
                     false
                 }
             };
@@ -207,6 +192,45 @@ fn run_command(command: Command) -> ExitCode {
             } else {
                 ExitCode::FAILURE
             }
+        }
+    }
+}
+
+/// Eksekusi file sebagai modul ESM (JS/TS) lewat `js-engine`. Mengembalikan sukses/gagal.
+fn execute_module(entry_path: &Path, logger: &mut Logger) -> bool {
+    let mut engine = match Engine::new() {
+        Ok(engine) => engine,
+        Err(error) => {
+            logger.error(
+                "engine.init_error",
+                &serde_json::json!({ "error": error.to_string() }),
+            );
+            eprintln!("error: inisialisasi V8 gagal: {error}");
+            return false;
+        }
+    };
+
+    match engine.execute_module(entry_path) {
+        Ok(()) => {
+            logger.info(
+                "engine.executed",
+                &serde_json::json!({
+                    "entry": entry_path.display().to_string(),
+                    "mode": "module",
+                }),
+            );
+            true
+        }
+        Err(error) => {
+            logger.error(
+                "engine.error",
+                &serde_json::json!({
+                    "entry": entry_path.display().to_string(),
+                    "error": error.to_string(),
+                }),
+            );
+            eprintln!("error: {error}");
+            false
         }
     }
 }

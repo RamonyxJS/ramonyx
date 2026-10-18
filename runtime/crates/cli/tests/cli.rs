@@ -34,10 +34,46 @@ fn version_mencetak_versi() {
 }
 
 #[test]
-fn run_entry_ts_divalidasi_dan_transform_ditunda_jujur() {
+fn run_script_ts_dieksekusi_dengan_transpile() {
     let directory = temp_dir("run-ts");
     let entry = directory.join("main.ts");
-    fs::write(&entry, "console.log('halo');\n").expect("write");
+    fs::write(
+        &entry,
+        "interface Titik { x: number }\nconst titik: Titik = { x: 21 };\nconsole.log('ts jalan', titik.x * 2);\n",
+    )
+    .expect("write");
+
+    let output = Command::new(binary())
+        .args(["run"])
+        .arg(&entry)
+        .output()
+        .expect("spawn");
+
+    assert!(output.status.success(), "exit sukses: {output:?}");
+    let stdout = String::from_utf8(output.stdout).expect("utf8");
+    assert!(
+        stdout.contains("ts jalan 42"),
+        "TypeScript ditranspile dan dieksekusi: {stdout}"
+    );
+    assert!(has_log_line(&stdout, "engine.executed"));
+
+    fs::remove_dir_all(&directory).expect("cleanup");
+}
+
+#[test]
+fn run_mjs_dengan_import_relatif() {
+    let directory = temp_dir("run-mjs");
+    fs::write(
+        directory.join("util.mjs"),
+        "export function dua(x) { return x * 2; }\n",
+    )
+    .expect("write util");
+    let entry = directory.join("main.mjs");
+    fs::write(
+        &entry,
+        "import { dua } from './util.mjs';\nconsole.log('mjs', dua(21));\n",
+    )
+    .expect("write main");
 
     let output = Command::new(binary())
         .args(["run"])
@@ -47,10 +83,10 @@ fn run_entry_ts_divalidasi_dan_transform_ditunda_jujur() {
 
     assert!(output.status.success(), "exit sukses");
     let stdout = String::from_utf8(output.stdout).expect("utf8");
-    assert!(has_log_line(&stdout, "runtime.start"));
-    assert!(has_log_line(&stdout, "runtime.stop"));
-    // TS jujur: transform TypeScript menyusul (sisa R1).
-    assert!(has_log_line(&stdout, "transform.not_implemented"));
+    assert!(
+        stdout.contains("mjs 42"),
+        "import relatif berjalan: {stdout}"
+    );
 
     fs::remove_dir_all(&directory).expect("cleanup");
 }

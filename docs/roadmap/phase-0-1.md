@@ -1,7 +1,6 @@
 # Roadmap Phase 0–1
 
-- Status per 2026-10-18: **Phase 0 selesai; Phase 1 selesai; Phase 2 selesai; Phase 3 berjalan**
-  (limits + concurrency + security headers/CSRF + fuzz + abuse bench + ASVS awal).
+- Status per 2026-10-18: **Phase 0–3 selesai; Phase 4 (runtime alpha) berikutnya**.
 - Sumber: `docs/BLUEPRINT.md` §9 dan §12.
 
 ## Phase 0 — Foundation & RFC ✅
@@ -81,10 +80,15 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
 - [x] Pemetaan awal OWASP ASVS (`docs/security/asvs-mapping.md`) + primitif XSS/CSRF:
       `@ramonyx/security` — `securityHeaders()`, `cspNonce()` (CSP nonce, ADR-0014),
       `csrfProtection()` (ADR-0013)
-- [ ] Perluasan acceptance criteria per area ASVS: verifikasi CSRF via field form,
-      rate limiting per klien, IP-pinning SSRF
 - [x] Concurrency limit / load shedding (ADR-0012): default 100 → 503 + `Retry-After`, tanpa antrean
-- [ ] Keputusan menyusul: rate limiting per klien (butuh identitas klien/trusted proxy) + output limit
+- [x] Output limit dokumen SSR (ADR-0015) + rate limiting per klien (ADR-0017)
+- [ ] Pekerjaan lanjutan (non-blocker): verifikasi CSRF via field form (menunggu API body bersama),
+      IP-pinning guard SSRF, perluasan pemetaan per item ASVS
+
+**Phase 3 selesai** (2026-10-18) — exit criteria "acceptance criteria keamanan yang ditetapkan
+lulus": 12 kriteria teruji di `docs/security/asvs-mapping.md`; seluruh baris threat model tertutup
+kecuali path traversal runtime & isolasi plugin (Phase 4). Berikutnya: keputusan pemilik lalu
+Phase 4 (runtime alpha).
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

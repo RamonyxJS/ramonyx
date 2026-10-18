@@ -4,11 +4,11 @@ Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangka
 proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
-> **Status: Phase 3 (hardening) hampir selesai** — Phase 2 selesai (SSR + hydration + navigasi +
-> dev server HMR + e2e). Kini: limits body/timeout/concurrency secure-by-default, security headers
-> + CSRF + CSP nonce + SSRF guard (`@ramonyx/security`), fuzz, suite keamanan, abuse/soak benchmark,
-> pemetaan ASVS, dan kebijakan dependency + Dependabot. Sisa: rate limiting per klien, CSRF field
-> form. Klaim mengikuti aturan BLUEPRINT §10.
+> **Status: Phase 0–3 selesai** — framework full-stack (routing, SSR, hydration, navigasi, dev
+> server HMR) + hardening lengkap (limits, rate limit, headers, CSRF, CSP nonce, SSRF guard,
+> output limit), fuzz + e2e + bench keamanan, ASVS mapping (12 kriteria teruji), kebijakan
+> dependency. Berikutnya: keputusan pemilik (scope npm & lisensi, matrix browser, PRD) lalu
+> Phase 4 — runtime alpha (Rust + V8). Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

@@ -24,3 +24,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0014](0014-csp-nonce.md) | CSP nonce + request replacement di middleware | Accepted |
 | [0015](0015-ssrf-guard-output-limit.md) | SSRF guard (`guardedFetch`) + output limit dokumen SSR | Accepted |
 | [0016](0016-dependency-policy.md) | Kebijakan dependency & supply chain | Accepted |
+| [0017](0017-rate-limiting.md) | Rate limiting per klien (identitas adapter + trustProxy opt-in) | Accepted |

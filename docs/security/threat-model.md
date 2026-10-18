@@ -91,7 +91,9 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
   `cspNonce()` menitipkan nonce ke payload hydration; `script-src 'self' 'nonce-…'`. Template CSP
   bisa diganti aplikasi; CSP default hanya menyala bila aplikasi memasang middleware-nya.
 - CSRF: ✅ primitif `csrfProtection()` (double-submit cookie + header, ADR-0013); verifikasi
-  field form menyusul.
+  field form **ditunda** eksplisit (tanpa API body bersama — ADR-0017).
+- Rate limiting per klien: ✅ `rateLimit()` — fixed-window, 429 + `Retry-After`, identitas dari
+  adapter (anti-spoof) + `trustProxy` opt-in (ADR-0017).
 - Dependency compromise: ✅ lockfile + `pnpm audit --audit-level high` (push/PR + cron mingguan) +
   `minimumReleaseAge` 24 jam + Dependabot (tanpa auto-merge) + kebijakan
   `docs/security/dependency-policy.md` (ADR-0016); provenance menyusul saat publikasi.

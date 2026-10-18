@@ -16,7 +16,7 @@
 | V8 Data protection | Payload JSON-serializable; secret→client belum dijaga build | 🟡 | ADR-0007; analisis boundary menyusul |
 | V9 Komunikasi | HSTS/redirect HTTPS = deployment | ➖ | dicatat di `securityHeaders` |
 | V10 Kode berbahaya | Tanpa `eval` di paket; fuzz input | 🟡 | Biome + fuzz `fast-check` |
-| V11 Logika bisnis | Anti-automation (rate limit per klien) | ⬜ | keputusan terbuka (butuh identitas klien) |
+| V11 Logika bisnis | Anti-automation (rate limit per klien) | ✅ | `rateLimit()` ADR-0017 |
 | V12 File & resource | Body limit 1 MiB, concurrency 100, timeout 10s; guard traversal static | ✅ | ADR-0011/0012 + `pnpm bench:security` |
 | V13 API & web service | Validasi skema, error konsisten (400/403/404/405/413/503) | ✅ | `docs/api/core-contract.md` + test |
 | V14 Konfigurasi | Secure defaults (limit), header keamanan + CSP nonce | ✅ | ADR-0011/0012/0013/0014 |
@@ -37,8 +37,10 @@
 10. Output limit SSR: dokumen >2 MiB → 500 — `packages/ssr/test/pages.test.ts` — ADR-0015
 11. Dependency: audit high lolos di CI, quarantine rilis 24 jam, update via PR bergerbang —
     `docs/security/dependency-policy.md` — ADR-0016
+12. Rate limiting: kelebihan → 429 + `Retry-After`; identitas adapter tidak bisa dipalsukan —
+    `packages/security/test/rate-limit.test.ts` + adapter test — ADR-0017
 
 ## Berikutnya
 
-Rate limiting per klien · verifikasi CSRF via field form · IP-pinning guard SSRF · perluasan
+Verifikasi CSRF via field form (menunggu API body bersama) · IP-pinning guard SSRF · perluasan
 pemetaan per item ASVS.

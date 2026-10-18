@@ -81,9 +81,9 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 2 **selesai** (2026-10-18). **Phase 3 (hardening) hampir selesai** — limits
-body/timeout/concurrency (ADR-0011/0012), security headers + CSRF + CSP nonce + SSRF guard +
-output limit (`@ramonyx/security`, ADR-0013/0014/0015), fuzz fast-check, suite `tests/security/`,
-abuse/soak `pnpm bench:security`, pemetaan ASVS awal, dependency policy + Dependabot + cron
-(ADR-0016); 110 tes Node + 4 e2e hijau. Sisa: rate limiting per klien (butuh keputusan identitas),
-verifikasi CSRF field form. Keputusan terbuka pemilik: scope npm & lisensi, matrix browser, PRD.
+Phase 0–3 **selesai** (2026-10-18). Phase 3: limits body/timeout/concurrency + rate limit per klien
+(ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard + output limit
+(`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`, abuse/soak
+`pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
+(ADR-0016); 115 tes Node + 4 e2e hijau. Berikutnya: keputusan pemilik (scope npm & lisensi,
+matrix browser, PRD) lalu Phase 4 (runtime alpha Rust + V8).

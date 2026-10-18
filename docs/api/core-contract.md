@@ -170,3 +170,5 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
   `x-csrf-token` → 403 bila salah), `guardedFetch()` (proteksi SSRF: alamat privat ditolak,
   redirect divalidasi per hop, `allowHosts` untuk API internal).
 - Output limit SSR (ADR-0015): `createPageRoutes({ maxDocumentBytes })` default 2 MiB → 500 + log.
+- Rate limiting (ADR-0017): `rateLimit()` middleware — fixed-window per klien, 429 + `Retry-After`;
+  identitas dari `REMOTE_ADDRESS_HEADER` (diisi adapter, anti-spoof) + `trustProxy` opt-in.

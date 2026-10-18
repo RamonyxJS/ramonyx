@@ -43,6 +43,11 @@ export interface RouteEntry {
   readonly method: string;
   readonly path: string;
   readonly definition: RouteDefinition<unknown, unknown, unknown, unknown>;
+  /**
+   * Middleware per-folder (root → terdalam) yang berjalan sebelum handler rute ini
+   * (ADR-0061); dieksekusi `createHandler` setelah pencocokan rute.
+   */
+  readonly middlewares?: readonly Middleware[];
 }
 
 export interface MiddlewareContext {

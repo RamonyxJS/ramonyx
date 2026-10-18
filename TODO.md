@@ -83,7 +83,7 @@
 
 ### `p1-middleware-per-route` — Middleware per-folder + route groups `(grup)`
 
-*tema: routing · ukuran: M · status: open · sumber: gap §3 (middleware)*
+*tema: routing · ukuran: M · status: done · sumber: gap §3 (middleware) — selesai ADR-0061*
 
 - **Apa**: `middleware.ts` per folder yang dieksekusi berurutan dari root, dapat mengganti request/response; konvensi route group `(grup)` untuk organisasi folder tanpa segmen URL.
 - **Kenapa penting untuk bersaing**: Middleware app-level memaksa pencocokan path manual dan mudah bocor (proteksi area admin harus diingat di satu tempat); struktur per-folder adalah cara berpikir standar di framework pesaing.

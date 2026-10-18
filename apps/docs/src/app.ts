@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { serveStatic } from "@ramonyx/adapter-runtime";
 import { readClientScript } from "@ramonyx/bundler";
 import { createRouteManifest, loadPageRoutes } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
@@ -10,7 +11,16 @@ import type { FetchHandler } from "ramonyx";
 import { setCatalog } from "./catalog.ts";
 import { loadCatalog } from "./docs.ts";
 import { createDocument } from "./document.ts";
-import middleware from "./routes/middleware.ts";
+
+const clientDir = fileURLToPath(new URL("../dist/client", import.meta.url));
+// Pre-routing (global): aset statis Node-only. Middleware aplikasi ada di
+// `src/routes/middleware.ts` (per-folder, otomatis — ADR-0061).
+const staticAssets = serveStatic({
+  dir: clientDir,
+  prefix: "/assets",
+  immutable: true,
+  headers: { "x-content-type-options": "nosniff" },
+});
 
 /**
  * Situs dokumentasi Ramonyx — dogfood penuh: halaman SSR React dengan **hydration +
@@ -47,6 +57,6 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
         client: { script: clientScript },
       }),
     ],
-    middleware,
+    middleware: [staticAssets],
   });
 }

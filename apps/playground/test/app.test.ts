@@ -81,8 +81,16 @@ test("playground halaman SSR (layout, loader, error boundary)", async () => {
 
     const users = await server.fetch("/users");
     assert.equal(users.status, 200);
+    assert.equal(users.headers.get("x-area"), "users", "middleware per-folder /users berlaku");
     const usersHtml = await users.text();
     assert.ok(usersHtml.includes("Rina") && usersHtml.includes("Budi"));
+
+    const homeTanpaArea = await server.fetch("/");
+    assert.equal(homeTanpaArea.headers.get("x-area"), null, "middleware /users tidak bocor ke /");
+
+    const tentang = await server.fetch("/tentang");
+    assert.equal(tentang.status, 200, "route group (publik) → /tentang");
+    assert.ok((await tentang.text()).includes("route group"));
 
     const user = await server.fetch(`/users/${knownUserId}`);
     assert.equal(user.status, 200);
@@ -104,7 +112,11 @@ test("playground halaman SSR (layout, loader, error boundary)", async () => {
     assert.ok(unknownHtml.includes("Halaman tidak ditemukan: /halaman-hilang/bertingkat"));
     assert.ok(unknownHtml.includes("<title>404 — Ramonyx Playground</title>"));
 
-    assert.equal(lines.filter((line) => line.message === "request").length, 6);
+    assert.equal(
+      lines.filter((line) => line.message === "request").length,
+      8,
+      "logger global mencatat setiap request (6 lama + homeTanpaArea + tentang)",
+    );
   } finally {
     await server.close();
   }

@@ -86,7 +86,7 @@
     },
     {
       "id": "middleware-global",
-      "name": "Middleware app-level (array di createHandler; urutan + next())",
+      "name": "Middleware global (pre-routing: aset statis, logging) di createHandler",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
@@ -95,26 +95,32 @@
       ],
       "evidence": [
         "packages/server/src/handler.ts",
-        "packages/server/test/pipeline.test.ts"
+        "packages/server/test/pipeline.test.ts",
+        "docs/adr/0061-middleware-per-folder.md"
       ],
       "limitations": [
-        "Hanya app-level — tidak ada `middleware.ts` per folder/route group"
+        "Tanpa matcher per-path (semua request)"
       ]
     },
     {
       "id": "middleware-per-folder",
-      "name": "Middleware per-folder / per-route",
-      "status": "planned",
+      "name": "Middleware per-folder (middleware.ts, root→terdalam, otomatis via manifest)",
+      "status": "implemented",
       "since": null,
       "priority": "p1",
       "packages": [
-        "@ramonyx/compiler"
+        "@ramonyx/compiler",
+        "@ramonyx/server"
       ],
       "evidence": [
-        "packages/compiler/src/pages.ts"
+        "packages/compiler/src/pages.ts",
+        "packages/server/src/handler.ts",
+        "packages/compiler/test/playground-pages.test.ts",
+        "apps/playground/src/routes/users/middleware.ts",
+        "docs/adr/0061-middleware-per-folder.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)"
       ]
     },
     {
@@ -1139,6 +1145,25 @@
         "packages/ssr/test/seo.test.ts",
         "apps/docs/export.ts",
         "docs/adr/0059-metadata-seo.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)"
+      ]
+    },
+    {
+      "id": "routing-route-groups",
+      "name": "Route group `(grup)` — organisasi folder tanpa segmen URL",
+      "status": "implemented",
+      "since": null,
+      "priority": "p2",
+      "packages": [
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/compiler/src/pages.ts",
+        "packages/compiler/src/manifest.ts",
+        "packages/compiler/test/playground-pages.test.ts",
+        "docs/adr/0061-middleware-per-folder.md"
       ],
       "limitations": [
         "Belum dirilis di npm (setelah 0.1.1)"

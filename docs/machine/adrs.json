@@ -796,6 +796,24 @@
       "features": [
         "soft-navigation"
       ]
+    },
+    {
+      "id": "ADR-0061",
+      "file": "0061-middleware-per-folder.md",
+      "title": "Middleware Per-Folder + Route Group `(grup)`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`middleware.ts` per folder dieksekusi root→terdalam setelah pencocokan rute (root berlaku otomatis untuk semua rute); urusan pre-routing (serveStatic/logging) tetap global di createHandler; segmen folder `(grup)` tidak muncul di URL; codegen edge menyebar middleware ke artefak.",
+      "related": [
+        "ADR-0014",
+        "ADR-0058"
+      ],
+      "features": [
+        "middleware-per-folder",
+        "routing-route-groups",
+        "middleware-global"
+      ]
     }
   ]
 }

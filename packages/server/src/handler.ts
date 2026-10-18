@@ -277,7 +277,14 @@ async function dispatch(
     redirect: (location, status = 302) => new Response(null, { status, headers: { location } }),
   };
 
-  const response = await definition.handler(context);
+  // Middleware per-folder (root → terdalam) berjalan setelah pencocokan rute (ADR-0061);
+  // dapat mengganti request (mis. nonce) sebelum handler.
+  const routeMiddlewares = entry.middlewares ?? [];
+  const response = await (routeMiddlewares.length === 0
+    ? definition.handler(context)
+    : runMiddleware(routeMiddlewares, { request, env, log: logger }, async (finalRequest) =>
+        definition.handler({ ...context, request: finalRequest }),
+      ));
   return validateOutput(definition, response, logger, url.pathname, strictValidation);
 }
 

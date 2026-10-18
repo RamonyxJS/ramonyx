@@ -13,13 +13,25 @@ test("memindai halaman playground", async () => {
 
   assert.deepEqual(
     pages.map((page) => page.path),
-    ["/", "/[...notFound]", "/form", "/users", "/users/[id]"],
+    ["/", "/tentang", "/[...notFound]", "/form", "/users", "/users/[id]"],
   );
   for (const page of pages) {
     assert.ok(page.layouts.length >= 1, `${page.path} punya layout root`);
     assert.ok(page.error !== undefined, `${page.path} mewarisi error root`);
   }
 
+  // Middleware per-folder (ADR-0061): root berlaku untuk semua; users/ menambah satu lapis.
+  // Root middleware = [securityHeaders, cspNonce] → 2 fungsi; users/ menambah 1.
   const home = pages.find((page) => page.path === "/");
+  assert.equal(home?.middlewares?.length, 2, "halaman / mewarisi middleware root");
+  assert.equal(home?.middlewareFiles?.length, 1);
+  const users = pages.find((page) => page.path === "/users");
+  assert.equal(users?.middlewares?.length, 3, "halaman /users mewarisi root + users middleware");
+  assert.equal(users?.middlewareFiles?.length, 2);
   assert.equal(typeof home?.page.loader, "function", "halaman / punya loader");
+  assert.equal(
+    pages.find((page) => page.path === "/tentang")?.directory.endsWith("(publik)/tentang"),
+    true,
+    "route group tetap ada di direktori fisik",
+  );
 });

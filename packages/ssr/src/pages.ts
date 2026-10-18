@@ -470,9 +470,11 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
 
   const routes: RouteEntry[] = [];
   for (const page of options.pages) {
+    const middlewares = page.middlewares ?? [];
     routes.push({
       method: "GET",
       path: page.path,
+      middlewares,
       definition: route({
         handler: (context) =>
           renderPage(
@@ -490,6 +492,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
       routes.push({
         method: "POST",
         path: page.path,
+        middlewares,
         definition: route({
           handler: (context) =>
             runAction(

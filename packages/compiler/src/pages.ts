@@ -1,11 +1,11 @@
 import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
-import type { LoadedPage, PageModule } from "@ramonyx/core";
+import type { LoadedPage, Middleware, PageModule } from "@ramonyx/core";
 import { RouteManifestError } from "./errors.ts";
 import { type ModuleImporter, nativeImporter } from "./import.ts";
 
-const PAGE_FILE = /^(page|layout|error)\.(tsx|ts)$/;
+const PAGE_FILE = /^(page|layout|error|middleware)\.(tsx|ts)$/;
 
 export interface LoadPageRoutesOptions {
   /** Direktori `src/routes` aplikasi. */
@@ -16,23 +16,20 @@ export interface LoadPageRoutesOptions {
   readonly importer?: ModuleImporter;
 }
 
-type FileKind = "page" | "layout" | "error";
+type FileKind = "page" | "layout" | "error" | "middleware";
 
-interface DirectoryFiles {
-  page?: string;
-  layout?: string;
-  error?: string;
-}
+/** Segmen route group `(grup)` — organisasi folder tanpa segmen URL (ADR-0061). */
+const ROUTE_GROUP = /^\(.+\)$/;
 
 function routePathForDir(dir: string, target: string): string {
   const parts = relative(dir, target)
     .split(sep)
-    .filter((part) => part.length > 0);
+    .filter((part) => part.length > 0 && !ROUTE_GROUP.test(part));
   return parts.length === 0 ? "/" : `/${parts.join("/")}`;
 }
 
-/** [dir, ...turun sampai target] — terluar → terdalam. */
-function ancestorDirs(dir: string, target: string): string[] {
+/** [dir, ...turun sampai target] — terluar → terdalam (dipakai juga manifest API). */
+export function ancestorDirs(dir: string, target: string): string[] {
   const parts = relative(dir, target)
     .split(sep)
     .filter((part) => part.length > 0);
@@ -47,7 +44,17 @@ function ancestorDirs(dir: string, target: string): string[] {
   return result;
 }
 
-async function scanDirectories(dir: string, apiDir: string): Promise<Map<string, DirectoryFiles>> {
+export interface ScannedDirectory {
+  page?: string;
+  layout?: string;
+  error?: string;
+  middleware?: string;
+}
+
+export async function scanDirectories(
+  dir: string,
+  apiDir: string,
+): Promise<Map<string, ScannedDirectory>> {
   let dirents: Dirent[];
   try {
     dirents = await readdir(dir, { withFileTypes: true, recursive: true });
@@ -58,7 +65,7 @@ async function scanDirectories(dir: string, apiDir: string): Promise<Map<string,
     );
   }
 
-  const directories = new Map<string, DirectoryFiles>();
+  const directories = new Map<string, ScannedDirectory>();
   for (const dirent of dirents) {
     if (!dirent.isFile()) {
       continue;
@@ -137,6 +144,25 @@ export async function loadPageRoutes(options: LoadPageRoutesOptions): Promise<Lo
       }
     }
 
+    const middlewares: Middleware[] = [];
+    const middlewareFiles: string[] = [];
+    for (const ancestor of ancestorDirs(dir, pageDir)) {
+      const middlewareFile = directories.get(ancestor)?.middleware;
+      if (middlewareFile === undefined) {
+        continue;
+      }
+      const module = await importer(middlewareFile, `middleware ${routePathForDir(dir, ancestor)}`);
+      const exported = module.default;
+      if (!Array.isArray(exported) || !exported.every((item) => typeof item === "function")) {
+        throw new RouteManifestError(
+          `Middleware ${routePathForDir(dir, ancestor)} (${middlewareFile}) harus mengekspor array fungsi: ` +
+            "`export default [fn, ...] satisfies Middleware[]`.",
+        );
+      }
+      middlewares.push(...(exported as Middleware[]));
+      middlewareFiles.push(middlewareFile);
+    }
+
     let error: PageModule | undefined;
     let errorFile: string | undefined;
     for (const ancestor of ancestorDirs(dir, pageDir).reverse()) {
@@ -161,6 +187,8 @@ export async function loadPageRoutes(options: LoadPageRoutesOptions): Promise<Lo
       pageFile,
       layoutFiles,
       errorFile,
+      middlewares,
+      middlewareFiles,
     });
   }
 

@@ -54,6 +54,7 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
     const pageVar = varFor(page.pageFile);
     const layoutVars = (page.layoutFiles ?? []).map((file) => varFor(file));
     const errorVar = page.errorFile === undefined ? "undefined" : varFor(page.errorFile);
+    const middlewareVars = (page.middlewareFiles ?? []).map((file) => varFor(file));
     return [
       "  {",
       `    path: ${JSON.stringify(page.path)},`,
@@ -63,6 +64,7 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
       `    directory: ${JSON.stringify(page.directory)},`,
       `    pageFile: ${JSON.stringify(page.pageFile)},`,
       `    layoutFiles: ${JSON.stringify(page.layoutFiles ?? [])},`,
+      `    middlewares: [${middlewareVars.map((name) => `...${name}.default`).join(", ")}],`,
       page.errorFile === undefined ? null : `    errorFile: ${JSON.stringify(page.errorFile)},`,
       "  },",
     ]
@@ -73,9 +75,11 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
   const apiEntries: string[] = [];
   for (const route of options.apiRoutes) {
     const apiVar = varFor(route.file);
+    const middlewareVars = route.middlewareFiles.map((file) => varFor(file));
+    const middlewareList = middlewareVars.map((name) => `...${name}.default`).join(", ");
     for (const method of route.methods) {
       apiEntries.push(
-        `  { method: ${JSON.stringify(method)}, path: ${JSON.stringify(route.routePath)}, definition: ${apiVar}[${JSON.stringify(method)}] },`,
+        `  { method: ${JSON.stringify(method)}, path: ${JSON.stringify(route.routePath)}, middlewares: [${middlewareList}], definition: ${apiVar}[${JSON.stringify(method)}] },`,
       );
     }
   }

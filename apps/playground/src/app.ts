@@ -1,10 +1,32 @@
 import { fileURLToPath } from "node:url";
+import { serveStatic } from "@ramonyx/adapter-runtime";
 import { createRouteManifest, loadPageRoutes, type ModuleImporter } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
 import { createPageRoutes } from "@ramonyx/ssr";
-import type { EnvReader, FetchHandler, Logger } from "ramonyx";
-import middleware from "./routes/middleware.ts";
+import type { EnvReader, FetchHandler, Logger, Middleware } from "ramonyx";
+
+// Middleware pre-routing (global): aset statis (Node-only) + logging request.
+// Middleware aplikasi ada di `src/routes/middleware.ts` (per-folder, otomatis — ADR-0061).
+const clientDir = fileURLToPath(new URL("../dist/client", import.meta.url));
+const staticAssets = serveStatic({
+  dir: clientDir,
+  prefix: "/assets",
+  immutable: true,
+  headers: { "x-content-type-options": "nosniff" },
+});
+
+const requestLogger: Middleware = async (context, next) => {
+  const started = performance.now();
+  const response = await next();
+  context.log.info("request", {
+    method: context.request.method,
+    path: new URL(context.request.url).pathname,
+    status: response.status,
+    ms: Math.round(performance.now() - started),
+  });
+  return response;
+};
 
 export interface CreateAppOptions {
   readonly env?: EnvReader;
@@ -44,7 +66,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
 
     return createHandler({
       routes: [...apiRoutes, ...pageRoutes],
-      middleware,
+      middleware: [staticAssets, requestLogger],
       env: options.env,
       logger: options.logger,
       strictValidation: options.strictValidation,

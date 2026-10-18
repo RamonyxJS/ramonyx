@@ -90,7 +90,7 @@
       "theme": "routing",
       "priority": "p1",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "`middleware.ts` per folder yang dieksekusi berurutan dari root, dapat mengganti request/response; konvensi route group `(grup)` untuk organisasi folder tanpa segmen URL.",
       "why": "Middleware app-level memaksa pencocokan path manual dan mudah bocor (proteksi area admin harus diingat di satu tempat); struktur per-folder adalah cara berpikir standar di framework pesaing.",
       "done": [
@@ -102,7 +102,7 @@
       "areas": ["packages/compiler", "packages/server"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js middleware (per-project + matcher); SvelteKit hooks + layout server load; Nuxt route rules/middleware.",
-      "source": "gap §3 (middleware)",
+      "source": "gap §3 (middleware) — selesai ADR-0061",
       "strategic": false
     },
     {

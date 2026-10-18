@@ -23,6 +23,14 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
 - **Target edge/serverless** (ADR-0058): `ramonyx build --target edge` → `dist/edge/index.js`
   (kontrak `{ fetch }`); codegen entry server (impor statis, tanpa `node:fs`); React adapter
   memakai `react-dom/server.edge` untuk sinkron + streaming; guard build menolak `node:*`.
+- **Metadata & SEO** (ADR-0059): `PageMetadata` diperluas (description/canonical/image/type/robots)
+  + injeksi `<head>`; helper `sitemapXml`/`robotsTxt`/`createSeoRoutes` (exclude noindex + halaman
+  error; origin dari request).
+- **Prefetch klien** (ADR-0060): tautan same-origin dimuat saat hover/focus/viewport (cache LRU
+  8 entri, TTL 30 dtk, maks 2 konkuren); navigasi memakai cache tanpa request.
+- **Middleware per-folder + route group** (ADR-0061): `middleware.ts` per folder (root otomatis
+  untuk semua rute, urutan root→terdalam); urusan pre-routing (aset statis/logging) tetap global;
+  folder `(grup)` tidak muncul di URL.
 
 ### Perubahan API (pra-1.0)
 

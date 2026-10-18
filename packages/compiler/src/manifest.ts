@@ -1,9 +1,10 @@
 import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
-import { join, relative, sep } from "node:path";
-import type { RouteDefinition, RouteEntry } from "@ramonyx/core";
+import { dirname, join, relative, sep } from "node:path";
+import type { Middleware, RouteDefinition, RouteEntry } from "@ramonyx/core";
 import { RouteManifestError } from "./errors.ts";
 import { type ModuleImporter, nativeImporter } from "./import.ts";
+import { ancestorDirs, scanDirectories } from "./pages.ts";
 
 export const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"] as const;
 
@@ -33,8 +34,11 @@ function isRouteDefinition(
   );
 }
 
+/** Segmen route group `(grup)` — organisasi folder tanpa segmen URL (ADR-0061). */
+const ROUTE_GROUP = /^\(.+\)$/;
+
 function toRoutePath(parts: readonly string[]): string {
-  const segments = [...parts];
+  const segments = parts.filter((part) => !ROUTE_GROUP.test(part));
   const fileName = (segments.at(-1) ?? "").slice(0, -".ts".length);
   if (fileName === "index") {
     segments.pop();
@@ -91,6 +95,8 @@ export interface ApiRouteFile {
   readonly file: string;
   readonly routePath: string;
   readonly methods: readonly HttpMethod[];
+  /** File middleware per-folder (root → terdalam) untuk rute ini (ADR-0061). */
+  readonly middlewareFiles: readonly string[];
 }
 
 /**
@@ -101,6 +107,7 @@ export async function listApiRoutes(options: CreateRouteManifestOptions): Promis
   const apiDir = options.apiDir ?? "api";
   const importer = options.importer ?? nativeImporter;
   const files = await collectRouteFiles(options.dir, apiDir);
+  const directories = await scanDirectories(options.dir, apiDir);
   const result: ApiRouteFile[] = [];
 
   for (const file of files) {
@@ -111,7 +118,10 @@ export async function listApiRoutes(options: CreateRouteManifestOptions): Promis
         `Route ${file.routePath} (${file.absolute}) tidak mengekspor HTTP method. Ekspor salah satu: ${HTTP_METHODS.join(", ")}.`,
       );
     }
-    result.push({ file: file.absolute, routePath: file.routePath, methods });
+    const middlewareFiles = ancestorDirs(options.dir, dirname(file.absolute))
+      .map((ancestor) => directories.get(ancestor)?.middleware)
+      .filter((entry): entry is string => entry !== undefined);
+    result.push({ file: file.absolute, routePath: file.routePath, methods, middlewareFiles });
   }
 
   return result;
@@ -130,9 +140,31 @@ export async function createRouteManifest(
   const apiRoutes = await listApiRoutes(options);
   const entries: RouteEntry[] = [];
 
+  const middlewareCache = new Map<string, Middleware[]>();
+  const loadMiddleware = async (file: string): Promise<Middleware[]> => {
+    const cached = middlewareCache.get(file);
+    if (cached !== undefined) {
+      return cached;
+    }
+    const module = await importer(file, `middleware ${file}`);
+    const exported = module.default;
+    if (!Array.isArray(exported) || !exported.every((item) => typeof item === "function")) {
+      throw new RouteManifestError(
+        `Middleware ${file} harus mengekspor array fungsi: \`export default [fn, ...] satisfies Middleware[]\`.`,
+      );
+    }
+    const list = exported as Middleware[];
+    middlewareCache.set(file, list);
+    return list;
+  };
+
   for (const file of apiRoutes) {
     // Modul sudah termuat di `listApiRoutes` (cache importer) — ambil definisinya.
     const module = await importer(file.file, `route ${file.routePath}`);
+    const middlewares: Middleware[] = [];
+    for (const middlewareFile of file.middlewareFiles) {
+      middlewares.push(...(await loadMiddleware(middlewareFile)));
+    }
     for (const method of file.methods) {
       const definition = module[method];
       if (!isRouteDefinition(definition)) {
@@ -140,7 +172,7 @@ export async function createRouteManifest(
           `Ekspor ${method} di ${file.routePath} bukan definisi route yang valid (butuh objek dengan fungsi "handler").`,
         );
       }
-      entries.push({ method, path: file.routePath, definition });
+      entries.push({ method, path: file.routePath, definition, middlewares });
     }
   }
 

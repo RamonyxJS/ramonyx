@@ -67,3 +67,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0058](0058-edge-target.md) | Target build edge/serverless (`--target edge`, kontrak fetch handler) + `guardedFetch` ke subpath | Accepted |
 | [0059](0059-metadata-seo.md) | Metadata halaman (description/OG/Twitter/robots) + `sitemap.xml`/`robots.txt` | Accepted |
 | [0060](0060-prefetch.md) | Prefetch halaman klien (hover/focus/viewport, cache LRU + TTL) | Accepted |
+| [0061](0061-middleware-per-folder.md) | Middleware per-folder otomatis + route group `(grup)` | Accepted |

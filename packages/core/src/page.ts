@@ -1,5 +1,5 @@
 import type { StandardSchema } from "@ramonyx/schema";
-import type { EnvReader, Logger } from "./types.ts";
+import type { EnvReader, Logger, Middleware } from "./types.ts";
 
 export interface PageMetadata {
   readonly title?: string;
@@ -115,4 +115,8 @@ export interface LoadedPage {
   readonly pageFile?: string;
   readonly layoutFiles?: readonly string[];
   readonly errorFile?: string;
+  /** Middleware per-folder (root → terdalam) untuk halaman ini (ADR-0061). */
+  readonly middlewares?: readonly Middleware[];
+  /** Path file middleware (urutan sama dengan `middlewares`) — untuk codegen server/edge. */
+  readonly middlewareFiles?: readonly string[];
 }

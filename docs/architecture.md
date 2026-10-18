@@ -36,7 +36,7 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `packages/ssr` | Render halaman → HTML (+ streaming) | Phase 2 | SSR selesai (streaming menyusul) |
 | `packages/client` | Hydration (kini di `@ramonyx/react/client`) + client navigation | Phase 2 | navigasi menyusul |
 | `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`, `generateClientEntry`), transformasi & analisis batas server/client | Phase 2 | file routing + halaman + codegen selesai |
-| `packages/bundler` | Pembungkus Vite (ADR-0005) | Phase 2 | build client selesai (dev server menyusul) |
+| `packages/bundler` | Pembungkus Vite (ADR-0005): build client + dev server (ADR-0009) | Phase 2 | selesai |
 | `packages/security` | Policy & audit keamanan framework | Phase 3 | belum dibuat |
 | `packages/devtools` | CLI, dev server, diagnostics | Phase 2–3 | belum dibuat |
 | `apps/playground` | App demo/uji end-to-end | Phase 1 | belum dibuat |
@@ -46,8 +46,8 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `benchmarks/*` | Skrip benchmark per area | Phase 1 | belum dibuat |
 
 Status Phase 2 (berjalan): file routing API + halaman (loader/layout/error), SSR React, hydration
-(Vite bundle + payload inline, ADR-0007), dan client navigation (soft navigation, ADR-0008)
-sudah berfungsi; dev server/HMR menyusul.
+(Vite bundle + payload inline, ADR-0007), client navigation (ADR-0008), dan dev server HMR
+(Vite + `ssrLoadModule`, ADR-0009) sudah berfungsi; tersisa browser test otomatis + Web Vitals.
 
 Status Phase 1: `core`, `router`, `schema`, `adapter-runtime`, `server`, `testing`, `ramonyx`,
 `apps/playground`, dan `benchmarks/http` sudah diimplementasikan (source-first TypeScript via

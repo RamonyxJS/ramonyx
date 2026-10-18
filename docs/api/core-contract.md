@@ -148,3 +148,6 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
 - Client navigation (ADR-0008): klik link same-origin → fetch HTML (`x-ramonyx-nav: 1`) → swap
   `#ramonyx-root` + re-hydrate + `pushState`; `popstate` ikut soft-nav; fallback full navigation.
   Diverifikasi browser: 3 navigasi maju + 2 back tanpa reload (sentinel bertahan).
+- Dev server (ADR-0009): Vite di 5173 (transform + HMR) dengan proxy manual ke SSR di 3000;
+  manifest/halaman dimuat ulang via `ssrLoadModule` + `reloadManifests` → edit file berlaku
+  tanpa restart; watcher `src/routes` meregenerasi entry + full-reload.

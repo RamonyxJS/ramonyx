@@ -52,7 +52,8 @@ Catatan implementasi Phase 1:
   adapter `packages/react` (layout/loader/error.tsx)
 - [x] Bundler Vite + hydration (ADR-0005/0007): `@ramonyx/bundler` → `client.js`; payload
   `window.__RAMONYX__` + `hydrateAll` + aset statis `/assets/*`; diverifikasi di browser nyata
-- [ ] Dev server/HMR
+- [x] Dev server/HMR (ADR-0009): Vite (5173) + proxy manual ke SSR (3000); manifest/halaman
+  dimuat ulang via `ssrLoadModule` (tanpa restart); live reload diverifikasi di browser
 - [x] Client navigation (navigasi tanpa reload, ADR-0008): fetch HTML → swap `#ramonyx-root` →
   re-hydrate → `pushState`/`popstate`; diverifikasi di browser nyata
 - [ ] Browser test otomatis + baseline Web Vitals

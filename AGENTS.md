@@ -18,8 +18,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm typecheck` — `tsc --noEmit` (TypeScript 7: `baseUrl` dihapus, `paths` wajib relatif `./`).
 - `pnpm test` / `pnpm bench` / `pnpm dev` / `pnpm build` — semuanya lewat
   `node --import ./tools/register.mjs` (loader esbuild: TS + JSX automatic; ADR-0006). Butuh Node ≥24.
-- `pnpm build` — bundle client (Vite) ke `apps/playground/dist/client/`; **wajib** sebelum halaman interaktif.
-- Demo SSR: `pnpm dev` (default `http://localhost:3000`); hasil bench di `benchmarks/results/`.
+- `pnpm dev` — dev server: Vite (5173) dengan HMR → SSR (3000); **tanpa build**.
+- `pnpm build` + `pnpm start` — produksi: bundle client ke `apps/playground/dist/client/`, lalu SSR di 3000.
+- Hasil bench di `benchmarks/results/`.
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
 
@@ -34,9 +35,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - **JSX hanya lewat loader dev.** Node type stripping tidak memproses JSX; jalankan app/test dengan
   `node --import ./tools/register.mjs` (script `test`/`bench`/`dev` sudah begitu — ADR-0006).
   Paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
-- **Hydration butuh build.** Jalankan `pnpm build` dulu; tanpa itu `/assets/client.js` 404 dan
-  halaman tidak interaktif. Payload `window.__RAMONYX__` + container `#ramonyx-root`; loader data
-  wajib JSON-serializable; halaman error tidak di-hydrate (ADR-0007).
+- **Hydration:** di dev `pnpm dev` sudah otomatis (entry via Vite); di produksi jalankan
+  `pnpm build` dulu lalu `pnpm start` (tanpa build, `/assets/client.js` 404). Payload
+  `window.__RAMONYX__` + container `#ramonyx-root`; loader data wajib JSON-serializable;
+  halaman error tidak di-hydrate (ADR-0007).
 - **`node:*` hanya di `packages/adapter-runtime` dan `packages/compiler` (build-time)**, plus
   test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
@@ -69,7 +71,7 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 2 berjalan — file routing (API + halaman), SSR React, hydration, dan client navigation
-(soft navigation, ADR-0008) selesai; 75 tes hijau + verifikasi browser (hydration & navigasi).
-Berikutnya: dev server/HMR, lalu browser test otomatis + Web Vitals. Keputusan terbuka:
+Phase 2 berjalan — file routing (API + halaman), SSR React, hydration, client navigation, dan
+dev server HMR (ADR-0009) selesai; 77 tes hijau + verifikasi browser. Berikutnya: browser test
+otomatis + baseline Web Vitals. Keputusan terbuka:
 scope npm & lisensi, matrix browser, rekonsiliasi PRD (lihat `docs/roadmap/phase-0-1.md`).

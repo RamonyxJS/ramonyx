@@ -46,8 +46,8 @@
 - Skrip per area di `benchmarks/<area>/` (router, http, scalar, ssr, startup, memory).
 - Hasil JSON + ringkasan disimpan sebagai **artefak CI**.
 - Baseline Phase 1 di-commit (mis. `benchmarks/results/phase1-baseline.json`) sebagai pembanding regresi.
-- Web Vitals (Phase 2): `benchmarks/results/phase2-web-vitals.json` dari spec e2e (artefak,
-  bukan klaim; threshold per workload menyusul).
+- Web Vitals (Phase 2): baseline `benchmarks/results/phase2-web-vitals.json` (diperbarui via
+  `UPDATE_BASELINE_VITALS=1`); run biasa menulis `test-results/web-vitals-latest.json`.
 - Abuse-case & soak (Phase 3): `benchmarks/results/phase3-abuse.json` (`pnpm bench:security`) —
   skenario serangan + RSS proses server (anak) via `/proc`; CI meng-upload seluruh
   `benchmarks/results/` sebagai artefak.

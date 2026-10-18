@@ -35,5 +35,7 @@ sesuai protokol benchmark §8.
 ## Konsekuensi
 
 - CI menambah langkah install chromium + e2e (lebih lambat, tetapi menutup gap browser otomatis).
-- Artefak vitals ditimpa tiap run lokal; versi ter-commit menjadi baseline historis.
+- Artefak vitals: run biasa menulis `test-results/web-vitals-latest.json` (tidak mengubah baseline);
+  baseline ter-commit (`benchmarks/results/phase2-web-vitals.json`) diperbarui hanya dengan
+  `UPDATE_BASELINE_VITALS=1` (atau bila belum ada).
 - e2e menguji build produksi; jalur dev (Vite) tetap diverifikasi manual/chrome-devtools.

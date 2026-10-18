@@ -15,3 +15,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0005](0005-bundler.md) | Bundler awal | Accepted |
 | [0006](0006-jsx-loader.md) | Loader JSX dev/test (esbuild, bukan tsx) | Accepted |
 | [0007](0007-hydration.md) | Hydration: payload inline + satu bundle client | Accepted |
+| [0008](0008-client-navigation.md) | Client navigation: soft navigation (fetch → swap → re-hydrate) | Accepted |

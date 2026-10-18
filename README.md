@@ -4,10 +4,10 @@ Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangka
 proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
-> **Status: Phase 2 berjalan — file routing + SSR React + hydration sudah ada**:
+> **Status: Phase 2 berjalan — file routing + SSR React + hydration + client navigation sudah ada**:
 > halaman `page.tsx`/`layout.tsx`/`error.tsx` + loader, endpoint `src/routes/api/**`, payload
-> hydration `window.__RAMONYX__` + bundle client Vite. Dev server/HMR, client navigation, dan
-> runtime Rust menyusul sesuai roadmap. Klaim mengikuti aturan BLUEPRINT §10.
+> hydration + bundle Vite, navigasi tanpa reload (soft navigation). Dev server/HMR dan runtime
+> Rust menyusul sesuai roadmap. Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

@@ -99,7 +99,8 @@ export default [
 - `error.tsx` terdekat (naik ke root) dirender saat loader/render gagal; menerima
   `{ error: { status, message } }` (`ErrorPageProps`). Status/pesan publik mengikuti `HttpError`.
 - Path dari struktur direktori (`users/[id]/page.tsx` → `/users/[id]`); halaman hanya `GET`.
-- SSR + hydration via adapter React (`@ramonyx/react`); client navigation belum ada.
+- SSR + hydration via adapter React (`@ramonyx/react`); client navigation (soft navigation,
+  ADR-0008) lewat `enableClientNavigation`.
 - Hydration (ADR-0007): payload inline `window.__RAMONYX__ = { path, params, data }` +
   `<script type="module" src="/assets/client.js">`; container `#ramonyx-root`; **`data` loader wajib
   JSON-serializable**; halaman error dirender server saja (tidak di-hydrate).
@@ -144,3 +145,6 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
 - Hydration (Phase 2): `generateClientEntry` (`@ramonyx/compiler`) → Vite (`@ramonyx/bundler`) →
   `hydrateAll` (`@ramonyx/react/client`); diverifikasi di browser nyata (counter interaktif,
   tanpa mismatch) — test otomatis browser menyusul.
+- Client navigation (ADR-0008): klik link same-origin → fetch HTML (`x-ramonyx-nav: 1`) → swap
+  `#ramonyx-root` + re-hydrate + `pushState`; `popstate` ikut soft-nav; fallback full navigation.
+  Diverifikasi browser: 3 navigasi maju + 2 back tanpa reload (sentinel bertahan).

@@ -53,7 +53,8 @@ Catatan implementasi Phase 1:
 - [x] Bundler Vite + hydration (ADR-0005/0007): `@ramonyx/bundler` → `client.js`; payload
   `window.__RAMONYX__` + `hydrateAll` + aset statis `/assets/*`; diverifikasi di browser nyata
 - [ ] Dev server/HMR
-- [ ] Client navigation (navigasi tanpa reload)
+- [x] Client navigation (navigasi tanpa reload, ADR-0008): fetch HTML → swap `#ramonyx-root` →
+  re-hydrate → `pushState`/`popstate`; diverifikasi di browser nyata
 - [ ] Browser test otomatis + baseline Web Vitals
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)

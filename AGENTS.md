@@ -69,7 +69,7 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 2 berjalan — file routing (API + halaman), SSR React, dan hydration (Vite bundle, ADR-0007)
-selesai; 75 tes hijau (hydration juga diverifikasi manual di browser). Berikutnya: dev server/HMR
-dan client navigation. Keputusan terbuka:
+Phase 2 berjalan — file routing (API + halaman), SSR React, hydration, dan client navigation
+(soft navigation, ADR-0008) selesai; 75 tes hijau + verifikasi browser (hydration & navigasi).
+Berikutnya: dev server/HMR, lalu browser test otomatis + Web Vitals. Keputusan terbuka:
 scope npm & lisensi, matrix browser, rekonsiliasi PRD (lihat `docs/roadmap/phase-0-1.md`).

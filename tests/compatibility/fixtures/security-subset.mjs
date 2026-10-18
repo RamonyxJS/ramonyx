@@ -126,7 +126,11 @@ const statuses = {
 if (halo.status !== 200 || csrfTanpaToken.status !== 403 || csrfDenganToken.status !== 200) {
   throw new Error(`status security salah: ${JSON.stringify(statuses)}`);
 }
-if (ssrf.loopback !== "ditolak" || ssrf.takAda !== "ditolak" || ssrf.diizinkan !== "butuh-node-http") {
+if (
+  ssrf.loopback !== "ditolak" ||
+  ssrf.takAda !== "ditolak" ||
+  ssrf.diizinkan !== "butuh-node-http"
+) {
   throw new Error(`SSRF salah: ${JSON.stringify(ssrf)}`);
 }
 if (statuses.cspNonce !== true) throw new Error("nonce CSP tidak berganti antar request");

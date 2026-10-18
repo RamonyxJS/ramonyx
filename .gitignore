@@ -15,6 +15,9 @@ out/
 # Rust (Phase 4+)
 target/
 
+# Direktori kerja sementara (scaffold manual & test)
+.tmp-*/
+
 # Test & coverage
 coverage/
 .nyc_output/

@@ -10,7 +10,6 @@ import { join } from "node:path";
 import { generateServerEntry, listApiRoutes, loadPageRoutes } from "@ramonyx/compiler";
 import { build } from "vite";
 import { readClientScript } from "./build.ts";
-import { serverOnlyPlugin } from "./server-only.ts";
 
 export interface BuildEdgeOptions {
   readonly appDir: string;

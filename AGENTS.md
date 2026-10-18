@@ -23,7 +23,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm test:e2e` — Playwright terhadap build produksi (`pnpm build` + `pnpm start`); browser:
   CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
 - `pnpm create:app <dir>` — scaffold aplikasi Ramonyx baru (template minimal yang berjalan).
-- `pnpm docs` — situs dokumentasi lokal (dogfood SSR React atas `docs/**`) di http://127.0.0.1:4000.
+- `pnpm docs` — situs dokumentasi lokal (dogfood **penuh**: SSR React + hydration/soft navigation
+  atas `docs/**`) di http://127.0.0.1:4000 (build klien + start).
 - `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
   di `dist/`); `pnpm release:verify` — verifikasi instalasi di proyek konsumen bersih (Node polos).
 - `benchmarks/runtime-startup.sh` — baseline startup runtime Rust (median wall/startup/load/eval
@@ -143,8 +144,8 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 + binary runtime, verifikasi instalasi konsumen — ADR-0039), **isolasi level proses untuk plugin**
 (`ramonyx.spawn`, protokol JSON, permission irisan, kill — ADR-0040), **scaffolder aplikasi**
 (`pnpm create:app` — template file-routing **SSR React + hydration**, ADR-0041), dan **situs
-dokumentasi** (`pnpm docs`, dogfood SSR React atas `docs/**` — ADR-0042) — semuanya diverifikasi
-test + smoke.
+dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042) —
+semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; sisa Phase 5: **publikasi npm sebenarnya** (butuh kredensial
 pemilik) dan kandidat lanjutan (restart supervision plugin, sandbox OS, hydration/pencarian docs).
 Ringkas Phase 3: limits body/timeout/concurrency +

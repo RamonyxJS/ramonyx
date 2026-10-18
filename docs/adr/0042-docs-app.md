@@ -60,3 +60,29 @@ awal.
 - Semua ADR/blueprint/roadmap dapat dibaca sebagai situs dengan satu perintah (`pnpm docs`).
 - Non-blocker tersisa: **publikasi npm** (keputusan pemilik) dan kandidat lanjutan (hydration
   situs docs, pencarian, pengelompokan).
+
+## Diperbarui (2026-10-18): Hydration + Soft Navigation
+
+Situs docs kini **dogfood penuh**: file routing (`src/routes/**`), hydration + soft navigation
+klien (`build.ts` via `@ramonyx/bundler`, middleware `/assets/*`), dan script `pnpm docs`
+(build + start).
+
+Dua masalah ditemukan saat menaikkan situs ke hydration:
+
+1. **`DocumentRenderer` kustom menjatuhkan `scripts`** — payload `window.__RAMONYX__` dan
+   `<script src="/assets/client.js">` tidak pernah masuk HTML sehingga hydration mustahil.
+   Renderer kini meneruskan `head`/`scripts` (perilaku `defaultDocument`).
+2. **Modul halaman menarik `node:fs`** (loader membaca berkas) → bundel klien berisi impor
+   Node yang ter-externalize. Solusi: **katalog browser-safe** (`src/catalog.ts`) berisi
+   judul + HTML yang sudah dirender (diisi sekali oleh `app.ts` di server); modul halaman
+   tetap bersih untuk bundel klien.
+
+Selain itu, **bug klien ditemukan lewat verifikasi browser**: setelah soft navigation,
+`window.__RAMONYX__` masih berisi payload halaman lama (kontrak ADR-0008 menyatakan payload =
+halaman aktif). Diperbaiki di `@ramonyx/react/client` (payload diperbarui setelah tukar)
+dan **dikunci e2e** (Playwright: `path` payload setelah navigasi + back/forward).
+
+Bukti: 4 test docs (SSR payload/script, build klien memuat hydration + soft navigation, aset
+200 `text/javascript`, traversal 404) dan e2e Playground **5/5 hijau**; verifikasi browser pada
+situs docs: penanda JS bertahan saat klik dokumen (tanpa full reload), `payloadPath` berubah
+ke `/dokumen/[...slug]`, konten dokumen tampil.

@@ -177,11 +177,13 @@ pekerjaan Phase 5.
       SSR React + hydration** (`src/routes/**`, build klien Vite, aset `/assets/*`, middleware
       security), placeholder `__APP_NAME__`, `--force`; bukti CI: smoke SSR + `pnpm build` klien
       + aset disajikan, plus verifikasi hydration di browser (klik counter)
-- [x] **Situs dokumentasi** (ADR-0042): `pnpm docs` — dogfood SSR React menyajikan seluruh
-      `docs/**` (52 dokumen) via catch-all `/dokumen/[...slug]`, indeks + API JSON, guard
-      traversal, security middleware aktif di situsnya sendiri
+- [x] **Situs dokumentasi** (ADR-0042): `pnpm docs` — dogfood **penuh** (file routing +
+      **hydration + soft navigation** + aset `/assets/*`) menyajikan seluruh `docs/**` (52
+      dokumen) via catch-all `/dokumen/[...slug]`, indeks + API JSON, guard traversal, security
+      middleware aktif; temuan: `DocumentRenderer` kustom menjatuhkan `scripts` & payload klien
+      basi setelah soft navigation (diperbaiki + dikunci e2e)
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
-      restart supervision plugin, sandbox OS (seccomp/namespace), hydration/pencarian situs docs
+      restart supervision plugin, sandbox OS (seccomp/namespace), pencarian di situs docs
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

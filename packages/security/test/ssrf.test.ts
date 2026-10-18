@@ -78,3 +78,85 @@ test("redirect divalidasi ulang per hop (default: tidak diikuti)", async () => {
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 });
+
+test("pinning: DNS di-resolve sekali lalu alamat dipatok (tanpa resolve ulang oleh klien)", async () => {
+  const lookupCalls: string[] = [];
+  // Alamat publik (TEST-NET-3) — lolos validasi; koneksi diarahkan ke alamat terpin.
+  await assert.rejects(
+    guardedFetch(
+      "http://situs-uji.test/",
+      { signal: AbortSignal.timeout(1_500) },
+      {
+        dnsLookup: async (hostname) => {
+          lookupCalls.push(hostname);
+          return [{ address: "203.0.113.7", family: 4 }];
+        },
+      },
+    ),
+    (error: unknown) => !(error instanceof SsrfError),
+    "validasi lolos; kegagalan terjadi di koneksi (bukan SSRF)",
+  );
+  assert.deepEqual(lookupCalls, ["situs-uji.test"], "resolve tepat sekali (pinning)");
+});
+
+test("pinning: hasil DNS privat tetap ditolak walau hostname terlihat publik", async () => {
+  await assert.rejects(
+    guardedFetch(
+      "http://terlihat-publik.test/",
+      {},
+      {
+        dnsLookup: async () => [{ address: "127.0.0.1", family: 4 }],
+      },
+    ),
+    SsrfError,
+  );
+});
+
+test("body string/URLSearchParams dikirim lewat jalur pinned (allowHosts)", async () => {
+  const diterima: { body: string; contentType: string | undefined }[] = [];
+  const server = createServer((request, response) => {
+    const chunks: Buffer[] = [];
+    request.on("data", (chunk: Buffer) => chunks.push(chunk));
+    request.on("end", () => {
+      diterima.push({
+        body: Buffer.concat(chunks).toString(),
+        contentType: request.headers["content-type"],
+      });
+      response.writeHead(200, { "content-type": "text/plain" });
+      response.end("ok");
+    });
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  const port = typeof address === "object" && address !== null ? address.port : 0;
+
+  try {
+    const post = await guardedFetch(
+      `http://localhost:${port}/kirim`,
+      {
+        method: "POST",
+        body: JSON.stringify({ a: 1 }),
+        headers: { "content-type": "application/json" },
+      },
+      { allowHosts: ["localhost"] },
+    );
+    assert.equal(post.status, 200);
+    assert.equal(await post.text(), "ok");
+
+    const form = await guardedFetch(
+      `http://localhost:${port}/form`,
+      { method: "POST", body: new URLSearchParams({ nama: "Rina" }) },
+      { allowHosts: ["localhost"] },
+    );
+    assert.equal(form.status, 200);
+
+    assert.equal(diterima[0]?.body, '{"a":1}');
+    assert.equal(diterima[0]?.contentType, "application/json");
+    assert.equal(diterima[1]?.body, "nama=Rina");
+    assert.match(diterima[1]?.contentType ?? "", /application\/x-www-form-urlencoded/);
+  } finally {
+    await new Promise<void>((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});

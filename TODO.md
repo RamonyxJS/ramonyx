@@ -183,7 +183,7 @@
 
 ### `p1-docs-tutorial` — Tutorial getting-started end-to-end di situs docs
 
-*tema: docs · ukuran: S · status: open · sumber: gap §3 (docs)*
+*tema: docs · ukuran: S · status: done · sumber: gap §3 (docs) — selesai docs/tutorial.md*
 
 - **Apa**: Tutorial naratif: scaffold → rute + layout → loader → API + validasi → form → build → deploy, memakai perintah yang benar-benar dijalankan.
 - **Kenapa penting untuk bersaing**: Jalur adopsi pertama adalah tutorial, bukan referensi; README kami padat namun tidak menggantikan pengalaman langkah demi langkah yang dimiliki semua pesaing.
@@ -240,7 +240,7 @@
 
 ### `p2-ip-pinning` — IP-pinning guardedFetch (anti DNS-rebinding)
 
-*tema: security · ukuran: M · status: open · sumber: utang (ADR-0031)*
+*tema: security · ukuran: M · status: done · sumber: utang (ADR-0031) — selesai ADR-0064*
 
 - **Apa**: Resolusi DNS sekali lalu sambung ke alamat IP yang divalidasi (bukan resolve ulang oleh klien HTTP), dengan validasi Host/SNI — menutup jendela rebinding.
 - **Kenapa penting untuk bersaing**: Celah yang diakui sejak ADR-0031: guard SSRF tanpa pinning masih bisa dibypass lewat DNS rebinding; pesaing umumnya tidak menyediakan guard ini sama sekali, jadi menutupnya memperkuat diferensiasi keamanan.

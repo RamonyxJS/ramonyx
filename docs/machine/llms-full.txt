@@ -363,7 +363,7 @@
     },
     {
       "id": "ssrf-guard",
-      "name": "Guard SSRF (guardedFetch: validasi host/IP, blokir privat, redirect per-hop)",
+      "name": "Guard SSRF (guardedFetch: validasi host/IP, IP-pinning anti DNS-rebinding, redirect per-hop)",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
@@ -374,11 +374,11 @@
         "packages/security/src/ssrf.ts",
         "packages/security/test/ssrf.test.ts",
         "docs/adr/0015-ssrf-guard-output-limit.md",
-        "docs/adr/0058-edge-target.md"
+        "docs/adr/0064-ip-pinning.md"
       ],
       "limitations": [
-        "IP-pinning (anti DNS-rebinding) menyusul — dicatat di ADR-0031",
-        "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)"
+        "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)",
+        "Body FormData/multipart belum didukung"
       ]
     },
     {
@@ -2061,6 +2061,22 @@
       "features": [
         "boundary-enforcement"
       ]
+    },
+    {
+      "id": "ADR-0064",
+      "file": "0064-ip-pinning.md",
+      "title": "IP-Pinning `guardedFetch` (Menutup DNS-Rebinding)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "guardedFetch me-resolve DNS sekali lalu mematok alamat ke koneksi (node:http(s) dengan lookup kustom; Host/SNI tetap hostname asli); redirect divalidasi+di-pin per hop; body string/bytes/URLSearchParams/stream didukung, FormData menyusul.",
+      "related": [
+        "ADR-0015",
+        "ADR-0031"
+      ],
+      "features": [
+        "ssrf-guard"
+      ]
     }
   ]
 }
@@ -2312,60 +2328,99 @@
       "id": "sec-body-limit",
       "control": "Batas ukuran body request default 1 MiB → 413 (dapat dikonfigurasi `maxBodyBytes`)",
       "status": "implemented",
-      "evidence": ["packages/server/src/handler.ts", "tests/security/server-hardening.test.ts"],
+      "evidence": [
+        "packages/server/src/handler.ts",
+        "tests/security/server-hardening.test.ts"
+      ],
       "gaps": [],
-      "adrs": ["ADR-0011", "ADR-0035"]
+      "adrs": [
+        "ADR-0011",
+        "ADR-0035"
+      ]
     },
     {
       "id": "sec-timeout",
       "control": "Timeout handler/loader default 10s → 503 + `request.signal` abort (dapat dikonfigurasi `timeoutMs`)",
       "status": "implemented",
-      "evidence": ["packages/server/src/handler.ts", "tests/security/server-hardening.test.ts"],
+      "evidence": [
+        "packages/server/src/handler.ts",
+        "tests/security/server-hardening.test.ts"
+      ],
       "gaps": [],
-      "adrs": ["ADR-0011"]
+      "adrs": [
+        "ADR-0011"
+      ]
     },
     {
       "id": "sec-concurrency",
       "control": "Batas request bersamaan default 100 → 503 + `Retry-After` (load shedding)",
       "status": "implemented",
-      "evidence": ["packages/server/src/handler.ts", "tests/security/server-hardening.test.ts"],
+      "evidence": [
+        "packages/server/src/handler.ts",
+        "tests/security/server-hardening.test.ts"
+      ],
       "gaps": [],
-      "adrs": ["ADR-0012"]
+      "adrs": [
+        "ADR-0012"
+      ]
     },
     {
       "id": "sec-headers",
       "control": "Security headers default (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)",
       "status": "implemented",
-      "evidence": ["packages/security/src/headers.ts", "packages/security/test/headers.test.ts"],
+      "evidence": [
+        "packages/security/src/headers.ts",
+        "packages/security/test/headers.test.ts"
+      ],
       "gaps": [],
-      "adrs": ["ADR-0013"]
+      "adrs": [
+        "ADR-0013"
+      ]
     },
     {
       "id": "sec-csp-nonce",
       "control": "CSP dengan nonce per request — inline script diizinkan tanpa `unsafe-inline`",
       "status": "implemented",
-      "evidence": ["packages/security/src/csp.ts", "packages/security/test/csp.test.ts"],
+      "evidence": [
+        "packages/security/src/csp.ts",
+        "packages/security/test/csp.test.ts"
+      ],
       "gaps": [],
-      "adrs": ["ADR-0014"]
+      "adrs": [
+        "ADR-0014"
+      ]
     },
     {
       "id": "sec-csrf",
       "control": "Proteksi CSRF double-submit cookie + validasi origin (Web Crypto, timing-safe)",
       "status": "implemented",
-      "evidence": ["packages/security/src/csrf.ts", "packages/security/test/csrf.test.ts"],
+      "evidence": [
+        "packages/security/src/csrf.ts",
+        "packages/security/test/csrf.test.ts"
+      ],
       "gaps": [],
-      "adrs": ["ADR-0013"]
+      "adrs": [
+        "ADR-0013"
+      ]
     },
     {
       "id": "sec-ssrf",
-      "control": "Guard SSRF `guardedFetch`: validasi host/IP, blokir rentang privat, cek per-hop redirect",
+      "control": "Guard SSRF `guardedFetch`: validasi host/IP, blokir rentang privat, cek per-hop redirect, **IP-pinning** (resolve sekali + patok alamat — anti DNS-rebinding)",
       "status": "implemented",
-      "evidence": ["packages/security/src/ssrf.ts", "packages/security/test/ssrf.test.ts"],
+      "evidence": [
+        "packages/security/src/ssrf.ts",
+        "packages/security/test/ssrf.test.ts",
+        "docs/adr/0064-ip-pinning.md"
+      ],
       "gaps": [
-        "IP-pinning (anti DNS-rebinding) belum — dicatat ADR-0031",
+        "Body FormData/multipart belum didukung",
         "Pencocokan IPv6/zone-id terbatas"
       ],
-      "adrs": ["ADR-0015", "ADR-0031"]
+      "adrs": [
+        "ADR-0015",
+        "ADR-0031",
+        "ADR-0064"
+      ]
     },
     {
       "id": "sec-rate-limit",
@@ -2375,32 +2430,51 @@
         "packages/security/src/rate-limit.ts",
         "packages/security/test/rate-limit.test.ts"
       ],
-      "gaps": ["In-memory per proses (tanpa store terdistribusi)"],
-      "adrs": ["ADR-0017"]
+      "gaps": [
+        "In-memory per proses (tanpa store terdistribusi)"
+      ],
+      "adrs": [
+        "ADR-0017"
+      ]
     },
     {
       "id": "sec-input-validation",
       "control": "Validasi schema runtime di trust boundary (Standard Schema: query/body/params)",
       "status": "implemented",
-      "evidence": ["packages/schema/src/validate.ts", "packages/schema/test/validate.test.ts"],
+      "evidence": [
+        "packages/schema/src/validate.ts",
+        "packages/schema/test/validate.test.ts"
+      ],
       "gaps": [],
-      "adrs": ["ADR-0004"]
+      "adrs": [
+        "ADR-0004"
+      ]
     },
     {
       "id": "sec-output-limit",
       "control": "Batas ukuran dokumen SSR (mencegah output tak terkendali)",
       "status": "implemented",
-      "evidence": ["packages/ssr/src/pages.ts", "docs/adr/0015-ssrf-guard-output-limit.md"],
+      "evidence": [
+        "packages/ssr/src/pages.ts",
+        "docs/adr/0015-ssrf-guard-output-limit.md"
+      ],
       "gaps": [],
-      "adrs": ["ADR-0015"]
+      "adrs": [
+        "ADR-0015"
+      ]
     },
     {
       "id": "sec-dependency-policy",
       "control": "Kebijakan supply chain: quarantine 24 jam, `pnpm audit` di CI, Dependabot mingguan, justifikasi dependency",
       "status": "implemented",
-      "evidence": ["docs/security/dependency-policy.md", "pnpm-workspace.yaml"],
+      "evidence": [
+        "docs/security/dependency-policy.md",
+        "pnpm-workspace.yaml"
+      ],
       "gaps": [],
-      "adrs": ["ADR-0016"]
+      "adrs": [
+        "ADR-0016"
+      ]
     },
     {
       "id": "sec-runtime-permissions",
@@ -2410,28 +2484,44 @@
         "runtime/crates/runtime-core/src/permissions.rs",
         "runtime/crates/cli/tests/cli.rs"
       ],
-      "gaps": ["Runtime belum produksi (Phase 4+)"],
-      "adrs": ["ADR-0023", "ADR-0033"]
+      "gaps": [
+        "Runtime belum produksi (Phase 4+)"
+      ],
+      "adrs": [
+        "ADR-0023",
+        "ADR-0033"
+      ]
     },
     {
       "id": "sec-runtime-quotas",
       "control": "Kuota runtime: heap V8, watchdog timeout, CPU per-thread, RSS proses",
       "status": "implemented",
-      "evidence": ["runtime/crates/js-engine/src/lib.rs", "docs/adr/0038-cpu-rss-quotas.md"],
+      "evidence": [
+        "runtime/crates/js-engine/src/lib.rs",
+        "docs/adr/0038-cpu-rss-quotas.md"
+      ],
       "gaps": [
         "Heap hanya heap V8 — ArrayBuffer besar tidak dihitung; alokasi raksasa tunggal masih bisa OOM fatal"
       ],
-      "adrs": ["ADR-0033", "ADR-0038"]
+      "adrs": [
+        "ADR-0033",
+        "ADR-0038"
+      ]
     },
     {
       "id": "sec-worker-isolation",
       "control": "Isolasi worker: thread + isolate V8 terpisah, pesan JSON, permission irisan anti-eskalasi, kill switch",
       "status": "implemented",
-      "evidence": ["runtime/crates/js-engine/src/worker.rs", "docs/adr/0034-worker-isolation.md"],
+      "evidence": [
+        "runtime/crates/js-engine/src/worker.rs",
+        "docs/adr/0034-worker-isolation.md"
+      ],
       "gaps": [
         "Isolasi V8 bukan sandbox keamanan (dicatat di BLUEPRINT) — batas tepercaya tetap proses/OS"
       ],
-      "adrs": ["ADR-0034"]
+      "adrs": [
+        "ADR-0034"
+      ]
     },
     {
       "id": "sec-plugin-process-isolation",
@@ -2442,7 +2532,12 @@
         "runtime/crates/js-engine/tests/plugin_process.rs"
       ],
       "gaps": [],
-      "adrs": ["ADR-0040", "ADR-0043", "ADR-0044", "ADR-0050"]
+      "adrs": [
+        "ADR-0040",
+        "ADR-0043",
+        "ADR-0044",
+        "ADR-0050"
+      ]
     },
     {
       "id": "sec-plugin-sandbox-landlock",
@@ -2456,7 +2551,9 @@
         "Net deny mencakup TCP saja (UDP/DNS tidak)",
         "Belum ada pentest escape (dicatat TODO)"
       ],
-      "adrs": ["ADR-0051"]
+      "adrs": [
+        "ADR-0051"
+      ]
     },
     {
       "id": "sec-https-tls",
@@ -2466,39 +2563,64 @@
         "runtime/crates/js-engine/src/http_client.rs",
         "runtime/crates/js-engine/tests/fetch_tls.rs"
       ],
-      "gaps": ["Runtime eksperimental"],
-      "adrs": ["ADR-0036"]
+      "gaps": [
+        "Runtime eksperimental"
+      ],
+      "adrs": [
+        "ADR-0036"
+      ]
     },
     {
       "id": "sec-ip-pinning",
       "control": "IP-pinning pada guardedFetch (anti DNS-rebinding)",
-      "status": "missing",
-      "evidence": ["docs/adr/0031-builtins-crypto-security.md"],
-      "gaps": ["Belum diimplementasikan — dicatat sejak ADR-0031; ada di TODO"],
-      "adrs": ["ADR-0031"]
+      "status": "implemented",
+      "evidence": [
+        "packages/security/src/ssrf.ts",
+        "packages/security/test/ssrf.test.ts",
+        "docs/adr/0064-ip-pinning.md"
+      ],
+      "gaps": [],
+      "adrs": [
+        "ADR-0031",
+        "ADR-0064"
+      ]
     },
     {
       "id": "sec-client-server-boundary",
       "control": "Penegakan otomatis batas server/client (kode server tidak bocor ke bundle client)",
       "status": "missing",
-      "evidence": ["docs/machine/rules.json"],
-      "gaps": ["Analisis batas belum ada; penegakan lint menyusul — ada di TODO"],
+      "evidence": [
+        "docs/machine/rules.json"
+      ],
+      "gaps": [
+        "Analisis batas belum ada; penegakan lint menyusul — ada di TODO"
+      ],
       "adrs": []
     },
     {
       "id": "sec-pentest-plugin-escape",
       "control": "Pentest/penilaian escape isolasi plugin (worker + proses + Landlock)",
       "status": "missing",
-      "evidence": ["docs/adr/0051-plugin-sandbox-landlock.md"],
-      "gaps": ["Belum dinilai secara formal — ada di TODO"],
-      "adrs": ["ADR-0051"]
+      "evidence": [
+        "docs/adr/0051-plugin-sandbox-landlock.md"
+      ],
+      "gaps": [
+        "Belum dinilai secara formal — ada di TODO"
+      ],
+      "adrs": [
+        "ADR-0051"
+      ]
     },
     {
       "id": "sec-auth",
       "control": "Autentikasi/session aplikasi",
       "status": "app-responsibility",
-      "evidence": ["docs/PLAN-docs-consolidation.md"],
-      "gaps": ["Framework tidak menyediakan primitif session; aplikasi memutuskan sendiri"],
+      "evidence": [
+        "docs/PLAN-docs-consolidation.md"
+      ],
+      "gaps": [
+        "Framework tidak menyediakan primitif session; aplikasi memutuskan sendiri"
+      ],
       "adrs": []
     }
   ]
@@ -2682,7 +2804,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T21:49:04.452Z",
+  "generatedAt": "2026-10-18T21:53:48.810Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2990,7 +3112,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T21:49:05.589Z",
+  "generatedAt": "2026-10-18T21:53:49.641Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {

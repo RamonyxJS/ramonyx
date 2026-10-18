@@ -355,7 +355,7 @@
     },
     {
       "id": "ssrf-guard",
-      "name": "Guard SSRF (guardedFetch: validasi host/IP, blokir privat, redirect per-hop)",
+      "name": "Guard SSRF (guardedFetch: validasi host/IP, IP-pinning anti DNS-rebinding, redirect per-hop)",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
@@ -366,11 +366,11 @@
         "packages/security/src/ssrf.ts",
         "packages/security/test/ssrf.test.ts",
         "docs/adr/0015-ssrf-guard-output-limit.md",
-        "docs/adr/0058-edge-target.md"
+        "docs/adr/0064-ip-pinning.md"
       ],
       "limitations": [
-        "IP-pinning (anti DNS-rebinding) menyusul — dicatat di ADR-0031",
-        "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)"
+        "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)",
+        "Body FormData/multipart belum didukung"
       ]
     },
     {

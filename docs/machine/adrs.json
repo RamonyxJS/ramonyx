@@ -847,6 +847,22 @@
       "features": [
         "boundary-enforcement"
       ]
+    },
+    {
+      "id": "ADR-0064",
+      "file": "0064-ip-pinning.md",
+      "title": "IP-Pinning `guardedFetch` (Menutup DNS-Rebinding)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "guardedFetch me-resolve DNS sekali lalu mematok alamat ke koneksi (node:http(s) dengan lookup kustom; Host/SNI tetap hostname asli); redirect divalidasi+di-pin per hop; body string/bytes/URLSearchParams/stream didukung, FormData menyusul.",
+      "related": [
+        "ADR-0015",
+        "ADR-0031"
+      ],
+      "features": [
+        "ssrf-guard"
+      ]
     }
   ]
 }

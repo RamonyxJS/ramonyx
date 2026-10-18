@@ -1,5 +1,8 @@
-import { lookup } from "node:dns/promises";
+import { lookup as dnsLookup } from "node:dns/promises";
+import { request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
 import { isIP } from "node:net";
+import { Readable } from "node:stream";
 
 export class SsrfError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -18,6 +21,14 @@ export interface GuardedFetchOptions {
    * respons 3xx dikembalikan apa adanya untuk diputuskan pemanggil.
    */
   readonly maxRedirects?: number;
+  /**
+   * Resolver DNS kustom (untuk pengujian atau resolver internal). Default `node:dns`.
+   * Hasil resolve **dipatok** (pinning) — koneksi memakai alamat yang divalidasi, bukan
+   * resolve ulang oleh klien HTTP (ADR-0031/0064).
+   */
+  readonly dnsLookup?: (
+    hostname: string,
+  ) => Promise<readonly { readonly address: string; readonly family: number }[]>;
 }
 
 const DEFAULT_PROTOCOLS = ["http:", "https:"];
@@ -73,7 +84,17 @@ function isPrivateAddress(address: string): boolean {
   return true; // bukan alamat valid → anggap tidak aman
 }
 
-async function assertAllowed(url: URL, options: GuardedFetchOptions): Promise<void> {
+/** Alamat hasil validasi yang akan dipatok ke koneksi (pinning). */
+interface Pin {
+  readonly address: string;
+  readonly family: number;
+}
+
+/**
+ * Validasi URL + resolve DNS; hasilnya adalah alamat yang **dipatok** untuk koneksi.
+ * `null` = host diizinkan lewat `allowHosts` (tanpa pinning; host dianggap tepercaya).
+ */
+async function resolveAndValidate(url: URL, options: GuardedFetchOptions): Promise<Pin | null> {
   const protocols = options.allowProtocols ?? DEFAULT_PROTOCOLS;
   if (!protocols.includes(url.protocol)) {
     throw new SsrfError(`Protokol tidak diizinkan: ${url.protocol}`);
@@ -82,7 +103,7 @@ async function assertAllowed(url: URL, options: GuardedFetchOptions): Promise<vo
   const hostname = url.hostname.replace(/^\[|\]$/g, "");
   const allowHosts = (options.allowHosts ?? []).map((host) => host.toLowerCase());
   if (allowHosts.includes(hostname.toLowerCase())) {
-    return;
+    return null;
   }
 
   if (hostname === "localhost" || hostname.endsWith(".localhost")) {
@@ -94,12 +115,15 @@ async function assertAllowed(url: URL, options: GuardedFetchOptions): Promise<vo
     if (isPrivateAddress(hostname)) {
       throw new SsrfError(`Alamat tidak diizinkan (privat/loopback): ${hostname}`);
     }
-    return;
+    return { address: hostname, family: literalFamily };
   }
 
-  let addresses: { address: string }[];
+  let addresses: readonly { address: string; family: number }[];
   try {
-    addresses = await lookup(hostname, { all: true, verbatim: true });
+    addresses =
+      options.dnsLookup === undefined
+        ? await dnsLookup(hostname, { all: true, verbatim: true })
+        : await options.dnsLookup(hostname);
   } catch (error) {
     throw new SsrfError(`Gagal me-resolve ${hostname}`, { cause: error });
   }
@@ -114,14 +138,150 @@ async function assertAllowed(url: URL, options: GuardedFetchOptions): Promise<vo
       );
     }
   }
+  const first = addresses[0];
+  if (first === undefined) {
+    throw new SsrfError(`Tidak ada alamat untuk ${hostname}`);
+  }
+  return { address: first.address, family: first.family };
+}
+
+function collectHeaders(init: RequestInit): Headers {
+  return new Headers(init.headers);
+}
+
+/** Body `RequestInit` → data yang bisa dikirim `node:http` (stream/string/bytes). */
+function toNodeBody(
+  body: RequestInit["body"],
+):
+  | { kind: "none" }
+  | { kind: "buffer"; data: Buffer; contentType?: string }
+  | { kind: "stream"; stream: Readable } {
+  if (body === null || body === undefined) {
+    return { kind: "none" };
+  }
+  if (typeof body === "string") {
+    return { kind: "buffer", data: Buffer.from(body) };
+  }
+  if (body instanceof URLSearchParams) {
+    return {
+      kind: "buffer",
+      data: Buffer.from(body.toString()),
+      contentType: "application/x-www-form-urlencoded;charset=UTF-8",
+    };
+  }
+  if (body instanceof ArrayBuffer) {
+    return { kind: "buffer", data: Buffer.from(body) };
+  }
+  if (ArrayBuffer.isView(body)) {
+    return { kind: "buffer", data: Buffer.from(body.buffer, body.byteOffset, body.byteLength) };
+  }
+  if (body instanceof ReadableStream) {
+    return { kind: "stream", stream: Readable.fromWeb(body as never) };
+  }
+  throw new SsrfError(
+    "guardedFetch: tipe body belum didukung (gunakan string/bytes/URLSearchParams/ReadableStream; FormData menyusul).",
+  );
+}
+
+/** Koneksi HTTP(S) dengan alamat terpin (`lookup` mengembalikan alamat hasil validasi). */
+function pinnedFetch(url: URL, pin: Pin | null, init: RequestInit): Promise<Response> {
+  return new Promise<Response>((resolve, reject) => {
+    const headers = collectHeaders(init);
+    const body = toNodeBody(init.body);
+    if (body.kind === "buffer") {
+      headers.set("content-length", String(body.data.byteLength));
+      if (body.contentType !== undefined && !headers.has("content-type")) {
+        headers.set("content-type", body.contentType);
+      }
+    }
+
+    const isHttps = url.protocol === "https:";
+    const request = (isHttps ? httpsRequest : httpRequest)(
+      {
+        hostname: url.hostname.replace(/^\[|\]$/g, ""),
+        port: url.port.length > 0 ? Number(url.port) : isHttps ? 443 : 80,
+        path: `${url.pathname}${url.search}`,
+        method: (init.method ?? "GET").toUpperCase(),
+        headers: Object.fromEntries(headers.entries()),
+        // Pinning: DNS tidak di-resolve ulang oleh klien HTTP — koneksi ke alamat tervalidasi.
+        ...(pin === null
+          ? {}
+          : {
+              lookup: (
+                _hostname: string,
+                _options: unknown,
+                callback: (error: null, address: string, family: number) => void,
+              ) => callback(null, pin.address, pin.family),
+            }),
+      },
+      (nodeResponse) => {
+        const responseHeaders = new Headers();
+        for (const [name, value] of Object.entries(nodeResponse.headers)) {
+          if (value === undefined) {
+            continue;
+          }
+          if (Array.isArray(value)) {
+            for (const entry of value) {
+              responseHeaders.append(name, entry);
+            }
+          } else {
+            responseHeaders.set(name, value);
+          }
+        }
+        const status = nodeResponse.statusCode ?? 502;
+        const noBody =
+          status === 204 || status === 304 || (init.method ?? "GET").toUpperCase() === "HEAD";
+        const stream = noBody
+          ? null
+          : (Readable.toWeb(nodeResponse) as unknown as ReadableStream<Uint8Array>);
+        resolve(
+          new Response(stream, {
+            status,
+            statusText: nodeResponse.statusMessage ?? "",
+            headers: responseHeaders,
+          }),
+        );
+      },
+    );
+
+    request.on("error", reject);
+
+    if (init.signal !== undefined && init.signal !== null) {
+      const signal = init.signal;
+      if (signal.aborted) {
+        request.destroy();
+        reject(signal.reason instanceof Error ? signal.reason : new Error("aborted"));
+        return;
+      }
+      signal.addEventListener(
+        "abort",
+        () => {
+          request.destroy();
+          reject(signal.reason instanceof Error ? signal.reason : new Error("aborted"));
+        },
+        { once: true },
+      );
+    }
+
+    if (body.kind === "buffer") {
+      request.end(body.data);
+    } else if (body.kind === "stream") {
+      body.stream.pipe(request);
+      body.stream.on("error", (error) => request.destroy(error));
+    } else {
+      request.end();
+    }
+  });
 }
 
 /**
- * `fetch` dengan proteksi SSRF: hanya http/https, alamat privat/loopback/link-local ditolak,
- * redirect (bila diikuti) divalidasi ulang per hop.
+ * `fetch` dengan proteksi SSRF + **IP-pinning** (ADR-0031/0064): hanya http/https, alamat
+ * privat/loopback/link-local ditolak, DNS di-resolve **sekali** lalu alamatnya dipatok ke
+ * koneksi (koneksi tidak melakukan resolve ulang → jendela DNS-rebinding tertutup), dan
+ * redirect (bila diikuti) divalidasi + dipin ulang per hop.
  *
- * Batasan yang jujur: validasi DNS dan koneksi tetap berurutan (window DNS-rebinding belum
- * dipatok ke IP hasil resolve; pinning dispatcher menyusul — lihat ADR-0015).
+ * Batasan: body `FormData` belum didukung (gunakan string/bytes/stream); timeout mengikuti
+ * `init.signal` pemanggil.
  */
 export async function guardedFetch(
   input: string | URL,
@@ -132,9 +292,9 @@ export async function guardedFetch(
   let current = input instanceof URL ? input : new URL(input);
 
   for (let hop = 0; ; hop += 1) {
-    await assertAllowed(current, options);
+    const pin = await resolveAndValidate(current, options);
 
-    const response = await fetch(current, { ...init, redirect: "manual" });
+    const response = await pinnedFetch(current, pin, init);
 
     if (maxRedirects > 0 && response.status >= 300 && response.status < 400) {
       const location = response.headers.get("location");

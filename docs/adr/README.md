@@ -70,3 +70,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0061](0061-middleware-per-folder.md) | Middleware per-folder otomatis + route group `(grup)` | Accepted |
 | [0062](0062-auth-session.md) | Primitif sesi & cookie (HMAC, Web Crypto) + action men-set cookie | Accepted |
 | [0063](0063-server-client-boundary.md) | Batas server/client: konvensi `*.server.ts` + stub poison-pill + penegakan build | Accepted |
+| [0064](0064-ip-pinning.md) | IP-pinning `guardedFetch` (resolve sekali + patok alamat, menutup DNS-rebinding) | Accepted |

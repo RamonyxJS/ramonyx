@@ -37,6 +37,11 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
 - **Batas server/client** (ADR-0063): modul `*.server.ts` distub poison-pill di bundle klien
   (build + dev); impor `node:*` langsung dari modul klien ditolak saat build, impor transitif
   ditangkap scan output — pesan menunjuk file dan solusi.
+- **IP-pinning `guardedFetch`** (ADR-0064): DNS di-resolve sekali lalu alamat dipatok ke koneksi
+  (`node:http(s)` + `lookup` kustom; Host/SNI tetap hostname asli) — menutup jendela DNS-rebinding;
+  body string/bytes/URLSearchParams/ReadableStream didukung.
+- **Tutorial end-to-end** (`docs/tutorial.md`): scaffold → loader → API → action → deploy
+  (Node/statis/edge), semua perintah terverifikasi test repo.
 
 ### Perubahan API (pra-1.0)
 

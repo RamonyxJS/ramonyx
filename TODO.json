@@ -232,7 +232,7 @@
       "theme": "docs",
       "priority": "p1",
       "size": "S",
-      "status": "open",
+      "status": "done",
       "what": "Tutorial naratif: scaffold → rute + layout → loader → API + validasi → form → build → deploy, memakai perintah yang benar-benar dijalankan.",
       "why": "Jalur adopsi pertama adalah tutorial, bukan referensi; README kami padat namun tidak menggantikan pengalaman langkah demi langkah yang dimiliki semua pesaing.",
       "done": [
@@ -243,7 +243,7 @@
       "areas": ["docs", "apps/docs"],
       "adrs": [],
       "competitor": "Next.js Learn; React Router tutorial; SvelteKit tutorial; Nuxt getting started; Astro tutorial.",
-      "source": "gap §3 (docs)",
+      "source": "gap §3 (docs) — selesai docs/tutorial.md",
       "quickWin": true
     },
     {
@@ -311,7 +311,7 @@
       "theme": "security",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Resolusi DNS sekali lalu sambung ke alamat IP yang divalidasi (bukan resolve ulang oleh klien HTTP), dengan validasi Host/SNI — menutup jendela rebinding.",
       "why": "Celah yang diakui sejak ADR-0031: guard SSRF tanpa pinning masih bisa dibypass lewat DNS rebinding; pesaing umumnya tidak menyediakan guard ini sama sekali, jadi menutupnya memperkuat diferensiasi keamanan.",
       "done": [
@@ -322,7 +322,7 @@
       "areas": ["packages/security"],
       "adrs": ["ADR-0031 (lanjutan)"],
       "competitor": "Tidak umum di framework JS — diferensiasi keamanan bila selesai dengan bukti.",
-      "source": "utang (ADR-0031)"
+      "source": "utang (ADR-0031) — selesai ADR-0064"
     },
     {
       "id": "p2-pentest-plugin",

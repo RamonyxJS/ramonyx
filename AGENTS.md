@@ -69,8 +69,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   (securityHeaders/cspNonce/csrf/rateLimit/guardedFetch — ADR-0031), **resource limits**
   (`--max-heap-mb`, `--timeout-ms`, `ramonyx.permissions.get()/revoke()` — ADR-0033), serta
   **isolasi worker + kuota** (`ramonyx.worker`: thread + isolate V8 terpisah, pesan JSON,
-  permission irisan anti-eskalasi, kill switch — ADR-0034) — tetapi **belum**: https/TLS &
-  redirect fetch, streaming request/transport bertahap, kuota CPU/memori eksternal, isolasi
+  permission irisan anti-eskalasi, kill switch — ADR-0034), serta **streaming request + batas
+  body server** (`payload.body` stream pull-model, `maxBodyBytes` default 1 MiB, 413 dini —
+  ADR-0035) — tetapi **belum**: https/TLS & redirect fetch, kuota CPU/memori eksternal, isolasi
   level proses untuk plugin; **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
   dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
   **subset** (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak
@@ -123,13 +124,13 @@ ADR-0030), **builtin subset + subset `@ramonyx/security` di runtime** (`node:net
 `node:dns/promises`, `crypto.getRandomValues`, middleware security + guardedFetch/SSRF —
 ADR-0031), **jembatan `serveHandler` + playground subset** (halaman SSR + API + POST +
 security berjalan end-to-end lewat HTTP — ADR-0032), **resource limits** (kuota heap V8,
-watchdog timeout, pencabutan permission runtime — ADR-0033), dan **isolasi worker + kuota**
-(thread + isolate V8 terpisah, pesan JSON, permission irisan, kill switch — ADR-0034) —
-semuanya diverifikasi test + smoke. **Exit criteria Phase 4 tercapai**; sisa menuju Phase 5:
-kuota CPU/memori eksternal, isolasi level proses untuk plugin, https/TLS & redirect, streaming
-request, profiling.
+watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker + kuota**
+(thread + isolate V8 terpisah, pesan JSON, permission irisan, kill switch — ADR-0034), dan
+**streaming request + batas body server** (body pull-model + 413 dini — ADR-0035) — semuanya
+diverifikasi test + smoke. **Exit criteria Phase 4 tercapai**; sisa menuju Phase 5: kuota
+CPU/memori eksternal, isolasi level proses untuk plugin, https/TLS & redirect, profiling.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 75 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 78 test Rust hijau.

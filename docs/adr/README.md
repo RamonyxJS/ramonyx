@@ -42,3 +42,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0032](0032-servehandler-playground.md) | Jembatan `serveHandler` + playground subset di runtime | Accepted |
 | [0033](0033-resource-limits.md) | Resource limits: kuota heap, watchdog timeout, revoke permission | Accepted |
 | [0034](0034-worker-isolation.md) | Isolasi worker + kuota (isolate terpisah per worker) | Accepted |
+| [0035](0035-streaming-request.md) | Streaming request + batas body server (413 dini) | Accepted |

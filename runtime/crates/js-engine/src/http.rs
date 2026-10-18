@@ -93,7 +93,6 @@ pub struct RequestPayload {
     pub method: String,
     pub path: String,
     pub headers: Vec<(String, String)>,
-    pub body: String,
 }
 
 /// Respons yang dikirim ke hyper: penuh (buffered) atau streaming chunked.
@@ -127,7 +126,11 @@ impl PendingEntry {
 
 type ServiceBody = BoxBody<Bytes, JsErrorBox>;
 
-type IncomingRequest = (RequestPayload, oneshot::Sender<ResponseOutcome>);
+type IncomingRequest = (
+    RequestPayload,
+    oneshot::Sender<ResponseOutcome>,
+    mpsc::Receiver<Result<Bytes, String>>,
+);
 
 pub struct ServerHandle {
     accept_rx: Option<mpsc::Receiver<IncomingRequest>>,
@@ -140,6 +143,9 @@ pub struct ServerHandle {
 pub struct HttpState {
     servers: HashMap<u64, ServerHandle>,
     pending: HashMap<(u64, u64), PendingEntry>,
+    /// Stream body request per (server_id, request_id) — diisi `op_http_accept`,
+    /// dibaca bertahap oleh `op_http_body_read` (ADR-0035).
+    bodies: HashMap<(u64, u64), mpsc::Receiver<Result<Bytes, String>>>,
     next_server_id: u64,
     next_request_id: u64,
 }
@@ -157,7 +163,13 @@ impl HttpState {
 }
 
 /// Bind listener + spawn accept-loop hyper. Mengembalikan (port aktual, handle).
-fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox> {
+/// `max_body_bytes` membatasi body request yang dibaca (413 dini via content-length,
+/// atau error baca saat melebihi batas — ADR-0035).
+fn start_server(
+    host: &str,
+    port: u16,
+    max_body_bytes: usize,
+) -> Result<(u16, ServerHandle), JsErrorBox> {
     let listener = std::net::TcpListener::bind((host, port))
         .map_err(|error| JsErrorBox::generic(format!("gagal bind {host}:{port}: {error}")))?;
     listener
@@ -206,10 +218,56 @@ fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox
                                 (name.to_string(), value.to_str().unwrap_or("").to_string())
                             })
                             .collect::<Vec<_>>();
-                        let body_bytes = match request.into_body().collect().await {
-                            Ok(collected) => collected.to_bytes(),
-                            Err(_) => Bytes::new(),
-                        };
+
+                        // Tolak dini (tanpa memanggil handler) bila content-length sudah melebihi
+                        // batas — body tidak pernah dibuffer. Transfer chunked ditangani saat baca.
+                        let declared = request
+                            .headers()
+                            .get("content-length")
+                            .and_then(|value| value.to_str().ok())
+                            .and_then(|value| value.parse::<u64>().ok());
+                        if declared.is_some_and(|length| length > max_body_bytes as u64) {
+                            return Ok::<_, Infallible>(error_response(413, "Payload Too Large"));
+                        }
+
+                        // Forwarder body: baca frame bertahap dengan batas; JS menarik lewat
+                        // `op_http_body_read` (ADR-0035). Channel kecil = backpressure TCP.
+                        let (body_tx, body_rx) = mpsc::channel::<Result<Bytes, String>>(8);
+                        {
+                            let mut body = request.into_body();
+                            let limit = max_body_bytes;
+                            tokio::spawn(async move {
+                                let mut total: usize = 0;
+                                while let Some(frame) = body.frame().await {
+                                    let data = match frame {
+                                        Ok(frame) => frame.into_data().unwrap_or_default(),
+                                        Err(error) => {
+                                            let _ = body_tx
+                                                .send(Err(format!(
+                                                    "gagal membaca body request: {error}"
+                                                )))
+                                                .await;
+                                            return;
+                                        }
+                                    };
+                                    if data.is_empty() {
+                                        continue;
+                                    }
+                                    total += data.len();
+                                    if total > limit {
+                                        let _ = body_tx
+                                            .send(Err(format!(
+                                                "body request melebihi batas {limit} byte"
+                                            )))
+                                            .await;
+                                        return;
+                                    }
+                                    if body_tx.send(Ok(data)).await.is_err() {
+                                        return;
+                                    }
+                                }
+                            });
+                        }
 
                         let (respond_tx, respond_rx) = oneshot::channel::<ResponseOutcome>();
                         let payload = RequestPayload {
@@ -217,10 +275,13 @@ fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox
                             method,
                             path,
                             headers,
-                            body: String::from_utf8_lossy(&body_bytes).to_string(),
                         };
 
-                        if accept_tx.send((payload, respond_tx)).await.is_err() {
+                        if accept_tx
+                            .send((payload, respond_tx, body_rx))
+                            .await
+                            .is_err()
+                        {
                             return Ok::<_, Infallible>(error_response(503, "server ditutup"));
                         }
 
@@ -293,6 +354,9 @@ fn error_response(status: u16, message: &str) -> Response<ServiceBody> {
     Response::builder()
         .status(status)
         .header("content-type", "text/plain; charset=utf-8")
+        // Body request yang ditolak/terputus tidak dibaca habis → tutup koneksi agar
+        // sisa data tidak diinterpretasikan sebagai request berikutnya (keep-alive).
+        .header("connection", "close")
         .body(
             Full::new(Bytes::from(message.to_string()))
                 .map_err(|never: Infallible| -> JsErrorBox { match never {} })
@@ -309,12 +373,13 @@ pub fn op_http_listen(
     state: &mut OpState,
     #[string] host: String,
     #[smi] port: u16,
+    #[smi] max_body_bytes: u32,
 ) -> Result<(u64, u16), JsErrorBox> {
     state
         .borrow::<Permissions>()
         .check_net(&host)
         .map_err(JsErrorBox::generic)?;
-    let (actual_port, handle) = start_server(&host, port)?;
+    let (actual_port, handle) = start_server(&host, port, max_body_bytes as usize)?;
     let http = state.borrow_mut::<HttpState>();
     let server_id = http.next_server();
     http.servers.insert(server_id, handle);
@@ -372,13 +437,67 @@ pub async fn op_http_accept(
         return Ok(None);
     }
 
-    let Some((mut payload, respond_tx)) = received else {
+    let Some((mut payload, respond_tx, body_rx)) = received else {
         return Ok(None);
     };
     payload.id = http.next_request();
     http.pending
         .insert((server_id, payload.id), PendingEntry::Buffered(respond_tx));
+    http.bodies.insert((server_id, payload.id), body_rx);
     Ok(Some(payload))
+}
+
+/// Amplop chunk body (Option<Vec<u8>> tidak didukung langsung oleh op2).
+#[derive(Serialize)]
+pub struct BodyChunk {
+    chunk: Option<Vec<u8>>,
+}
+
+/// Baca chunk body request berikutnya (pull-model); `chunk: null` = EOF.
+#[op2(async(lazy), fast)]
+#[serde]
+pub async fn op_http_body_read(
+    state: Rc<RefCell<OpState>>,
+    #[smi] server_id: u64,
+    #[smi] request_id: u64,
+) -> Result<BodyChunk, JsErrorBox> {
+    let mut receiver = {
+        let mut op_state = state.borrow_mut();
+        let http = op_state.borrow_mut::<HttpState>();
+        let Some(receiver) = http.bodies.remove(&(server_id, request_id)) else {
+            return Ok(BodyChunk { chunk: None });
+        };
+        receiver
+    };
+
+    let result = receiver.recv().await;
+
+    // Kembalikan receiver agar chunk berikutnya bisa dibaca (bila request masih hidup).
+    let mut op_state = state.borrow_mut();
+    let http = op_state.borrow_mut::<HttpState>();
+    if http.pending.contains_key(&(server_id, request_id)) {
+        http.bodies.insert((server_id, request_id), receiver);
+    }
+
+    match result {
+        Some(Ok(data)) => Ok(BodyChunk {
+            chunk: Some(data.to_vec()),
+        }),
+        Some(Err(message)) => Err(JsErrorBox::generic(message)),
+        None => Ok(BodyChunk { chunk: None }),
+    }
+}
+
+/// Berhenti membaca body request (mis. `request.body.cancel()`).
+#[op2(fast)]
+pub fn op_http_body_drop(
+    state: &mut OpState,
+    #[smi] server_id: u64,
+    #[smi] request_id: u64,
+) -> Result<(), JsErrorBox> {
+    let http = state.borrow_mut::<HttpState>();
+    http.bodies.remove(&(server_id, request_id));
+    Ok(())
 }
 
 #[op2]
@@ -396,6 +515,8 @@ pub fn op_http_respond(
             "request {request_id} tidak pending"
         )));
     };
+    // Body tidak dibaca lagi setelah handler merespons.
+    http.bodies.remove(&(server_id, request_id));
     let PendingEntry::Buffered(sender) = entry else {
         return Err(JsErrorBox::generic(
             "respons stream sudah dimulai untuk request ini",
@@ -430,6 +551,7 @@ pub fn op_http_stream_start(
             "request {request_id} tidak pending"
         )));
     };
+    http.bodies.remove(&(server_id, request_id));
     let PendingEntry::Buffered(sender) = entry else {
         return Err(JsErrorBox::generic(
             "respons stream sudah dimulai untuk request ini",
@@ -489,6 +611,7 @@ pub fn op_http_stream_end(
 ) -> Result<(), JsErrorBox> {
     let http = state.borrow_mut::<HttpState>();
     http.pending.remove(&(server_id, request_id));
+    http.bodies.remove(&(server_id, request_id));
     Ok(())
 }
 

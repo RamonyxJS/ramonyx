@@ -610,7 +610,9 @@ class RamonyxRequest {
     if (options.body instanceof RamonyxReadableStream) {
       this.body = options.body;
     } else if (this._bodyText === null) {
-      this.body = null;
+      // Body stream tidak dapat dibaca dua kali: salinan request (mis. middleware yang
+      // mengganti header) meneruskan stream yang sama ke hilir (ADR-0035).
+      this.body = input instanceof RamonyxRequest ? input.body : null;
     } else {
       this.body = ramonyxStreamFromBytes(new RamonyxTextEncoder().encode(this._bodyText));
     }

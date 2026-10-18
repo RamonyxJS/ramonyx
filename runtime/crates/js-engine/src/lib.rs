@@ -155,8 +155,18 @@ globalThis.ramonyx = {
       return hasil.text === null ? null : JSON.parse(hasil.text);
     },
   },
-  serve: (port, handler) => {
-    const [serverId, actualPort] = Deno.core.ops.op_http_listen("127.0.0.1", port);
+  serve: (port, handler, options) => {
+    // Batas body server (default 1 MiB, selaras ADR-0011): content-length lebih besar →
+    // 413 dini; chunked yang melebihi batas → error saat dibaca (ADR-0035).
+    const maxBodyBytes = Math.max(
+      1,
+      Math.trunc(Number(options?.maxBodyBytes ?? 1048576)) || 1048576,
+    );
+    const [serverId, actualPort] = Deno.core.ops.op_http_listen(
+      "127.0.0.1",
+      port,
+      maxBodyBytes,
+    );
     const server = {
       port: actualPort,
       close: () => Deno.core.ops.op_http_close(serverId),
@@ -169,6 +179,22 @@ globalThis.ramonyx = {
         }
         const controller = new AbortController();
         request.signal = controller.signal;
+        // Body sebagai ReadableStream pull-model (`payload.body`).
+        request.body = new ReadableStream({
+          pull: async (streamController) => {
+            try {
+              const hasil = await Deno.core.ops.op_http_body_read(serverId, request.id);
+              if (hasil.chunk === null) {
+                streamController.close();
+              } else {
+                streamController.enqueue(new Uint8Array(hasil.chunk));
+              }
+            } catch (error) {
+              streamController.error(error);
+            }
+          },
+          cancel: () => Deno.core.ops.op_http_body_drop(serverId, request.id),
+        });
         // Deteksi klien putus selama handler berjalan → abort signal (cancellation).
         Deno.core.ops
           .op_http_watch(serverId, request.id)
@@ -235,28 +261,32 @@ globalThis.ramonyx = {
   // low-level. Payload server dipetakan ke `Request` (headers/body/signal ikut, sehingga
   // cancellation klien sampai ke pipeline), dan `Response` dikembalikan ke loop serve
   // (termasuk body streaming/ReadableStream).
-  serveHandler: (port, handler) => {
-    const server = globalThis.ramonyx.serve(port, async (payload) => {
-      const init = {
-        method: payload?.method ?? "GET",
-        headers: payload?.headers ?? [],
-        signal: payload?.signal,
-      };
-      if (typeof payload?.body === "string" && payload.body.length > 0) {
-        init.body = payload.body;
-      }
-      const request = new Request(
-        "http://127.0.0.1:" + server.port + (payload?.path ?? "/"),
-        init,
-      );
-      const response = await handler(request);
-      const headers = {};
-      for (const [name, value] of response.headers.entries()) {
-        headers[name] = value;
-      }
-      const body = response.body ?? (await response.text());
-      return { status: response.status, headers, body };
-    });
+  serveHandler: (port, handler, options) => {
+    const server = globalThis.ramonyx.serve(
+      port,
+      async (payload) => {
+        const init = {
+          method: payload?.method ?? "GET",
+          headers: payload?.headers ?? [],
+          signal: payload?.signal,
+        };
+        if (payload?.body) {
+          init.body = payload.body; // ReadableStream pull-model
+        }
+        const request = new Request(
+          "http://127.0.0.1:" + server.port + (payload?.path ?? "/"),
+          init,
+        );
+        const response = await handler(request);
+        const headers = {};
+        for (const [name, value] of response.headers.entries()) {
+          headers[name] = value;
+        }
+        const body = response.body ?? (await response.text());
+        return { status: response.status, headers, body };
+      },
+      options,
+    );
     return server;
   },
 };
@@ -335,6 +365,8 @@ extension!(
         op_env_get,
         http::op_http_listen,
         http::op_http_accept,
+        http::op_http_body_read,
+        http::op_http_body_drop,
         http::op_http_respond,
         http::op_http_stream_start,
         http::op_http_stream_chunk,
@@ -2384,6 +2416,239 @@ globalThis.__timeout_ok = true;
                 "if (globalThis.__timeout_ok !== true) throw new Error('timeout gagal');",
             )
             .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn body_limit_413_dini_tanpa_handler() {
+        let directory = temp_dir("body-limit");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+const server = ramonyx.serveHandler(
+  0,
+  async (_request) => {
+    globalThis.__dipanggil = true;
+    return new Response("ok");
+  },
+  { maxBodyBytes: 1024 },
+);
+const dasar = "http://127.0.0.1:" + server.port;
+
+// content-length melebihi batas → 413 dini dari Rust (handler tidak dipanggil).
+const besar = await fetch(dasar + "/kirim", { method: "POST", body: "x".repeat(4096) });
+await besar.text();
+if (besar.status !== 413) throw new Error("harus 413: " + besar.status);
+if (globalThis.__dipanggil === true) {
+  throw new Error("handler tidak boleh dipanggil untuk 413 dini");
+}
+
+// Body kecil tetap lolos ke handler.
+const kecil = await fetch(dasar + "/kecil", { method: "POST", body: "halo" });
+await kecil.text();
+if (kecil.status !== 200 || globalThis.__dipanggil !== true) {
+  throw new Error("body kecil harus lolos: " + kecil.status);
+}
+
+server.close();
+globalThis.__limit_ok = true;
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+            ..Default::default()
+        })
+        .expect("engine");
+        engine.execute_module(&main).expect("body limit module");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__limit_ok !== true) throw new Error('limit gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn streaming_request_bertahap_ke_handler() {
+        use std::io::{Read as IoRead, Write as IoWrite};
+
+        let directory = temp_dir("stream-request");
+        let port_path = directory.join("port.txt");
+        let marker = directory.join("chunk-pertama.txt");
+        let port_literal = json_literal(&port_path);
+        let marker_literal = json_literal(&marker);
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            format!(
+                r#"
+const server = ramonyx.serveHandler(
+  0,
+  async (request) => {{
+    const reader = request.body.getReader();
+    const pertama = await reader.read();
+    const ukuranPertama = pertama.done ? 0 : pertama.value.byteLength;
+    // Marker ditulis SETELAH chunk pertama diterima — bukti pembacaan bertahap.
+    await ramonyx.writeTextFile({marker}, String(ukuranPertama));
+    let total = ukuranPertama;
+    for (;;) {{
+      const {{ done, value }} = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+    }}
+    queueMicrotask(() => server.close());
+    return new Response("total:" + total);
+  }},
+  {{ maxBodyBytes: 1048576 }},
+);
+await ramonyx.writeTextFile({port}, String(server.port));
+"#,
+                marker = marker_literal,
+                port = port_literal,
+            ),
+        )
+        .expect("write");
+
+        let (done_tx, done_rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let mut engine = Engine::with_options(EngineOptions {
+                permissions: Permissions::allow_all(),
+                ..Default::default()
+            })
+            .expect("engine");
+            let result = engine.execute_module(&main);
+            let _ = done_tx.send(result.map_err(|error| error.to_string()));
+        });
+
+        let port = wait_port(&port_path);
+
+        // Kirim chunk pertama, JANGAN selesaikan request: handler harus sudah menerima chunk itu.
+        let mut stream = std::net::TcpStream::connect(("127.0.0.1", port)).expect("connect");
+        stream
+            .write_all(
+                b"POST /unggah HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nTransfer-Encoding: chunked\r\n\r\n4\r\nAAAA\r\n",
+            )
+            .expect("kirim chunk 1");
+
+        let mut ukuran_marker = None;
+        for _ in 0..100 {
+            if let Ok(contents) = fs::read_to_string(&marker) {
+                ukuran_marker = contents.trim().parse::<usize>().ok();
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        assert_eq!(
+            ukuran_marker,
+            Some(4),
+            "chunk pertama harus sampai ke handler sebelum body selesai"
+        );
+
+        // Selesaikan request dengan chunk kedua + terminator.
+        stream
+            .write_all(b"5\r\nBBBBB\r\n0\r\n\r\n")
+            .expect("kirim chunk 2");
+        let mut response = String::new();
+        stream.read_to_string(&mut response).expect("baca respons");
+
+        assert!(response.contains("200 OK"), "status: {response}");
+        assert!(response.contains("total:9"), "total byte: {response}");
+
+        let engine_result = done_rx
+            .recv_timeout(Duration::from_secs(10))
+            .expect("engine selesai");
+        assert!(
+            engine_result.is_ok(),
+            "module selesai bersih: {engine_result:?}"
+        );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn streaming_request_melebihi_batas_saat_dibaca() {
+        use std::io::{Read as IoRead, Write as IoWrite};
+
+        let directory = temp_dir("stream-limit");
+        let port_path = directory.join("port.txt");
+        let port_literal = json_literal(&port_path);
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            format!(
+                r#"
+const server = ramonyx.serveHandler(
+  0,
+  async (request) => {{
+    try {{
+      const teks = await request.text();
+      queueMicrotask(() => server.close());
+      return new Response("lolos:" + teks.length);
+    }} catch (error) {{
+      queueMicrotask(() => server.close());
+      return new Response("ditolak:" + String(error), {{ status: 413 }});
+    }}
+  }},
+  {{ maxBodyBytes: 1024 }},
+);
+await ramonyx.writeTextFile({port}, String(server.port));
+"#,
+                port = port_literal,
+            ),
+        )
+        .expect("write");
+
+        let (done_tx, done_rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let mut engine = Engine::with_options(EngineOptions {
+                permissions: Permissions::allow_all(),
+                ..Default::default()
+            })
+            .expect("engine");
+            let result = engine.execute_module(&main);
+            let _ = done_tx.send(result.map_err(|error| error.to_string()));
+        });
+
+        let port = wait_port(&port_path);
+
+        // Tanpa content-length (chunked), 4 KiB > batas 1 KiB → error saat dibaca handler.
+        let mut request = String::from(
+            "POST /unggah HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nTransfer-Encoding: chunked\r\n\r\n",
+        );
+        let potongan = "x".repeat(512);
+        for _ in 0..8 {
+            request.push_str("200\r\n");
+            request.push_str(&potongan);
+            request.push_str("\r\n");
+        }
+        request.push_str("0\r\n\r\n");
+
+        let mut stream = std::net::TcpStream::connect(("127.0.0.1", port)).expect("connect");
+        stream
+            .write_all(request.as_bytes())
+            .expect("kirim bertahap");
+        let mut response = String::new();
+        stream.read_to_string(&mut response).expect("baca respons");
+
+        assert!(response.contains("413"), "status 413: {response}");
+        assert!(
+            response.contains("melebihi batas"),
+            "pesan batas body: {response}"
+        );
+
+        let engine_result = done_rx
+            .recv_timeout(Duration::from_secs(10))
+            .expect("engine selesai");
+        assert!(
+            engine_result.is_ok(),
+            "module selesai bersih: {engine_result:?}"
+        );
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }

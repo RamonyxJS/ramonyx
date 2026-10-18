@@ -107,7 +107,11 @@ Phase 4 (runtime alpha).
       TypeScript** via `deno_ast` (ADR-0021); `run main.ts` dengan import relatif `.ts` berjalan
       end-to-end lewat V8; bare specifier ditolak dengan pesan jelas (ADR-0021)
 - [ ] **R1 sisa** — resolusi paket `node_modules` (exports/conditions), import JSON/WASM
-- [ ] **R2** — I/O runtime: HTTP, filesystem, network, timer, cancellation, streaming
+- [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
+      **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,
+      handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end
+- [ ] **R2 sisa** — streaming body, cancellation, keep-alive, network client (fetch),
+      graceful shutdown; limit ukuran/resource (bersama R3)
 - [ ] **R3** — Permission model + isolasi; **R4** — optimasi startup/profiling
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)

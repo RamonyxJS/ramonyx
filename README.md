@@ -5,9 +5,10 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
 > **Status: Phase 4 (runtime alpha) berjalan** — Phase 0–3 selesai. Runtime Rust: R0 (CLI,
-> konfigurasi, structured logging) + R1 (V8 via deno_core, module loader ESM, transpile TypeScript
-> via deno_ast — `run main.ts` berjalan). Framework Node tetap baseline produksi; runtime
-> eksperimental sampai compatibility/security testing lolos. Klaim mengikuti aturan BLUEPRINT §10.
+> konfigurasi, structured logging), R1 (V8 via deno_core, ESM, TypeScript), R2a (I/O dasar:
+> timer/fs/env + HTTP server pull-model — diverifikasi end-to-end). Framework Node tetap baseline
+> produksi; runtime eksperimental sampai compatibility/security testing lolos. Klaim mengikuti
+> aturan BLUEPRINT §10.
 
 ## Quick start
 

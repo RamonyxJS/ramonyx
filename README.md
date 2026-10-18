@@ -28,6 +28,8 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 Buat aplikasi baru (di dalam repo): `pnpm create:app aplikasi-saya` — lalu `cd aplikasi-saya`,
 `pnpm install`, `pnpm start`.
 
+Baca dokumentasi sebagai situs: `pnpm docs` → http://127.0.0.1:4000 (SSR React, dogfood).
+
 
 ```bash
 pnpm install

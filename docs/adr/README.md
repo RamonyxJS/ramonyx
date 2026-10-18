@@ -49,3 +49,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0039](0039-release-pipeline.md) | Release pipeline v1: artefak, verifikasi instalasi, rilis 0.1.0 | Accepted |
 | [0040](0040-plugin-process-isolation.md) | Isolasi level proses untuk plugin (`ramonyx.spawn`) | Accepted |
 | [0041](0041-create-app.md) | `apps/create-app` — scaffolder aplikasi | Accepted |
+| [0042](0042-docs-app.md) | `apps/docs` — situs dokumentasi (dogfood SSR React) | Accepted |

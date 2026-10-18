@@ -23,6 +23,7 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm test:e2e` — Playwright terhadap build produksi (`pnpm build` + `pnpm start`); browser:
   CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
 - `pnpm create:app <dir>` — scaffold aplikasi Ramonyx baru (template minimal yang berjalan).
+- `pnpm docs` — situs dokumentasi lokal (dogfood SSR React atas `docs/**`) di http://127.0.0.1:4000.
 - `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
   di `dist/`); `pnpm release:verify` — verifikasi instalasi di proyek konsumen bersih (Node polos).
 - `benchmarks/runtime-startup.sh` — baseline startup runtime Rust (median wall/startup/load/eval
@@ -139,14 +140,14 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 **`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036), **R4 profiling startup**
 (timings per fase, metrik op, baseline; snapshot V8 ditolak dengan alasan terukur — ADR-0037),
 **kuota CPU per-thread + RSS proses** (ADR-0038), **release pipeline v1** (paket 0.1.0, tarball npm
-+ binary runtime, verifikasi instalasi konsumen — ADR-0039), serta **isolasi level proses untuk
-plugin** (`ramonyx.spawn`, protokol JSON, permission irisan, kill — ADR-0040), serta
-**scaffolder aplikasi** (`pnpm create:app`, template minimal berjalan — ADR-0041) — semuanya
-diverifikasi test + smoke.
++ binary runtime, verifikasi instalasi konsumen — ADR-0039), **isolasi level proses untuk plugin**
+(`ramonyx.spawn`, protokol JSON, permission irisan, kill — ADR-0040), **scaffolder aplikasi**
+(`pnpm create:app` — ADR-0041), dan **situs dokumentasi** (`pnpm docs`, dogfood SSR React atas
+`docs/**` — ADR-0042) — semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; sisa Phase 5: **publikasi npm sebenarnya** (butuh kredensial
-pemilik) dan kandidat lanjutan (restart supervision, sandbox OS, docs site).
+pemilik) dan kandidat lanjutan (restart supervision plugin, sandbox OS, hydration/pencarian docs).
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 122 tes Node + 5 e2e + 96 test Rust hijau.
+(ADR-0016); 125 tes Node + 5 e2e + 96 test Rust hijau.

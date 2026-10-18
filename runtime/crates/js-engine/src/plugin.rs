@@ -29,13 +29,14 @@ use std::time::{Duration, Instant};
 
 use deno_core::{OpState, op2};
 use deno_error::JsErrorBox;
-use runtime_core::Permission;
+use runtime_core::{Permission, Permissions};
 use serde::Serialize;
 use tokio::io::{AsyncBufRead, AsyncBufReadExt, AsyncWriteExt, BufReader, Lines};
 use tokio::process::{Child, ChildStdin, ChildStdout};
 use tokio::sync::Notify;
 
-use crate::worker::{HealthSpec, RestartSpec, WorkerOptions, resolve_permissions};
+use crate::sandbox::SandboxSpec;
+use crate::worker::{HealthSpec, RestartSpec, SandboxOption, WorkerOptions, resolve_permissions};
 
 /// Batas ukuran satu pesan (JSON) induk ↔ plugin.
 const MAX_MESSAGE_BYTES: usize = 1024 * 1024;
@@ -560,6 +561,104 @@ async fn supervise(state: Arc<Mutex<PluginState>>) {
     }
 }
 
+/// Apakah `candidate` berada di dalam salah satu direktori (perbandingan hasil canonicalize).
+fn path_di_dalam(direktori: &[PathBuf], candidate: &str) -> bool {
+    let Ok(canonical) = std::fs::canonicalize(candidate) else {
+        return false;
+    };
+    direktori
+        .iter()
+        .any(|dir| canonical == *dir || canonical.starts_with(dir))
+}
+
+/// Gabungkan opsi `sandbox` dengan permission efektif plugin (irisan; anti-eskalasi) — ADR-0051.
+///
+/// Semantik:
+/// - `sandbox: false`/absen → `None`.
+/// - Permission **Deny** → kelas itu ditangani kernel tanpa rule (tolak semua).
+/// - Permission **AllowAll** + daftar eksplisit → kernel dibatasi ke daftar itu.
+/// - Permission **Allow(paths)** → daftar (eksplisit atau cermin) diiris ke `paths`.
+/// - Kelas tanpa daftar yang bisa dipersempit (AllowAll murni) dibiarkan ke lapisan JS.
+pub(crate) fn resolve_sandbox(
+    option: Option<&SandboxOption>,
+    effective: &Permissions,
+    entry: &Path,
+    limits: &crate::EngineLimits,
+    cpu_ms: Option<u64>,
+    rss_mb: Option<usize>,
+) -> Option<SandboxSpec> {
+    let option = option?;
+    let (explicit_read, explicit_write, net) = match option {
+        SandboxOption::Flag(false) => return None,
+        SandboxOption::Flag(true) => (None, None, None),
+        SandboxOption::Tabel { read, write, net } => (read.as_deref(), write.as_deref(), *net),
+    };
+
+    let mut spec = SandboxSpec::default();
+
+    let kelas = |permission: &Permission, explicit: Option<&[String]>| -> (bool, Vec<PathBuf>) {
+        match permission {
+            Permission::Deny => (true, Vec::new()),
+            Permission::AllowAll => match explicit {
+                Some(paths) => (false, paths.iter().map(PathBuf::from).collect()),
+                None => (false, Vec::new()),
+            },
+            Permission::Allow(allowed) => {
+                let canonical: Vec<PathBuf> = allowed
+                    .iter()
+                    .filter_map(|path| std::fs::canonicalize(path).ok())
+                    .collect();
+                let candidates: Vec<String> = match explicit {
+                    Some(paths) => paths.to_vec(),
+                    None => allowed.clone(),
+                };
+                let kept: Vec<PathBuf> = candidates
+                    .iter()
+                    .filter(|candidate| path_di_dalam(&canonical, candidate))
+                    .map(PathBuf::from)
+                    .collect();
+                // Eksplisit meminta sandbox kelas ini: walau irisan kosong → tolak semua.
+                let handle = explicit.is_some();
+                (handle, kept)
+            }
+        }
+    };
+
+    let (handle_read, allow_read) = kelas(&effective.read, explicit_read);
+    let (handle_write, allow_write) = kelas(&effective.write, explicit_write);
+    spec.handle_read = handle_read;
+    spec.allow_read = allow_read;
+    spec.handle_write = handle_write;
+    spec.allow_write = allow_write;
+    spec.deny_net = match net {
+        Some(value) => !value,
+        None => matches!(effective.net, Permission::Deny),
+    };
+
+    // Auto-izin saat kelas baca ditangani: modul plugin (direktori entry), CA TLS (dibaca
+    // saat fetch https), dan berkas /proc/self untuk sampler kuota CPU/RSS (ADR-0038/0051).
+    if spec.handle_read || !spec.allow_read.is_empty() {
+        if let Some(dir) = entry.parent() {
+            spec.allow_read.push(dir.to_path_buf());
+        }
+        if let Some(ca) = &limits.tls_ca_file {
+            spec.allow_read.push(ca.clone());
+        }
+        if cpu_ms.is_some() || rss_mb.is_some() {
+            for path in ["/proc/self/task", "/proc/self/statm"] {
+                let candidate = PathBuf::from(path);
+                if candidate.exists() {
+                    spec.allow_read.push(candidate);
+                }
+            }
+        }
+        spec.allow_read.sort();
+        spec.allow_read.dedup();
+    }
+
+    if spec.is_noop() { None } else { Some(spec) }
+}
+
 /// Jalankan plugin sebagai proses terpisah (opsi `restart` mengaktifkan supervisi).
 #[op2(async(lazy))]
 #[serde]
@@ -599,11 +698,43 @@ pub async fn op_plugin_spawn(
     if let Some(timeout) = options.timeout_ms {
         command.args(["--timeout-ms", &timeout.to_string()]);
     }
-    if let Some(cpu) = options.max_cpu_ms.or(limits.max_cpu_ms) {
+    let forward_cpu = options.max_cpu_ms.or(limits.max_cpu_ms);
+    if let Some(cpu) = forward_cpu {
         command.args(["--max-cpu-ms", &cpu.to_string()]);
     }
-    if let Some(rss) = options.max_rss_mb.or(limits.max_rss_mb) {
+    let forward_rss = options.max_rss_mb.or(limits.max_rss_mb);
+    if let Some(rss) = forward_rss {
         command.args(["--max-rss-mb", &rss.to_string()]);
+    }
+
+    // Sandbox OS opsional (ADR-0051): diteruskan sebagai flag kelas-eksplisit ke proses plugin.
+    let entry_path = PathBuf::from(&entry);
+    let sandbox_spec = resolve_sandbox(
+        options.sandbox.as_ref(),
+        &effective,
+        &entry_path,
+        &limits,
+        forward_cpu,
+        forward_rss,
+    );
+    if let Some(spec) = &sandbox_spec {
+        let handle_read = spec.handle_read || !spec.allow_read.is_empty();
+        let handle_write = spec.handle_write || !spec.allow_write.is_empty();
+        if handle_read && spec.allow_read.is_empty() {
+            command.arg("--sandbox-deny-read");
+        }
+        for path in &spec.allow_read {
+            command.arg(format!("--sandbox-allow-read={}", path.display()));
+        }
+        if handle_write && spec.allow_write.is_empty() {
+            command.arg("--sandbox-deny-write");
+        }
+        for path in &spec.allow_write {
+            command.arg(format!("--sandbox-allow-write={}", path.display()));
+        }
+        if spec.deny_net {
+            command.arg("--sandbox-deny-net");
+        }
     }
     if let Some(ca) = &limits.tls_ca_file {
         command.arg("--tls-ca").arg(ca);

@@ -745,3 +745,152 @@ globalThis.__reset_ok = true;
 
     let _ = std::fs::remove_dir_all(&directory);
 }
+
+/// Sandbox FS (Landlock, ADR-0051): kernel menolak berkas di luar allowlist **walaupun**
+/// permission JS mengizinkan (read: true) — membuktikan penegakan di level kernel.
+#[test]
+fn plugin_sandbox_filesystem_ditegakkan_kernel() {
+    let directory = temp_dir("sandbox-fs");
+    let data = directory.join("data.txt");
+    std::fs::write(&data, "rahasia").expect("write");
+    let hasil_berkas = directory.join("hasil.txt");
+
+    let plugin = directory.join("plugin-sandbox.mjs");
+    std::fs::write(
+        &plugin,
+        format!(
+            r#"
+const hasil = {{}};
+try {{
+  hasil.dalam = await ramonyx.readTextFile({data});
+}} catch (error) {{
+  hasil.dalamErr = String(error);
+}}
+try {{
+  await ramonyx.writeTextFile({hasil}, "ok");
+  hasil.tulis = true;
+}} catch (error) {{
+  hasil.tulisErr = String(error);
+}}
+try {{
+  hasil.luar = await ramonyx.readTextFile("/etc/hostname");
+}} catch (error) {{
+  hasil.luarErr = String(error);
+}}
+await ramonyx.parent.send(hasil);
+"#,
+            data = js_literal(&data),
+            hasil = js_literal(&hasil_berkas),
+        ),
+    )
+    .expect("write");
+
+    let main = directory.join("main.mjs");
+    std::fs::write(
+        &main,
+        format!(
+            r#"
+const plugin = await ramonyx.spawn({plugin}, {{
+  allow: {{ read: true, write: [{dir}] }},
+  sandbox: {{ read: [{dir}] }},
+}});
+const hasil = await plugin.receive();
+if (hasil?.dalam !== "rahasia") throw new Error("baca dalam gagal: " + JSON.stringify(hasil));
+if (hasil?.tulis !== true) throw new Error("tulis dalam gagal: " + JSON.stringify(hasil));
+if (hasil?.luar !== undefined) throw new Error("baca luar lolos sandbox: " + JSON.stringify(hasil));
+if (!/denied|permission/i.test(String(hasil?.luarErr))) {{
+  throw new Error("bukan penolakan kernel: " + JSON.stringify(hasil?.luarErr));
+}}
+await plugin.kill();
+globalThis.__sandbox_fs_ok = true;
+"#,
+            plugin = js_literal(&plugin),
+            dir = js_literal(&directory),
+        ),
+    )
+    .expect("write");
+
+    let mut engine = engine(Permissions {
+        read: runtime_core::Permission::AllowAll,
+        write: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        ..Default::default()
+    });
+    engine.execute_module(&main).expect("sandbox fs ditegakkan");
+    engine
+        .execute(
+            "[verify]",
+            "if (globalThis.__sandbox_fs_ok !== true) throw new Error('sandbox fs gagal');",
+        )
+        .expect("verify");
+
+    let _ = std::fs::remove_dir_all(&directory);
+}
+
+/// Sandbox net (Landlock ABI ≥ 4, ADR-0051): TCP ditolak kernel walau permission net
+/// mengizinkan. Dilewati (bukan gagal) pada kernel/ABI yang belum mendukung.
+#[test]
+fn plugin_sandbox_net_deny_ditegakkan_kernel() {
+    let Some(abi) = js_engine::sandbox_abi() else {
+        eprintln!("lewati: Landlock tidak tersedia di kernel ini");
+        return;
+    };
+    if abi < 4 {
+        eprintln!("lewati: Landlock ABI {abi} < 4 (pembatasan net tidak didukung)");
+        return;
+    }
+
+    let directory = temp_dir("sandbox-net");
+    let plugin = directory.join("plugin-net.mjs");
+    std::fs::write(
+        &plugin,
+        r#"
+const hasil = {};
+try {
+  await fetch("http://127.0.0.1:9/");
+  hasil.net = "LOLOS";
+} catch (error) {
+  hasil.netErr = String(error);
+}
+await ramonyx.parent.send(hasil);
+"#,
+    )
+    .expect("write");
+
+    let main = directory.join("main.mjs");
+    std::fs::write(
+        &main,
+        format!(
+            r#"
+const plugin = await ramonyx.spawn({plugin}, {{
+  allow: {{ read: [{dir}], net: true }},
+  sandbox: {{ net: false }},
+}});
+const hasil = await plugin.receive();
+if (hasil?.net !== undefined) throw new Error("net lolos sandbox: " + JSON.stringify(hasil));
+if (!/denied|permission/i.test(String(hasil?.netErr))) {{
+  throw new Error("bukan penolakan kernel: " + JSON.stringify(hasil?.netErr));
+}}
+await plugin.kill();
+globalThis.__sandbox_net_ok = true;
+"#,
+            plugin = js_literal(&plugin),
+            dir = js_literal(&directory),
+        ),
+    )
+    .expect("write");
+
+    let mut engine = engine(Permissions {
+        read: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        net: runtime_core::Permission::AllowAll,
+        ..Default::default()
+    });
+    engine.execute_module(&main).expect("sandbox net");
+    engine
+        .execute(
+            "[verify]",
+            "if (globalThis.__sandbox_net_ok !== true) throw new Error('sandbox net gagal');",
+        )
+        .expect("verify");
+
+    let _ = std::fs::remove_dir_all(&directory);
+}

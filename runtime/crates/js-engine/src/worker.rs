@@ -106,6 +106,23 @@ pub struct WorkerOptions {
     /// **otomatis** via watchdog latar (tidak perlu induk sedang menunggu `receive`); plugin
     /// terwell-behaved mengirim `ramonyx.heartbeat()` secara berkala.
     pub(crate) health_check: Option<HealthSpec>,
+    /// Sandbox OS plugin (Landlock) — ADR-0051.
+    pub(crate) sandbox: Option<SandboxOption>,
+}
+
+/// Opsi sandbox OS plugin (`sandbox: true | { read?, write?, net? }`) — ADR-0051.
+/// `true` = cermin permission efektif plugin (irisan; kelas yang tidak bisa dipersempit
+/// dibiarkan ke lapisan permission JS). Daftar eksplisit dipersempit ke irisan dengan
+/// permission efektif — tidak pernah menambah izin.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub(crate) enum SandboxOption {
+    Flag(bool),
+    Tabel {
+        read: Option<Vec<String>>,
+        write: Option<Vec<String>>,
+        net: Option<bool>,
+    },
 }
 
 /// Opsi health-check (`healthCheck: true | { deadlineMs }`).
@@ -260,6 +277,8 @@ pub async fn op_worker_spawn(
         timeout: options.timeout_ms.map(std::time::Duration::from_millis),
         // CA TLS diwarisi dari induk (bukan di-override per worker).
         tls_ca_file: parent_ca,
+        // Sandbox OS hanya untuk proses (plugin), bukan worker thread (satu proses).
+        sandbox: None,
         // Metrik op cukup di induk; worker tidak perlu overhead.
         op_metrics: false,
         // Kuota CPU/RSS diwarisi dari induk (pelindung proses yang sama).

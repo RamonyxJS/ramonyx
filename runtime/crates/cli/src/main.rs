@@ -4,7 +4,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use js_engine::{Engine, EngineOptions};
+use js_engine::{Engine, EngineOptions, SandboxSpec};
 use runtime_core::{LogLevel, Logger, Permission, Permissions, load_config, version};
 
 const USAGE: &str = "\
@@ -36,6 +36,15 @@ RESOURCE LIMITS (opsional):
     --max-rss-mb <MiB>    Kuota memori proses (Linux); menutup gap memori eksternal V8.
     --plugin              Mode plugin: `ramonyx.parent` lewat stdin/stdout (JSON per baris),
                           log ke stderr. Dipakai `ramonyx.spawn` (isolasi proses).
+
+SANDBOX (Landlock, Linux ≥ 5.13; deny-by-default per kelas yang diaktifkan):
+    --sandbox                  Aktifkan kelas baca+tulis: tolak semua (tambah izin di bawah)
+    --sandbox-deny-read        Aktifkan kelas baca tanpa rule (tolak semua baca)
+    --sandbox-deny-write       Aktifkan kelas tulis tanpa rule (tolak semua tulis)
+    --sandbox-allow-read=PATH  Izinkan baca PATH (berkas/dir; dapat diulang)
+    --sandbox-allow-write=PATH Izinkan tulis PATH (dapat diulang)
+    --sandbox-deny-net         Tolak TCP bind/connect (butuh Landlock ABI ≥ 4)
+    Catatan: direktori entry, CA TLS, dan /proc/self (sampler kuota) otomatis diizinkan baca.
 ";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -60,6 +69,7 @@ enum Command {
         max_cpu_ms: Option<u64>,
         max_rss_mb: Option<usize>,
         plugin: bool,
+        sandbox: Option<SandboxSpec>,
     },
 }
 
@@ -79,6 +89,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
     let mut max_cpu_ms: Option<u64> = None;
     let mut max_rss_mb: Option<usize> = None;
     let mut plugin = false;
+    let mut sandbox: Option<SandboxSpec> = None;
     let mut positional: Option<String> = None;
     let mut rest = iterator.peekable();
 
@@ -107,6 +118,36 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             }
             "--op-metrics" => op_metrics = true,
             "--plugin" => plugin = true,
+            "--sandbox" => {
+                let spec = sandbox.get_or_insert_with(SandboxSpec::default);
+                spec.handle_read = true;
+                spec.handle_write = true;
+            }
+            "--sandbox-deny-read" => {
+                sandbox.get_or_insert_with(SandboxSpec::default).handle_read = true;
+            }
+            "--sandbox-deny-write" => {
+                sandbox
+                    .get_or_insert_with(SandboxSpec::default)
+                    .handle_write = true;
+            }
+            "--sandbox-deny-net" => {
+                sandbox.get_or_insert_with(SandboxSpec::default).deny_net = true;
+            }
+            _ if allow_value("--sandbox-allow-read=").is_some() => {
+                let value = allow_value("--sandbox-allow-read=").unwrap_or_default();
+                sandbox
+                    .get_or_insert_with(SandboxSpec::default)
+                    .allow_read
+                    .push(PathBuf::from(value));
+            }
+            _ if allow_value("--sandbox-allow-write=").is_some() => {
+                let value = allow_value("--sandbox-allow-write=").unwrap_or_default();
+                sandbox
+                    .get_or_insert_with(SandboxSpec::default)
+                    .allow_write
+                    .push(PathBuf::from(value));
+            }
             "--max-cpu-ms" => {
                 let value = rest.next().ok_or("--max-cpu-ms butuh nilai <ms>")?;
                 let parsed = value
@@ -182,6 +223,7 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             max_cpu_ms,
             max_rss_mb,
             plugin,
+            sandbox,
         }),
         other => Err(format!("subcommand tidak dikenal: {other}")),
     }
@@ -223,6 +265,7 @@ fn run_command(command: Command) -> ExitCode {
             max_cpu_ms,
             max_rss_mb,
             plugin,
+            sandbox,
         } => {
             let resolved = match load_config(config.as_deref()) {
                 Ok(resolved) => resolved,
@@ -283,6 +326,43 @@ fn run_command(command: Command) -> ExitCode {
                 }),
             );
 
+            // Sandbox OS (ADR-0051): auto-izin kebutuhan runtime saat kelas baca ditangani —
+            // direktori entry (modul & impornya), berkas CA TLS (fetch https), dan berkas
+            // /proc/self untuk sampler kuota CPU/RSS (ADR-0038).
+            let sandbox = sandbox.map(|mut spec| {
+                if spec.handle_read || !spec.allow_read.is_empty() {
+                    if let Some(dir) = entry_path.parent() {
+                        spec.allow_read.push(dir.to_path_buf());
+                    }
+                    if let Some(ca) = &tls_ca {
+                        spec.allow_read.push(ca.clone());
+                    }
+                    if max_cpu_ms.is_some() || max_rss_mb.is_some() {
+                        for path in ["/proc/self/task", "/proc/self/statm"] {
+                            let candidate = PathBuf::from(path);
+                            if candidate.exists() {
+                                spec.allow_read.push(candidate);
+                            }
+                        }
+                    }
+                    spec.allow_read.sort();
+                    spec.allow_read.dedup();
+                }
+                spec
+            });
+            if let Some(spec) = sandbox.as_ref().filter(|spec| !spec.is_noop()) {
+                logger.info(
+                    "runtime.sandbox",
+                    &serde_json::json!({
+                        "allowRead": spec.allow_read.iter().map(|path| path.display().to_string()).collect::<Vec<_>>(),
+                        "allowWrite": spec.allow_write.iter().map(|path| path.display().to_string()).collect::<Vec<_>>(),
+                        "handledRead": spec.handle_read || !spec.allow_read.is_empty(),
+                        "handledWrite": spec.handle_write || !spec.allow_write.is_empty(),
+                        "denyNet": spec.deny_net,
+                    }),
+                );
+            }
+
             if op_metrics {
                 logger.info(
                     "runtime.profiling",
@@ -317,6 +397,7 @@ fn run_command(command: Command) -> ExitCode {
                 max_cpu_ms,
                 max_rss_mb,
                 ipc_stdio: plugin,
+                sandbox,
             };
 
             let extension = entry_path
@@ -546,6 +627,37 @@ mod tests {
     }
 
     #[test]
+    fn parse_sandbox_dan_izin_kernel() {
+        let parsed = parse_args(&args(&[
+            "run",
+            "src/main.ts",
+            "--sandbox",
+            "--sandbox-allow-read=/tmp",
+            "--sandbox-allow-write=/tmp/out",
+            "--sandbox-deny-net",
+        ]))
+        .expect("parse sandbox");
+        match parsed {
+            Command::Run {
+                sandbox: Some(spec),
+                ..
+            } => {
+                assert!(spec.handle_read && spec.handle_write, "kelas fs aktif");
+                assert_eq!(spec.allow_read, vec![PathBuf::from("/tmp")]);
+                assert_eq!(spec.allow_write, vec![PathBuf::from("/tmp/out")]);
+                assert!(spec.deny_net);
+            }
+            other => panic!("harus Run dengan sandbox: {other:?}"),
+        }
+
+        // Tanpa flag sandbox → None (perilaku lama).
+        match parse_args(&args(&["run", "src/main.ts"])).expect("parse polos") {
+            Command::Run { sandbox, .. } => assert!(sandbox.is_none()),
+            other => panic!("harus Run: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parse_run_dengan_flag() {
         let parsed = parse_args(&args(&[
             "run",
@@ -587,6 +699,7 @@ mod tests {
                 max_cpu_ms: Some(250),
                 max_rss_mb: Some(512),
                 plugin: true,
+                sandbox: None,
             })
         );
     }

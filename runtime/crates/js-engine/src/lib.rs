@@ -35,10 +35,12 @@ mod http_client;
 mod metrics;
 mod plugin;
 mod resolve;
+mod sandbox;
 mod web_shim;
 mod worker;
 
 pub use metrics::{ExecutionTimings, InitTimings, OpMetricEntry};
+pub use sandbox::{SandboxSpec, abi as sandbox_abi};
 
 use resolve::resolve_bare;
 use web_shim::WEB_SHIM;
@@ -816,6 +818,9 @@ pub struct EngineOptions {
     /// Aktifkan jembatan stdio `ramonyx.parent` (mode `--plugin`; ADR-0040). Nonaktif =
     /// stdin host tidak pernah dibaca.
     pub ipc_stdio: bool,
+    /// Sandbox OS proses via Landlock (ADR-0051). `None` = tanpa sandbox; spesifikasi kosong
+    /// = no-op. Bila diminta tetapi kernel tidak mendukung → `with_options` gagal keras.
+    pub sandbox: Option<SandboxSpec>,
 }
 
 impl Engine {
@@ -920,6 +925,13 @@ impl Engine {
             if options.ipc_stdio {
                 op_state.put(plugin::ProcessBridge::enabled());
             }
+        }
+
+        // Sandbox OS (ADR-0051): setelah init runtime (bootstrap/web shim tak membaca berkas),
+        // sebelum kode pengguna/modul apa pun berjalan. Anak proses mewarisi dan hanya bisa
+        // dipersempit lagi.
+        if let Some(spec) = &options.sandbox {
+            sandbox::apply(spec).map_err(EngineError::new)?;
         }
 
         Ok(Self {
@@ -2418,6 +2430,93 @@ globalThis.__perm_ok = true;
 
     fn json_literal(value: &Path) -> String {
         serde_json::to_string(value.to_str().expect("path utf8")).expect("json")
+    }
+
+    #[test]
+    fn sandbox_resolusi_iris_dengan_permission() {
+        use crate::worker::SandboxOption;
+        use runtime_core::Permission;
+
+        let directory = temp_dir("sandbox-resolve");
+        let lain = temp_dir("sandbox-lain");
+        let entry = directory.join("plugin.mjs");
+        std::fs::write(&entry, "// plugin").expect("write");
+        let limits = crate::EngineLimits {
+            max_heap_mb: None,
+            tls_ca_file: None,
+            max_cpu_ms: None,
+            max_rss_mb: None,
+        };
+
+        // 1. Cermin (`sandbox: true`): read Allow([dir]) + write/net Deny.
+        let permissions = Permissions {
+            read: Permission::Allow(vec![directory.display().to_string()]),
+            write: Permission::Deny,
+            net: Permission::Deny,
+            env: Permission::Deny,
+        };
+        let spec = crate::plugin::resolve_sandbox(
+            Some(&SandboxOption::Flag(true)),
+            &permissions,
+            &entry,
+            &limits,
+            None,
+            None,
+        )
+        .expect("spec cermin");
+        assert!(spec.allow_read.contains(&directory));
+        assert!(
+            spec.handle_write,
+            "write Deny → kelas tulis ditangani kernel"
+        );
+        assert!(spec.deny_net, "net Deny → deny_net");
+
+        // 2. Eksplisit + irisan: read AllowAll → daftar dipertahankan; write Allow([dir])
+        //    dengan daftar di luar → irisan kosong + kelas tetap ditangani (tolak semua).
+        let permissions = Permissions {
+            read: Permission::AllowAll,
+            write: Permission::Allow(vec![directory.display().to_string()]),
+            net: Permission::AllowAll,
+            env: Permission::Deny,
+        };
+        let opsi = SandboxOption::Tabel {
+            read: Some(vec![
+                directory.display().to_string(),
+                lain.display().to_string(),
+            ]),
+            write: Some(vec![lain.display().to_string()]),
+            net: None,
+        };
+        let spec =
+            crate::plugin::resolve_sandbox(Some(&opsi), &permissions, &entry, &limits, None, None)
+                .expect("spec eksplisit");
+        assert!(spec.allow_read.contains(&directory) && spec.allow_read.contains(&lain));
+        assert!(spec.allow_write.is_empty(), "irisan write kosong");
+        assert!(spec.handle_write, "eksplisit → kelas tulis ditangani");
+        assert!(
+            !spec.deny_net,
+            "net AllowAll tanpa permintaan deny → tidak dibatasi"
+        );
+
+        // 3. Semua AllowAll tanpa daftar eksplisit → no-op (tidak bisa dipersempit).
+        let permissions = Permissions {
+            read: Permission::AllowAll,
+            write: Permission::AllowAll,
+            net: Permission::AllowAll,
+            env: Permission::Deny,
+        };
+        assert!(
+            crate::plugin::resolve_sandbox(
+                Some(&SandboxOption::Flag(true)),
+                &permissions,
+                &entry,
+                &limits,
+                None,
+                None,
+            )
+            .is_none(),
+            "AllowAll murni → sandbox tidak menambah apa pun"
+        );
     }
 
     #[test]

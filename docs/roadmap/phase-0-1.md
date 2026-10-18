@@ -109,8 +109,13 @@ Phase 4 (runtime alpha).
 - [x] **R1 sisa (parsial)** — resolusi paket `node_modules` **ESM v1** (ADR-0026): walk-up,
       `exports` (kondisi import/module/default, subpath, wildcard), fallback `module`/`main`/
       `index.js`; CJS ditolak dengan pesan jelas; diuji 5 unit + 1 integrasi engine
-- [ ] **Sisa package compat** — interop CommonJS, kondisi `imports`/self-reference, urutan key
-      penuh; import JSON/WASM
+- [x] **Web platform basics** (ADR-0027): `web_shim` — `TextEncoder/Decoder` (UTF-8), `URL`/
+      `URLSearchParams` (subset), `Headers`/`Request`/`Response` minimal, `setTimeout`/`clearTimeout`;
+      pola `??` agar bisa digantikan implementasi native; diuji + smoke
+- [ ] **Compatibility suite pertama** — jalankan paket framework (router → server pipeline) di
+      runtime (target exit criteria Phase 4)
+- [ ] **fetch client + ReadableStream** — prasyarat ssr/security di runtime; **interop CommonJS** —
+      prasyarat SSR (react)
 - [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
       **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,
       handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end

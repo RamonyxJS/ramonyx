@@ -34,3 +34,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0024](0024-http-cancellation.md) | Runtime HTTP R2b: cancellation klien + keep-alive | Accepted |
 | [0025](0025-response-streaming.md) | Runtime HTTP R2c: streaming respons (chunked) | Accepted |
 | [0026](0026-node-modules.md) | Resolusi `node_modules` ESM (versi 1) | Accepted |
+| [0027](0027-web-shim.md) | Web platform basics (`web_shim`) untuk runtime | Accepted |

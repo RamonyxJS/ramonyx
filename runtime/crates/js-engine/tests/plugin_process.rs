@@ -277,3 +277,151 @@ globalThis.__timeout_ok = true;
     // beri waktu proses anak selesai (bila belum)
     std::thread::sleep(Duration::from_millis(50));
 }
+
+#[test]
+fn plugin_supervisi_restart_otomatis() {
+    let directory = temp_dir("restart");
+    let marker = directory.join("generasi.txt");
+    let plugin = directory.join("plugin-crash-sekali.mjs");
+    std::fs::write(
+        &plugin,
+        format!(
+            r#"
+const berkas = {marker};
+let generasi = 0;
+try {{
+  generasi = Number(await ramonyx.readTextFile(berkas));
+}} catch {{
+  generasi = 0;
+}}
+generasi += 1;
+await ramonyx.writeTextFile(berkas, String(generasi));
+if (generasi === 1) {{
+  ramonyx.exit(3); // crash buatan pada generasi pertama
+}}
+await ramonyx.parent.send({{ generasi }});
+"#,
+            marker = js_literal(&marker),
+        ),
+    )
+    .expect("write");
+
+    let main = directory.join("main.mjs");
+    std::fs::write(
+        &main,
+        format!(
+            r#"
+const plugin = await ramonyx.spawn({plugin}, {{
+  allow: {{ read: [{dir}], write: [{dir}] }},
+  restart: {{ maxRestarts: 3, delayMs: 50 }},
+}});
+const pesan = await plugin.receive();
+if (pesan?.generasi !== 2) throw new Error("generasi harus 2 setelah restart: " + JSON.stringify(pesan));
+// Beri waktu plugin generasi-2 selesai normal (exit 0) + supervisor mereap-nya.
+await ramonyx.sleep(300);
+const kode = await plugin.kill();
+if (kode !== 0) throw new Error("exit akhir harus 0: " + kode);
+const stats = plugin.stats();
+if (stats.restarts !== 1) throw new Error("restarts harus 1: " + JSON.stringify(stats));
+if (stats.stopped !== true) throw new Error("plugin harus berhenti: " + JSON.stringify(stats));
+if (stats.lastExit !== 0) throw new Error("lastExit harus 0: " + JSON.stringify(stats));
+globalThis.__restart_ok = true;
+"#,
+            plugin = js_literal(&plugin),
+            dir = js_literal(&directory),
+        ),
+    )
+    .expect("write");
+
+    // Anti-eskalasi: induk harus MEMILIKI izin itu dulu agar plugin mendapatkannya.
+    let mut engine = engine(Permissions {
+        read: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        write: runtime_core::Permission::Allow(vec![directory.display().to_string()]),
+        ..Default::default()
+    });
+    engine.execute_module(&main).expect("supervisi restart");
+    engine
+        .execute(
+            "[verify]",
+            "if (globalThis.__restart_ok !== true) throw new Error('restart gagal');",
+        )
+        .expect("verify");
+
+    let _ = std::fs::remove_dir_all(&directory);
+}
+
+#[test]
+fn plugin_supervisi_batas_restart_dihormati() {
+    let directory = temp_dir("restart-batas");
+    let plugin = directory.join("plugin-selalu-crash.mjs");
+    std::fs::write(&plugin, "ramonyx.exit(4);\n").expect("write");
+
+    let main = directory.join("main.mjs");
+    std::fs::write(
+        &main,
+        format!(
+            r#"
+const plugin = await ramonyx.spawn({plugin}, {{ restart: {{ maxRestarts: 2, delayMs: 20 }} }});
+const akhir = await plugin.receive();
+if (akhir !== null) throw new Error("harus berakhir null: " + JSON.stringify(akhir));
+const stats = plugin.stats();
+if (stats.restarts !== 2) throw new Error("restarts harus 2: " + JSON.stringify(stats));
+if (stats.lastExit !== 4) throw new Error("lastExit harus 4: " + JSON.stringify(stats));
+if (stats.stopped !== true) throw new Error("harus stopped: " + JSON.stringify(stats));
+globalThis.__batas_ok = true;
+"#,
+            plugin = js_literal(&plugin),
+        ),
+    )
+    .expect("write");
+
+    let mut engine = Engine::with_options(EngineOptions::default()).expect("engine");
+    engine.execute_module(&main).expect("batas restart");
+    engine
+        .execute(
+            "[verify]",
+            "if (globalThis.__batas_ok !== true) throw new Error('batas restart gagal');",
+        )
+        .expect("verify");
+
+    let _ = std::fs::remove_dir_all(&directory);
+}
+
+#[test]
+fn plugin_supervisi_kill_menghentikan_tanpa_respawn() {
+    let directory = temp_dir("restart-kill");
+    let plugin = directory.join("plugin-spin.mjs");
+    std::fs::write(&plugin, "for (;;) {}\n").expect("write");
+
+    let main = directory.join("main.mjs");
+    std::fs::write(
+        &main,
+        format!(
+            r#"
+const plugin = await ramonyx.spawn({plugin}, {{ restart: true }});
+await ramonyx.sleep(150);
+await plugin.kill();
+await ramonyx.sleep(250); // beri kesempatan (seharusnya tidak ada respawn)
+const stats = plugin.stats();
+if (stats.stopped !== true) throw new Error("harus stopped: " + JSON.stringify(stats));
+if (stats.restarts !== 0) throw new Error("tidak boleh restart: " + JSON.stringify(stats));
+const akhir = await plugin.receive();
+if (akhir !== null) throw new Error("receive harus null: " + JSON.stringify(akhir));
+globalThis.__kill_supervisi_ok = true;
+"#,
+            plugin = js_literal(&plugin),
+        ),
+    )
+    .expect("write");
+
+    let mut engine = Engine::with_options(EngineOptions::default()).expect("engine");
+    engine.execute_module(&main).expect("kill supervisi");
+    engine
+        .execute(
+            "[verify]",
+            "if (globalThis.__kill_supervisi_ok !== true) throw new Error('kill supervisi gagal');",
+        )
+        .expect("verify");
+
+    let _ = std::fs::remove_dir_all(&directory);
+}

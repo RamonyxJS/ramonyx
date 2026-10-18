@@ -1,9 +1,13 @@
-//! Isolasi level proses untuk plugin (ADR-0040).
+//! Isolasi level proses + supervisi restart untuk plugin (ADR-0040/0043).
 //!
 //! Parent menjalankan **proses terpisah** (`ramonyx-runtime run --plugin`) sehingga crash/abort
 //! V8 di plugin tidak menjatuhkan induk (beda dari worker yang berupa thread, ADR-0034).
 //! Protokol: **JSON per baris** di stdin/stdout anak; log anak ke stderr. Permission plugin =
 //! irisan permission induk (anti-eskalasi, sama seperti worker); kuota diteruskan sebagai flag.
+//!
+//! **Supervisi** (opsi `restart`): saat diaktifkan, task latar mengawasi proses anak —
+//! keluar **non-zero**/sinyal → dijalankan ulang otomatis (backoff + batas `maxRestarts`,
+//! default 3×100 ms); keluar `0` = selesai normal. `plugin.kill()` menghentikan supervisi.
 //!
 //! Binari runtime dicari: `RAMONYX_RUNTIME_BIN` → `current_exe` (bila itu ramonyx-runtime) →
 //! sibling `target/<profil>/ramonyx-runtime` (dipakai test). Embedder yang menyematkan engine
@@ -14,6 +18,8 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use deno_core::{OpState, op2};
 use deno_error::JsErrorBox;
@@ -21,8 +27,9 @@ use runtime_core::Permission;
 use serde::Serialize;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines};
 use tokio::process::{Child, ChildStdin, ChildStdout};
+use tokio::sync::Notify;
 
-use crate::worker::{WorkerOptions, resolve_permissions};
+use crate::worker::{RestartSpec, WorkerOptions, resolve_permissions};
 
 /// Batas ukuran satu pesan (JSON) induk ↔ plugin.
 const MAX_MESSAGE_BYTES: usize = 1024 * 1024;
@@ -30,16 +37,76 @@ const MAX_MESSAGE_BYTES: usize = 1024 * 1024;
 /// Batas jumlah plugin aktif per proses (guard fork bomb).
 const MAX_PLUGINS: usize = 8;
 
-pub struct PluginHandle {
+/// Perintah spawn yang dapat diulang (dipakai supervisor).
+#[derive(Clone)]
+struct SpawnSpec {
+    binary: PathBuf,
+    args: Vec<String>,
+}
+
+fn spawn_child(
+    spec: &SpawnSpec,
+) -> Result<(Child, ChildStdin, Lines<BufReader<ChildStdout>>), String> {
+    let mut command = tokio::process::Command::new(&spec.binary);
+    command.args(&spec.args);
+    command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::inherit())
+        .kill_on_drop(true);
+
+    let mut child = command.spawn().map_err(|error| {
+        format!(
+            "gagal menjalankan plugin {}: {error}",
+            spec.binary.display()
+        )
+    })?;
+    let stdin = child
+        .stdin
+        .take()
+        .ok_or_else(|| "stdin plugin tidak tersedia".to_string())?;
+    let stdout = child
+        .stdout
+        .take()
+        .map(|out| BufReader::new(out).lines())
+        .ok_or_else(|| "stdout plugin tidak tersedia".to_string())?;
+    Ok((child, stdin, stdout))
+}
+
+/// State satu plugin (dibagi dengan task supervisor).
+pub struct PluginState {
+    spec: SpawnSpec,
     child: Option<Child>,
+    pid: Option<u32>,
     stdin: Option<ChildStdin>,
     stdout: Option<Lines<BufReader<ChildStdout>>>,
+    supervised: bool,
+    stopped: bool,
+    restarts: u32,
+    max_restarts: u32,
+    restart_delay: Duration,
+    last_exit: Option<i32>,
+    wake: Arc<Notify>,
+}
+
+impl PluginState {
+    /// Tidak akan ada pesan lagi dari plugin ini.
+    fn terminal(&self) -> bool {
+        if self.stopped {
+            return true;
+        }
+        if let Some(code) = self.last_exit {
+            // Keluar normal = selesai; non-zero = restart habis (supervisor berhenti).
+            return code == 0 || !self.supervised || self.restarts >= self.max_restarts;
+        }
+        false
+    }
 }
 
 #[derive(Default)]
 pub struct PluginRegistry {
     next_id: u64,
-    plugins: HashMap<u64, PluginHandle>,
+    plugins: HashMap<u64, Arc<Mutex<PluginState>>>,
 }
 
 /// Jembatan stdio sisi-anak. `stdin` hanya terisi bila engine dijalankan dengan `--plugin`
@@ -71,6 +138,15 @@ impl Default for ProcessBridge {
 #[derive(Serialize)]
 pub struct MessageEnvelope {
     text: Option<String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StatsEnvelope {
+    restarts: u32,
+    running: bool,
+    stopped: bool,
+    last_exit: Option<i32>,
 }
 
 fn check_message_size(text: &str) -> Result<(), JsErrorBox> {
@@ -135,7 +211,76 @@ fn append_permission_flag(
     }
 }
 
-/// Jalankan plugin sebagai proses terpisah.
+/// Task supervisor: tunggu proses anak; restart (backoff) bila keluar non-zero/normal != 0.
+async fn supervise(state: Arc<Mutex<PluginState>>) {
+    loop {
+        let child = {
+            let mut plugin = state
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            plugin.child.take()
+        };
+        let Some(mut child) = child else {
+            // Tidak ada child (dipakai `kill`/sedang transition) — berhenti bila terminal.
+            let terminal = {
+                let plugin = state
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+                plugin.stopped
+            };
+            if terminal {
+                return;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+            continue;
+        };
+
+        let status = child.wait().await.ok();
+        let code = status.and_then(|status| status.code());
+
+        let (should_restart, delay, spec) = {
+            let mut plugin = state
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            plugin.last_exit = code;
+            plugin.pid = None;
+            plugin.wake.notify_waiters();
+            let restart =
+                !plugin.stopped && code != Some(0) && plugin.restarts < plugin.max_restarts;
+            (restart, plugin.restart_delay, plugin.spec.clone())
+        };
+
+        if !should_restart {
+            return;
+        }
+
+        tokio::time::sleep(delay).await;
+
+        let mut plugin = state
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if plugin.stopped {
+            return;
+        }
+        match spawn_child(&spec) {
+            Ok((child, stdin, stdout)) => {
+                plugin.pid = child.id();
+                plugin.child = Some(child);
+                plugin.stdin = Some(stdin);
+                plugin.stdout = Some(stdout);
+                plugin.restarts += 1;
+                plugin.wake.notify_waiters();
+            }
+            Err(_) => {
+                plugin.wake.notify_waiters();
+                return;
+            }
+        }
+        drop(plugin);
+    }
+}
+
+/// Jalankan plugin sebagai proses terpisah (opsi `restart` mengaktifkan supervisi).
 #[op2(async(lazy))]
 #[serde]
 pub async fn op_plugin_spawn(
@@ -184,31 +329,62 @@ pub async fn op_plugin_spawn(
         command.arg("--tls-ca").arg(ca);
     }
 
-    command
+    let (policy_max, policy_delay) = options
+        .restart
+        .as_ref()
+        .and_then(RestartSpec::policy)
+        .map(|(max, delay)| (Some(max), Some(delay)))
+        .unwrap_or((None, None));
+
+    let spec = SpawnSpec {
+        binary: binary.clone(),
+        args: command
+            .as_std()
+            .get_args()
+            .map(|arg| arg.to_string_lossy().into_owned())
+            .collect(),
+    };
+
+    let mut child = command
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit())
-        .kill_on_drop(true);
-
-    let mut child = command.spawn().map_err(|error| {
-        JsErrorBox::generic(format!(
-            "gagal menjalankan plugin {}: {error}",
-            binary.display()
-        ))
-    })?;
+        .kill_on_drop(true)
+        .spawn()
+        .map_err(|error| {
+            JsErrorBox::generic(format!(
+                "gagal menjalankan plugin {}: {error}",
+                binary.display()
+            ))
+        })?;
+    let pid = child.id();
     let stdin = child.stdin.take();
     let stdout = child.stdout.take().map(|out| BufReader::new(out).lines());
 
+    let supervised = policy_max.is_some();
+    let plugin_state = Arc::new(Mutex::new(PluginState {
+        spec,
+        child: Some(child),
+        pid,
+        stdin,
+        stdout,
+        supervised,
+        stopped: false,
+        restarts: 0,
+        max_restarts: policy_max.unwrap_or(0),
+        restart_delay: policy_delay.unwrap_or_default(),
+        last_exit: None,
+        wake: Arc::new(Notify::new()),
+    }));
+
+    if supervised {
+        let state_for_supervisor = Arc::clone(&plugin_state);
+        tokio::spawn(supervise(state_for_supervisor));
+    }
+
     let mut state = state.borrow_mut();
     let registry = state.borrow_mut::<PluginRegistry>();
-    registry.plugins.insert(
-        id,
-        PluginHandle {
-            child: Some(child),
-            stdin,
-            stdout,
-        },
-    );
+    registry.plugins.insert(id, plugin_state);
     Ok(id)
 }
 
@@ -220,35 +396,62 @@ pub async fn op_plugin_send(
     #[string] text: String,
 ) -> Result<(), JsErrorBox> {
     check_message_size(&text)?;
-    let mut stdin = {
-        let mut op_state = state.borrow_mut();
-        let registry = op_state.borrow_mut::<PluginRegistry>();
-        let Some(handle) = registry.plugins.get_mut(&plugin_id) else {
+
+    let plugin_state = {
+        let op_state = state.borrow();
+        let registry = op_state.borrow::<PluginRegistry>();
+        let Some(plugin) = registry.plugins.get(&plugin_id) else {
             return Err(JsErrorBox::generic(format!(
                 "plugin {plugin_id} tidak ada / sudah berhenti"
             )));
         };
-        handle
-            .stdin
-            .take()
-            .ok_or_else(|| JsErrorBox::generic("send sudah berjalan untuk plugin ini"))?
+        Arc::clone(plugin)
     };
 
     let mut payload = text;
     payload.push('\n');
-    let result = async {
-        stdin.write_all(payload.as_bytes()).await?;
-        stdin.flush().await
-    }
-    .await
-    .map_err(|error| JsErrorBox::generic(format!("gagal mengirim ke plugin: {error}")));
 
-    let mut op_state = state.borrow_mut();
-    let registry = op_state.borrow_mut::<PluginRegistry>();
-    if let Some(handle) = registry.plugins.get_mut(&plugin_id) {
-        handle.stdin = Some(stdin);
+    // Tunggu singkat bila sedang antar-generasi (supervisi restart).
+    for _ in 0..40 {
+        let stdin = {
+            let mut plugin = plugin_state
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            if plugin.terminal() && plugin.stdin.is_none() {
+                return Err(JsErrorBox::generic(format!(
+                    "plugin {plugin_id} sudah berhenti"
+                )));
+            }
+            plugin.stdin.take()
+        };
+        let Some(mut stdin) = stdin else {
+            let wake = {
+                let plugin = plugin_state
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+                plugin.wake.clone()
+            };
+            let _ = tokio::time::timeout(Duration::from_millis(50), wake.notified()).await;
+            continue;
+        };
+
+        let result = async {
+            stdin.write_all(payload.as_bytes()).await?;
+            stdin.flush().await
+        }
+        .await
+        .map_err(|error| JsErrorBox::generic(format!("gagal mengirim ke plugin: {error}")));
+
+        let mut plugin = plugin_state
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        plugin.stdin = Some(stdin);
+        return result;
     }
-    result
+
+    Err(JsErrorBox::generic(format!(
+        "plugin {plugin_id} sedang restart; coba lagi"
+    )))
 }
 
 /// Terima pesan JSON dari plugin; `text: null` bila plugin selesai/dihentikan.
@@ -258,67 +461,170 @@ pub async fn op_plugin_receive(
     state: Rc<RefCell<OpState>>,
     #[smi] plugin_id: u64,
 ) -> Result<MessageEnvelope, JsErrorBox> {
-    let mut lines = {
-        let mut op_state = state.borrow_mut();
-        let registry = op_state.borrow_mut::<PluginRegistry>();
-        let Some(handle) = registry.plugins.get_mut(&plugin_id) else {
+    let plugin_state = {
+        let op_state = state.borrow();
+        let registry = op_state.borrow::<PluginRegistry>();
+        let Some(plugin) = registry.plugins.get(&plugin_id) else {
             return Ok(MessageEnvelope { text: None });
         };
-        handle
-            .stdout
-            .take()
-            .ok_or_else(|| JsErrorBox::generic("receive sudah berjalan untuk plugin ini"))?
+        Arc::clone(plugin)
     };
 
-    let result = lines
-        .next_line()
-        .await
-        .map_err(|error| JsErrorBox::generic(format!("gagal membaca dari plugin: {error}")));
+    loop {
+        let mut lines = {
+            let mut plugin = plugin_state
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            plugin.stdout.take()
+        };
 
-    let mut op_state = state.borrow_mut();
-    let registry = op_state.borrow_mut::<PluginRegistry>();
-    if let Some(handle) = registry.plugins.get_mut(&plugin_id) {
-        handle.stdout = Some(lines);
-    }
+        if let Some(mut lines) = lines.take() {
+            let read = lines.next_line().await.map_err(|error| {
+                JsErrorBox::generic(format!("gagal membaca dari plugin: {error}"))
+            });
+            match read {
+                Ok(Some(line)) => {
+                    let mut plugin = plugin_state
+                        .lock()
+                        .unwrap_or_else(|poisoned| poisoned.into_inner());
+                    plugin.stdout = Some(lines);
+                    return Ok(MessageEnvelope { text: Some(line) });
+                }
+                Ok(None) => {
+                    // EOF generasi ini. Tanpa supervisi: selesai (perilaku lama).
+                    // Dengan supervisi: supervisor mungkin sedang restart → tunggu generasi baru.
+                    let supervised = {
+                        let plugin = plugin_state
+                            .lock()
+                            .unwrap_or_else(|poisoned| poisoned.into_inner());
+                        plugin.supervised
+                    };
+                    if !supervised {
+                        return Ok(MessageEnvelope { text: None });
+                    }
+                }
+                Err(error) => return Err(error),
+            }
+        }
 
-    match result? {
-        Some(line) => Ok(MessageEnvelope { text: Some(line) }),
-        None => Ok(MessageEnvelope { text: None }),
+        let (terminal, wake) = {
+            let plugin = plugin_state
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            (plugin.terminal(), plugin.wake.clone())
+        };
+        if terminal {
+            return Ok(MessageEnvelope { text: None });
+        }
+        let _ = tokio::time::timeout(Duration::from_millis(250), wake.notified()).await;
     }
 }
 
-/// Hentikan plugin (SIGKILL) dan tunggu; `text` = exit code (null bila tak diketahui).
+/// Statistik plugin (restart, status) — untuk observability supervisi.
+#[op2]
+#[serde]
+pub fn op_plugin_stats(
+    state: &mut OpState,
+    #[smi] plugin_id: u64,
+) -> Result<StatsEnvelope, JsErrorBox> {
+    let registry = state.borrow::<PluginRegistry>();
+    let Some(plugin) = registry.plugins.get(&plugin_id) else {
+        return Ok(StatsEnvelope {
+            restarts: 0,
+            running: false,
+            stopped: true,
+            last_exit: None,
+        });
+    };
+    let plugin = plugin
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    Ok(StatsEnvelope {
+        restarts: plugin.restarts,
+        running: plugin.child.is_some(),
+        stopped: plugin.stopped || plugin.terminal(),
+        last_exit: plugin.last_exit,
+    })
+}
+
+/// Hentikan plugin (SIGKILL + hentikan supervisi); `text` = exit code (null bila sinyal).
 #[op2(async(lazy), fast)]
 #[serde]
 pub async fn op_plugin_kill(
     state: Rc<RefCell<OpState>>,
     #[smi] plugin_id: u64,
 ) -> Result<MessageEnvelope, JsErrorBox> {
-    let mut child = {
-        let mut op_state = state.borrow_mut();
-        let registry = op_state.borrow_mut::<PluginRegistry>();
-        let Some(handle) = registry.plugins.get_mut(&plugin_id) else {
+    let plugin_state = {
+        let op_state = state.borrow();
+        let registry = op_state.borrow::<PluginRegistry>();
+        let Some(plugin) = registry.plugins.get(&plugin_id) else {
             return Ok(MessageEnvelope { text: None });
         };
-        let Some(child) = handle.child.take() else {
-            return Ok(MessageEnvelope { text: None });
-        };
-        child
+        Arc::clone(plugin)
     };
 
-    let _ = child.start_kill();
-    let status = child.wait().await.ok();
-    let code = status.and_then(|status| status.code());
+    let (child, pid, supervised) = {
+        let mut plugin = plugin_state
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        plugin.stopped = true;
+        plugin.wake.notify_waiters();
+        (plugin.child.take(), plugin.pid, plugin.supervised)
+    };
 
-    let mut op_state = state.borrow_mut();
-    let registry = op_state.borrow_mut::<PluginRegistry>();
-    if let Some(handle) = registry.plugins.get_mut(&plugin_id) {
-        handle.child = Some(child);
+    if let Some(mut child) = child {
+        let _ = child.start_kill();
+        let status = child.wait().await.ok();
+        let code = status.and_then(|status| status.code());
+        let mut plugin = plugin_state
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        plugin.last_exit = code;
+        plugin.pid = None;
+        plugin.wake.notify_waiters();
+        return Ok(MessageEnvelope {
+            text: code.map(|code| code.to_string()),
+        });
     }
 
-    Ok(MessageEnvelope {
-        text: code.map(|code| code.to_string()),
-    })
+    // Child sedang dipegang supervisor: kirim sinyal lewat pid, tunggu reap.
+    if let Some(pid) = pid {
+        // SAFETY: `kill` hanya mengirim sinyal; kegagalan diabaikan (proses mungkin sudah mati).
+        unsafe {
+            libc::kill(pid as i32, libc::SIGKILL);
+        }
+    }
+
+    if supervised {
+        let wake = {
+            let plugin = plugin_state
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            plugin.wake.clone()
+        };
+        for _ in 0..40 {
+            let code = {
+                let plugin = plugin_state
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+                if plugin.child.is_none() && plugin.pid.is_none() && plugin.last_exit.is_some() {
+                    Some(plugin.last_exit)
+                } else if plugin.child.is_none() && plugin.pid.is_none() && plugin.stopped {
+                    Some(None)
+                } else {
+                    None
+                }
+            };
+            if let Some(code) = code {
+                return Ok(MessageEnvelope {
+                    text: code.map(|value| value.to_string()),
+                });
+            }
+            let _ = tokio::time::timeout(Duration::from_millis(50), wake.notified()).await;
+        }
+    }
+
+    Ok(MessageEnvelope { text: None })
 }
 
 /// Keluar dari proses ini dengan kode tertentu (dipakai plugin untuk selesai).

@@ -175,6 +175,7 @@ globalThis.ramonyx = {
         const hasil = await Deno.core.ops.op_plugin_kill(id);
         return hasil.text === null ? null : Number(hasil.text);
       },
+      stats: () => Deno.core.ops.op_plugin_stats(id),
     };
   },
   // Keluar dari proses ini (dipakai plugin untuk menyelesaikan diri).
@@ -410,6 +411,7 @@ extension!(
         plugin::op_plugin_send,
         plugin::op_plugin_receive,
         plugin::op_plugin_kill,
+        plugin::op_plugin_stats,
         plugin::op_process_exit,
         plugin::op_parent_send,
         plugin::op_parent_receive,

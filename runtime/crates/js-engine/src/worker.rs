@@ -30,7 +30,37 @@ const MAX_MESSAGE_BYTES: usize = 1024 * 1024;
 /// Batas jumlah worker aktif per proses (jaga-jaga fork bomb).
 const MAX_WORKERS: usize = 8;
 
-/// Opsi `ramonyx.worker(entry, options)`.
+/// Opsi supervisi restart plugin (`restart: true` atau `{ maxRestarts, delayMs }`) — ADR-0043.
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(untagged)]
+pub enum RestartSpec {
+    Flag(bool),
+    Tabel {
+        #[serde(rename = "maxRestarts")]
+        max_restarts: Option<u32>,
+        #[serde(rename = "delayMs")]
+        delay_ms: Option<u64>,
+    },
+}
+
+impl RestartSpec {
+    /// `(maxRestarts, delay)`; `None` bila supervisi dimatikan.
+    pub(crate) fn policy(&self) -> Option<(u32, std::time::Duration)> {
+        match self {
+            Self::Flag(false) => None,
+            Self::Flag(true) => Some((3, std::time::Duration::from_millis(100))),
+            Self::Tabel {
+                max_restarts,
+                delay_ms,
+            } => Some((
+                max_restarts.unwrap_or(3),
+                std::time::Duration::from_millis(delay_ms.unwrap_or(100)),
+            )),
+        }
+    }
+}
+
+/// Opsi `ramonyx.worker(entry, options)` / `ramonyx.spawn(entry, options)`.
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub struct WorkerOptions {
@@ -45,6 +75,8 @@ pub struct WorkerOptions {
     pub(crate) max_cpu_ms: Option<u64>,
     /// Kuota RSS (MiB); default mengikuti induk (plugin meneruskan sebagai flag).
     pub(crate) max_rss_mb: Option<usize>,
+    /// Supervisi restart **plugin** (proses); diabaikan worker (thread) — ADR-0043.
+    pub(crate) restart: Option<RestartSpec>,
 }
 
 #[derive(Debug, Deserialize, Default)]

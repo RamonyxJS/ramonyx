@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T18:01:29.318Z",
+  "generatedAt": "2026-10-18T18:27:18.298Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -9,7 +9,8 @@
       "values": [
         "createConsoleLogger",
         "createMemoryHost",
-        "createNodeHost"
+        "createNodeHost",
+        "serveStatic"
       ],
       "types": [
         "FetchHandler",
@@ -19,7 +20,8 @@
         "NodeHostOptions",
         "RunningServer",
         "RuntimeHost",
-        "ServeOptions"
+        "ServeOptions",
+        "ServeStaticOptions"
       ],
       "reexports": []
     },
@@ -28,10 +30,14 @@
       "version": "0.1.1",
       "source": "packages/bundler/src/index.ts",
       "values": [
+        "CLIENT_MANIFEST_FILE",
         "buildClient",
-        "createDevServer"
+        "createDevServer",
+        "readAssetManifest",
+        "readClientScript"
       ],
       "types": [
+        "AssetManifest",
         "BuildClientOptions",
         "BuildClientResult",
         "DevServer",
@@ -68,6 +74,7 @@
         "HttpError",
         "NONCE_HEADER",
         "REMOTE_ADDRESS_HEADER",
+        "cacheControl",
         "defineConfig",
         "resolveConfig",
         "route",
@@ -75,6 +82,7 @@
       ],
       "types": [
         "AppConfig",
+        "CacheControlOptions",
         "EnvReader",
         "FetchHandler",
         "HttpErrorOptions",

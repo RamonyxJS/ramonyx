@@ -66,7 +66,7 @@
 
 ### `p0-http-production-basics` — Dasar HTTP produksi: kompresi, ETag, fingerprinting aset, helper cache
 
-*tema: perf · ukuran: M · status: open · sumber: gap §3 (compression/asset)*
+*tema: perf · ukuran: M · status: done · sumber: gap §3 (compression/asset) — selesai ADR-0055*
 
 - **Apa**: Kompresi gzip/brotli (Accept-Encoding) + ETag/304 di server standalone; hash nama aset build + Cache-Control immutable; helper Cache-Control/revalidate untuk handler.
 - **Kenapa penting untuk bersaing**: Server tanpa kompresi dan aset tanpa hash (template memakai `cache-control: no-store`) adalah regresi langsung terhadap Core Web Vitals dan bandwidth — pesaing menangani ini secara default tanpa konfigurasi.

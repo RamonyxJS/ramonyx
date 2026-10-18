@@ -1,15 +1,19 @@
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createConsoleLogger, createNodeHost } from "@ramonyx/adapter-runtime";
+import { readClientScript } from "@ramonyx/bundler";
 import { resolveConfig } from "ramonyx";
 import config from "../ramonyx.config.ts";
 import { createApp } from "./app.ts";
 
 const resolved = resolveConfig(config);
+const appDir = fileURLToPath(new URL("..", import.meta.url));
 const host = createNodeHost();
 const app = await createApp({
   env: host.env,
   logger: createConsoleLogger(),
   strictValidation: resolved.app.strictValidation,
-  clientScript: "/assets/client.js",
+  clientScript: await readClientScript(join(appDir, "dist/client")),
   streaming: true,
 });
 

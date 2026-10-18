@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { createNodeHost } from "@ramonyx/adapter-runtime";
-import { buildClient, createDevServer } from "@ramonyx/bundler";
+import { buildClient, createDevServer, readAssetManifest } from "@ramonyx/bundler";
 import { loadPageRoutes } from "@ramonyx/compiler";
 
 import { loadConfigFile, loadCreateApp } from "./load.ts";
@@ -119,14 +119,16 @@ async function commandStart(flags: Flags): Promise<number> {
   const { config } = await loadConfigFile(flags.appDir, flags.configPath);
   const createApp = await loadCreateApp(flags.appDir);
   const host = createNodeHost();
-  const app = await createApp({ clientScript: "/assets/client.js" });
+  // Nama berkas ber-hash dari manifest build (ADR-0055); fallback aman bila belum dibangun.
+  const manifest = await readAssetManifest(join(flags.appDir, "dist/client"));
+  const clientScript = manifest === null ? "/assets/client.js" : `/assets/${manifest.client}`;
+  const app = await createApp({ clientScript });
   const server = await host.serve(app, {
     port: flags.port ?? config.server.port,
     host: config.server.host,
   });
-  const tanpaBundle = !existsSync(join(flags.appDir, "dist/client/client.js"));
   console.log(
-    `Ramonyx berjalan di ${server.url} (produksi)${tanpaBundle ? " — peringatan: dist/client belum ada, jalankan `ramonyx build`" : ""}`,
+    `Ramonyx berjalan di ${server.url} (produksi)${manifest === null ? " — peringatan: dist/client belum dibangun, jalankan `ramonyx build`" : ""}`,
   );
   return 0;
 }
@@ -163,7 +165,7 @@ async function commandDoctor(flags: Flags): Promise<number> {
     `config           ${file ?? "(default — tidak ada ramonyx.config.ts)"} (port ${config.server.port}, host ${config.server.host}, strictValidation ${config.app.strictValidation})`,
     `src/app.ts       ${existsSync(join(appDir, "src/app.ts")) ? "ada" : "TIDAK ADA — createApp() wajib diekspor"}`,
     `src/routes       ${pages.length} halaman`,
-    `dist/client      ${existsSync(join(appDir, "dist/client/client.js")) ? "ada" : "belum dibangun (`ramonyx build`)"}`,
+    `dist/client      ${existsSync(join(appDir, "dist/client", "ramonyx.assets.json")) ? "ada (manifest aset)" : "belum dibangun (`ramonyx build`)"}`,
   ];
   console.log(baris.join("\n"));
   return 0;

@@ -1,7 +1,34 @@
 import assert from "node:assert/strict";
+import { request as httpRequest } from "node:http";
 import { test } from "node:test";
+import { brotliDecompressSync, gunzipSync } from "node:zlib";
 import { REMOTE_ADDRESS_HEADER } from "@ramonyx/core";
 import { createNodeHost } from "../src/index.ts";
+
+interface RawResponse {
+  readonly status: number;
+  readonly headers: Record<string, string | string[] | undefined>;
+  readonly body: Buffer;
+}
+
+/** GET mentah (tanpa dekompresi otomatis) — untuk memeriksa kompresi apa adanya. */
+function rawGet(url: string, headers: Record<string, string> = {}): Promise<RawResponse> {
+  return new Promise((resolve, reject) => {
+    const request = httpRequest(url, { headers }, (response) => {
+      const chunks: Buffer[] = [];
+      response.on("data", (chunk: Buffer) => chunks.push(chunk));
+      response.on("end", () =>
+        resolve({
+          status: response.statusCode ?? 0,
+          headers: response.headers,
+          body: Buffer.concat(chunks),
+        }),
+      );
+    });
+    request.on("error", reject);
+    request.end();
+  });
+}
 
 // Catatan: `server.close()` selalu di `finally` — assert yang gagal tidak boleh membocorkan
 // server yang masih listening (itu pernah membuat `node --test` menggantung di CI; ADR-0049).
@@ -121,6 +148,119 @@ test("node host: body aliran dikirim bertahap (chunk pertama tiba sebelum aliran
     assert.equal(decoder.decode(second.value), "chunk-2");
     const end = await reader.read();
     assert.equal(end.done, true);
+  } finally {
+    await server.close();
+  }
+});
+
+test("node host: kompresi gzip/brotli + vary (dasar HTTP produksi, ADR-0055)", async () => {
+  const html = `<html><body>${"x".repeat(4096)}</body></html>`;
+  const host = createNodeHost();
+  const server = await host.serve(
+    async (request) => {
+      const url = new URL(request.url);
+      if (url.pathname === "/png") {
+        return new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), {
+          headers: { "content-type": "image/png" },
+        });
+      }
+      if (url.pathname === "/kecil") {
+        // `content-length` dideklarasikan → heuristik "terlalu kecil" berlaku.
+        return new Response("ok", {
+          headers: { "content-type": "text/plain", "content-length": "2" },
+        });
+      }
+      if (url.pathname === "/kecil-tanpa-panjang") {
+        // Tanpa content-length (chunked) → tetap dikompresi; flush per chunk menjaga
+        // streaming tetap progresif (trade-off terdokumentasi ADR-0055).
+        return new Response("ok", { headers: { "content-type": "text/plain" } });
+      }
+      if (url.pathname === "/stream") {
+        const encoder = new TextEncoder();
+        return new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              controller.enqueue(encoder.encode("<html>"));
+              controller.enqueue(encoder.encode("y".repeat(4096)));
+              controller.enqueue(encoder.encode("</html>"));
+              controller.close();
+            },
+          }),
+          { headers: { "content-type": "text/html; charset=utf-8" } },
+        );
+      }
+      return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
+    },
+    { port: 0 },
+  );
+
+  try {
+    // gzip diminta → terkompresi, isi identik setelah dekompresi, vary benar.
+    const gz = await rawGet(new URL("/", server.url).toString(), { "accept-encoding": "gzip" });
+    assert.equal(gz.headers["content-encoding"], "gzip");
+    assert.match(String(gz.headers.vary), /accept-encoding/);
+    assert.equal(gunzipSync(gz.body).toString(), html);
+    assert.equal(gz.headers["content-length"], undefined, "content-length dihapus saat kompresi");
+
+    // brotli diprioritaskan bila keduanya didukung.
+    const br = await rawGet(new URL("/", server.url).toString(), { "accept-encoding": "gzip, br" });
+    assert.equal(br.headers["content-encoding"], "br");
+    assert.equal(brotliDecompressSync(br.body).toString(), html);
+
+    // Tanpa accept-encoding → apa adanya.
+    const plain = await rawGet(new URL("/", server.url).toString());
+    assert.equal(plain.headers["content-encoding"], undefined);
+    assert.equal(plain.body.toString(), html);
+
+    // q=0 berarti ditolak.
+    const denied = await rawGet(new URL("/", server.url).toString(), {
+      "accept-encoding": "gzip;q=0, br;q=0",
+    });
+    assert.equal(denied.headers["content-encoding"], undefined);
+
+    // Tipe tak terkompresi (gambar) → tidak dikompresi.
+    const png = await rawGet(new URL("/png", server.url).toString(), { "accept-encoding": "gzip" });
+    assert.equal(png.headers["content-encoding"], undefined);
+
+    // Body kecil (content-length diketahui < 1024) → tidak dikompresi.
+    const kecil = await rawGet(new URL("/kecil", server.url).toString(), {
+      "accept-encoding": "gzip",
+    });
+    assert.equal(kecil.headers["content-encoding"], undefined);
+    assert.equal(kecil.body.toString(), "ok");
+
+    // Body kecil tanpa content-length (chunked) → dikompresi (streaming selalu dikompresi).
+    const kecilChunked = await rawGet(new URL("/kecil-tanpa-panjang", server.url).toString(), {
+      "accept-encoding": "gzip",
+    });
+    assert.equal(kecilChunked.headers["content-encoding"], "gzip");
+    assert.equal(gunzipSync(kecilChunked.body).toString(), "ok");
+
+    // Respons streaming (tanpa content-length) tetap dikompresi.
+    const stream = await rawGet(new URL("/stream", server.url).toString(), {
+      "accept-encoding": "gzip",
+    });
+    assert.equal(stream.headers["content-encoding"], "gzip");
+    assert.equal(gunzipSync(stream.body).toString(), `<html>${"y".repeat(4096)}</html>`);
+  } finally {
+    await server.close();
+  }
+});
+
+test("node host: kompresi dapat dimatikan (compression: false)", async () => {
+  const host = createNodeHost({ compression: false });
+  const server = await host.serve(
+    async () => new Response("z".repeat(4096), { headers: { "content-type": "text/plain" } }),
+    { port: 0 },
+  );
+
+  try {
+    const response = await rawGet(new URL("/", server.url).toString(), {
+      "accept-encoding": "gzip, br",
+    });
+    assert.equal(response.headers["content-encoding"], undefined);
+    assert.equal(response.body.length, 4096);
+    assert.match(String(response.headers.vary), /accept-encoding/, "vary tetap benar");
   } finally {
     await server.close();
   }

@@ -69,7 +69,7 @@
       "theme": "perf",
       "priority": "p0",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Kompresi gzip/brotli (Accept-Encoding) + ETag/304 di server standalone; hash nama aset build + Cache-Control immutable; helper Cache-Control/revalidate untuk handler.",
       "why": "Server tanpa kompresi dan aset tanpa hash (template memakai `cache-control: no-store`) adalah regresi langsung terhadap Core Web Vitals dan bandwidth — pesaing menangani ini secara default tanpa konfigurasi.",
       "done": [
@@ -81,7 +81,7 @@
       "areas": ["packages/adapter-runtime", "packages/bundler", "packages/core"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js/SvelteKit/Astro/Nuxt: aset ber-hash + cache immutable dan kompresi di produksi secara default.",
-      "source": "gap §3 (compression/asset)",
+      "source": "gap §3 (compression/asset) — selesai ADR-0055",
       "quickWin": true
     },
     {

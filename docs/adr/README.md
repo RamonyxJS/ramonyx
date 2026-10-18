@@ -61,3 +61,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0052](0052-docs-hosting-pages.md) | Ekspor statis + hosting dokumentasi (GitHub Pages) | Accepted |
 | [0053](0053-devtools-cli.md) | CLI `ramonyx` (`@ramonyx/devtools` v1): dev/build/start/doctor | Accepted |
 | [0054](0054-machine-readable-docs.md) | Lapisan dokumentasi machine-readable (`docs/machine/`, llms.txt, validator CI) | Accepted |
+| [0055](0055-http-production-basics.md) | Dasar HTTP produksi: kompresi, ETag/304, fingerprinting aset, helper cache | Accepted |

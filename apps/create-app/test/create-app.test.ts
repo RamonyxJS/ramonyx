@@ -162,16 +162,22 @@ test("app hasil scaffold: build klien + aset disajikan", async () => {
   // Bundel klien sungguhan (Vite lewat CLI devtools).
   const buildOutput = runDevtools(target, ["build"]);
   assert.match(buildOutput, /client bundle/);
-  assert.ok(existsSync(join(target, "dist/client/client.js")), "client.js ter-build");
 
-  const bundle = readFileSync(join(target, "dist/client/client.js"), "utf8");
+  const manifest = JSON.parse(
+    readFileSync(join(target, "dist/client/ramonyx.assets.json"), "utf8"),
+  ) as { client: string };
+  assert.match(manifest.client, /^client-.*\.js$/, "nama bundle ber-hash (ADR-0055)");
+
+  const bundle = readFileSync(join(target, "dist/client", manifest.client), "utf8");
   assert.ok(
     bundle.includes("hydrate") || bundle.includes("hydrateRoot"),
     "bundel memuat hydration",
   );
 
   // Source map produksi: ada dan memuat sumber asli (sourcesContent) — ADR-0046.
-  const peta = JSON.parse(readFileSync(join(target, "dist/client/client.js.map"), "utf8")) as {
+  const peta = JSON.parse(
+    readFileSync(join(target, "dist/client", `${manifest.client}.map`), "utf8"),
+  ) as {
     sourcesContent?: string[];
   };
   assert.ok((peta.sourcesContent?.length ?? 0) > 0, "source map memuat sourcesContent");
@@ -180,11 +186,14 @@ test("app hasil scaffold: build klien + aset disajikan", async () => {
   writeFileSync(
     join(target, "assets.mjs"),
     `import { createApp } from "./src/app.ts";
-const app = await createApp({ clientScript: "/assets/client.js" });
-const aset = await app(new Request("http://uji/assets/client.js"));
+const app = await createApp({ clientScript: "/assets/${manifest.client}" });
+const aset = await app(new Request("http://uji/assets/${manifest.client}"));
 if (aset.status !== 200) throw new Error("status aset: " + aset.status);
 if (aset.headers.get("content-type") !== "text/javascript; charset=utf-8") {
   throw new Error("content-type: " + aset.headers.get("content-type"));
+}
+if (aset.headers.get("cache-control") !== "public, max-age=31536000, immutable") {
+  throw new Error("cache-control aset: " + aset.headers.get("cache-control"));
 }
 const traversal = await app(new Request("http://uji/assets/..%2F..%2Fpackage.json"));
 if (traversal.status !== 404) throw new Error("traversal aset: " + traversal.status);

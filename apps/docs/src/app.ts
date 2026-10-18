@@ -1,4 +1,6 @@
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readClientScript } from "@ramonyx/bundler";
 import { createRouteManifest, loadPageRoutes } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
@@ -25,6 +27,9 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
 
   const basePath = (options.basePath ?? "").replace(/\/$/, "");
   const dir = fileURLToPath(new URL("./routes", import.meta.url));
+  const appDir = fileURLToPath(new URL("..", import.meta.url));
+  // Nama bundle ber-hash dari manifest build (ADR-0055) — diekspor/dijalankan setelah build.
+  const clientScript = `${basePath}${await readClientScript(join(appDir, "dist/client"))}`;
 
   const [apiRoutes, pages] = await Promise.all([
     createRouteManifest({ dir }),
@@ -39,7 +44,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
         pages,
         renderer: createReactRenderer(),
         document: createDocument(basePath),
-        client: { script: `${basePath}/assets/client.js` },
+        client: { script: clientScript },
       }),
     ],
     middleware,

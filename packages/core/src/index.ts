@@ -1,3 +1,5 @@
+export type { CacheControlOptions } from "./cache.ts";
+export { cacheControl } from "./cache.ts";
 export type { AppConfig, RamonyxConfig, RamonyxConfigInput, ServerConfig } from "./config.ts";
 export { defineConfig, resolveConfig } from "./config.ts";
 export { NONCE_HEADER, REMOTE_ADDRESS_HEADER } from "./constants.ts";

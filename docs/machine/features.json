@@ -569,37 +569,40 @@
     },
     {
       "id": "http-cache-helpers",
-      "name": "Helper cache HTTP (Cache-Control, revalidate, stale-while-revalidate)",
-      "status": "planned",
+      "name": "Helper cache HTTP (cacheControl: maxAge/sMaxAge/SWR/immutable/private)",
+      "status": "implemented",
       "since": null,
       "priority": "p2",
       "packages": [
         "@ramonyx/core"
       ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/adapter-runtime/src/node.ts"
+        "packages/core/src/cache.ts",
+        "packages/core/test/cache.test.ts",
+        "docs/adr/0055-http-production-basics.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Revalidate/ISR per rute menyusul (p1-revalidate)"
       ]
     },
     {
       "id": "asset-fingerprinting",
-      "name": "Fingerprinting aset + cache panjang (immutable)",
-      "status": "planned",
+      "name": "Fingerprinting aset (client-<hash>.js) + manifest + cache immutable",
+      "status": "implemented",
       "since": null,
-      "priority": "p2",
+      "priority": "p0",
       "packages": [
         "@ramonyx/bundler"
       ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
+        "packages/bundler/src/build.ts",
+        "packages/bundler/test/build.test.ts",
         "apps/create-app/template/src/routes/middleware.ts",
-        "packages/bundler/src/build.ts"
+        "docs/adr/0055-http-production-basics.md"
       ],
       "limitations": [
-        "Aset saat ini tanpa hash; template memakai cache-control: no-store"
+        "Belum dirilis di npm (setelah 0.1.1)"
       ]
     },
     {
@@ -616,7 +619,7 @@
         "packages/adapter-runtime/test/node.test.ts"
       ],
       "limitations": [
-        "Tanpa kompresi/ETag"
+        "Range request belum"
       ]
     },
     {
@@ -651,19 +654,22 @@
     },
     {
       "id": "compression-etag",
-      "name": "Kompresi (gzip/brotli) + ETag di server standalone",
-      "status": "planned",
+      "name": "Kompresi (brotli/gzip) di server standalone + vary + flush streaming",
+      "status": "implemented",
       "since": null,
-      "priority": "p2",
+      "priority": "p0",
       "packages": [
         "@ramonyx/adapter-runtime"
       ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/adapter-runtime/test/node.test.ts"
+        "packages/adapter-runtime/src/node.ts",
+        "packages/adapter-runtime/test/node.test.ts",
+        "docs/adr/0055-http-production-basics.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Range request belum",
+        "Aset pra-kompresi (.br/.gz) belum"
       ]
     },
     {
@@ -1062,6 +1068,24 @@
       ],
       "limitations": [
         "Ditunda — butuh hosting/index/pemeliharaan (riset §2 rencana konsolidasi)"
+      ]
+    },
+    {
+      "id": "static-assets",
+      "name": "Middleware aset statis (serveStatic: ETag/304, immutable, guard traversal)",
+      "status": "implemented",
+      "since": null,
+      "priority": "p0",
+      "packages": [
+        "@ramonyx/adapter-runtime"
+      ],
+      "evidence": [
+        "packages/adapter-runtime/src/static.ts",
+        "packages/adapter-runtime/test/static.test.ts",
+        "docs/adr/0055-http-production-basics.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)"
       ]
     }
   ]

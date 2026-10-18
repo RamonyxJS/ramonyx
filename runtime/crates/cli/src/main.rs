@@ -32,9 +32,14 @@ RESOURCE LIMITS (opsional):
     --timeout-ms <ms>     Batas waktu wall-clock per eksekusi (watchdog V8).
     --tls-ca <path.pem>   CA tambahan untuk fetch https (verifikasi tetap aktif).
     --op-metrics          Log metrik op (jumlah + waktu) setelah eksekusi (profiling).
+    --max-cpu-ms <ms>     Kuota CPU proses (Linux); menunggu I/O tidak memakan kuota.
+    --max-rss-mb <MiB>    Kuota memori proses (Linux); menutup gap memori eksternal V8.
 ";
 
 #[derive(Debug, PartialEq, Eq)]
+// `Run` memang jauh lebih besar dari varian lain; enum ini hanya diparse sekali saat start,
+// jadi ukuran varian tidak relevan (bukan data yang disimpan massal).
+#[allow(clippy::large_enum_variant)]
 enum Command {
     Version,
     Help,
@@ -50,6 +55,8 @@ enum Command {
         timeout_ms: Option<u64>,
         tls_ca: Option<PathBuf>,
         op_metrics: bool,
+        max_cpu_ms: Option<u64>,
+        max_rss_mb: Option<usize>,
     },
 }
 
@@ -66,6 +73,8 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
     let mut timeout_ms: Option<u64> = None;
     let mut tls_ca: Option<PathBuf> = None;
     let mut op_metrics = false;
+    let mut max_cpu_ms: Option<u64> = None;
+    let mut max_rss_mb: Option<usize> = None;
     let mut positional: Option<String> = None;
     let mut rest = iterator.peekable();
 
@@ -93,6 +102,24 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
                 max_heap_mb = Some(parsed);
             }
             "--op-metrics" => op_metrics = true,
+            "--max-cpu-ms" => {
+                let value = rest.next().ok_or("--max-cpu-ms butuh nilai <ms>")?;
+                let parsed = value
+                    .parse::<u64>()
+                    .ok()
+                    .filter(|ms| *ms > 0)
+                    .ok_or("--max-cpu-ms harus bilangan > 0")?;
+                max_cpu_ms = Some(parsed);
+            }
+            "--max-rss-mb" => {
+                let value = rest.next().ok_or("--max-rss-mb butuh nilai <MiB>")?;
+                let parsed = value
+                    .parse::<usize>()
+                    .ok()
+                    .filter(|mb| *mb > 0)
+                    .ok_or("--max-rss-mb harus bilangan > 0")?;
+                max_rss_mb = Some(parsed);
+            }
             "--tls-ca" => {
                 let value = rest.next().ok_or("--tls-ca butuh nilai <path.pem>")?;
                 tls_ca = Some(PathBuf::from(value));
@@ -147,6 +174,8 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             timeout_ms,
             tls_ca,
             op_metrics,
+            max_cpu_ms,
+            max_rss_mb,
         }),
         other => Err(format!("subcommand tidak dikenal: {other}")),
     }
@@ -185,6 +214,8 @@ fn run_command(command: Command) -> ExitCode {
             timeout_ms,
             tls_ca,
             op_metrics,
+            max_cpu_ms,
+            max_rss_mb,
         } => {
             let resolved = match load_config(config.as_deref()) {
                 Ok(resolved) => resolved,
@@ -247,12 +278,19 @@ fn run_command(command: Command) -> ExitCode {
                 );
             }
 
-            if max_heap_mb.is_some() || timeout_ms.is_some() || tls_ca.is_some() {
+            if max_heap_mb.is_some()
+                || timeout_ms.is_some()
+                || tls_ca.is_some()
+                || max_cpu_ms.is_some()
+                || max_rss_mb.is_some()
+            {
                 logger.info(
                     "runtime.limits",
                     &serde_json::json!({
                         "maxHeapMb": max_heap_mb,
                         "timeoutMs": timeout_ms,
+                        "maxCpuMs": max_cpu_ms,
+                        "maxRssMb": max_rss_mb,
                         "tlsCa": tls_ca.as_ref().map(|path| path.display().to_string()),
                     }),
                 );
@@ -264,6 +302,8 @@ fn run_command(command: Command) -> ExitCode {
                 timeout: timeout_ms.map(std::time::Duration::from_millis),
                 tls_ca_file: tls_ca.clone(),
                 op_metrics,
+                max_cpu_ms,
+                max_rss_mb,
             };
 
             let extension = entry_path
@@ -510,6 +550,10 @@ mod tests {
             "--tls-ca",
             "ca.pem",
             "--op-metrics",
+            "--max-cpu-ms",
+            "250",
+            "--max-rss-mb",
+            "512",
         ]));
         assert_eq!(
             parsed,
@@ -526,6 +570,8 @@ mod tests {
                 timeout_ms: Some(1500),
                 tls_ca: Some(PathBuf::from("ca.pem")),
                 op_metrics: true,
+                max_cpu_ms: Some(250),
+                max_rss_mb: Some(512),
             })
         );
     }
@@ -540,6 +586,8 @@ mod tests {
         assert!(parse_args(&args(&["run", "x", "--max-heap-mb", "banyak"])).is_err());
         assert!(parse_args(&args(&["run", "x", "--timeout-ms", "-5"])).is_err());
         assert!(parse_args(&args(&["run", "x", "--timeout-ms"])).is_err());
+        assert!(parse_args(&args(&["run", "x", "--max-cpu-ms", "0"])).is_err());
+        assert!(parse_args(&args(&["run", "x", "--max-rss-mb", "banyak"])).is_err());
     }
 
     #[test]

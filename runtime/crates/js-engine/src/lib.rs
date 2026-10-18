@@ -639,6 +639,8 @@ impl ModuleLoader for FileModuleLoader {
 pub struct EngineLimits {
     pub max_heap_mb: Option<usize>,
     pub tls_ca_file: Option<PathBuf>,
+    pub max_cpu_ms: Option<u64>,
+    pub max_rss_mb: Option<usize>,
 }
 
 /// Alasan penghentian paksa (kuota/timeout) — dibaca setelah eksekusi berakhir.
@@ -664,6 +666,66 @@ impl LimitState {
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .clone()
     }
+}
+
+/// Waktu CPU (user+system) **thread** dari `/proc/self/task/<tid>/stat` (USER_HZ = 100); 0 bila
+/// tak tersedia. Per-thread memisahkan pekerjaan engine dari thread GC V8 & proses lain.
+#[cfg(target_os = "linux")]
+fn thread_cpu_time(tid: u32) -> Duration {
+    let Ok(stat) = std::fs::read_to_string(format!("/proc/self/task/{tid}/stat")) else {
+        return Duration::ZERO;
+    };
+    // Field 2 (comm) bisa memuat spasi/kurung → potong pada ')' terakhir.
+    let Some((_, rest)) = stat.rsplit_once(')') else {
+        return Duration::ZERO;
+    };
+    let fields: Vec<&str> = rest.split_whitespace().collect();
+    // Setelah comm: indeks 11 = utime, 12 = stime (field 14/15 di /proc/.../stat).
+    let utime: u64 = fields
+        .get(11)
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(0);
+    let stime: u64 = fields
+        .get(12)
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(0);
+    Duration::from_millis((utime + stime) * 10)
+}
+
+/// TID thread saat ini (engine hanya bisa dipakai di thread pembuatnya — `JsRuntime` !Send).
+#[cfg(target_os = "linux")]
+fn current_thread_id() -> u32 {
+    // SAFETY: `gettid` tidak memodifikasi memori dan selalu berhasil.
+    unsafe { libc::gettid() as u32 }
+}
+
+/// RSS proses dari `/proc/self/statm` (halaman resident × 4096); 0 bila tak tersedia.
+#[cfg(target_os = "linux")]
+fn process_rss_bytes() -> u64 {
+    let Ok(statm) = std::fs::read_to_string("/proc/self/statm") else {
+        return 0;
+    };
+    let resident: u64 = statm
+        .split_whitespace()
+        .nth(1)
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(0);
+    resident.saturating_mul(4096)
+}
+
+#[cfg(not(target_os = "linux"))]
+fn thread_cpu_time(_tid: u32) -> Duration {
+    Duration::ZERO
+}
+
+#[cfg(not(target_os = "linux"))]
+fn current_thread_id() -> u32 {
+    0
+}
+
+#[cfg(not(target_os = "linux"))]
+fn process_rss_bytes() -> u64 {
+    0
 }
 
 /// Penjaga batas waktu: thread yang men-`terminate_execution()` V8 bila timeout terlampaui.
@@ -692,6 +754,9 @@ pub struct Engine {
     metrics: Option<metrics::MetricsHandle>,
     last_timings: Option<ExecutionTimings>,
     init_timings: InitTimings,
+    cpu_limit: Option<Duration>,
+    rss_limit_bytes: Option<u64>,
+    cpu_tid: u32,
 }
 
 /// Opsi engine; default **deny-all** (secure by default, ADR-0023).
@@ -709,6 +774,12 @@ pub struct EngineOptions {
     pub tls_ca_file: Option<PathBuf>,
     /// Aktifkan metrik op (jumlah + waktu per op) untuk profiling; mati = tanpa biaya (ADR-0037).
     pub op_metrics: bool,
+    /// Kuota CPU **proses** (ms, Linux): di atas batas → eksekusi dihentikan (ADR-0038).
+    /// Berbeda dari `timeout` (wall-clock): menunggu I/O tidak memakan kuota.
+    pub max_cpu_ms: Option<u64>,
+    /// Kuota RSS **proses** (MiB, Linux): menutup gap memori eksternal V8 (ArrayBuffer)
+    /// yang tidak dihitung kuota heap (ADR-0038).
+    pub max_rss_mb: Option<usize>,
 }
 
 impl Engine {
@@ -728,6 +799,14 @@ impl Engine {
             let initial = (max / 4).clamp(2 * 1024 * 1024, 16 * 1024 * 1024).min(max);
             v8::CreateParams::default().heap_limits(initial, max)
         });
+
+        if (options.max_cpu_ms.is_some() || options.max_rss_mb.is_some())
+            && !cfg!(target_os = "linux")
+        {
+            return Err(EngineError::new(
+                "kuota CPU/RSS hanya didukung di Linux (membaca /proc)",
+            ));
+        }
 
         let limit_state = Arc::new(LimitState::default());
         let metrics = options
@@ -798,6 +877,8 @@ impl Engine {
             op_state.put(EngineLimits {
                 max_heap_mb: options.max_heap_mb,
                 tls_ca_file: options.tls_ca_file.clone(),
+                max_cpu_ms: options.max_cpu_ms,
+                max_rss_mb: options.max_rss_mb,
             });
             op_state.put(fetch_state);
         }
@@ -810,6 +891,13 @@ impl Engine {
             metrics,
             last_timings: None,
             init_timings,
+            cpu_limit: options.max_cpu_ms.map(Duration::from_millis),
+            rss_limit_bytes: options.max_rss_mb.map(|mb| {
+                u64::try_from(mb)
+                    .unwrap_or(u64::MAX)
+                    .saturating_mul(1024 * 1024)
+            }),
+            cpu_tid: current_thread_id(),
         })
     }
 
@@ -841,7 +929,68 @@ impl Engine {
         self.runtime.op_state().borrow_mut().put(channel);
     }
 
-    /// Mulai watchdog timeout (bila dikonfigurasi). Dihentikan saat nilai kembali di-drop.
+    /// Mulai semua penjaga (timeout wall-clock + kuota CPU/RSS). Dihentikan saat di-drop.
+    fn start_guards(&mut self) -> Vec<Watchdog> {
+        let mut guards = Vec::new();
+        if let Some(watchdog) = self.start_watchdog() {
+            guards.push(watchdog);
+        }
+        if let Some(guard) = self.start_resource_guard() {
+            guards.push(guard);
+        }
+        guards
+    }
+
+    /// Guard kuota CPU/RSS (Linux): polling 25 ms, terminasi V8 bila terlampaui (ADR-0038).
+    fn start_resource_guard(&mut self) -> Option<Watchdog> {
+        if self.cpu_limit.is_none() && self.rss_limit_bytes.is_none() {
+            return None;
+        }
+        let handle = self.runtime.v8_isolate().thread_safe_handle();
+        let state = self.limit_state.clone();
+        let cpu_limit = self.cpu_limit;
+        let rss_limit = self.rss_limit_bytes;
+        let cpu_tid = self.cpu_tid;
+        let (cancel, wait) = std::sync::mpsc::channel::<()>();
+        let join = std::thread::spawn(move || {
+            loop {
+                match wait.recv_timeout(Duration::from_millis(25)) {
+                    Ok(()) | Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => return,
+                    Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {}
+                }
+                if let Some(limit) = cpu_limit {
+                    let cpu = thread_cpu_time(cpu_tid);
+                    if cpu > limit {
+                        state.set_reason(format!(
+                            "kuota CPU {} ms terlampaui (CPU thread engine {} ms)",
+                            limit.as_millis(),
+                            cpu.as_millis(),
+                        ));
+                        handle.terminate_execution();
+                        return;
+                    }
+                }
+                if let Some(limit) = rss_limit {
+                    let rss = process_rss_bytes();
+                    if rss > limit {
+                        state.set_reason(format!(
+                        "kuota RSS {} MiB terlampaui (RSS proses {} MiB; termasuk memori eksternal V8)",
+                        limit / (1024 * 1024),
+                        rss / (1024 * 1024),
+                    ));
+                        handle.terminate_execution();
+                        return;
+                    }
+                }
+            }
+        });
+        Some(Watchdog {
+            cancel: Some(cancel),
+            join: Some(join),
+        })
+    }
+
+    /// Watchdog timeout wall-clock (bila dikonfigurasi).
     fn start_watchdog(&mut self) -> Option<Watchdog> {
         let limit = self.timeout?;
         let handle = self.runtime.v8_isolate().thread_safe_handle();
@@ -873,13 +1022,13 @@ impl Engine {
     /// Jalankan script JS (tanpa `import`); error dikembalikan sebagai `EngineError`.
     pub fn execute(&mut self, name: &str, source: &str) -> Result<(), EngineError> {
         let started = std::time::Instant::now();
-        let watchdog = self.start_watchdog();
+        let guards = self.start_guards();
         let result = self
             .runtime
             .execute_script(name.to_string(), source.to_string())
             .map(|_| ())
             .map_err(|error| error.to_string());
-        drop(watchdog);
+        drop(guards);
         let elapsed = started.elapsed();
         self.last_timings = Some(ExecutionTimings {
             load: Duration::ZERO,
@@ -898,7 +1047,7 @@ impl Engine {
             .map_err(|error| EngineError::new(format!("entry tidak valid: {error}")))?;
 
         let started = std::time::Instant::now();
-        let watchdog = self.start_watchdog();
+        let guards = self.start_guards();
         let (result, load, evaluate) = {
             let Engine { runtime, tokio, .. } = self;
             tokio.block_on(async move {
@@ -920,7 +1069,7 @@ impl Engine {
                 (result, load, evaluate_started.elapsed())
             })
         };
-        drop(watchdog);
+        drop(guards);
         self.last_timings = Some(ExecutionTimings {
             load,
             evaluate,
@@ -2943,6 +3092,103 @@ globalThis.__metrics_ok = true;
         engine_polos.execute("[test]", "1 + 1;").expect("script");
         assert!(engine_polos.op_metrics().is_empty());
         assert!(engine_polos.last_timings().is_some());
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn kuota_cpu_menghentikan_loop_tak_berujung() {
+        let directory = temp_dir("cpu-limit");
+        let main = directory.join("main.mjs");
+        fs::write(&main, "for (;;) {}\n").expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            max_cpu_ms: Some(300),
+            ..Default::default()
+        })
+        .expect("engine");
+
+        let started = std::time::Instant::now();
+        let error = engine
+            .execute_module(&main)
+            .expect_err("harus kena kuota CPU");
+        let message = error.to_string();
+        assert!(message.contains("kuota CPU"), "pesan CPU: {message}");
+        assert!(
+            started.elapsed() < Duration::from_secs(5),
+            "guard CPU terlalu lambat: {:?}",
+            started.elapsed()
+        );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn kuota_cpu_bukan_wall_clock() {
+        let directory = temp_dir("cpu-sleep");
+        let main = directory.join("main.mjs");
+        // Menunggu I/O tidak memakan kuota CPU: sleep 1.2 s < kuota 300 ms CPU.
+        fs::write(
+            &main,
+            "await ramonyx.sleep(1200);\nglobalThis.__tidur_ok = true;\n",
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            max_cpu_ms: Some(300),
+            ..Default::default()
+        })
+        .expect("engine");
+        engine
+            .execute_module(&main)
+            .expect("sleep tidak boleh kena kuota CPU");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__tidur_ok !== true) throw new Error('sleep gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn kuota_rss_menangkap_memori_eksternal() {
+        let directory = temp_dir("rss-limit");
+        let main = directory.join("main.mjs");
+        // Alokasi ArrayBuffer 1 MiB berulang: memori eksternal V8 (tidak dihitung
+        // kuota heap) — harus ditangkap kuota RSS proses.
+        fs::write(
+            &main,
+            r##"
+const arr = [];
+for (let i = 0; i < 512; i += 1) {
+  const buf = new Uint8Array(1 << 20);
+  buf.fill(7); // sentuh halaman: RSS hanya menghitung halaman resident
+  arr.push(buf);
+  await ramonyx.sleep(1);
+}
+throw new Error("selesai tanpa guard RSS");
+"##,
+        )
+        .expect("write");
+
+        let baseline_mb = (super::process_rss_bytes() / (1024 * 1024)) as usize;
+        let mut engine = Engine::with_options(EngineOptions {
+            max_rss_mb: Some(baseline_mb + 256),
+            ..Default::default()
+        })
+        .expect("engine");
+
+        let error = engine
+            .execute_module(&main)
+            .expect_err("harus kena kuota RSS");
+        let message = error.to_string();
+        assert!(message.contains("kuota RSS"), "pesan RSS: {message}");
+        assert!(
+            !message.contains("selesai tanpa guard"),
+            "guard RSS tidak memicu: {message}"
+        );
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }

@@ -348,3 +348,22 @@ fn op_metrics_mencetak_log_runtime_metrics() {
 
     fs::remove_dir_all(&directory).expect("cleanup");
 }
+#[test]
+fn max_cpu_ms_menghentikan_loop_lewat_cli() {
+    let directory = temp_dir("max-cpu");
+    let entry = directory.join("main.mjs");
+    fs::write(&entry, "for (;;) {}\n").expect("write");
+
+    let output = Command::new(binary())
+        .args(["run"])
+        .arg(&entry)
+        .args(["--max-cpu-ms", "300"])
+        .output()
+        .expect("spawn");
+
+    assert!(!output.status.success(), "harus gagal (exit != 0)");
+    let stderr = String::from_utf8(output.stderr).expect("utf8");
+    assert!(stderr.contains("kuota CPU"), "pesan kuota CPU: {stderr}");
+
+    fs::remove_dir_all(&directory).expect("cleanup");
+}

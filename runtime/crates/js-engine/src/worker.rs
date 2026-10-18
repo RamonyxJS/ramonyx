@@ -135,12 +135,14 @@ pub async fn op_worker_spawn(
     #[string] entry: String,
     #[serde] options: WorkerOptions,
 ) -> Result<u64, JsErrorBox> {
-    let (parent_permissions, parent_heap, parent_ca, id) = {
+    let (parent_permissions, parent_heap, parent_ca, parent_cpu, parent_rss, id) = {
         let mut state = state.borrow_mut();
         let permissions = state.borrow::<Permissions>().clone();
         let parent_limits = state.borrow::<crate::EngineLimits>();
         let parent_heap = parent_limits.max_heap_mb;
         let parent_ca = parent_limits.tls_ca_file.clone();
+        let parent_cpu = parent_limits.max_cpu_ms;
+        let parent_rss = parent_limits.max_rss_mb;
         let registry = state.borrow_mut::<WorkerRegistry>();
         if registry.workers.len() >= MAX_WORKERS {
             return Err(JsErrorBox::generic(format!(
@@ -148,7 +150,14 @@ pub async fn op_worker_spawn(
             )));
         }
         registry.next_id += 1;
-        (permissions, parent_heap, parent_ca, registry.next_id)
+        (
+            permissions,
+            parent_heap,
+            parent_ca,
+            parent_cpu,
+            parent_rss,
+            registry.next_id,
+        )
     };
 
     let child_options = EngineOptions {
@@ -160,6 +169,9 @@ pub async fn op_worker_spawn(
         tls_ca_file: parent_ca,
         // Metrik op cukup di induk; worker tidak perlu overhead.
         op_metrics: false,
+        // Kuota CPU/RSS diwarisi dari induk (pelindung proses yang sama).
+        max_cpu_ms: parent_cpu,
+        max_rss_mb: parent_rss,
     };
 
     let (to_worker_tx, to_worker_rx) = unbounded_channel::<String>();

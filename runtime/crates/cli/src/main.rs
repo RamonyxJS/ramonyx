@@ -20,7 +20,7 @@ ENTRY:
     .js/.mjs/.ts/.tsx/.mts dieksekusi sebagai modul ESM (import relatif + fallback ekstensi;
     TypeScript ditranspile via deno_ast).
     .cjs/.cts dieksekusi sebagai script (tanpa import).
-    Bare specifier (paket npm) belum didukung — akan error dengan pesan jelas.
+    Bare specifier: resolusi node_modules ESM v1; paket CommonJS via interop CJS (ADR-0026/0029).
 
 PERMISSIONS (default: semua ditolak):
     --allow-read[=path,...]   --allow-write[=path,...]

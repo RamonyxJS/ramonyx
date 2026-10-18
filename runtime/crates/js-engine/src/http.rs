@@ -132,6 +132,8 @@ type IncomingRequest = (RequestPayload, oneshot::Sender<ResponseOutcome>);
 pub struct ServerHandle {
     accept_rx: Option<mpsc::Receiver<IncomingRequest>>,
     accept_task: tokio::task::JoinHandle<()>,
+    closed: Arc<AtomicBool>,
+    closed_notify: Arc<Notify>,
 }
 
 #[derive(Default)]
@@ -170,6 +172,12 @@ fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox
         .map_err(|error| JsErrorBox::generic(format!("gagal membuat listener tokio: {error}")))?;
 
     let (accept_tx, accept_rx) = mpsc::channel::<IncomingRequest>(64);
+
+    // Sinyal shutdown: `op_http_close` membangunkan `op_http_accept` yang sedang
+    // menunggu agar event loop bisa drain (connection keep-alive bisa menahan
+    // sender channel hidup, sehingga penutupan channel saja tidak cukup).
+    let closed = Arc::new(AtomicBool::new(false));
+    let closed_notify = Arc::new(Notify::new());
 
     let accept_task = tokio::spawn(async move {
         loop {
@@ -275,6 +283,8 @@ fn start_server(host: &str, port: u16) -> Result<(u16, ServerHandle), JsErrorBox
         ServerHandle {
             accept_rx: Some(accept_rx),
             accept_task,
+            closed,
+            closed_notify,
         },
     ))
 }
@@ -317,20 +327,40 @@ pub async fn op_http_accept(
     state: Rc<RefCell<OpState>>,
     #[smi] server_id: u64,
 ) -> Result<Option<RequestPayload>, JsErrorBox> {
-    let mut receiver = {
+    let (mut receiver, closed, closed_notify) = {
         let mut op_state = state.borrow_mut();
         let http = op_state.borrow_mut::<HttpState>();
         let Some(server) = http.servers.get_mut(&server_id) else {
             // Server sudah ditutup → akhiri loop accept dengan bersih.
             return Ok(None);
         };
-        server
+        let receiver = server
             .accept_rx
             .take()
-            .ok_or_else(|| JsErrorBox::generic("accept sudah berjalan untuk server ini"))?
+            .ok_or_else(|| JsErrorBox::generic("accept sudah berjalan untuk server ini"))?;
+        (
+            receiver,
+            server.closed.clone(),
+            server.closed_notify.clone(),
+        )
     };
 
-    let received = receiver.recv().await;
+    let received = loop {
+        // Daftarkan `notified` DULU, baru cek flag — menghindari race
+        // dengan `notify_waiters` yang tidak menyimpan permit.
+        let notified = closed_notify.notified();
+        if closed.load(Ordering::SeqCst) {
+            return Ok(None);
+        }
+        tokio::select! {
+            received = receiver.recv() => break received,
+            () = notified => {
+                if closed.load(Ordering::SeqCst) {
+                    return Ok(None);
+                }
+            }
+        }
+    };
 
     let mut op_state = state.borrow_mut();
     let http = op_state.borrow_mut::<HttpState>();
@@ -494,6 +524,9 @@ pub fn op_http_close(state: &mut OpState, #[smi] server_id: u64) -> Result<(), J
         .servers
         .remove(&server_id)
         .ok_or_else(|| JsErrorBox::generic(format!("server {server_id} tidak ada")))?;
+    // Bangunkan accept yang sedang menunggu (lihat komentar `start_server`).
+    server.closed.store(true, Ordering::SeqCst);
+    server.closed_notify.notify_waiters();
     server.accept_task.abort();
     drop(server.accept_rx);
     Ok(())

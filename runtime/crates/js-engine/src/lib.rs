@@ -28,6 +28,7 @@ use runtime_core::Permissions;
 
 mod cjs;
 mod http;
+mod http_client;
 mod resolve;
 mod web_shim;
 
@@ -248,9 +249,11 @@ extension!(
         http::op_http_stream_end,
         http::op_http_watch,
         http::op_http_close,
+        http_client::op_fetch,
     ],
     state = |state: &mut OpState| {
         state.put(http::HttpState::default());
+        state.put(http_client::FetchState::new());
     },
 );
 
@@ -1082,7 +1085,7 @@ await ramonyx.writeTextFile({port_literal}, String(server.port));
 // Beri waktu stream selesai, lalu tutup server agar proses exit bersih.
 (async () => {{
   await ramonyx.sleep(400);
-  server.close();
+server.close();
 }})();
 "#
             ),
@@ -1358,6 +1361,176 @@ globalThis.__cjs_env = mode;
             message.contains("dinamis") && message.contains("paket-dinamis"),
             "pesan dinamis: {message}"
         );
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn readable_stream_dan_body_request_response() {
+        let directory = temp_dir("stream-shim");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+// ReadableStream: start + enqueue + close + for await.
+const stream = new ReadableStream({
+  start(controller) {
+    controller.enqueue(new TextEncoder().encode("ha"));
+    controller.enqueue(new TextEncoder().encode("lo"));
+    controller.close();
+  },
+});
+const bagian = [];
+for await (const chunk of stream) {
+  bagian.push(new TextDecoder().decode(chunk));
+}
+if (bagian.join("") !== "halo") throw new Error("isi stream salah: " + bagian.join(""));
+
+// Stream pull-based dengan highWaterMark 0 (pola scheduler React server).
+let tarikan = 0;
+const kedua = new ReadableStream(
+  {
+    type: "bytes",
+    pull(controller) {
+      tarikan += 1;
+      if (tarikan <= 2) {
+        controller.enqueue(new TextEncoder().encode("b" + tarikan));
+      } else {
+        controller.close();
+      }
+    },
+  },
+  { highWaterMark: 0 },
+);
+const reader = kedua.getReader();
+const hasil = [];
+for (;;) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  hasil.push(new TextDecoder().decode(value));
+}
+if (hasil.join(",") !== "b1,b2") throw new Error("pull stream salah: " + hasil.join(","));
+
+// TextDecoder mode stream: urutan multibyte terpotong antar-chunk.
+const penuh = new TextEncoder().encode("é中");
+const potong = new TextDecoder();
+const kiri = potong.decode(penuh.slice(0, 1), { stream: true });
+const kanan = potong.decode(penuh.slice(1), { stream: true });
+if (kiri + kanan !== "é中") throw new Error("decoder streaming salah: " + JSON.stringify(kiri + kanan));
+
+// Request body → ReadableStream; text() tetap benar.
+const request = new Request("http://x/", { method: "POST", body: JSON.stringify({ a: 1 }) });
+if (request.body === null) throw new Error("request.body null");
+if (JSON.parse(await request.text()).a !== 1) throw new Error("request text salah");
+
+// Response body → ReadableStream; bisa dibaca ulang lewat reader.
+const response = Response.json({ b: 2 });
+let isi = "";
+const pembaca = response.body.getReader();
+for (;;) {
+  const { done, value } = await pembaca.read();
+  if (done) break;
+  isi += new TextDecoder().decode(value);
+}
+if (JSON.parse(isi).b !== 2) throw new Error("response body stream salah");
+
+// Response dibangun dari stream (pola middleware security headers).
+const dilewat = new Response(Response.json({ c: 3 }).body, { status: 201 });
+const teks = await dilewat.text();
+if (dilewat.status !== 201 || !teks.includes('"c"')) {
+  throw new Error("response dari stream salah: " + teks);
+}
+
+globalThis.__stream_ok = { tarikan };
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::new().expect("engine");
+        engine.execute_module(&main).expect("stream module");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__stream_ok.tarikan < 2) throw new Error('pull tidak terpanggil');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn fetch_ke_server_lokal_di_runtime() {
+        let directory = temp_dir("fetch");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+const server = ramonyx.serve(0, async (request) => {
+  if (request.path === "/json") {
+    return {
+      status: 200,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ balas: "ok", metode: request.method }),
+    };
+  }
+  return { status: 404, body: "tidak ada" };
+});
+const dasar = "http://127.0.0.1:" + server.port;
+
+const response = await fetch(dasar + "/json");
+if (response.status !== 200 || !response.ok) throw new Error("status salah: " + response.status);
+if (response.headers.get("content-type") !== "application/json") {
+  throw new Error("headers salah: " + response.headers.get("content-type"));
+}
+const data = await response.json();
+if (data.balas !== "ok" || data.metode !== "GET") {
+  throw new Error("json salah: " + JSON.stringify(data));
+}
+
+// Body respons sebagai ReadableStream.
+const kedua = await fetch(dasar + "/json");
+let teks = "";
+for await (const chunk of kedua.body) {
+  teks += new TextDecoder().decode(chunk, { stream: true });
+}
+if (!teks.includes("ok")) throw new Error("stream body salah: " + teks);
+
+// 404 tidak melempar (fetch hanya melempar untuk kegagalan transport).
+const hilang = await fetch(dasar + "/tidak-ada");
+if (hilang.status !== 404 || hilang.ok) throw new Error("404 salah: " + hilang.status);
+
+server.close();
+globalThis.__fetch_ok = true;
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+        })
+        .expect("engine");
+        engine.execute_module(&main).expect("fetch module");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__fetch_ok !== true) throw new Error('fetch gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn fetch_tanpa_allow_net_ditolak_dengan_pesan_jelas() {
+        let directory = temp_dir("fetch-deny");
+        let main = directory.join("main.mjs");
+        fs::write(&main, "await fetch('http://127.0.0.1:9/');\n").expect("write");
+
+        let error = Engine::new()
+            .expect("engine")
+            .execute_module(&main)
+            .expect_err("harus ditolak");
+        assert!(error.to_string().contains("--allow-net"), "{error}");
 
         fs::remove_dir_all(&directory).expect("cleanup");
     }

@@ -45,6 +45,17 @@ const outputSchema = {
   },
 };
 
+const bodySchema = {
+  "~standard": {
+    version: 1,
+    vendor: "compat-fixture",
+    validate: (value) =>
+      value !== null && typeof value === "object" && typeof value.nama === "string"
+        ? { value }
+        : { issues: [{ message: "nama wajib", path: ["nama"] }] },
+  },
+};
+
 // --- Router: matching statis + parameter -----------------------------------------------
 const table = createRouteTable([
   { method: "GET", path: "/users/[id]", definition: { handler: () => Response.json({}) } },
@@ -95,6 +106,15 @@ const handler = createHandler({
         },
       }),
     },
+    {
+      // POST body → dibaca lewat request.body (ReadableStream) + validasi schema.
+      method: "POST",
+      path: "/api/echo",
+      definition: route({
+        body: bodySchema,
+        handler: ({ body, json }) => json({ halo: body.nama }),
+      }),
+    },
   ],
 });
 
@@ -121,6 +141,28 @@ if (boomRes.status !== 403 || (await boomRes.json()).error !== "Forbidden") {
 const notFound = await handler(new Request("http://runtime.test/tidak-ada"));
 if (notFound.status !== 404) throw new Error(`404 gagal: ${notFound.status}`);
 
+// POST body: dibaca dari stream + divalidasi; yang tidak valid → 400.
+const echoRes = await handler(
+  new Request("http://runtime.test/api/echo", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ nama: "dunia" }),
+  }),
+);
+const echoBody = await echoRes.json();
+if (echoRes.status !== 200 || echoBody.halo !== "dunia") {
+  throw new Error(`POST body gagal: ${echoRes.status} ${JSON.stringify(echoBody)}`);
+}
+
+const echoBad = await handler(
+  new Request("http://runtime.test/api/echo", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ nama: 42 }),
+  }),
+);
+if (echoBad.status !== 400) throw new Error(`POST body invalid: ${echoBad.status}`);
+
 globalThis.__compat = {
   ok: true,
   router: match.params.id,
@@ -131,5 +173,7 @@ globalThis.__compat = {
     output: outputRes.status,
     boom: boomRes.status,
     notFound: notFound.status,
+    echo: echoRes.status,
+    echoBad: echoBad.status,
   },
 };

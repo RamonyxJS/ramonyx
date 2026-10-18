@@ -1,9 +1,10 @@
 //! Web shim minimal untuk runtime (dijalankan sebagai script sebelum BOOTSTRAP).
 //!
-//! Cakupan (ADR-0027): `TextEncoder`/`TextDecoder` (UTF-8), `URL`/`URLSearchParams`
-//! (subset absolut+relatif), `Headers`/`Request`/`Response` minimal (yang dipakai framework),
-//! `setTimeout`/`clearTimeout` berbasis `op_sleep`, dan `MessageChannel` minimal
-//! (scheduler React memakainya; pengiriman pesan antrean microtask).
+//! Cakupan (ADR-0027/0030): `TextEncoder`/`TextDecoder` (UTF-8, mode stream), `URL`/
+//! `URLSearchParams` (subset absolut+relatif), `Headers`/`Request`/`Response` (body streaming
+//! via `ReadableStream`), `ReadableStream` minimal (termasuk `type: "bytes"` untuk scheduler
+//! React), `fetch` (http:// saja, via `op_fetch`), `setTimeout`/`clearTimeout` (`op_sleep`),
+//! dan `MessageChannel`.
 //!
 //! Semua global dipasang dengan pola `?? ` (tidak menimpa bila sudah ada) supaya dapat diganti
 //! implementasi native/deno_web di masa depan.
@@ -45,9 +46,22 @@ class RamonyxTextDecoder {
   constructor(label) {
     this.encoding = String(label ?? "utf-8").toLowerCase();
     this.fatal = false;
+    // Byte sisa dari urutan multibyte yang terpotong antar-chunk (mode stream).
+    this._pending = new Uint8Array(0);
   }
-  decode(input) {
-    const bytes = input instanceof Uint8Array ? input : new Uint8Array(input ?? []);
+  decode(input, options) {
+    const stream = options?.stream === true;
+    const incoming =
+      input == null ? new Uint8Array(0) : input instanceof Uint8Array ? input : new Uint8Array(input);
+    let bytes;
+    if (this._pending.length > 0) {
+      bytes = new Uint8Array(this._pending.length + incoming.length);
+      bytes.set(this._pending, 0);
+      bytes.set(incoming, this._pending.length);
+      this._pending = new Uint8Array(0);
+    } else {
+      bytes = incoming;
+    }
     let out = "";
     let i = 0;
     while (i < bytes.length) {
@@ -72,7 +86,12 @@ class RamonyxTextDecoder {
         continue;
       }
       if (i + extra >= bytes.length) {
-        out += "\ufffd";
+        if (stream) {
+          // Simpan sisa urutan yang belum lengkap untuk panggilan berikutnya.
+          this._pending = bytes.slice(i);
+        } else {
+          out += "\ufffd";
+        }
         break;
       }
       let valid = true;
@@ -298,15 +317,236 @@ class RamonyxHeaders {
   }
 }
 
+// --- ReadableStream minimal (ADR-0030) -------------------------------------------------
+//
+// Mendukung konstruksi dengan underlying source `{ start, pull, cancel }` —
+// termasuk `new ReadableStream({ type: "bytes", pull })` yang dipakai scheduler
+// React server — plus reader (`read`/`cancel`/`releaseLock`) dan `for await`.
+class RamonyxReadableStream {
+  constructor(source, strategy) {
+    const underlying = source ?? {};
+    const options = strategy ?? {};
+    this._queue = [];
+    this._queueBytes = 0;
+    this._state = "readable"; // readable | closed | errored
+    this._storedError = undefined;
+    this._wakeups = [];
+    this._pullInFlight = false;
+    this._locked = false;
+    this._highWaterMark =
+      typeof options.highWaterMark === "number" ? options.highWaterMark : 1;
+    this._pull = typeof underlying.pull === "function" ? underlying.pull.bind(underlying) : null;
+    this._cancel =
+      typeof underlying.cancel === "function" ? underlying.cancel.bind(underlying) : null;
+    const self = this;
+    this._controller = {
+      get desiredSize() {
+        return self._state === "readable" ? self._highWaterMark - self._queueBytes : null;
+      },
+      enqueue(chunk) {
+        self._enqueue(chunk);
+      },
+      close() {
+        self._close();
+      },
+      error(error) {
+        self._error(error);
+      },
+      byobRequest: null,
+    };
+    try {
+      const started = underlying.start?.(this._controller);
+      if (started && typeof started.then === "function") {
+        started.catch((error) => self._error(error));
+      }
+    } catch (error) {
+      self._error(error);
+    }
+  }
+  get locked() {
+    return this._locked;
+  }
+  _enqueue(chunk) {
+    if (this._state !== "readable") {
+      return;
+    }
+    this._queue.push(chunk);
+    this._queueBytes += chunk && typeof chunk.byteLength === "number" ? chunk.byteLength : 1;
+    this._wake();
+  }
+  _close() {
+    if (this._state !== "readable") {
+      return;
+    }
+    this._state = "closed";
+    this._wake();
+  }
+  _error(error) {
+    if (this._state !== "readable") {
+      return;
+    }
+    this._state = "errored";
+    this._storedError = error;
+    this._wake();
+  }
+  _wake() {
+    const wakeups = this._wakeups;
+    this._wakeups = [];
+    for (const wake of wakeups) {
+      wake();
+    }
+  }
+  async _requestPull() {
+    if (this._pull === null || this._state !== "readable" || this._pullInFlight) {
+      return;
+    }
+    this._pullInFlight = true;
+    try {
+      await this._pull(this._controller);
+    } catch (error) {
+      this._error(error);
+    } finally {
+      this._pullInFlight = false;
+    }
+  }
+  _shift() {
+    if (this._queue.length > 0) {
+      const value = this._queue.shift();
+      this._queueBytes -= value && typeof value.byteLength === "number" ? value.byteLength : 1;
+      return { kind: "chunk", value };
+    }
+    if (this._state === "closed") {
+      return { kind: "done" };
+    }
+    if (this._state === "errored") {
+      return { kind: "error", error: this._storedError };
+    }
+    return { kind: "wait" };
+  }
+  async _read() {
+    for (;;) {
+      const result = this._shift();
+      if (result.kind === "chunk") {
+        return { value: result.value, done: false };
+      }
+      if (result.kind === "done") {
+        return { value: undefined, done: true };
+      }
+      if (result.kind === "error") {
+        throw result.error;
+      }
+      const wake = new Promise((resolve) => this._wakeups.push(resolve));
+      // Minta data ke underlying source; pull berikutnya dipicu oleh read berikutnya.
+      this._requestPull();
+      await wake;
+    }
+  }
+  getReader() {
+    const stream = this;
+    this._locked = true;
+    return {
+      read: () => stream._read(),
+      cancel: (reason) => stream.cancel(reason),
+      releaseLock: () => {
+        stream._locked = false;
+      },
+    };
+  }
+  async cancel(reason) {
+    if (this._state === "readable") {
+      this._state = "closed";
+      this._wake();
+      if (this._cancel !== null) {
+        try {
+          await this._cancel(reason);
+        } catch {
+          // error saat cancel tidak boleh menjatuhkan pemanggil
+        }
+      }
+    }
+  }
+  [Symbol.asyncIterator]() {
+    const stream = this;
+    return {
+      next: () => stream._read(),
+      return: async () => {
+        await stream.cancel();
+        return { value: undefined, done: true };
+      },
+    };
+  }
+}
+
+function ramonyxToBytes(body) {
+  if (body instanceof Uint8Array) {
+    return body;
+  }
+  if (body instanceof ArrayBuffer) {
+    return new Uint8Array(body);
+  }
+  if (ArrayBuffer.isView(body)) {
+    return new Uint8Array(body.buffer, body.byteOffset, body.byteLength);
+  }
+  return new RamonyxTextEncoder().encode(String(body));
+}
+
+function ramonyxStreamFromBytes(bytes) {
+  return new RamonyxReadableStream({
+    start(controller) {
+      if (bytes.byteLength > 0) {
+        controller.enqueue(bytes);
+      }
+      controller.close();
+    },
+  });
+}
+
+async function ramonyxReadStreamText(stream) {
+  if (stream === null) {
+    return "";
+  }
+  const reader = stream.getReader();
+  const decoder = new RamonyxTextDecoder();
+  let text = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    text += typeof value === "string" ? value : decoder.decode(value, { stream: true });
+  }
+  text += decoder.decode();
+  return text;
+}
+
 class RamonyxResponse {
   constructor(body, init) {
     const options = init ?? {};
-    this._body = body == null ? "" : typeof body === "string" ? body : String(body);
     this.status = options.status ?? 200;
     this.statusText = options.statusText ?? "";
     this.ok = this.status >= 200 && this.status < 300;
-    this.headers = options.headers instanceof RamonyxHeaders ? options.headers : new RamonyxHeaders(options.headers);
-    this.body = null; // ReadableStream belum ada (ADR-0027)
+    this.headers =
+      options.headers instanceof RamonyxHeaders
+        ? options.headers
+        : new RamonyxHeaders(options.headers);
+    this.url = options.url ?? "";
+    this.type = "default";
+    this.redirected = false;
+    this.bodyUsed = false;
+    this._bodyText = null;
+    if (body instanceof RamonyxReadableStream) {
+      this.body = body;
+    } else if (body == null) {
+      this._bodyText = "";
+      this.body = ramonyxStreamFromBytes(new Uint8Array(0));
+    } else if (typeof body === "string") {
+      this._bodyText = body;
+      this.body = ramonyxStreamFromBytes(new RamonyxTextEncoder().encode(body));
+    } else {
+      const bytes = ramonyxToBytes(body);
+      this._bodyText = new RamonyxTextDecoder().decode(bytes);
+      this.body = ramonyxStreamFromBytes(bytes);
+    }
   }
   static json(data, init) {
     const response = new RamonyxResponse(JSON.stringify(data), init);
@@ -316,14 +556,27 @@ class RamonyxResponse {
     return response;
   }
   async text() {
-    return this._body;
+    if (this._bodyText === null) {
+      this._bodyText = await ramonyxReadStreamText(this.body);
+    }
+    this.bodyUsed = true;
+    return this._bodyText;
   }
   async json() {
-    return JSON.parse(this._body);
+    return JSON.parse(await this.text());
   }
   clone() {
-    const copy = new RamonyxResponse(this._body, { status: this.status, statusText: this.statusText });
+    if (this._bodyText === null) {
+      throw new Error(
+        "Response.clone() untuk body stream belum didukung runtime ini (ADR-0030)",
+      );
+    }
+    const copy = new RamonyxResponse(this._bodyText, {
+      status: this.status,
+      statusText: this.statusText,
+    });
     copy.headers = new RamonyxHeaders(this.headers);
+    copy.url = this.url;
     return copy;
   }
 }
@@ -335,22 +588,42 @@ class RamonyxRequest {
       this.url = input.url;
       this.method = (options.method ?? input.method ?? "GET").toUpperCase();
       this.headers = new RamonyxHeaders(options.headers ?? input.headers);
-      this._body = options.body == null ? input._body : String(options.body);
       this.signal = options.signal ?? input.signal;
+      if (options.body !== undefined) {
+        this._bodyText =
+          options.body == null ? null : new RamonyxTextDecoder().decode(ramonyxToBytes(options.body));
+      } else {
+        this._bodyText = input._bodyText;
+      }
     } else {
       this.url = String(input);
       this.method = String(options.method ?? "GET").toUpperCase();
       this.headers = new RamonyxHeaders(options.headers);
-      this._body = options.body == null ? "" : String(options.body);
       this.signal = options.signal ?? new RamonyxAbortSignal();
+      const body = options.body ?? null;
+      this._bodyText =
+        body === null || body instanceof RamonyxReadableStream
+          ? null
+          : new RamonyxTextDecoder().decode(ramonyxToBytes(body));
     }
-    this.body = null; // ReadableStream belum ada (ADR-0027)
+    this.bodyUsed = false;
+    if (options.body instanceof RamonyxReadableStream) {
+      this.body = options.body;
+    } else if (this._bodyText === null) {
+      this.body = null;
+    } else {
+      this.body = ramonyxStreamFromBytes(new RamonyxTextEncoder().encode(this._bodyText));
+    }
   }
   async text() {
-    return this._body;
+    if (this._bodyText === null && this.body !== null) {
+      this._bodyText = await ramonyxReadStreamText(this.body);
+    }
+    this.bodyUsed = true;
+    return this._bodyText ?? "";
   }
   async json() {
-    return JSON.parse(this._body);
+    return JSON.parse(await this.text());
   }
   clone() {
     return new RamonyxRequest(this);
@@ -364,6 +637,53 @@ globalThis.URLSearchParams = globalThis.URLSearchParams ?? RamonyxURLSearchParam
 globalThis.Headers = globalThis.Headers ?? RamonyxHeaders;
 globalThis.Response = globalThis.Response ?? RamonyxResponse;
 globalThis.Request = globalThis.Request ?? RamonyxRequest;
+globalThis.ReadableStream = globalThis.ReadableStream ?? RamonyxReadableStream;
+
+// `fetch` minimal (ADR-0030): http:// saja, tanpa redirect otomatis; transport
+// dibuffer di Rust (`op_fetch`) dengan batas ukuran + permission `--allow-net`.
+globalThis.fetch = globalThis.fetch ?? (async function fetch(input, init) {
+  const options = init ?? {};
+  let url;
+  let method;
+  let headers;
+  let body = "";
+  if (input instanceof RamonyxRequest) {
+    url = input.url;
+    method = String(options.method ?? input.method ?? "GET").toUpperCase();
+    headers =
+      options.headers !== undefined
+        ? new RamonyxHeaders(options.headers)
+        : new RamonyxHeaders(input.headers);
+    if (options.body !== undefined && options.body !== null) {
+      body = new RamonyxTextDecoder().decode(ramonyxToBytes(options.body));
+    } else if (input._bodyText !== null) {
+      body = input._bodyText;
+    }
+  } else {
+    url = input instanceof RamonyxURL ? input.href : String(input);
+    method = String(options.method ?? "GET").toUpperCase();
+    headers = new RamonyxHeaders(options.headers);
+    if (options.body !== undefined && options.body !== null) {
+      body = new RamonyxTextDecoder().decode(ramonyxToBytes(options.body));
+    }
+  }
+  let reply;
+  try {
+    reply = await Deno.core.ops.op_fetch(method, url, [...headers.entries()], body);
+  } catch (error) {
+    throw new TypeError(
+      "fetch failed: " + (error && error.message !== undefined ? error.message : String(error)),
+    );
+  }
+  const response = new RamonyxResponse(reply.body, {
+    status: reply.status,
+    statusText: reply.status_text,
+    headers: reply.headers,
+  });
+  response.url = reply.url;
+  response.type = "basic";
+  return response;
+});
 
 (() => {
   const timers = new Map();

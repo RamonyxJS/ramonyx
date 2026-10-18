@@ -48,6 +48,9 @@ if (hasil.statuses.ok !== 200 || hasil.statuses.bad !== 400) {
 if (hasil.statuses.output !== 200 || hasil.statuses.boom !== 403 || hasil.statuses.notFound !== 404) {
   throw new Error("status tambahan tidak sesuai: " + JSON.stringify(hasil.statuses));
 }
+if (hasil.statuses.echo !== 200 || hasil.statuses.echoBad !== 400) {
+  throw new Error("status POST body tidak sesuai: " + JSON.stringify(hasil.statuses));
+}
 "##,
         )
         .expect("verify compat");

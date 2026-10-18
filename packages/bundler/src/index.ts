@@ -7,3 +7,9 @@ export {
 } from "./build.ts";
 export type { DevServer, DevServerOptions } from "./dev.ts";
 export { createDevServer } from "./dev.ts";
+export type {
+  PrerenderOptions,
+  PrerenderResult,
+  PrerenderRouteInfo,
+} from "./prerender.ts";
+export { prerenderRoutes } from "./prerender.ts";

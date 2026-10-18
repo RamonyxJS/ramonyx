@@ -479,7 +479,8 @@
       "evidence": [
         "packages/devtools/src/commands.ts",
         "packages/devtools/test/cli.test.ts",
-        "docs/adr/0053-devtools-cli.md"
+        "docs/adr/0053-devtools-cli.md",
+        "docs/adr/0056-static-generation.md"
       ],
       "limitations": [
         "Tanpa watch mode (rebuild otomatis)"
@@ -537,34 +538,42 @@
     },
     {
       "id": "static-export",
-      "name": "Ekspor statis situs docs (dogfood)",
-      "status": "partial",
-      "since": "0.1.1",
+      "name": "Ekspor statis situs docs (dogfood SSG)",
+      "status": "implemented",
+      "since": null,
       "priority": "p2",
-      "packages": [],
+      "packages": [
+        "@ramonyx/bundler"
+      ],
       "evidence": [
         "apps/docs/export.ts",
+        "apps/docs/test/docs.test.ts",
+        "docs/adr/0056-static-generation.md",
         "docs/adr/0052-docs-hosting-pages.md"
       ],
       "limitations": [
-        "Skrip aplikasi docs, bukan API framework untuk SSG"
+        "Belum dirilis di npm (setelah 0.1.1)"
       ]
     },
     {
       "id": "ssg-first-class",
-      "name": "Static Site Generation sebagai fitur framework (prerender per rute)",
-      "status": "planned",
+      "name": "Static generation (SSG): prerenderRoutes + `ramonyx build --static`",
+      "status": "implemented",
       "since": null,
-      "priority": "p1",
+      "priority": "p0",
       "packages": [
-        "@ramonyx/ssr"
+        "@ramonyx/bundler",
+        "@ramonyx/devtools"
       ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "apps/docs/export.ts"
+        "packages/bundler/src/prerender.ts",
+        "packages/bundler/test/prerender.test.ts",
+        "packages/devtools/src/commands.ts",
+        "docs/adr/0056-static-generation.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Revalidasi/ISR belum (p1-revalidate)"
       ]
     },
     {

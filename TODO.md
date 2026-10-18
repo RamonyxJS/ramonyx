@@ -37,7 +37,7 @@
 
 ### `p0-static-generation` — Static generation (SSG) + ekspor statis first-class
 
-*tema: rendering · ukuran: L · status: open · sumber: gap §3 (SSG)*
+*tema: rendering · ukuran: L · status: done · sumber: gap §3 (SSG) — selesai ADR-0056*
 
 - **Apa**: Opsi `prerender` per rute (dan global) + `ramonyx build --static` yang menghasilkan HTML per rute + aset siap host statis — bukan skrip bespoke seperti ekspor situs docs saat ini.
 - **Kenapa penting untuk bersaing**: Sebagian besar proyek pertama (marketing, blog, dokumentasi) di-deploy statis; tanpa jalur ini pengguna harus pindah framework atau menulis skrip sendiri, dan situs docs kami sendiri membuktikan kebutuhan ini nyata.

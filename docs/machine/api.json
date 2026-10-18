@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T18:27:18.298Z",
+  "generatedAt": "2026-10-18T18:36:18.914Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -33,6 +33,7 @@
         "CLIENT_MANIFEST_FILE",
         "buildClient",
         "createDevServer",
+        "prerenderRoutes",
         "readAssetManifest",
         "readClientScript"
       ],
@@ -41,7 +42,10 @@
         "BuildClientOptions",
         "BuildClientResult",
         "DevServer",
-        "DevServerOptions"
+        "DevServerOptions",
+        "PrerenderOptions",
+        "PrerenderResult",
+        "PrerenderRouteInfo"
       ],
       "reexports": []
     },

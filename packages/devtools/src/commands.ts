@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { createNodeHost } from "@ramonyx/adapter-runtime";
-import { buildClient, createDevServer, readAssetManifest } from "@ramonyx/bundler";
+import { buildClient, createDevServer, prerenderRoutes, readAssetManifest } from "@ramonyx/bundler";
 import { loadPageRoutes } from "@ramonyx/compiler";
 
 import { loadConfigFile, loadCreateApp } from "./load.ts";
@@ -16,18 +16,20 @@ import { loadConfigFile, loadCreateApp } from "./load.ts";
 const USAGE = `ramonyx — CLI pengembangan Ramonyx
 
 Pemakaian:
-  ramonyx dev       Vite + HMR (default :5173) → SSR (port dari config)
-  ramonyx build     Bundel klien → dist/client (jalankan sebelum start produksi)
-  ramonyx start     Server produksi (NODE_ENV=production, SSR)
-  ramonyx doctor    Diagnostik konfigurasi & lingkungan
-  ramonyx version   Versi CLI
-  ramonyx help      Bantuan ini
+  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)
+  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)
+  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)
+  ramonyx start            Server produksi (NODE_ENV=production, SSR)
+  ramonyx doctor           Diagnostik konfigurasi & lingkungan
+  ramonyx version          Versi CLI
+  ramonyx help             Bantuan ini
 
 Opsi:
   --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)
   --config <path>   Path config (default: <app>/ramonyx.config.ts)
   --port <n>        Override port server SSR
   --dev-port <n>    Override port Vite (default 5173)
+  --static          (build) Prerender rute statis + getStaticPaths → dist/static
 
 Konvensi:
   src/app.ts        mengekspor createApp(options?) → FetchHandler
@@ -40,6 +42,7 @@ interface Flags {
   readonly configPath?: string;
   readonly port?: number;
   readonly devPort?: number;
+  readonly static?: boolean;
 }
 
 function readVersion(): string {
@@ -59,6 +62,7 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
   let configPath: string | undefined;
   let port: number | undefined;
   let devPort: number | undefined;
+  let isStatic = false;
   let help = false;
 
   const numeric = (value: string | undefined, flag: string): number => {
@@ -84,6 +88,9 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
       case "--dev-port":
         devPort = numeric(argv[++index], "--dev-port");
         break;
+      case "--static":
+        isStatic = true;
+        break;
       case "--help":
       case "-h":
         help = true;
@@ -99,17 +106,55 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
     }
   }
 
-  return { command, flags: { appDir, configPath, port, devPort }, help };
+  return { command, flags: { appDir, configPath, port, devPort, static: isStatic }, help };
 }
 
 async function commandBuild(flags: Flags): Promise<number> {
   const appDir = flags.appDir;
+  // Produksi sejak awal: `--static` merender (React prod) dan Vite memakai mode produksi;
+  // mengubah NODE_ENV setelah modul React dimuat menyebabkan mismatch react/react-dom (ADR-0056).
+  process.env.NODE_ENV ??= "production";
   const pages = await loadPageRoutes({ dir: join(appDir, "src/routes") });
   if (pages.length === 0) {
     console.warn("peringatan: tidak ada halaman di src/routes — bundle klien kosong");
   }
   const result = await buildClient({ appDir, pages });
   console.log(`✓ client bundle: ${result.scriptPath} (${result.outDir})`);
+
+  if (flags.static === true) {
+    const createApp = await loadCreateApp(appDir);
+    const manifest = await readAssetManifest(join(appDir, "dist/client"));
+    const clientScript = manifest === null ? "/assets/client.js" : `/assets/${manifest.client}`;
+    const handler = await createApp({ clientScript });
+
+    // Halaman 404: rute statis ber-metadata status 404, atau catch-all apa pun.
+    const notFoundPage = pages.find((page) => page.page.metadata?.status === 404);
+    const notFoundPath =
+      notFoundPage === undefined
+        ? undefined
+        : /\[/.test(notFoundPage.path)
+          ? "/__ramonyx-404__"
+          : notFoundPage.path;
+
+    const outDir = join(appDir, "dist/static");
+    const staticResult = await prerenderRoutes({
+      handler,
+      pages,
+      outDir,
+      clientDir: join(appDir, "dist/client"),
+      notFoundPath,
+    });
+    console.log(`✓ static: ${staticResult.routes.length} halaman → dist/static`);
+    if (notFoundPath === undefined) {
+      console.log("  catatan: 404.html dilewati (tidak ada halaman dengan metadata.status 404)");
+    }
+    if (staticResult.skipped.length > 0) {
+      const daftar = staticResult.skipped
+        .map((entry) => `${entry.path} (${entry.reason})`)
+        .join(", ");
+      console.log(`  dilewati: ${daftar}`);
+    }
+  }
   return 0;
 }
 

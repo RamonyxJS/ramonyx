@@ -27,6 +27,18 @@ export interface PageModule {
   readonly default?: unknown;
   readonly loader?: PageLoader<Record<string, string>, unknown, unknown>;
   readonly metadata?: PageMetadata;
+  /**
+   * `false` → halaman tidak pernah diprerender (mis. isinya bergantung request);
+   * `true`/tidak diisi → ikut `ramonyx build --static` bila rutenya statis (ADR-0056).
+   */
+  readonly prerender?: boolean;
+  /**
+   * Enumerasi rute dinamis untuk prerender (SSG): daftar peta param, mis.
+   * `[{ slug: "halo" }, { slug: "a/b" }]` untuk `[slug]`/`[...slug]`.
+   */
+  readonly getStaticPaths?: () =>
+    | ReadonlyArray<Record<string, string>>
+    | Promise<ReadonlyArray<Record<string, string>>>;
 }
 
 /** Hasil pemindaian halaman oleh `@ramonyx/compiler`, siap dirender `@ramonyx/ssr`. */

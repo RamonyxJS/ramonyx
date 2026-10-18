@@ -121,6 +121,7 @@ test("build klien: bundel hydrate + soft navigation disajikan sebagai aset", asy
   const output = execFileSync(process.execPath, ["--import", loader, "build.ts"], {
     cwd: appDir,
     encoding: "utf8",
+    env: { ...process.env, NODE_ENV: "production" },
   });
   assert.match(output, /client bundle/);
 
@@ -184,7 +185,12 @@ test("export statis: halaman + tautan relatif + aset + 404 (base subpath)", asyn
   const output = execFileSync(
     process.execPath,
     ["--import", loader, "export.ts", "--base", "/ramonyx", "--out", out],
-    { cwd: appDir, encoding: "utf8", timeout: 240_000 },
+    {
+      cwd: appDir,
+      encoding: "utf8",
+      timeout: 240_000,
+      env: { ...process.env, NODE_ENV: "production" },
+    },
   );
   assert.match(output, /halaman dirender/);
   assert.match(output, /ekspor selesai/);

@@ -707,6 +707,26 @@
         "static-assets",
         "http-cache-helpers"
       ]
+    },
+    {
+      "id": "ADR-0056",
+      "file": "0056-static-generation.md",
+      "title": "Static Generation (SSG) — Prerender + `ramonyx build --static`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "SSG memakai request sintetis ke handler SSR yang sama (prerenderRoutes: rute statis + getStaticPaths + 404 + transformHtml), diekspos lewat `ramonyx build --static`; NODE_ENV=production diset paling awal di build/ekspor (memperbaiki mismatch React dev/prod).",
+      "related": [
+        "ADR-0042",
+        "ADR-0048",
+        "ADR-0052",
+        "ADR-0054"
+      ],
+      "features": [
+        "ssg-first-class",
+        "static-export",
+        "cli-devtools"
+      ]
     }
   ]
 }

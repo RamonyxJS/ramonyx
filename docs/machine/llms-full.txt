@@ -487,7 +487,8 @@
       "evidence": [
         "packages/devtools/src/commands.ts",
         "packages/devtools/test/cli.test.ts",
-        "docs/adr/0053-devtools-cli.md"
+        "docs/adr/0053-devtools-cli.md",
+        "docs/adr/0056-static-generation.md"
       ],
       "limitations": [
         "Tanpa watch mode (rebuild otomatis)"
@@ -545,34 +546,42 @@
     },
     {
       "id": "static-export",
-      "name": "Ekspor statis situs docs (dogfood)",
-      "status": "partial",
-      "since": "0.1.1",
+      "name": "Ekspor statis situs docs (dogfood SSG)",
+      "status": "implemented",
+      "since": null,
       "priority": "p2",
-      "packages": [],
+      "packages": [
+        "@ramonyx/bundler"
+      ],
       "evidence": [
         "apps/docs/export.ts",
+        "apps/docs/test/docs.test.ts",
+        "docs/adr/0056-static-generation.md",
         "docs/adr/0052-docs-hosting-pages.md"
       ],
       "limitations": [
-        "Skrip aplikasi docs, bukan API framework untuk SSG"
+        "Belum dirilis di npm (setelah 0.1.1)"
       ]
     },
     {
       "id": "ssg-first-class",
-      "name": "Static Site Generation sebagai fitur framework (prerender per rute)",
-      "status": "planned",
+      "name": "Static generation (SSG): prerenderRoutes + `ramonyx build --static`",
+      "status": "implemented",
       "since": null,
-      "priority": "p1",
+      "priority": "p0",
       "packages": [
-        "@ramonyx/ssr"
+        "@ramonyx/bundler",
+        "@ramonyx/devtools"
       ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "apps/docs/export.ts"
+        "packages/bundler/src/prerender.ts",
+        "packages/bundler/test/prerender.test.ts",
+        "packages/devtools/src/commands.ts",
+        "docs/adr/0056-static-generation.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Revalidasi/ISR belum (p1-revalidate)"
       ]
     },
     {
@@ -1812,6 +1821,26 @@
         "static-assets",
         "http-cache-helpers"
       ]
+    },
+    {
+      "id": "ADR-0056",
+      "file": "0056-static-generation.md",
+      "title": "Static Generation (SSG) — Prerender + `ramonyx build --static`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "SSG memakai request sintetis ke handler SSR yang sama (prerenderRoutes: rute statis + getStaticPaths + 404 + transformHtml), diekspos lewat `ramonyx build --static`; NODE_ENV=production diset paling awal di build/ekspor (memperbaiki mismatch React dev/prod).",
+      "related": [
+        "ADR-0042",
+        "ADR-0048",
+        "ADR-0052",
+        "ADR-0054"
+      ],
+      "features": [
+        "ssg-first-class",
+        "static-export",
+        "cli-devtools"
+      ]
     }
   ]
 }
@@ -2377,7 +2406,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T18:27:18.298Z",
+  "generatedAt": "2026-10-18T18:36:18.914Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2410,6 +2439,7 @@
         "CLIENT_MANIFEST_FILE",
         "buildClient",
         "createDevServer",
+        "prerenderRoutes",
         "readAssetManifest",
         "readClientScript"
       ],
@@ -2418,7 +2448,10 @@
         "BuildClientOptions",
         "BuildClientResult",
         "DevServer",
-        "DevServerOptions"
+        "DevServerOptions",
+        "PrerenderOptions",
+        "PrerenderResult",
+        "PrerenderRouteInfo"
       ],
       "reexports": []
     },
@@ -2646,8 +2679,8 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T18:27:19.331Z",
-  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev       Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build     Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx start     Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor    Diagnostik konfigurasi & lingkungan\n  ramonyx version   Versi CLI\n  ramonyx help      Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
+  "generatedAt": "2026-10-18T18:36:20.041Z",
+  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
       "name": "dev",
@@ -2694,6 +2727,11 @@
       "flag": "--dev-port",
       "argument": "n",
       "description": "Override port Vite (default 5173)"
+    },
+    {
+      "flag": "--static",
+      "argument": null,
+      "description": "(build) Prerender rute statis + getStaticPaths → dist/static"
     }
   ]
 }
@@ -2705,8 +2743,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-18T18:26:28.137Z",
-  "commit": "723146c63b33249e6253855e06e98cdaa4e8d833",
+  "generatedAt": "2026-10-18T18:35:28.257Z",
+  "commit": "9ef774ec888a91cdc5eda8dd74fc2126d35767a2",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -2728,9 +2766,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 55,
+  "adrs": 56,
   "tests": {
-    "node": 176,
+    "node": 179,
     "rust": 111,
     "e2eSpecFiles": 4
   }

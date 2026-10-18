@@ -204,6 +204,29 @@ console.log("ASSETS OK");
   assert.match(output, /ASSETS OK/);
 });
 
+test("app hasil scaffold: build --static (SSG + 404 HTML + aset)", async () => {
+  mkdirSync(workDir, { recursive: true });
+  const target = join(workDir, "app-static");
+  runCli([target]);
+
+  const output = runDevtools(target, ["build", "--static"]);
+  assert.match(output, /static: 1 halaman/, "satu halaman statis diprerender");
+  assert.match(output, /dilewati/, "catch-all 404 dilaporkan dilewati (prerender: false)");
+
+  const index = readFileSync(join(target, "dist/static/index.html"), "utf8");
+  assert.ok(index.includes("Halo dari SSR Ramonyx"), "index terprerender");
+  assert.ok(index.includes("window.__RAMONYX__"), "payload hydration ada");
+
+  const notFound = readFileSync(join(target, "dist/static/404.html"), "utf8");
+  assert.ok(notFound.includes("404 — Tidak ditemukan"), "404.html HTML (bukan JSON)");
+
+  const aset = readdirSync(join(target, "dist/static/assets"));
+  assert.ok(
+    aset.some((file) => /^client-.*\.js$/.test(file)),
+    "aset klien ber-hash disalin",
+  );
+});
+
 test("help menampilkan penggunaan", () => {
   const output = runCli(["--help"]);
   assert.match(output, /create-ramonyx-app/);

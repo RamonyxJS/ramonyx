@@ -28,7 +28,7 @@
       "theme": "rendering",
       "priority": "p0",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Opsi `prerender` per rute (dan global) + `ramonyx build --static` yang menghasilkan HTML per rute + aset siap host statis — bukan skrip bespoke seperti ekspor situs docs saat ini.",
       "why": "Sebagian besar proyek pertama (marketing, blog, dokumentasi) di-deploy statis; tanpa jalur ini pengguna harus pindah framework atau menulis skrip sendiri, dan situs docs kami sendiri membuktikan kebutuhan ini nyata.",
       "done": [
@@ -40,7 +40,7 @@
       "areas": ["packages/ssr", "packages/compiler", "packages/devtools", "packages/bundler"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js `output: export`; SvelteKit adapter-static; Astro (default statis); Nuxt `nuxt generate`.",
-      "source": "gap §3 (SSG)",
+      "source": "gap §3 (SSG) — selesai ADR-0056",
       "strategic": true
     },
     {

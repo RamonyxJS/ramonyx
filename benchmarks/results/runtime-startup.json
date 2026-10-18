@@ -1,0 +1,89 @@
+{
+  "generatedAt": "2026-10-18T08:14:19.634679+00:00",
+  "binary": "/home/rdev/ramonyx/target/release/ramonyx-runtime",
+  "runs": 7,
+  "note": "Mesin dev; warm-up tidak dipisah. Bukan klaim publik (BLUEPRINT \u00a710).",
+  "scenarios": {
+    "mini": {
+      "wallMs": {
+        "median": 49.67,
+        "min": 45.15,
+        "max": 62.26
+      },
+      "engineStartupMs": {
+        "median": 34.9,
+        "min": 31.7,
+        "max": 39.52
+      },
+      "loadMs": {
+        "median": 0.42,
+        "min": 0.27,
+        "max": 0.55
+      },
+      "evaluateMs": {
+        "median": 0.38,
+        "min": 0.25,
+        "max": 0.51
+      },
+      "totalMs": {
+        "median": 0.83,
+        "min": 0.55,
+        "max": 1.1
+      }
+    },
+    "mini-with-op-metrics": {
+      "wallMs": {
+        "median": 49.49,
+        "min": 44.19,
+        "max": 56.08
+      },
+      "engineStartupMs": {
+        "median": 37.01,
+        "min": 31.07,
+        "max": 44.0
+      },
+      "loadMs": {
+        "median": 0.31,
+        "min": 0.25,
+        "max": 0.39
+      },
+      "evaluateMs": {
+        "median": 0.29,
+        "min": 0.23,
+        "max": 0.44
+      },
+      "totalMs": {
+        "median": 0.62,
+        "min": 0.51,
+        "max": 0.85
+      }
+    },
+    "four-workers": {
+      "wallMs": {
+        "median": 90.45,
+        "min": 88.76,
+        "max": 93.87
+      },
+      "engineStartupMs": {
+        "median": 33.65,
+        "min": 32.16,
+        "max": 35.96
+      },
+      "loadMs": {
+        "median": 0.45,
+        "min": 0.31,
+        "max": 0.54
+      },
+      "evaluateMs": {
+        "median": 39.05,
+        "min": 37.92,
+        "max": 42.31
+      },
+      "totalMs": {
+        "median": 39.53,
+        "min": 38.44,
+        "max": 42.88
+      }
+    }
+  }
+}

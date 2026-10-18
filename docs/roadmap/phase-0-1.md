@@ -173,7 +173,11 @@ pekerjaan Phase 5.
   + tokio terpisah, pesan JSON dua arah, permission **irisan dengan induk** (default deny-all),
   kuota `maxHeapMb`/`timeoutMs` per worker, kill switch `terminate()` (isolate thread-safe),
   batas 8 worker; sisa: kuota CPU/memori eksternal, isolasi level proses untuk plugin
-- [ ] **R4** — optimasi startup/profiling
+- [x] **R4 (profiling + baseline)** — timings per eksekusi (`Engine::last_timings`, log
+      `engine.executed`: `startupMs` + `loadMs`/`evalMs`/`totalMs`), **metrik op** opsional
+      (`--op-metrics`, tanpa biaya saat mati), dan `benchmarks/runtime-startup.sh` →
+      `benchmarks/results/runtime-startup.json`; optimasi berbasis snapshot V8 dicatat sebagai
+      kandidat (belum) — ADR-0037
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

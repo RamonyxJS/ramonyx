@@ -44,3 +44,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0034](0034-worker-isolation.md) | Isolasi worker + kuota (isolate terpisah per worker) | Accepted |
 | [0035](0035-streaming-request.md) | Streaming request + batas body server (413 dini) | Accepted |
 | [0036](0036-fetch-tls-redirect.md) | `fetch` https (TLS diverifikasi) + redirect otomatis | Accepted |
+| [0037](0037-r4-profiling-startup.md) | R4: profiling startup — timings, metrik op, baseline | Accepted |

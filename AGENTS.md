@@ -22,6 +22,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm build` + `pnpm start` — produksi: bundle client ke `apps/playground/dist/client/`, lalu SSR di 3000.
 - `pnpm test:e2e` — Playwright terhadap build produksi (`pnpm build` + `pnpm start`); browser:
   CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
+- `benchmarks/runtime-startup.sh` — baseline startup runtime Rust (median wall/startup/load/eval
+  dari `RUNS` eksekusi; hasil → `benchmarks/results/runtime-startup.json`; butuh build release).
 - `pnpm bench` — autocannon HTTP baseline; `pnpm bench:security` — abuse-case + soak
   (spawn server terpisah, RSS via /proc; `SOAK_SECONDS=300` untuk soak panjang). Hasil di
   `benchmarks/results/`.
@@ -128,11 +130,13 @@ security berjalan end-to-end lewat HTTP — ADR-0032), **resource limits** (kuot
 watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker + kuota**
 (thread + isolate V8 terpisah, pesan JSON, permission irisan, kill switch — ADR-0034), dan
 **streaming request + batas body server** (body pull-model + 413 dini — ADR-0035), dan
-**`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036) — semuanya diverifikasi
-test + smoke. **Exit criteria Phase 4 tercapai**; sisa menuju Phase 5: kuota CPU/memori
-eksternal, isolasi level proses untuk plugin, profiling (R4), rilis.
+**`fetch` https + redirect** (TLS diverifikasi + CA kustom — ADR-0036), serta **R4 profiling
+startup** (timings per fase, metrik op `--op-metrics`, baseline reproducible — ADR-0037) —
+semuanya diverifikasi test + smoke. **Exit criteria Phase 4 tercapai**; sisa menuju Phase 5:
+kuota CPU/memori eksternal, isolasi level proses untuk plugin, optimasi berbasis snapshot,
+rilis.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 84 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 86 test Rust hijau.

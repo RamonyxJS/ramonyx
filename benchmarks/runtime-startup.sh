@@ -7,6 +7,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BIN="${RAMONYX_RUNTIME_BIN:-$ROOT/target/release/ramonyx-runtime}"
 RUNS="${RUNS:-${1:-7}}"
+OUT="${RAMONYX_RUNTIME_STARTUP_OUT:-$ROOT/benchmarks/results/runtime-startup.json}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -37,8 +38,8 @@ const hasil = await Promise.all(
 console.log("worker:", hasil.join(","));
 EOF
 
-mkdir -p "$ROOT/benchmarks/results"
-python3 - "$BIN" "$RUNS" "$TMP" "$ROOT/benchmarks/results/runtime-startup.json" <<'PY'
+mkdir -p "$(dirname "$OUT")"
+python3 - "$BIN" "$RUNS" "$TMP" "$OUT" <<'PY'
 import json
 import statistics
 import subprocess

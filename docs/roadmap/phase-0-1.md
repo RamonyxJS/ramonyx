@@ -77,8 +77,9 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
       (plateau saat beban berhenti; soak berjam-jam per protokol §8 masih diperlukan sebelum klaim)
 - [ ] Dependency audit berkelanjutan (CI sudah `pnpm audit`; tambah kebijakan & provenance)
 - [x] Pemetaan awal OWASP ASVS (`docs/security/asvs-mapping.md`) + primitif XSS/CSRF:
-      `@ramonyx/security` — `securityHeaders()` + `csrfProtection()` (ADR-0013)
-- [ ] Perluasan acceptance criteria per area ASVS: CSPnonce, SSRF guard, output limit,
+      `@ramonyx/security` — `securityHeaders()`, `cspNonce()` (CSP nonce, ADR-0014),
+      `csrfProtection()` (ADR-0013)
+- [ ] Perluasan acceptance criteria per area ASVS: SSRF guard, output limit,
       rate limiting per klien, verifikasi CSRF via field form
 - [x] Concurrency limit / load shedding (ADR-0012): default 100 → 503 + `Retry-After`, tanpa antrean
 - [ ] Keputusan menyusul: rate limiting per klien (butuh identitas klien/trusted proxy) + output limit

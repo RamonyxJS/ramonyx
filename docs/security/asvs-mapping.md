@@ -19,7 +19,7 @@
 | V11 Logika bisnis | Anti-automation (rate limit per klien) | ⬜ | keputusan terbuka (butuh identitas klien) |
 | V12 File & resource | Body limit 1 MiB, concurrency 100, timeout 10s; guard traversal static | ✅ | ADR-0011/0012 + `pnpm bench:security` |
 | V13 API & web service | Validasi skema, error konsisten (400/403/404/405/413/503) | ✅ | `docs/api/core-contract.md` + test |
-| V14 Konfigurasi | Secure defaults (limit), header keamanan | 🟡 | ADR-0011/0012/0013; CSP nonce menyusul |
+| V14 Konfigurasi | Secure defaults (limit), header keamanan + CSP nonce | ✅ | ADR-0011/0012/0013/0014 |
 
 ## Acceptance criteria yang sudah dapat diuji
 
@@ -30,8 +30,10 @@
 5. Path traversal static → 404 — `pnpm bench:security`
 6. CSRF: POST tanpa/mismatch token → 403; GET menerbitkan token — `packages/security/test/csrf.test.ts`
 7. Header keamanan default terpasang — `packages/security/test/headers.test.ts`
+8. CSP dengan nonce: payload hydration memakai `nonce`, script same-origin — e2e `ssr.spec.ts` +
+   browser dev (HMR connected, nol error konsol) — ADR-0014
 
 ## Berikutnya
 
-CSP dengan nonce/hash untuk payload hydration · SSRF guard untuk fetch server · output limit ·
-rate limiting per klien · perluasan pemetaan per item ASVS.
+SSRF guard untuk fetch server · output limit · rate limiting per klien · verifikasi CSRF via field
+form · perluasan pemetaan per item ASVS.

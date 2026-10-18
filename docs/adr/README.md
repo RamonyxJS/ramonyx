@@ -21,3 +21,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0011](0011-resource-limits.md) | Resource limits secure-by-default (body 1 MiB, timeout 10s) | Accepted |
 | [0012](0012-concurrency-limit.md) | Concurrency limit / load shedding (default 100, 503 + Retry-After) | Accepted |
 | [0013](0013-security-package.md) | Paket security: headers + CSRF double-submit (Web Crypto) | Accepted |
+| [0014](0014-csp-nonce.md) | CSP nonce + request replacement di middleware | Accepted |

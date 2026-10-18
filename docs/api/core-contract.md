@@ -86,7 +86,14 @@ export default [
 ] satisfies Middleware[];
 ```
 
-- Dijalankan root → dalam (nested middleware Phase 2).
+- Dijalankan root → dalam; boleh short-circuit dengan mengembalikan `Response` tanpa `next()`.
+- `next()` atau `next(requestBaru)` — request pengganti dipakai lapisan berikutnya & handler
+  (`signal` diteruskan; timeout tetap berlaku).
+- `next()` dipanggil dua kali dalam satu middleware → 500 (dijaga framework).
+
+- Middleware `src/routes/middleware.ts`: boleh `next()` atau `next(requestBaru)` (mengganti request
+  untuk lapisan berikutnya; `signal` diteruskan). Contoh: `cspNonce()` (ADR-0014) menitipkan
+  `x-ramonyx-nonce` yang dibaca ssr untuk `nonce` pada payload script.
 - Boleh short-circuit dengan mengembalikan `Response` tanpa `next()`.
 - Urutan dieksekusi deterministik dan diuji.
 
@@ -157,5 +164,7 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
   content-length sebelum routing + streaming byte-count); `timeoutMs` default 10s → **503** +
   `request.signal` abort; `maxConcurrent` default 100 → **503 + `Retry-After: 1`** (load shedding);
   body dibaca streaming; `parseQuery` aman untuk `__proto__`.
-- Paket `@ramonyx/security` (ADR-0013): `securityHeaders()` (nosniff/referrer/frame-options;
-  CSP opt-in) + `csrfProtection()` (double-submit cookie + header `x-csrf-token` → 403 bila salah).
+- Paket `@ramonyx/security` (ADR-0013/0014): `securityHeaders()`
+  (nosniff/referrer/frame-options; CSP opt-in), `cspNonce()` (CSP dengan nonce per request,
+  nonce dibaca ssr dari `NONCE_HEADER`), `csrfProtection()` (double-submit cookie + header
+  `x-csrf-token` → 403 bila salah).

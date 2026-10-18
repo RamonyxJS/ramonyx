@@ -30,6 +30,8 @@ Phase 4 adalah menjalankan **kode framework nyata** (bukan fixture mainan) di ru
 
 - **SSR/react belum**: `@ramonyx/react` & react-dom adalah **CommonJS** → butuh interop CJS
   (item berikutnya).
+  > **Diperbarui (ADR-0029):** interop CJS v1 selesai — **SSR React (`react` +
+  > `react-dom/server.browser`) sudah berjalan di runtime** (fixture `react-ssr.mjs`).
 - **fetch/ReadableStream belum**: ssr/security penuh (dan test yang memakai fetch) belum bisa.
 - Body request di runtime masih `null` (streaming request belum) — pipeline diuji untuk jalur
   GET/params/query; POST body menyusul.

@@ -21,6 +21,8 @@ Framework core berbicara dalam tipe standar web (`URL`, `Request`, `Response`, `
   - `Headers` (case-insensitive, append gabung koma, `getSetCookie` dasar), `Response`
     (`json`/`text`/`clone`, `ok`), `Request` (url/method/headers/body/signal, `text`/`json`);
   - `setTimeout`/`clearTimeout` berbasis `op_sleep`.
+  - `MessageChannel` minimal (ditambahkan ADR-0029: scheduler React memakai pola
+    `port1.onmessage`/`port2.postMessage`; pengiriman lewat microtask).
 - **Pola pemasangan `globalThis.X = globalThis.X ?? ShimX`** — implementasi native/deno_web ke
   depan dapat menggantikan tanpa mengubah kode aplikasi.
 - Percobaan dependency ditolak dengan alasan dicatat: `deno_url` **deprecated** (hanya stub
@@ -31,6 +33,8 @@ Framework core berbicara dalam tipe standar web (`URL`, `Request`, `Response`, `
 
 - **Belum**: `fetch`, `ReadableStream` (`Request.body`/`Response.body` = `null`), `structuredClone`,
   `atob`/`btoa`, `setInterval`, URL normalization penuh (dot-segments, kasus `%` ekstrem).
+  `MessageChannel` adalah shim antrean microtask (bukan macrotask), cukup untuk pola scheduler
+  React.
 - `AbortController` tetap polyfill (ADR-0024); `getSetCookie` memakai pemisahan koma sederhana.
 - Ini **shim**, bukan implementasi spec penuh — jangan diklaim sebagai WHATWG lengkap.
 

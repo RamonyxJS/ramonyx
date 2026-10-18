@@ -41,3 +41,7 @@ ADR-0021 menolak bare specifier dengan pesan jelas. Agar runtime bisa memakai de
   dulu; interop CJS adalah item berikutnya.
 - Diverifikasi: 5 unit resolver (kondisi/subpath/wildcard/walk-up/error) + 1 integrasi engine
   (impor paket fixture end-to-end) — **45 test Rust** total.
+
+> **Diperbarui:** item "interop CJS" selesai di **ADR-0029** (interop CommonJS v1: pemindaian graf
+> `require` statis + wrapper CJS di V8; `react`/`react-dom` berjalan). Bagian "CJS ditolak" pada
+> ADR ini berlaku untuk v1 saja; urutan kondisi kini `import`/`module`/`browser`/`worker`/`default`.

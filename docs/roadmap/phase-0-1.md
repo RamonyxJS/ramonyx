@@ -99,6 +99,11 @@ Phase 4 (runtime alpha).
 
 ## Phase 4 — Runtime alpha: Rust + V8 (berjalan)
 
+Status exit criteria ("framework demo berjalan di runtime alpha dan lulus subset compatibility
+tests"): **tercapai sebagian** — pipeline framework (core/router/schema/server) dan **demo SSR
+React** berjalan di runtime; compatibility lebih luas menunggu `fetch`/streams, POST body,
+dan worker/kuota.
+
 - [x] **R0** — Workspace Cargo (root `Cargo.toml`, members `runtime/crates/*`), toolchain dipin
       (`rust-toolchain.toml` 1.99.0 + rustfmt/clippy), `runtime-core` (config `ramonyx.runtime.json`
       + structured logger JSON-lines), CLI `ramonyx-runtime` (`version`/`config`/`run`), exit code &
@@ -107,16 +112,24 @@ Phase 4 (runtime alpha).
       TypeScript** via `deno_ast` (ADR-0021); `run main.ts` dengan import relatif `.ts` berjalan
       end-to-end lewat V8; bare specifier ditolak dengan pesan jelas (ADR-0021)
 - [x] **R1 sisa (parsial)** — resolusi paket `node_modules` **ESM v1** (ADR-0026): walk-up,
-      `exports` (kondisi import/module/default, subpath, wildcard), fallback `module`/`main`/
-      `index.js`; CJS ditolak dengan pesan jelas; diuji 5 unit + 1 integrasi engine
+      `exports` (kondisi import/module/browser/worker/default, subpath, wildcard), fallback
+      `module`/`main`/`index.js`; CommonJS ditangani interop ADR-0029; diuji 5 unit + 2 integrasi
+      engine
 - [x] **Web platform basics** (ADR-0027): `web_shim` — `TextEncoder/Decoder` (UTF-8), `URL`/
       `URLSearchParams` (subset), `Headers`/`Request`/`Response` minimal, `setTimeout`/`clearTimeout`;
       pola `??` agar bisa digantikan implementasi native; diuji + smoke
 - [x] **Compatibility suite v1** (ADR-0028): paket framework **nyata** (`core/router/schema/server`)
       berjalan di runtime Rust — pipeline `createHandler` (params 400, output, `HttpError` 403,
       404); temuan symlink-dedupe diperbaiki (canonicalize di resolver)
-- [ ] **Compatibility lanjutan** — interop **CommonJS** (react/ssr), `fetch`/`ReadableStream`,
-      POST body, suite yang lebih luas (fixture playground subset)
+- [x] **Interop CommonJS v1** (ADR-0029): pemindaian graf `require` statis di Rust → modul ESM
+      sintetis + wrapper CJS di V8 (require sinkron, JSON, rantai re-export, named export
+      heuristik, `process` minimal, cache modul global); temuan: konteks tokio wajib saat isolate
+      dibuat (V8 delayed task → abort) dan `MessageChannel` ditambahkan ke `web_shim`
+- [x] **Demo SSR React di runtime** (ADR-0029): `react` + `react-dom/server.browser` (paket CJS
+      produksi) → `renderToString`/`renderToStaticMarkup` berjalan; fixture compatibility + smoke
+      CLI `run` (deny-all default)
+- [ ] **Compatibility lanjutan** — `fetch`/`ReadableStream`, POST body, suite yang lebih luas
+      (fixture playground subset)
 - [ ] **fetch client + ReadableStream** — prasyarat ssr/security di runtime
 - [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
       **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,

@@ -3,8 +3,9 @@
 //! - **Script mode**: `Engine::execute` (tanpa import).
 //! - **Module mode**: `Engine::execute_module` — ESM dengan resolusi relatif, ekstensi
 //!   (`.js/.mjs/.ts/.tsx`, fallback ekstensi & `index`), dan transpile TypeScript via `deno_ast`.
-//! - **API runtime** (`ramonyx.*`): `sleep`, `readTextFile`/`writeTextFile`, `env.get`, dan
-//!   `serve(port, handler)` (HTTP pull-model, body di-buffer; lihat `http.rs`).
+//! - **API runtime** (`ramonyx.*`): `sleep`, `readTextFile`/`writeTextFile`, `env.get`,
+//!   `serve(port, handler)` (HTTP pull-model, payload mentah) dan `serveHandler(port, handler)`
+//!   (jembatan `FetchHandler` Request/Response standar) — lihat `http.rs`.
 //! - **Bare specifier**: resolusi `node_modules` ESM v1 (`exports`/`module`/`main`, ADR-0026).
 //! - **CommonJS**: interop v1 via pemindaian graf `require` statis (ADR-0029).
 
@@ -95,6 +96,27 @@ class RamonyxAbortController {
 globalThis.AbortController = RamonyxAbortController;
 globalThis.AbortSignal = RamonyxAbortSignal;
 
+// Konversi chunk body respons apa pun (string / byte stream) menjadi teks untuk op HTTP.
+// Byte stream di-decode UTF-8 dengan mode stream agar urutan multibyte lintas chunk aman;
+// sisa byte di-flush sebelum stream ditutup (loop serve memproses satu respons sekaligus,
+// jadi satu decoder bersama cukup). Decoder dibuat lazy — web shim dimuat setelah bootstrap.
+let __serveDecoder = null;
+const __serveChunkToText = (chunk) => {
+  if (typeof chunk === "string") {
+    return chunk;
+  }
+  if (__serveDecoder === null) {
+    __serveDecoder = new TextDecoder();
+  }
+  return __serveDecoder.decode(chunk, { stream: true });
+};
+const __serveFlushDecoder = () => {
+  if (__serveDecoder === null) {
+    return "";
+  }
+  return __serveDecoder.decode();
+};
+
 globalThis.ramonyx = {
   sleep: (ms) => Deno.core.ops.op_sleep(ms),
   readTextFile: (path) => Deno.core.ops.op_read_text_file(path),
@@ -145,7 +167,15 @@ globalThis.ramonyx = {
           );
           try {
             for await (const chunk of body) {
-              await Deno.core.ops.op_http_stream_chunk(serverId, request.id, String(chunk));
+              await Deno.core.ops.op_http_stream_chunk(
+                serverId,
+                request.id,
+                __serveChunkToText(chunk),
+              );
+            }
+            const sisa = __serveFlushDecoder();
+            if (sisa.length > 0) {
+              await Deno.core.ops.op_http_stream_chunk(serverId, request.id, sisa);
             }
             Deno.core.ops.op_http_stream_end(serverId, request.id);
           } catch (error) {
@@ -158,13 +188,41 @@ globalThis.ramonyx = {
             request.id,
             response?.status ?? 200,
             Object.entries(response?.headers ?? {}),
-            String(body),
+            __serveChunkToText(body),
           );
         }
       }
     })();
     loop.catch((error) => {
       Deno.core.ops.op_log_error("server loop error: " + error);
+    });
+    return server;
+  },
+  // Jembatan standar: menjalankan `FetchHandler` (Request → Response) di atas `serve`
+  // low-level. Payload server dipetakan ke `Request` (headers/body/signal ikut, sehingga
+  // cancellation klien sampai ke pipeline), dan `Response` dikembalikan ke loop serve
+  // (termasuk body streaming/ReadableStream).
+  serveHandler: (port, handler) => {
+    const server = globalThis.ramonyx.serve(port, async (payload) => {
+      const init = {
+        method: payload?.method ?? "GET",
+        headers: payload?.headers ?? [],
+        signal: payload?.signal,
+      };
+      if (typeof payload?.body === "string" && payload.body.length > 0) {
+        init.body = payload.body;
+      }
+      const request = new Request(
+        "http://127.0.0.1:" + server.port + (payload?.path ?? "/"),
+        init,
+      );
+      const response = await handler(request);
+      const headers = {};
+      for (const [name, value] of response.headers.entries()) {
+        headers[name] = value;
+      }
+      const body = response.body ?? (await response.text());
+      return { status: response.status, headers, body };
     });
     return server;
   },
@@ -1660,6 +1718,82 @@ globalThis.__builtin_ok = true;
             .execute(
                 "[verify]",
                 "if (globalThis.__r !== true) throw new Error('random gagal');",
+            )
+            .expect("verify");
+
+        fs::remove_dir_all(&directory).expect("cleanup");
+    }
+
+    #[test]
+    fn serve_handler_bridge_request_dan_response() {
+        let directory = temp_dir("serve-bridge");
+        let main = directory.join("main.mjs");
+        fs::write(
+            &main,
+            r##"
+const server = ramonyx.serveHandler(0, async (request) => {
+  const url = new URL(request.url);
+  if (request.method === "POST") {
+    const body = await request.text();
+    return Response.json({ echo: body, dari: "bridge" });
+  }
+  if (!request.signal) {
+    throw new Error("signal request hilang");
+  }
+  if (url.pathname === "/stream") {
+    return new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("bagian-1;"));
+          controller.enqueue(new TextEncoder().encode("bagian-2;"));
+          controller.close();
+        },
+      }),
+      { headers: { "content-type": "text/plain; charset=utf-8", "x-bridge": "ya" } },
+    );
+  }
+  return new Response("halo " + url.pathname);
+});
+const dasar = "http://127.0.0.1:" + server.port;
+
+const halo = await fetch(dasar + "/dunia");
+if (halo.status !== 200 || (await halo.text()) !== "halo /dunia") {
+  throw new Error("GET bridge gagal: " + halo.status);
+}
+
+const streaming = await fetch(dasar + "/stream");
+if (streaming.headers.get("x-bridge") !== "ya") throw new Error("header bridge hilang");
+let isi = "";
+for await (const chunk of streaming.body) {
+  isi += new TextDecoder().decode(chunk);
+}
+if (isi !== "bagian-1;bagian-2;") throw new Error("stream bridge salah: " + isi);
+
+const kirim = await fetch(dasar + "/echo", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ a: 1 }),
+});
+const balasan = await kirim.json();
+if (balasan.echo !== '{"a":1}' || balasan.dari !== "bridge") {
+  throw new Error("POST bridge salah: " + JSON.stringify(balasan));
+}
+
+server.close();
+globalThis.__bridge_ok = true;
+"##,
+        )
+        .expect("write");
+
+        let mut engine = Engine::with_options(EngineOptions {
+            permissions: Permissions::allow_all(),
+        })
+        .expect("engine");
+        engine.execute_module(&main).expect("serve bridge module");
+        engine
+            .execute(
+                "[verify]",
+                "if (globalThis.__bridge_ok !== true) throw new Error('serveHandler gagal');",
             )
             .expect("verify");
 

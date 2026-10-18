@@ -178,6 +178,9 @@ importers:
       '@ramonyx/core':
         specifier: workspace:*
         version: link:packages/core
+      '@ramonyx/react':
+        specifier: workspace:*
+        version: link:packages/react
       '@ramonyx/router':
         specifier: workspace:*
         version: link:packages/router
@@ -190,6 +193,9 @@ importers:
       '@ramonyx/server':
         specifier: workspace:*
         version: link:packages/server
+      '@ramonyx/ssr':
+        specifier: workspace:*
+        version: link:packages/ssr
       '@types/autocannon':
         specifier: 7.12.7
         version: 7.12.7

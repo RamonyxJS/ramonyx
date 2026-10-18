@@ -1,0 +1,93 @@
+name: Release
+
+# Rilis v1 (ADR-0039): dipicu tag `v*` (mis. v0.1.0).
+# Menghasilkan artefak (tarball npm + binary runtime + SHA256SUMS + manifest),
+# menjalankan verifikasi instalasi di proyek konsumen bersih, lalu (opsional,
+# butuh rahasia NPM_TOKEN) mempublikasikan paket.
+#
+# Catatan jujur: alur ini belum pernah dijalankan di runner GitHub (belum ada remote/CI
+# saat dibuat); verifikasi lokal dilakukan lewat `pnpm release` + `pnpm release:verify`.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  artifacts:
+    name: Build artefak rilis + verifikasi
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Toolchain Rust (ikut rust-toolchain.toml)
+        uses: dtolnay/rust-toolchain@master
+      - uses: Swatinem/rust-cache@v2
+      - name: Aktifkan pnpm (corepack)
+        run: corepack enable pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Gate cepat (lint + typecheck + test)
+        run: |
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+      - name: Build artefak rilis
+        run: pnpm release
+      - name: Verifikasi instalasi dari tarball (Node polos)
+        run: pnpm release:verify
+      - name: Upload artefak
+        uses: actions/upload-artifact@v4
+        with:
+          name: ramonyx-release
+          path: |
+            dist/npm/*.tgz
+            dist/runtime/*.tar.gz
+            dist/SHA256SUMS
+            dist/release-manifest.json
+          if-no-files-found: error
+      - name: GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "Ramonyx ${GITHUB_REF_NAME}" \
+            --notes-file CHANGELOG.md \
+            dist/npm/*.tgz dist/runtime/*.tar.gz dist/SHA256SUMS dist/release-manifest.json
+
+  publish-npm:
+    name: Publikasi npm (butuh NPM_TOKEN)
+    needs: artifacts
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Aktifkan pnpm (corepack)
+        run: corepack enable pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build paket
+        run: pnpm release:build
+      - name: Publikasi (skip bila NPM_TOKEN kosong)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "NPM_TOKEN tidak diatur — publikasi dilewati (artefak tetap diunggah ke Release)."
+            exit 0
+          fi
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "$HOME/.npmrc"
+          for pkg in dist/npm/*/; do
+            (cd "$pkg" && pnpm publish --access public --no-git-checks)
+          done

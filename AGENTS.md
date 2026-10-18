@@ -192,10 +192,9 @@ dan **situs
 dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042),
 **di-host di GitHub Pages** (ekspor statis + `<base href>` subpath — ADR-0052) —
 semuanya diverifikasi test + smoke.
-**Exit criteria Phase 4 tercapai**; **publikasi npm selesai** (2026-10-18: 13 paket @ 0.1.0
-terbit — `@ramonyx/*`, `ramonyx`, `create-ramonyx-app`; verifikasi registry end-to-end ✓;
-**workflow `release.yml` dieksekusi sukses** pada tag `v0.1.0` → GitHub Release 16 aset, publish
-idempoten; CI runner hijau).
+**Exit criteria Phase 4 tercapai**; **publikasi npm selesai** (0.1.0 pada 2026-10-18; **0.1.1**
+sore harinya: **14 paket** — kini termasuk `@ramonyx/devtools` — dengan **provenance**, GitHub
+Release v0.1.1; verifikasi registry end-to-end lewat alur CLI ✓).
 Sisa Phase 5/kandidat: evaluasi `--strict` bench.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +

@@ -1,8 +1,8 @@
 # Panduan Rilis — Checklist Pra-Publikasi
 
-- Status: **TERBIT** (2026-10-18) — 13 paket @ 0.1.0 di registry, dist-tag `latest` + `alpha`
-  (npm otomatis menetapkan `latest` pada publish pertama; verifikasi registry end-to-end lolos).
-  Kebijakan ADR-0039/0049 di bawah tetap berlaku untuk rilis berikutnya.
+- Status: **TERBIT** — **0.1.1** (2026-10-18, 14 paket termasuk `@ramonyx/devtools`, **dengan
+  provenance**; GitHub Release v0.1.1) di atas 0.1.0 (2026-10-18, 13 paket). Verifikasi registry
+  end-to-end lolos untuk keduanya. Kebijakan ADR-0039/0049 di bawah berlaku untuk rilis berikutnya.
 - Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
   binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
   `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).
@@ -60,6 +60,17 @@ cd demo-app && pnpm install && pnpm build && pnpm start
   untuk rilis berikutnya — rilis baru cukup: bump versi di `Cargo.toml` → commit → tag `vX.Y.Z`.
 - Catatan higiene: jangan pernah menempelkan nilai token sebagai **nama** `gh secret set`
   (nama secret terlihat di pengaturan repo — token harus dianggap terekspos dan dirotasi).
+
+## Hasil rilis 0.1.1 (2026-10-18)
+
+- Tag `v0.1.1` → workflow: 15 artefak + verifikasi + **publish 14 paket dengan provenance**
+  (repo publik + `id-token: write`) + GitHub Release.
+- Acceptance dari registry di direktori bersih: scaffold `create-ramonyx-app@0.1.1` →
+  `pnpm install` (bin `ramonyx` terpasang) → `ramonyx build` → `ramonyx start` → SSR + API
+  (403/404) + `ramonyx doctor` ✓ — template baru tanpa boilerplate.
+- Catatan operasional: metadata npm untuk paket yang baru dipublikasikan butuh beberapa menit
+  untuk terlihat di CDN; pnpm yang menyimpan cache metadata lama perlu dibersihkan/install ulang
+  (`--prefer-offline` tidak membantu; hapus `~/.cache/pnpm/**ramonyx**` atau tunggu TTL).
 
 ## Catatan jujur
 

@@ -103,12 +103,10 @@ Phase 4 (runtime alpha).
       (`rust-toolchain.toml` 1.99.0 + rustfmt/clippy), `runtime-core` (config `ramonyx.runtime.json`
       + structured logger JSON-lines), CLI `ramonyx-runtime` (`version`/`config`/`run`), exit code &
       error jelas; 15 test Rust + clippy/fmt bersih (ADR-0019)
-- [x] **R1-lite** — Spike engine **berhasil**: V8 via `deno_core` 0.412 (build ±2,5 menit, prebuilt;
-      ADR-0020); `js-engine::Engine` mengeksekusi script + `console.*` via op; `run file.js`
-      menjalankan JS sungguhan (teruji end-to-end, termasuk error V8 → exit 1) — diverifikasi:
-      `console.log("halo", 6*7)` → `halo 42`
-- [ ] **R1 sisa** — module loader/ESM import, transform TypeScript sebelum eksekusi, resolusi
-      paket yang membuat `run src/main.ts` berjalan setara subset playground
+- [x] **R1** — Module loader ESM (resolusi relatif + fallback ekstensi/index) + **transpile
+      TypeScript** via `deno_ast` (ADR-0021); `run main.ts` dengan import relatif `.ts` berjalan
+      end-to-end lewat V8; bare specifier ditolak dengan pesan jelas (ADR-0021)
+- [ ] **R1 sisa** — resolusi paket `node_modules` (exports/conditions), import JSON/WASM
 - [ ] **R2** — I/O runtime: HTTP, filesystem, network, timer, cancellation, streaming
 - [ ] **R3** — Permission model + isolasi; **R4** — optimasi startup/profiling
 

@@ -28,3 +28,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0018](0018-owner-decisions.md) | Keputusan pemilik: MIT, @ramonyx/*, browser matrix, rekonsiliasi PRD | Accepted (pemilik) |
 | [0019](0019-runtime-r0.md) | Runtime R0: workspace Rust, CLI, konfigurasi, logging (+ R1-lite) | Accepted |
 | [0020](0020-v8-engine.md) | Engine JavaScript: V8 via `deno_core` | Accepted |
+| [0021](0021-module-loader.md) | Module loader ESM + transpile TypeScript (deno_ast) | Accepted |

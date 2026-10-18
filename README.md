@@ -4,10 +4,10 @@ Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangka
 proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
-> **Status: Phase 4 (runtime alpha) berjalan** — Phase 0–3 selesai. Runtime Rust: R0 (CLI,
-> konfigurasi, logging), R1 (V8, ESM, TypeScript, `node_modules` ESM v1), R2a/b/c (HTTP server,
-> cancellation, keep-alive, streaming respons), R3a (permission model **deny-all**), dan
-> `web_shim` (URL, TextEncoder, Headers/Request/Response). Framework Node tetap baseline produksi;
+> **Status: Phase 4 (runtime alpha) berjalan** — Phase 0–3 selesai. Runtime Rust: R0 (CLI),
+> R1 (V8, ESM, TypeScript, `node_modules` ESM v1), R2a/b/c (HTTP server, cancellation, keep-alive,
+> streaming respons), R3a (permission model **deny-all**), `web_shim`, dan **compatibility suite
+> v1** (pipeline framework nyata berjalan di runtime). Framework Node tetap baseline produksi;
 > runtime eksperimental sampai compatibility/security testing lolos. Klaim mengikuti aturan
 > BLUEPRINT §10.
 

@@ -112,10 +112,12 @@ Phase 4 (runtime alpha).
 - [x] **Web platform basics** (ADR-0027): `web_shim` — `TextEncoder/Decoder` (UTF-8), `URL`/
       `URLSearchParams` (subset), `Headers`/`Request`/`Response` minimal, `setTimeout`/`clearTimeout`;
       pola `??` agar bisa digantikan implementasi native; diuji + smoke
-- [ ] **Compatibility suite pertama** — jalankan paket framework (router → server pipeline) di
-      runtime (target exit criteria Phase 4)
-- [ ] **fetch client + ReadableStream** — prasyarat ssr/security di runtime; **interop CommonJS** —
-      prasyarat SSR (react)
+- [x] **Compatibility suite v1** (ADR-0028): paket framework **nyata** (`core/router/schema/server`)
+      berjalan di runtime Rust — pipeline `createHandler` (params 400, output, `HttpError` 403,
+      404); temuan symlink-dedupe diperbaiki (canonicalize di resolver)
+- [ ] **Compatibility lanjutan** — interop **CommonJS** (react/ssr), `fetch`/`ReadableStream`,
+      POST body, suite yang lebih luas (fixture playground subset)
+- [ ] **fetch client + ReadableStream** — prasyarat ssr/security di runtime
 - [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
       **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,
       handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end

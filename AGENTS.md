@@ -61,9 +61,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   deny-all** (`--allow-read/write/net/env`) serta **cancellation** (`request.signal` saat klien
   putus), **keep-alive**, **streaming respons** (`body` AsyncIterable → chunked), dan **resolusi
   `node_modules` ESM v1** (`exports`/`module`/`main`), serta **`web_shim`** (URL, TextEncoder,
-  Headers/Request/Response, setTimeout — ADR-0027) — tetapi **belum**: **CommonJS**, WHATWG
-  fetch/streams penuh, streaming request, worker/kuota (R3 sisa) — jangan diklaim. Build pertama
-  V8/deno_core+deno_ast+hyper ±3 menit; biarkan `target/` cache.
+  Headers/Request/Response, setTimeout — ADR-0027). **Compatibility suite v1**: pipeline framework
+  nyata (core/router/schema/server) berjalan di runtime (ADR-0028) — tetapi **belum**: **CommonJS**
+  (react/ssr), WHATWG fetch/streams, streaming request, worker/kuota — jangan diklaim. Build
+  pertama V8/deno_core+deno_ast+hyper ±3 menit; biarkan `target/` cache.
 - **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
   `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
@@ -103,10 +104,11 @@ structured logging — ADR-0019), **R1**: V8 via `deno_core` (ADR-0020) + module
 transpile TypeScript via `deno_ast` (ADR-0021), **R2a**: I/O dasar + HTTP server pull-model
 (ADR-0022), **R2b**: cancellation klien + keep-alive (ADR-0024), **R2c**: streaming respons
 chunked (ADR-0025), **R3a**: permission model deny-all dengan flag `--allow-*` (ADR-0023), **resolusi `node_modules`
-ESM v1** (ADR-0026), dan **`web_shim`** (URL/TextEncoder/Headers/Request/Response — ADR-0027) —
-semuanya diverifikasi test + smoke; sisa: compatibility suite, interop CommonJS, fetch/streams,
-streaming request, worker/kuota. Ringkas Phase 3: limits body/timeout/concurrency +
+ESM v1** (ADR-0026), **`web_shim`** (URL/TextEncoder/Headers/Request/Response — ADR-0027), dan
+**compatibility suite v1** (pipeline framework nyata berjalan di runtime — ADR-0028) — semuanya
+diverifikasi test + smoke; sisa: interop CommonJS, fetch/streams, streaming request, worker/kuota.
+Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 46 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 47 test Rust hijau.

@@ -32,10 +32,10 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `packages/adapter-runtime` | Kontrak runtime + adapter Node + adapter in-memory (test) | Phase 1 | belum dibuat |
 | `packages/schema` | Integrasi Standard Schema (ADR-0004) + pemetaan error | Phase 1 | belum dibuat |
 | `packages/testing` | `createTestServer`, fixture app, helper | Phase 1 | belum dibuat |
-| `packages/react` | Adapter UI React (ADR-0003) | Phase 2 | belum dibuat |
-| `packages/ssr` | Render halaman → HTML (+ streaming) | Phase 2 | belum dibuat |
+| `packages/react` | Adapter UI React (ADR-0003) | Phase 2 | SSR selesai (hydration menyusul) |
+| `packages/ssr` | Render halaman → HTML (+ streaming) | Phase 2 | SSR selesai (streaming menyusul) |
 | `packages/client` | Hydration + client navigation | Phase 2 | belum dibuat |
-| `packages/compiler` | Manifest route (`createRouteManifest`), transformasi & analisis batas server/client | Phase 2 | file routing selesai |
+| `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`), transformasi & analisis batas server/client | Phase 2 | file routing + halaman selesai |
 | `packages/bundler` | Pembungkus toolchain (ADR-0005) | Phase 2 | belum dibuat |
 | `packages/security` | Policy & audit keamanan framework | Phase 3 | belum dibuat |
 | `packages/devtools` | CLI, dev server, diagnostics | Phase 2–3 | belum dibuat |
@@ -45,8 +45,8 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `runtime/crates/*` | Host Rust + V8 (runtime-core, module-loader, permissions, net, fs, cli) | Phase 4+ | belum dibuat |
 | `benchmarks/*` | Skrip benchmark per area | Phase 1 | belum dibuat |
 
-Status Phase 2 (berjalan): file routing API (`createRouteManifest` di `packages/compiler`) memindai
-`src/routes/api/**`; adapter React, SSR, dan bundler menyusul.
+Status Phase 2 (berjalan): file routing API + halaman (`page/layout/error` + loader) dan SSR React
+tanpa hydration sudah berfungsi; bundler Vite, hydration, dan dev server menyusul.
 
 Status Phase 1: `core`, `router`, `schema`, `adapter-runtime`, `server`, `testing`, `ramonyx`,
 `apps/playground`, dan `benchmarks/http` sudah diimplementasikan (source-first TypeScript via
@@ -66,6 +66,9 @@ jelas (BLUEPRINT §5 aturan 5). Nama scope npm masih keputusan terbuka (§8).
 Konsekuensi operasional yang ditegakkan lint: hanya `packages/adapter-runtime` dan
 `packages/compiler` (build-time) yang boleh mengimpor `node:*`; paket runtime lain hanya memakai
 kontrak §5. Tooling dev (test/benchmark/playground) bebas.
+
+App code ber-JSX dijalankan lewat loader dev `tools/register.mjs` (esbuild, JSX automatic —
+ADR-0006); paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
 
 ## 5. Kontrak framework ↔ adapter-runtime (draft v0)
 

@@ -33,3 +33,4 @@ tooling yang ada; compiler khusus hanya jika ada kebutuhan terukur.
   plugin dengan test tersendiri.
 - Terealisasi Phase 1: paket source-first (`.ts` dijalankan Node type stripping), tanpa bundler;
   Vite menyusul di Phase 2.
+- JSX app code (Phase 2) tidak didukung type stripping → loader dev/test sendiri, lihat ADR-0006.

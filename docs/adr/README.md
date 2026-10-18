@@ -13,3 +13,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0003](0003-ui-adapter-react.md) | Adapter UI pertama: React | Accepted |
 | [0004](0004-schema.md) | Kontrak schema validasi (Standard Schema) | Accepted |
 | [0005](0005-bundler.md) | Bundler awal | Accepted |
+| [0006](0006-jsx-loader.md) | Loader JSX dev/test (esbuild, bukan tsx) | Accepted |

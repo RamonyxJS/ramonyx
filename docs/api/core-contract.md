@@ -90,10 +90,16 @@ export default [
 - Boleh short-circuit dengan mengembalikan `Response` tanpa `next()`.
 - Urutan dieksekusi deterministik dan diuji.
 
-## 6. Halaman (rancangan, Phase 2 — bukan kontrak v0 yang diuji)
+## 6. Halaman — `src/routes/**/page.tsx` (diimplementasikan, Phase 2)
 
-`page.tsx` (default export komponen), `layout.tsx`, parameter `[id]`, `loader` per route,
-`error.tsx` untuk error boundary. Konvensi lengkap dibahas di Phase 2 (ADR bila perlu).
+- `page.tsx` — default export komponen; `export const metadata = { title }` untuk `<title>`;
+  `export async function loader({ params, query, request, env, log })` dijalankan sebelum render,
+  hasilnya masuk sebagai prop `data` (contoh: `PageProps<Data>` dari `@ramonyx/react`).
+- `layout.tsx` di direktori yang sama atau di atasnya membungkus halaman (root → dalam).
+- `error.tsx` terdekat (naik ke root) dirender saat loader/render gagal; menerima
+  `{ error: { status, message } }` (`ErrorPageProps`). Status/pesan publik mengikuti `HttpError`.
+- Path dari struktur direktori (`users/[id]/page.tsx` → `/users/[id]`); halaman hanya `GET`.
+- SSR via adapter React (`@ramonyx/react`); hydration/client navigation belum ada (butuh bundler).
 
 ## 7. Kompatibilitas & versi
 
@@ -129,3 +135,6 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
   `index.ts` = direktori, `[id]` = parameter, prefix `_` diabaikan, file tanpa ekspor method =
   error saat startup.
 - Paket Phase 1: `@ramonyx/{core,router,schema,adapter-runtime,server,testing}` + meta `ramonyx`.
+- Phase 2 (SSR): `loadPageRoutes` (`@ramonyx/compiler`) → `createPageRoutes` (`@ramonyx/ssr`) →
+  `RouteEntry` dengan handler HTML; error tak dikenal → 500 generik + log, `HttpError` → status.
+- JSX app code dijalankan lewat `node --import ./tools/register.mjs` (loader esbuild; ADR-0006).

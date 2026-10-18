@@ -14,23 +14,25 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 
 ## Perintah
 
-- `pnpm lint` — Biome; antara lain melarang impor `node:*` di luar `packages/adapter-runtime`.
+- `pnpm lint` — Biome; antara lain melarang impor `node:*` di luar `packages/adapter-runtime`/`packages/compiler`.
 - `pnpm typecheck` — `tsc --noEmit` (TypeScript 7: `baseUrl` dihapus, `paths` wajib relatif `./`).
-- `pnpm test` — `node --test` menjalankan `.ts` langsung; butuh Node ≥24 (type stripping).
-- `pnpm bench` — autocannon; hasil ditulis ke `benchmarks/results/`.
-- Demo: `node apps/playground/src/main.ts` (default `http://localhost:3000`).
+- `pnpm test` / `pnpm bench` / `pnpm dev` — semuanya lewat `node --import ./tools/register.mjs`
+  (loader esbuild: TS + JSX automatic; ADR-0006). Butuh Node ≥24.
+- Demo SSR: `pnpm dev` (default `http://localhost:3000`); hasil bench di `benchmarks/results/`.
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
 
 ## Jebakan yang paling mudah kena
 
 - **Blueprint §4/§5 masih rancangan, belum semuanya diimplementasikan.** Yang nyata:
-  `packages/*`, `apps/playground`, `benchmarks/*`. File routing API sudah ada
-  (`packages/compiler`); SSR/hydration, dev server/HMR, dan adapter React belum — cek kode,
-  jangan asumsikan.
+  `packages/*`, `apps/playground`, `benchmarks/*`. File routing (API + halaman) dan SSR React
+  tanpa hydration sudah ada; hydration, bundler, dev server/HMR belum — cek kode, jangan asumsikan.
 - **Syntax harus erasable.** Paket diekspor sebagai `.ts` dan dijalankan Node type stripping:
   dilarang `enum`, `namespace`, parameter property; `erasableSyntaxOnly` + `verbatimModuleSyntax`
   menegakkannya. Impor relatif wajib berekstensi `.ts`.
+- **JSX hanya lewat loader dev.** Node type stripping tidak memproses JSX; jalankan app/test dengan
+  `node --import ./tools/register.mjs` (script `test`/`bench`/`dev` sudah begitu — ADR-0006).
+  Paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
 - **`node:*` hanya di `packages/adapter-runtime` dan `packages/compiler` (build-time)**, plus
   test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
@@ -53,8 +55,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 ## Baseline teknis (blueprint §6, ADR-0002)
 
 TypeScript strict · ESM-only · source-first (exports `.ts`) · pnpm workspaces · Node ≥24 ·
-adapter UI pertama React (ADR-0003) · host runtime Rust + V8 (Phase 4+) · CI:
-lint → typecheck → test → security checks (build menyusul Phase 2, ADR-0005).
+loader dev esbuild (ADR-0006) · adapter UI pertama React (ADR-0003) · host runtime Rust + V8
+(Phase 4+) · CI: lint → typecheck → test → security checks (build menyusul, ADR-0005).
 
 ## Benchmark (blueprint §8)
 
@@ -63,6 +65,6 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 0 & Phase 1 selesai; Phase 2 berjalan — file routing API selesai (`@ramonyx/compiler`,
-55 tes hijau). Berikutnya: adapter React, SSR, bundler Vite, dev server/HMR. Keputusan terbuka:
+Phase 2 berjalan — file routing API + halaman (layout/loader/error) + SSR React tanpa hydration
+selesai; 70 tes hijau. Berikutnya: bundler Vite + hydration, dev server/HMR. Keputusan terbuka:
 scope npm & lisensi, matrix browser, rekonsiliasi PRD (lihat `docs/roadmap/phase-0-1.md`).

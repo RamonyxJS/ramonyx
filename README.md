@@ -4,9 +4,10 @@ Framework full-stack TypeScript + runtime eksperimental (Rust + V8), dikembangka
 proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 [docs/BLUEPRINT.md](docs/BLUEPRINT.md).
 
-> **Status: Phase 2 berjalan — file routing API sudah ada** (`src/routes/api/**`; middleware,
-> validasi schema, error handling, adapter runtime Node & in-memory). Adapter React, SSR,
-> bundler, dan runtime Rust menyusul sesuai roadmap. Klaim mengikuti aturan BLUEPRINT §10.
+> **Status: Phase 2 berjalan — file routing + SSR React (tanpa hydration) sudah ada**:
+> halaman `page.tsx`/`layout.tsx`/`error.tsx` + loader, endpoint `src/routes/api/**`, middleware,
+> validasi schema (Standard Schema), adapter runtime Node & in-memory. Bundler Vite, hydration,
+> dev server, dan runtime Rust menyusul sesuai roadmap. Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 
@@ -15,7 +16,7 @@ pnpm install
 pnpm test          # suite kontrak v0
 pnpm typecheck
 pnpm lint
-node apps/playground/src/main.ts   # http://localhost:3000/api/hello
+pnpm dev           # http://localhost:3000 (SSR + API)
 pnpm bench         # baseline autocannon
 ```
 

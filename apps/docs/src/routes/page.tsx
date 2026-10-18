@@ -49,7 +49,7 @@ export default function IndexPage({
         <ul className="daftar">
           {terlihat.map((entry) => (
             <li key={entry.slug}>
-              <a href={`/dokumen/${entry.slug}`}>{entry.title}</a>
+              <a href={`dokumen/${entry.slug}`}>{entry.title}</a>
               <code className="slug">{entry.slug}</code>
             </li>
           ))}

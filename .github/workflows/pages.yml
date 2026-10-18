@@ -1,0 +1,56 @@
+name: Docs (GitHub Pages)
+
+# Ekspor statis situs dokumentasi (dogfood: SSR + hydration + soft navigation atas docs/**)
+# lalu publikasi ke GitHub Pages — ADR-0052. Domain: <org>.github.io/ramonyx/ (base `/ramonyx`).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/docs/**"
+      - "docs/**"
+      - "packages/**"
+      - "tools/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Ekspor statis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Aktifkan pnpm (corepack)
+        run: corepack enable pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Ekspor
+        run: node --import ./tools/register.mjs apps/docs/export.ts --base /ramonyx
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/docs/dist/static
+
+  deploy:
+    name: Publikasi
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

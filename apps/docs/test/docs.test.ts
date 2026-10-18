@@ -66,7 +66,7 @@ test("app: index, halaman dokumen, hydration, 404, traversal, API", async () => 
   assert.match(index.headers.get("content-security-policy") ?? "", /nonce-[0-9a-f]{32}/);
   const html = await index.text();
   assert.match(html, /Dokumentasi Ramonyx/);
-  assert.match(html, /\/dokumen\/BLUEPRINT/);
+  assert.match(html, /dokumen\/BLUEPRINT/);
   assert.match(html, /id="ramonyx-payload"/, "payload hydration ada");
   assert.match(html, /window\.__RAMONYX__/, "payload di-inline");
   assert.match(html, /src="\/assets\/client\.js"/, "script klien ada");
@@ -142,4 +142,48 @@ test("build klien: bundel hydrate + soft navigation disajikan sebagai aset", asy
 
   const traversal = await app(new Request("http://uji/assets/..%2F..%2Fpackage.json"));
   assert.equal(traversal.status, 404, "traversal aset ditolak");
+});
+
+test("markdown: tautan .md relatif & anchor ditulis ulang ke rute dokumen", () => {
+  const html = renderMarkdown(
+    "[a](../BLUEPRINT.md) [b](0051-plugin-sandbox-landlock.md#isi) [c](#bagian) " +
+      "[d](https://x.example/y.md) [e](/absolut.md) [f](../luar/..md)",
+    { slug: "adr/README" },
+  );
+  assert.ok(html.includes('href="dokumen/BLUEPRINT"'), "relatif naik satu tingkat");
+  assert.ok(html.includes('href="dokumen/adr/0051-plugin-sandbox-landlock#isi"'), "fragmen ikut");
+  assert.ok(html.includes('href="dokumen/adr/README#bagian"'), "anchor murni → dokumen yang sama");
+  assert.ok(html.includes('href="https://x.example/y.md"'), "tautan absolut dibiarkan");
+  assert.ok(html.includes('href="/absolut.md"'), "path absolut dibiarkan");
+});
+
+test("export statis: halaman + tautan relatif + aset + 404 (base subpath)", async () => {
+  const out = join(appDir, "dist", "static-test");
+  rmSync(out, { recursive: true, force: true });
+
+  const output = execFileSync(
+    process.execPath,
+    ["--import", loader, "export.ts", "--base", "/ramonyx", "--out", out],
+    { cwd: appDir, encoding: "utf8", timeout: 240_000 },
+  );
+  assert.match(output, /halaman dirender/);
+  assert.match(output, /ekspor selesai/);
+
+  const index = readFileSync(join(out, "index.html"), "utf8");
+  assert.ok(index.includes('<base href="/ramonyx/" />'), "base href subpath");
+  assert.ok(index.includes('src="/ramonyx/assets/client.js"'), "script klien ber-prefix");
+  assert.ok(index.includes('href="dokumen/'), "tautan dokumen relatif");
+  assert.ok(index.includes("window.__RAMONYX__"), "payload hydration ada");
+
+  const adrReadme = readFileSync(join(out, "dokumen", "adr", "README", "index.html"), "utf8");
+  assert.ok(
+    adrReadme.includes('href="dokumen/adr/0051-plugin-sandbox-landlock"'),
+    "tautan .md ditulis ulang ke rute dokumen",
+  );
+
+  assert.ok(existsSync(join(out, "404.html")), "404.html diekspor");
+  assert.ok(existsSync(join(out, "assets", "client.js")), "aset klien disalin");
+  assert.ok(existsSync(join(out, ".nojekyll")), ".nojekyll ditulis");
+
+  rmSync(out, { recursive: true, force: true });
 });

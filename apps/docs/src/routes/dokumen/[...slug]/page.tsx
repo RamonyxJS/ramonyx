@@ -20,7 +20,7 @@ export default function DokumenPage({
   return (
     <main className="utama">
       <p className="remah">
-        <a href="/">← Semua dokumen</a> <code>{data.slug}</code>
+        <a href=".">← Semua dokumen</a> <code>{data.slug}</code>
       </p>
       {/* biome-ignore lint/security/noDangerouslySetInnerHtml: HTML dari markdown repo sendiri (tepercaya); lihat markdown.ts */}
       <article className="dokumen" dangerouslySetInnerHTML={{ __html: data.html }} />

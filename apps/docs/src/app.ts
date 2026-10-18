@@ -7,17 +7,23 @@ import type { FetchHandler } from "ramonyx";
 
 import { setCatalog } from "./catalog.ts";
 import { loadCatalog } from "./docs.ts";
-import { document as documentRenderer } from "./document.ts";
+import { createDocument } from "./document.ts";
 import middleware from "./routes/middleware.ts";
 
 /**
  * Situs dokumentasi Ramonyx — dogfood penuh: halaman SSR React dengan **hydration +
  * soft navigation** (klien dibangun `build.ts`) atas berkas markdown di `docs/**`.
  */
-export async function createApp(): Promise<FetchHandler> {
+export interface CreateAppOptions {
+  /** Prefix URL saat di-host di subpath (mis. `/ramonyx` di GitHub Pages) — ADR-0052. */
+  readonly basePath?: string;
+}
+
+export async function createApp(options: CreateAppOptions = {}): Promise<FetchHandler> {
   // Katalog diisi sekali di server (markdown → HTML) → modul halaman tetap browser-safe.
   setCatalog(loadCatalog());
 
+  const basePath = (options.basePath ?? "").replace(/\/$/, "");
   const dir = fileURLToPath(new URL("./routes", import.meta.url));
 
   const [apiRoutes, pages] = await Promise.all([
@@ -32,8 +38,8 @@ export async function createApp(): Promise<FetchHandler> {
       ...createPageRoutes({
         pages,
         renderer: createReactRenderer(),
-        document: documentRenderer,
-        client: { script: "/assets/client.js" },
+        document: createDocument(basePath),
+        client: { script: `${basePath}/assets/client.js` },
       }),
     ],
     middleware,

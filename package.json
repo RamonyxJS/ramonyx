@@ -24,7 +24,8 @@
     "create:app": "node --import ./tools/register.mjs apps/create-app/src/cli.ts",
     "docs": "node --import ./tools/register.mjs apps/docs/build.ts && NODE_ENV=production node --import ./tools/register.mjs apps/docs/src/main.ts",
     "bench:report": "node --import ./tools/register.mjs benchmarks/http/bench.ts --out benchmarks/results/latest-http.json --compare --tolerance-pct 25",
-    "bench:ssr:report": "NODE_ENV=production node --expose-gc --import ./tools/register.mjs benchmarks/ssr/bench.tsx --out benchmarks/results/latest-ssr.json --compare --tolerance-pct 25"
+    "bench:ssr:report": "NODE_ENV=production node --expose-gc --import ./tools/register.mjs benchmarks/ssr/bench.tsx --out benchmarks/results/latest-ssr.json --compare --tolerance-pct 25",
+    "docs:export": "node --import ./tools/register.mjs apps/docs/export.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

@@ -39,17 +39,20 @@ const GAYA = `
     color: var(--redup); font-size: 13px; }
 `;
 
-/** Dokumen HTML kustom (judul + gaya + script hydration) untuk `createPageRoutes`. */
-export const document: DocumentRenderer = ({
-  title,
-  body,
-  head = "",
-  scripts = "",
-}) => `<!doctype html>
+/**
+ * Dokumen HTML kustom (judul + gaya + script hydration) untuk `createPageRoutes`.
+ *
+ * `basePath` (mis. `/ramonyx` di GitHub Pages) di-emit sebagai `<base href>` → semua URL
+ * relatif (tautan dokumen, script klien) tetap benar di subpath mana pun (ADR-0052).
+ */
+export function createDocument(basePath = ""): DocumentRenderer {
+  const base = basePath === "" || basePath === "/" ? "/" : `${basePath.replace(/\/$/, "")}/`;
+  return ({ title, body, head = "", scripts = "" }) => `<!doctype html>
 <html lang="id">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<base href="${base}" />
 <title>${title.length > 0 ? `${title} · Ramonyx Docs` : "Ramonyx Docs"}</title>
 <style>${GAYA}</style>${head.length > 0 ? `\n${head}` : ""}
 </head>
@@ -58,3 +61,4 @@ export const document: DocumentRenderer = ({
 </body>
 </html>
 `;
+}

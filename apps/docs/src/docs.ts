@@ -78,7 +78,7 @@ export function loadCatalog(): CatalogDoc[] {
     return {
       slug: entry.slug,
       title: entry.title,
-      html: renderMarkdown(text),
+      html: renderMarkdown(text, { slug: entry.slug }),
       text,
     };
   });

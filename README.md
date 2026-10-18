@@ -11,9 +11,10 @@ proyek yang terintegrasi tetapi terpisah. Visi dan keputusan teknis lengkap:
 > keep-alive, streaming respons), R3a (permission model **deny-all**), `web_shim`,
 > **compatibility suite v1**, **interop CommonJS v1**, **SSR React + SSR streaming**,
 > **`fetch` + `ReadableStream`**, **builtin subset (`node:net`/`node:dns/promises`) + `crypto`**,
-> dan **subset `@ramonyx/security`** (middleware + guardedFetch/SSRF). Framework Node tetap
-> baseline produksi; fokus berikutnya Phase 5 (isolasi worker/kuota, streaming request,
-> https/TLS, profiling, rilis). Klaim mengikuti aturan BLUEPRINT §10.
+> dan **subset `@ramonyx/security`** (middleware + guardedFetch/SSRF), plus **resource limits**
+> (kuota heap `--max-heap-mb`, watchdog `--timeout-ms`, `ramonyx.permissions.revoke`). Framework
+> Node tetap baseline produksi; fokus berikutnya Phase 5 (worker isolation, kuota CPU/memori
+> eksternal, https/TLS, profiling, rilis). Klaim mengikuti aturan BLUEPRINT §10.
 
 ## Quick start
 

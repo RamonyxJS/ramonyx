@@ -160,7 +160,10 @@ pekerjaan Phase 5.
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI
-- [ ] **R3 sisa** — worker isolation, quota CPU/memori, pencabutan permission, shutdown terkoordinasi
+- [x] **R3 sisa (sebagian)** — **resource limits** (ADR-0033): `--max-heap-mb` (kuota heap V8,
+  pelanggaran → error bersih tanpa abort), `--timeout-ms` (watchdog `terminate_execution`),
+  `ramonyx.permissions.get()/revoke()` (pencabutan kapabilitas saat runtime, hanya mengurangi);
+  sisa: **worker isolation**, kuota CPU & memori eksternal
 - [ ] **R4** — optimasi startup/profiling
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)

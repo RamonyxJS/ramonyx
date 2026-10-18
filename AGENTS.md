@@ -66,10 +66,13 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   (`react` + `react-dom/server.browser` di runtime — ADR-0029), **`fetch` + `ReadableStream`
   + body streaming** (POST body, SSR streaming `renderToReadableStream` — ADR-0030), serta
   **builtin subset `node:net`/`node:dns/promises` + `crypto` + subset `@ramonyx/security`**
-  (securityHeaders/cspNonce/csrf/rateLimit/guardedFetch — ADR-0031) — tetapi **belum**: https/TLS
-  & redirect fetch, streaming request/transport bertahap, worker/kuota; CommonJS pun **subset**
-  (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak dengan pesan
-  jelas) — jangan diklaim lebih. Build pertama V8/deno_core+deno_ast+hyper ±3 menit;
+  (securityHeaders/cspNonce/csrf/rateLimit/guardedFetch — ADR-0031), serta **resource limits**
+  (`--max-heap-mb`, `--timeout-ms`, `ramonyx.permissions.get()/revoke()` — ADR-0033) — tetapi
+  **belum**: https/TLS & redirect fetch, streaming request/transport bertahap, worker isolation,
+  kuota CPU/memori eksternal; **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
+  dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
+  **subset** (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak
+  dengan pesan jelas) — jangan diklaim lebih. Build pertama V8/deno_core+deno_ast+hyper ±3 menit;
   biarkan `target/` cache.
 - **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
   `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
@@ -116,12 +119,13 @@ ESM v1** (ADR-0026), **`web_shim`** (URL/TextEncoder/Headers/Request/Response �
 ADR-0029), **`fetch` + `ReadableStream` + body streaming** (POST body, SSR streaming —
 ADR-0030), **builtin subset + subset `@ramonyx/security` di runtime** (`node:net`/
 `node:dns/promises`, `crypto.getRandomValues`, middleware security + guardedFetch/SSRF —
-ADR-0031), dan **jembatan `serveHandler` + playground subset** (halaman SSR + API + POST +
-security berjalan end-to-end lewat HTTP — ADR-0032) — semuanya diverifikasi test + smoke.
-**Exit criteria Phase 4 tercapai**; sisa menuju Phase 5: https/TLS & redirect, streaming
-request, worker/kuota/isolasi, profiling.
+ADR-0031), **jembatan `serveHandler` + playground subset** (halaman SSR + API + POST +
+security berjalan end-to-end lewat HTTP — ADR-0032), dan **resource limits** (kuota heap V8,
+watchdog timeout, pencabutan permission runtime — ADR-0033) — semuanya diverifikasi test + smoke.
+**Exit criteria Phase 4 tercapai**; sisa menuju Phase 5: worker isolation + kuota CPU/memori
+eksternal, https/TLS & redirect, streaming request, profiling.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 118 tes Node + 5 e2e + 66 test Rust hijau.
+(ADR-0016); 118 tes Node + 5 e2e + 69 test Rust hijau.

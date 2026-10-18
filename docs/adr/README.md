@@ -40,3 +40,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0030](0030-fetch-readablestream.md) | `fetch` client + `ReadableStream` + body streaming | Accepted |
 | [0031](0031-builtins-crypto-security.md) | Builtin subset + `crypto` + security di runtime | Accepted |
 | [0032](0032-servehandler-playground.md) | Jembatan `serveHandler` + playground subset di runtime | Accepted |
+| [0033](0033-resource-limits.md) | Resource limits: kuota heap, watchdog timeout, revoke permission | Accepted |

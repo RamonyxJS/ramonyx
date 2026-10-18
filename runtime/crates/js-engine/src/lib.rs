@@ -2477,6 +2477,9 @@ globalThis.__worker_ok = true;
             &pekerja,
             format!(
                 r#"
+// Tunggu pesan induk dulu (pola request→respons): tanpa ini worker bisa selesai sebelum
+// `send` pertama tiba dan `send` gagal "worker sudah berhenti" (race di runner CI lambat).
+await ramonyx.parent.receive();
 const hasil = {{}};
 try {{
   const isi = await ramonyx.readTextFile({file});
@@ -2567,6 +2570,9 @@ globalThis.__allow_ok = true;
             &pekerja,
             format!(
                 r#"
+// Tunggu pesan induk dulu (pola request→respons): tanpa ini worker bisa selesai sebelum
+// `send` pertama tiba dan `send` gagal "worker sudah berhenti" (race di runner CI lambat).
+await ramonyx.parent.receive();
 const hasil = {{}};
 try {{
   const isi = await ramonyx.readTextFile({file});

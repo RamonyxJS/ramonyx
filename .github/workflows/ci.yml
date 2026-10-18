@@ -27,5 +27,9 @@ jobs:
         run: pnpm test
       - name: Build (client bundle)
         run: pnpm build
+      - name: Install Chromium (Playwright)
+        run: pnpm exec playwright install --with-deps chromium
+      - name: E2E (browser)
+        run: pnpm test:e2e
       - name: Security checks
         run: pnpm audit --audit-level high

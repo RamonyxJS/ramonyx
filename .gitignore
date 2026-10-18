@@ -32,3 +32,7 @@ pnpm-debug.log*
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Playwright
+test-results/
+playwright-report/

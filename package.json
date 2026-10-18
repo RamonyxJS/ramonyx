@@ -13,10 +13,12 @@
     "build": "node --import ./tools/register.mjs apps/playground/build.ts",
     "bench": "node --import ./tools/register.mjs benchmarks/http/bench.ts",
     "dev": "node --import ./tools/register.mjs apps/playground/src/dev.ts",
-    "start": "node --import ./tools/register.mjs apps/playground/src/main.ts"
+    "start": "node --import ./tools/register.mjs apps/playground/src/main.ts",
+    "test:e2e": "pnpm build && playwright test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@playwright/test": "1.64.1",
     "@ramonyx/adapter-runtime": "workspace:*",
     "@ramonyx/server": "workspace:*",
     "@types/autocannon": "7.12.7",

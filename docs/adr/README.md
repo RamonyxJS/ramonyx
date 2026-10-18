@@ -26,3 +26,5 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0016](0016-dependency-policy.md) | Kebijakan dependency & supply chain | Accepted |
 | [0017](0017-rate-limiting.md) | Rate limiting per klien (identitas adapter + trustProxy opt-in) | Accepted |
 | [0018](0018-owner-decisions.md) | Keputusan pemilik: MIT, @ramonyx/*, browser matrix, rekonsiliasi PRD | Accepted (pemilik) |
+| [0019](0019-runtime-r0.md) | Runtime R0: workspace Rust, CLI, konfigurasi, logging (+ R1-lite) | Accepted |
+| [0020](0020-v8-engine.md) | Engine JavaScript: V8 via `deno_core` | Accepted |

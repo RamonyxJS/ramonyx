@@ -1,6 +1,7 @@
 # Roadmap Phase 0–1
 
-- Status per 2026-10-18: **Phase 0–3 selesai; Phase 4 (runtime alpha) berikutnya**.
+- Status per 2026-10-18: **Phase 0–3 selesai; Phase 4 berjalan** (R0 selesai, R1-lite: eksekusi
+  JavaScript via V8 berjalan di CLI runtime).
 - Sumber: `docs/BLUEPRINT.md` §9 dan §12.
 
 ## Phase 0 — Foundation & RFC ✅
@@ -95,6 +96,21 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
 lulus": 12 kriteria teruji di `docs/security/asvs-mapping.md`; seluruh baris threat model tertutup
 kecuali path traversal runtime & isolasi plugin (Phase 4). Berikutnya: keputusan pemilik lalu
 Phase 4 (runtime alpha).
+
+## Phase 4 — Runtime alpha: Rust + V8 (berjalan)
+
+- [x] **R0** — Workspace Cargo (root `Cargo.toml`, members `runtime/crates/*`), toolchain dipin
+      (`rust-toolchain.toml` 1.99.0 + rustfmt/clippy), `runtime-core` (config `ramonyx.runtime.json`
+      + structured logger JSON-lines), CLI `ramonyx-runtime` (`version`/`config`/`run`), exit code &
+      error jelas; 15 test Rust + clippy/fmt bersih (ADR-0019)
+- [x] **R1-lite** — Spike engine **berhasil**: V8 via `deno_core` 0.412 (build ±2,5 menit, prebuilt;
+      ADR-0020); `js-engine::Engine` mengeksekusi script + `console.*` via op; `run file.js`
+      menjalankan JS sungguhan (teruji end-to-end, termasuk error V8 → exit 1) — diverifikasi:
+      `console.log("halo", 6*7)` → `halo 42`
+- [ ] **R1 sisa** — module loader/ESM import, transform TypeScript sebelum eksekusi, resolusi
+      paket yang membuat `run src/main.ts` berjalan setara subset playground
+- [ ] **R2** — I/O runtime: HTTP, filesystem, network, timer, cancellation, streaming
+- [ ] **R3** — Permission model + isolasi; **R4** — optimasi startup/profiling
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

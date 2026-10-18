@@ -26,6 +26,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   (spawn server terpisah, RSS via /proc; `SOAK_SECONDS=300` untuk soak panjang). Hasil di
   `benchmarks/results/`.
 - `pnpm audit --audit-level high` — audit dependency (juga berjalan di CI + cron mingguan).
+- Rust (runtime eksperimental): `cargo fmt --all`, `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace`; jalankan script: `cargo run -p ramonyx-runtime-cli -- run hello.js`.
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
 
@@ -50,6 +52,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   (`maxBodyBytes`, `timeoutMs`, `maxConcurrent`).
 - **Versi dependency baru menunggu 24 jam** (`minimumReleaseAge` di `pnpm-workspace.yaml`) — kalau
   versi rilis baru tidak langsung bisa dipasang, itu disengaja (kebijakan supply chain, ADR-0016).
+- **Runtime Rust itu eksperimental & terpisah**: `runtime/` (Cargo workspace) tidak boleh diimpor
+  paket TS dan sebaliknya; toolchain dipin `1.99.0` via `rust-toolchain.toml` (rustup mengunduh
+  otomatis). `js-engine` baru mendukung **script JS** — ESM import & transform TS belum (jangan
+  diklaim). Build pertama V8/deno_core ±2,5 menit; biarkan `target/` ter-cache.
 - **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
   `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
@@ -84,9 +90,10 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 Phase 0–3 **selesai** (2026-10-18); keputusan pemilik juga selesai — lisensi **MIT**, scope
 **`@ramonyx/*`**, browser matrix evergreen 2 versi terakhir, rekonsiliasi PRD (ADR-0018).
-Ringkas Phase 3: limits body/timeout/concurrency + rate limit per klien (ADR-0011/0012/0017),
-security headers + CSRF + CSP nonce + SSRF guard + output limit (`@ramonyx/security`,
-ADR-0013–0015), fuzz fast-check, suite `tests/security/`, abuse/soak `pnpm bench:security`,
-ASVS mapping (12 kriteria teruji), dependency policy + Dependabot (ADR-0016); 115 tes Node + 5 e2e
-hijau. Gap catch-all/404 JSON ditutup (`[...name]` + `metadata.status`), soak panjang 5 menit
-dijalankan. **Berikutnya: Phase 4 — runtime alpha (Rust + V8).**
+**Phase 4 (runtime alpha) berjalan**: R0 selesai (workspace Cargo, CLI `ramonyx-runtime`, config,
+structured logging — ADR-0019) dan **R1-lite**: V8 via `deno_core` mengeksekusi script JS sungguhan
+(end-to-end diuji; ADR-0020); sisa R1 = module loader/ESM + transform TS. Ringkas Phase 3: limits
+body/timeout/concurrency + rate limit per klien (ADR-0011/0012/0017), security headers + CSRF +
+CSP nonce + SSRF guard + output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite
+`tests/security/`, abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency
+policy + Dependabot (ADR-0016); 118 tes Node + 5 e2e + 20 test Rust hijau.

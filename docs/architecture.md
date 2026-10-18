@@ -42,7 +42,7 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `apps/playground` | App demo/uji end-to-end | Phase 1 | belum dibuat |
 | `apps/docs` | Dokumentasi publik | Phase 2 | belum dibuat |
 | `apps/create-app` | CLI scaffolding | Phase 2–3 | belum dibuat |
-| `runtime/crates/*` | Host Rust + V8 (runtime-core, module-loader, permissions, net, fs, cli) | Phase 4+ | belum dibuat |
+| `runtime/crates/*` | Host Rust + V8 (runtime-core, cli, js-engine; module-loader/permissions/net/fs menyusul) | Phase 4 | **R0 + R1-lite berjalan** |
 | `benchmarks/*` | Skrip benchmark per area | Phase 1 | belum dibuat |
 
 Status Phase 2 (selesai, 2026-10-18): file routing API + halaman (loader/layout/error), SSR React,

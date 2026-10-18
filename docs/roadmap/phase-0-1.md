@@ -110,8 +110,10 @@ Phase 4 (runtime alpha).
 - [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
       **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,
       handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end
-- [ ] **R2 sisa** — streaming body, cancellation, keep-alive, network client (fetch),
-      graceful shutdown; limit ukuran/resource (bersama R3)
+- [x] **R2b** — Cancellation klien (`ObservedIo` + `op_http_watch` + `request.signal`) dan
+      **keep-alive** (ADR-0024); server tetap hidup saat klien putus; respons ke klien yang pergi
+      menjadi no-op; diuji (abort saat handler berjalan, dua request satu koneksi)
+- [ ] **R2 sisa** — **streaming** body (request/response), graceful shutdown terkoordinasi
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

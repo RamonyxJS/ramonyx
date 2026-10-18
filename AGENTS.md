@@ -23,7 +23,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm test:e2e` — Playwright terhadap build produksi (`pnpm build` + `pnpm start`); browser:
   CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
 - `pnpm bench` — autocannon HTTP baseline; `pnpm bench:security` — abuse-case + soak
-  (spawn server terpisah, RSS via /proc). Hasil di `benchmarks/results/`.
+  (spawn server terpisah, RSS via /proc; `SOAK_SECONDS=300` untuk soak panjang). Hasil di
+  `benchmarks/results/`.
 - `pnpm audit --audit-level high` — audit dependency (juga berjalan di CI + cron mingguan).
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
@@ -86,5 +87,6 @@ Phase 0–3 **selesai** (2026-10-18); keputusan pemilik juga selesai — lisensi
 Ringkas Phase 3: limits body/timeout/concurrency + rate limit per klien (ADR-0011/0012/0017),
 security headers + CSRF + CSP nonce + SSRF guard + output limit (`@ramonyx/security`,
 ADR-0013–0015), fuzz fast-check, suite `tests/security/`, abuse/soak `pnpm bench:security`,
-ASVS mapping (12 kriteria teruji), dependency policy + Dependabot (ADR-0016); 115 tes Node + 4 e2e
-hijau. **Berikutnya: Phase 4 — runtime alpha (Rust + V8).**
+ASVS mapping (12 kriteria teruji), dependency policy + Dependabot (ADR-0016); 115 tes Node + 5 e2e
+hijau. Gap catch-all/404 JSON ditutup (`[...name]` + `metadata.status`), soak panjang 5 menit
+dijalankan. **Berikutnya: Phase 4 — runtime alpha (Rust + V8).**

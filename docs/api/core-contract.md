@@ -106,6 +106,11 @@ export default [
 - `error.tsx` terdekat (naik ke root) dirender saat loader/render gagal; menerima
   `{ error: { status, message } }` (`ErrorPageProps`). Status/pesan publik mengikuti `HttpError`.
 - Path dari struktur direktori (`users/[id]/page.tsx` → `/users/[id]`); halaman hanya `GET`.
+- Catch-all `[...name]` **hanya di segmen terakhir**: menyerap sisa path; `params[name]` = sisa
+  tergabung (`a/b/c`); kalah prioritas dari pola statis/parameter. Idiom 404:
+  `src/routes/[...notFound]/page.tsx`.
+- `metadata.status` (100–599) menetapkan status respons halaman; default 200 (mis. `status: 404`
+  untuk halaman not-found).
 - SSR + hydration via adapter React (`@ramonyx/react`); client navigation (soft navigation,
   ADR-0008) lewat `enableClientNavigation`.
 - Hydration (ADR-0007): payload inline `window.__RAMONYX__ = { path, params, data }` +

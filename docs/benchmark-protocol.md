@@ -48,9 +48,11 @@
 - Baseline Phase 1 di-commit (mis. `benchmarks/results/phase1-baseline.json`) sebagai pembanding regresi.
 - Web Vitals (Phase 2): baseline `benchmarks/results/phase2-web-vitals.json` (diperbarui via
   `UPDATE_BASELINE_VITALS=1`); run biasa menulis `test-results/web-vitals-latest.json`.
-- Abuse-case & soak (Phase 3): `benchmarks/results/phase3-abuse.json` (`pnpm bench:security`) —
-  skenario serangan + RSS proses server (anak) via `/proc`; CI meng-upload seluruh
-  `benchmarks/results/` sebagai artefak.
+- Abuse-case & soak (Phase 3): `benchmarks/results/phase3-abuse.json` (`pnpm bench:security`,
+  `SOAK_SECONDS=<detik>` untuk durasi) — skenario serangan + RSS proses server (anak) via `/proc`
+  **dan breakdown `heapUsed`/`external`/`arrayBuffers`**; CI meng-upload seluruh
+  `benchmarks/results/` sebagai artefak. Interpretasi: `external` datar = tidak ada kebocoran
+  native; heap sawtooth = GC periodik (RSS high-water karena GC malas — batasi heap di produksi).
 
 ## 6. Acceptance criteria (target eksperimen — bukan hasil)
 

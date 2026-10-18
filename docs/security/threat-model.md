@@ -84,9 +84,10 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
 - Prototype pollution (query): ✅ `parseQuery` aman (ADR-0011), diuji fuzz + e2e.
 - Robustness parser/matcher: ✅ fuzz `fast-check` (router, query, normalisasi schema).
 - Abuse-case terukur: ✅ 6 skenario (oversized/JSON rusak/schema invalid/traversal/query raksasa/echo)
-  tanpa 5xx & tanpa error di bawah beban (`benchmarks/results/phase3-abuse.json`);
-  RSS server diukur terpisah (proses anak) — plateau saat beban berhenti, tanpa klaim stabilitas
-  sampai soak berjam-jam per protokol §8.
+  tanpa 5xx & tanpa error di bawah beban (`benchmarks/results/phase3-abuse.json`); RSS + breakdown
+  heap/external proses server diukur terpisah (proses anak). Soak 5 menit menunjukkan heap sawtooth
+  (GC periodik) dengan `external` datar → bukan kebocoran native; RSS high-water karena GC malas
+  (batasi heap/container di produksi). **Tanpa klaim stabilitas** sampai soak berjam-jam per §8.
 - XSS/CSP: ✅ escaping kontekstual React + **CSP nonce aktif di playground** (ADR-0014):
   `cspNonce()` menitipkan nonce ke payload hydration; `script-src 'self' 'nonce-…'`. Template CSP
   bisa diganti aplikasi; CSP default hanya menyala bila aplikasi memasang middleware-nya.

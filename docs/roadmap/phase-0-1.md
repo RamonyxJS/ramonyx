@@ -70,10 +70,13 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
 - [x] Prototype pollution: `parseQuery` aman untuk `__proto__`/`constructor`
 - [x] Fuzz/property test (fast-check): router matching, query parsing, normalisasi schema
 - [x] Suite keamanan `tests/security/` (413, timeout+abort, pollution, default limit)
-- [x] Abuse-case & soak terukur (`pnpm bench:security`, ADR-0010-style artefak):
-      6 skenario serangan (oversized, JSON rusak, schema invalid, traversal, query raksasa, echo valid)
-      semua sesuai ekspektasi tanpa 5xx/error; soak 20s+3s drain — RSS proses server dipantau via /proc
-      (plateau saat beban berhenti; soak berjam-jam per protokol §8 masih diperlukan sebelum klaim)
+- [x] Abuse-case & soak terukur (`pnpm bench:security`, `SOAK_SECONDS` untuk durasi; ADR-0010-style
+      artefak): 6 skenario serangan (oversized, JSON rusak, schema invalid, traversal, query raksasa,
+      echo valid) semua sesuai ekspektasi tanpa 5xx/error. **Soak 5 menit + drain**: `heapUsed`
+      sawtooth dengan full GC periodik (max ~0,9 GB → turun ~0,15 GB), `external` datar (≤7 MB),
+      0 error → bukan kebocoran native; RSS high-water ~1,1 GB karena GC malas (saran operasional:
+      batasi `--max-old-space-size`/container memory). Breakdown heap tersimpan di artefak.
+      Soak berjam-jam tetap diperlukan sebelum klaim stabilitas (protokol §8).
 - [x] Dependency audit berkelanjutan (ADR-0016): audit high di push/PR + cron mingguan, Dependabot
       (grup dev/prod, tanpa auto-merge), quarantine rilis 24 jam (`minimumReleaseAge`), kebijakan
       `docs/security/dependency-policy.md`; provenance menyusul saat publikasi
@@ -82,8 +85,11 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
       `csrfProtection()` (ADR-0013)
 - [x] Concurrency limit / load shedding (ADR-0012): default 100 → 503 + `Retry-After`, tanpa antrean
 - [x] Output limit dokumen SSR (ADR-0015) + rate limiting per klien (ADR-0017)
-- [ ] Pekerjaan lanjutan (non-blocker): verifikasi CSRF via field form (menunggu API body bersama),
-      IP-pinning guard SSRF, perluasan pemetaan per item ASVS
+- [ ] Defer eksplisit (bukan blocker Phase 4): verifikasi CSRF via field form (menunggu API body
+      bersama), IP-pinning guard SSRF, React fast-refresh plugin, code splitting client bundle,
+      `apps/create-app` + `apps/docs`, topologi rilis/versioning, perluasan pemetaan per item ASVS
+- [x] Catch-all router `[...name]` + halaman 404 HTML kustom (`metadata.status`) — gap "path tak
+      dikenal → JSON" ditutup (uji unit + e2e)
 
 **Phase 3 selesai** (2026-10-18) — exit criteria "acceptance criteria keamanan yang ditetapkan
 lulus": 12 kriteria teruji di `docs/security/asvs-mapping.md`; seluruh baris threat model tertutup

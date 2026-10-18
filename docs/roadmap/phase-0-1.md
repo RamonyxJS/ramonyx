@@ -217,8 +217,12 @@ pekerjaan Phase 5.
 - [x] **Publikasi npm** (2026-10-18): 13 paket @ 0.1.0 terbit (`@ramonyx/*`, `ramonyx`,
       `create-ramonyx-app`; dist-tag `latest`+`alpha`); verifikasi registry end-to-end
       (scaffold → install → build → start → SSR/API/CSP); publish job rilis dibuat idempoten
-- [ ] **Fase 5 sisa** — kandidat lanjutan: sandbox OS (seccomp/namespace), health-check otomatis,
-      backoff eksponensial, evaluasi `--strict` bench setelah beberapa invokasi tenang lagi
+- [x] **Plugin: backoff eksponensial + health-check otomatis** (ADR-0050): `next_backoff`
+      (`delayMs·2^n` ≤ `backoffMaxMs`), kuota restart di-reset setelah generasi stabil
+      (`stableAfterMs`), terminal eksplisit `supervisor_gave_up`, reader latar + watchdog
+      (deteksi tanpa `receive`), stats `nextBackoffMs`/`droppedMessages`; 104 test Rust
+- [ ] **Fase 5 sisa** — kandidat lanjutan: sandbox OS (seccomp/namespace), evaluasi `--strict`
+      bench setelah beberapa invokasi tenang lagi, hosting dokumentasi
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

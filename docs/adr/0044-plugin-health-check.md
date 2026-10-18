@@ -3,6 +3,8 @@
 - Status: Accepted (2026-10-18)
 - Tanggal: 2026-10-18
 - Sumber: ADR-0043 (batasan "tanpa health-check"), BLUEPRINT §9
+- **Diperbarui ADR-0050**: deteksi senyap kini **otomatis** lewat watchdog latar (tidak hanya
+  saat `receive` menunggu; batasan "deteksi saat induk menunggu" di bawah sudah tidak berlaku).
 
 ## Konteks
 

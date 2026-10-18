@@ -3,6 +3,8 @@
 - Status: Accepted (2026-10-18)
 - Tanggal: 2026-10-18
 - Sumber: ADR-0040 (batasan "tanpa restart supervision"), BLUEPRINT §9 (Phase 5 lanjutan)
+- **Diperbarui ADR-0050**: backoff kini eksponensial + kuota restart di-reset setelah generasi
+  stabil (batasan "backoff tetap" di bawah sudah tidak berlaku).
 
 ## Konteks
 

@@ -169,7 +169,8 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 **kuota CPU per-thread + RSS proses** (ADR-0038), **release pipeline v1** (paket 0.1.0, tarball npm
 + binary runtime, verifikasi instalasi konsumen — ADR-0039), **isolasi level proses untuk plugin**
 (`ramonyx.spawn`, protokol JSON, permission irisan, kill, **supervisi restart** — ADR-0040/0043,
-**health-check heartbeat** — ADR-0044),
+**health-check heartbeat** — ADR-0044, **backoff eksponensial + health-check otomatis
+(watchdog)** — ADR-0050),
 **scaffolder aplikasi**
 (`pnpm create:app` — template file-routing **SSR React + hydration**, ADR-0041), **SSR streaming
 Node** (`renderToReadableStream` via `react-dom/server.edge` — ADR-0047; jalur sinkron tetap
@@ -182,9 +183,10 @@ semuanya diverifikasi test + smoke.
 terbit — `@ramonyx/*`, `ramonyx`, `create-ramonyx-app`; verifikasi registry end-to-end ✓;
 **workflow `release.yml` dieksekusi sukses** pada tag `v0.1.0` → GitHub Release 16 aset, publish
 idempoten; CI runner hijau).
-Sisa Phase 5/kandidat: sandbox OS, health-check otomatis plugin, backoff eksponensial.
+Sisa Phase 5/kandidat: sandbox OS (seccomp/namespace), evaluasi `--strict` bench, hosting
+dokumentasi.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 156 tes Node + 5 e2e + 101 test Rust hijau.
+(ADR-0016); 156 tes Node + 5 e2e + 104 test Rust hijau.

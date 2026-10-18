@@ -37,3 +37,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0027](0027-web-shim.md) | Web platform basics (`web_shim`) untuk runtime | Accepted |
 | [0028](0028-compat-suite.md) | Compatibility suite v1: pipeline framework di runtime | Accepted |
 | [0029](0029-commonjs-interop.md) | Interop CommonJS v1 + demo SSR React di runtime | Accepted |
+| [0030](0030-fetch-readablestream.md) | `fetch` client + `ReadableStream` + body streaming | Accepted |

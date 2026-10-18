@@ -100,9 +100,9 @@ Phase 4 (runtime alpha).
 ## Phase 4 — Runtime alpha: Rust + V8 (berjalan)
 
 Status exit criteria ("framework demo berjalan di runtime alpha dan lulus subset compatibility
-tests"): **tercapai sebagian** — pipeline framework (core/router/schema/server) dan **demo SSR
-React** berjalan di runtime; compatibility lebih luas menunggu `fetch`/streams, POST body,
-dan worker/kuota.
+tests"): **tercapai sebagian** — pipeline framework (core/router/schema/server), **demo SSR
+React**, dan **SSR streaming** berjalan di runtime; compatibility lebih luas (fixture playground
+subset, suite security di runtime) dan worker/kuota menyusul.
 
 - [x] **R0** — Workspace Cargo (root `Cargo.toml`, members `runtime/crates/*`), toolchain dipin
       (`rust-toolchain.toml` 1.99.0 + rustfmt/clippy), `runtime-core` (config `ramonyx.runtime.json`
@@ -128,9 +128,13 @@ dan worker/kuota.
 - [x] **Demo SSR React di runtime** (ADR-0029): `react` + `react-dom/server.browser` (paket CJS
       produksi) → `renderToString`/`renderToStaticMarkup` berjalan; fixture compatibility + smoke
       CLI `run` (deny-all default)
-- [ ] **Compatibility lanjutan** — `fetch`/`ReadableStream`, POST body, suite yang lebih luas
-      (fixture playground subset)
-- [ ] **fetch client + ReadableStream** — prasyarat ssr/security di runtime
+- [x] **fetch client + `ReadableStream`** (ADR-0030): `op_fetch` (hyper client, http:// saja,
+  permission `--allow-net` per host, batas 10 MiB, timeout 30 s); `ReadableStream` shim
+  (pull-based, `type: "bytes"`); `Request`/`Response` body streaming (POST body tuntas);
+  `TextDecoder` mode stream; **temuan diperbaiki**: `server.close()` membangunkan accept yang
+  pending (keep-alive menahan channel → event loop menggantung)
+- [ ] **Compatibility lanjutan** — fixture playground subset, suite `@ramonyx/security` di
+  runtime, https/TLS + redirect fetch, streaming request bertahap
 - [x] **R2a** — I/O dasar (ADR-0022): `ramonyx.sleep/readTextFile/writeTextFile/env.get`;
       **HTTP server pull-model** (`serve(port, handler)` → `{ port, close() }`, bind 127.0.0.1,
       handler `{status, headers, body}`); diverifikasi test Rust hermetik + `curl` end-to-end
@@ -140,7 +144,8 @@ dan worker/kuota.
 - [x] **R2c** — **Streaming respons chunked** (ADR-0025): handler `body` sebagai AsyncIterable;
       ops `stream_start/chunk/end` dengan backpressure; `Transfer-Encoding: chunked` via hyper;
       cancellation tetap berlaku; diuji 3 chunk berurutan
-- [ ] **R2 sisa** — streaming **request** (body masuk bertahap), graceful shutdown terkoordinasi
+- [ ] **R2 sisa** — streaming **request** (body masuk bertahap), sisa graceful shutdown
+      (penutupan server sudah membangunkan accept yang pending — ADR-0030)
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

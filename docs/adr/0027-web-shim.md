@@ -31,10 +31,12 @@ Framework core berbicara dalam tipe standar web (`URL`, `Request`, `Response`, `
 
 ## Batasan yang dicatat jujur
 
-- **Belum**: `fetch`, `ReadableStream` (`Request.body`/`Response.body` = `null`), `structuredClone`,
-  `atob`/`btoa`, `setInterval`, URL normalization penuh (dot-segments, kasus `%` ekstrem).
-  `MessageChannel` adalah shim antrean microtask (bukan macrotask), cukup untuk pola scheduler
-  React.
+- **Belum**: `structuredClone`, `atob`/`btoa`, `setInterval`, URL normalization penuh
+  (dot-segments, kasus `%` ekstrem). `MessageChannel` adalah shim antrean microtask (bukan
+  macrotask), cukup untuk pola scheduler React.
+  > **Diperbarui (ADR-0030):** `fetch` (http://, via `op_fetch`) dan `ReadableStream`
+  > (termasuk `type: "bytes"` pull-based) kini tersedia; `Request`/`Response` punya body
+  > streaming.
 - `AbortController` tetap polyfill (ADR-0024); `getSetCookie` memakai pemisahan koma sederhana.
 - Ini **shim**, bukan implementasi spec penuh — jangan diklaim sebagai WHATWG lengkap.
 

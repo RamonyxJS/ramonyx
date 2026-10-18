@@ -42,9 +42,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   `pnpm build` dulu lalu `pnpm start` (tanpa build, `/assets/client.js` 404). Payload
   `window.__RAMONYX__` + container `#ramonyx-root`; loader data wajib JSON-serializable;
   halaman error tidak di-hydrate (ADR-0007).
-- **Limit default (ADR-0011).** Body request dibatasi **1 MiB → 413**, handler/loader timeout
-  **10s → 503** (+ `request.signal` abort). Aplikasi menaikkan lewat opsi `createHandler`
-  (`maxBodyBytes`, `timeoutMs`).
+- **Limit default (ADR-0011/0012).** Body request dibatasi **1 MiB → 413**; handler/loader timeout
+  **10s → 503** (+ `request.signal` abort); request bersamaan **100 → 503 + Retry-After**
+  (load shedding). Aplikasi menyesuaikan lewat opsi `createHandler`
+  (`maxBodyBytes`, `timeoutMs`, `maxConcurrent`).
 - **`node:*` hanya di `packages/adapter-runtime` dan `packages/compiler` (build-time)**, plus
   test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**

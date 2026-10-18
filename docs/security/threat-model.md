@@ -76,7 +76,8 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
 ## 9. Status mitigasi (2026-10-18)
 
 - Oversized/malformed body: ✅ batas ukuran + 413, header + streaming (ADR-0011), diuji `tests/security/`.
-- DoS handler/loader/render: ✅ timeout 10s + abort `request.signal` (ADR-0011).
+- DoS handler/loader/render: ✅ timeout 10s + abort `request.signal` (ADR-0011);
+  ✅ concurrency limit 100 dengan load shedding 503 + `Retry-After` (ADR-0012) — output limit menyusul.
 - Prototype pollution (query): ✅ `parseQuery` aman (ADR-0011), diuji fuzz + e2e.
 - Robustness parser/matcher: ✅ fuzz `fast-check` (router, query, normalisasi schema).
 - Abuse-case terukur: ✅ 6 skenario (oversized/JSON rusak/schema invalid/traversal/query raksasa/echo)

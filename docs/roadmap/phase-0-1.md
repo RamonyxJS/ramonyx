@@ -77,7 +77,8 @@ Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9
       (plateau saat beban berhenti; soak berjam-jam per protokol §8 masih diperlukan sebelum klaim)
 - [ ] Dependency audit berkelanjutan (CI sudah `pnpm audit`; tambah kebijakan & provenance)
 - [ ] Pemetaan OWASP ASVS → acceptance criteria + perluasan security regression suite
-- [ ] Keputusan menyusul: rate limiting / concurrency limit per route
+- [x] Concurrency limit / load shedding (ADR-0012): default 100 → 503 + `Retry-After`, tanpa antrean
+- [ ] Keputusan menyusul: rate limiting per klien (butuh identitas klien/trusted proxy) + output limit
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

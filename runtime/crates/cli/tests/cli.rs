@@ -179,6 +179,95 @@ fn config_mencetak_json_hasil_resolusi() {
 }
 
 #[test]
+fn run_http_server_minimal_lewat_cli() {
+    use std::io::{Read as IoRead, Write as IoWrite};
+
+    let directory = temp_dir("cli-http");
+    let port_path = directory.join("port.txt");
+    let port_literal = serde_json::to_string(port_path.to_str().expect("path utf8")).expect("json");
+    let entry = directory.join("server.mjs");
+    fs::write(
+        &entry,
+        format!(
+            r#"
+const server = ramonyx.serve(0, async (request) => {{
+  queueMicrotask(() => server.close());
+  return {{ status: 200, headers: {{ "content-type": "text/plain; charset=utf-8" }}, body: "cli " + request.path }};
+}});
+await ramonyx.writeTextFile({port_literal}, String(server.port));
+"#
+        ),
+    )
+    .expect("write");
+
+    let mut child = Command::new(binary())
+        .args(["run"])
+        .arg(&entry)
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .expect("spawn");
+
+    let mut port: Option<u16> = None;
+    for _ in 0..100 {
+        if let Ok(contents) = fs::read_to_string(&port_path)
+            && let Ok(value) = contents.trim().parse::<u16>()
+        {
+            port = Some(value);
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(50));
+    }
+    let port = port.expect("port file muncul");
+
+    let mut stream = std::net::TcpStream::connect(("127.0.0.1", port)).expect("connect");
+    stream
+        .write_all(b"GET /halo HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+        .expect("kirim");
+    let mut response = String::new();
+    stream.read_to_string(&mut response).expect("baca");
+    assert!(response.contains("200 OK"), "status: {response}");
+    assert!(response.contains("cli /halo"), "body: {response}");
+
+    let status = child.wait().expect("wait");
+    assert!(status.success(), "proses keluar 0");
+
+    fs::remove_dir_all(&directory).expect("cleanup");
+}
+
+#[test]
+fn run_module_io_timer_dan_env_lewat_cli() {
+    let directory = temp_dir("cli-io");
+    let out_path = directory.join("out.txt");
+    let out_literal = serde_json::to_string(out_path.to_str().expect("path utf8")).expect("json");
+    let entry = directory.join("io.mjs");
+    fs::write(
+        &entry,
+        format!(
+            r#"
+await ramonyx.sleep(10);
+await ramonyx.writeTextFile({out_literal}, "isi");
+const isi = await ramonyx.readTextFile({out_literal});
+console.log("io", isi, "env", ramonyx.env.get("RAMONYX_IO_TEST"));
+"#
+        ),
+    )
+    .expect("write");
+
+    let output = Command::new(binary())
+        .args(["run"])
+        .arg(&entry)
+        .env("RAMONYX_IO_TEST", "42")
+        .output()
+        .expect("spawn");
+
+    assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout).expect("utf8");
+    assert!(stdout.contains("io isi env 42"), "stdout: {stdout}");
+
+    fs::remove_dir_all(&directory).expect("cleanup");
+}
+
+#[test]
 fn argumen_tidak_valid_menghasilkan_exit_2_dan_usage() {
     let output = Command::new(binary())
         .args(["run", "--flag-asing"])

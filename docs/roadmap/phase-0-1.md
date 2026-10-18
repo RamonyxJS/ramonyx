@@ -1,7 +1,7 @@
 # Roadmap Phase 0–1
 
 - Status per 2026-10-18: **Phase 0 selesai; Phase 1 selesai; Phase 2 berjalan**
-  (file routing API + halaman SSR React tanpa hydration selesai).
+  (file routing + SSR React + hydration selesai; dev server/HMR & client navigation menyusul).
 - Sumber: `docs/BLUEPRINT.md` §9 dan §12.
 
 ## Phase 0 — Foundation & RFC ✅
@@ -49,10 +49,12 @@ Catatan implementasi Phase 1:
 - [x] File routing API: `createRouteManifest` (`packages/compiler`) — pindai `src/routes/api/**`,
       `index`/`[param]`, prefix `_` diabaikan, file tanpa method → error saat startup
 - [x] File routing halaman + SSR React: `loadPageRoutes` → `createPageRoutes` (`packages/ssr`) →
-  adapter `packages/react` (layout/loader/error.tsx; server-side, **tanpa hydration**)
-- [ ] Bundler Vite (ADR-0005): client bundle + hydration
+  adapter `packages/react` (layout/loader/error.tsx)
+- [x] Bundler Vite + hydration (ADR-0005/0007): `@ramonyx/bundler` → `client.js`; payload
+  `window.__RAMONYX__` + `hydrateAll` + aset statis `/assets/*`; diverifikasi di browser nyata
 - [ ] Dev server/HMR
-- [ ] Browser test (hydration/navigasi)
+- [ ] Client navigation (navigasi tanpa reload)
+- [ ] Browser test otomatis + baseline Web Vitals
 
 ## Phase 3–5 (ringkas — detail di BLUEPRINT §9)
 

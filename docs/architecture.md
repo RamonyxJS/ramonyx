@@ -34,9 +34,9 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `packages/testing` | `createTestServer`, fixture app, helper | Phase 1 | belum dibuat |
 | `packages/react` | Adapter UI React (ADR-0003) | Phase 2 | SSR selesai (hydration menyusul) |
 | `packages/ssr` | Render halaman → HTML (+ streaming) | Phase 2 | SSR selesai (streaming menyusul) |
-| `packages/client` | Hydration + client navigation | Phase 2 | belum dibuat |
-| `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`), transformasi & analisis batas server/client | Phase 2 | file routing + halaman selesai |
-| `packages/bundler` | Pembungkus toolchain (ADR-0005) | Phase 2 | belum dibuat |
+| `packages/client` | Hydration (kini di `@ramonyx/react/client`) + client navigation | Phase 2 | navigasi menyusul |
+| `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`, `generateClientEntry`), transformasi & analisis batas server/client | Phase 2 | file routing + halaman + codegen selesai |
+| `packages/bundler` | Pembungkus Vite (ADR-0005) | Phase 2 | build client selesai (dev server menyusul) |
 | `packages/security` | Policy & audit keamanan framework | Phase 3 | belum dibuat |
 | `packages/devtools` | CLI, dev server, diagnostics | Phase 2–3 | belum dibuat |
 | `apps/playground` | App demo/uji end-to-end | Phase 1 | belum dibuat |
@@ -45,8 +45,9 @@ Layer 3 selama runtime sendiri belum ada (Phase 4+, ADR-0001).
 | `runtime/crates/*` | Host Rust + V8 (runtime-core, module-loader, permissions, net, fs, cli) | Phase 4+ | belum dibuat |
 | `benchmarks/*` | Skrip benchmark per area | Phase 1 | belum dibuat |
 
-Status Phase 2 (berjalan): file routing API + halaman (`page/layout/error` + loader) dan SSR React
-tanpa hydration sudah berfungsi; bundler Vite, hydration, dan dev server menyusul.
+Status Phase 2 (berjalan): file routing API + halaman (loader/layout/error), SSR React, dan
+hydration (Vite client bundle + payload inline, ADR-0007) sudah berfungsi; dev server/HMR dan
+client navigation menyusul.
 
 Status Phase 1: `core`, `router`, `schema`, `adapter-runtime`, `server`, `testing`, `ramonyx`,
 `apps/playground`, dan `benchmarks/http` sudah diimplementasikan (source-first TypeScript via

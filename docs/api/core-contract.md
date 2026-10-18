@@ -99,7 +99,10 @@ export default [
 - `error.tsx` terdekat (naik ke root) dirender saat loader/render gagal; menerima
   `{ error: { status, message } }` (`ErrorPageProps`). Status/pesan publik mengikuti `HttpError`.
 - Path dari struktur direktori (`users/[id]/page.tsx` → `/users/[id]`); halaman hanya `GET`.
-- SSR via adapter React (`@ramonyx/react`); hydration/client navigation belum ada (butuh bundler).
+- SSR + hydration via adapter React (`@ramonyx/react`); client navigation belum ada.
+- Hydration (ADR-0007): payload inline `window.__RAMONYX__ = { path, params, data }` +
+  `<script type="module" src="/assets/client.js">`; container `#ramonyx-root`; **`data` loader wajib
+  JSON-serializable**; halaman error dirender server saja (tidak di-hydrate).
 
 ## 7. Kompatibilitas & versi
 
@@ -138,3 +141,6 @@ route groups. Dievaluasi setelah baseline (Phase 2+).
 - Phase 2 (SSR): `loadPageRoutes` (`@ramonyx/compiler`) → `createPageRoutes` (`@ramonyx/ssr`) →
   `RouteEntry` dengan handler HTML; error tak dikenal → 500 generik + log, `HttpError` → status.
 - JSX app code dijalankan lewat `node --import ./tools/register.mjs` (loader esbuild; ADR-0006).
+- Hydration (Phase 2): `generateClientEntry` (`@ramonyx/compiler`) → Vite (`@ramonyx/bundler`) →
+  `hydrateAll` (`@ramonyx/react/client`); diverifikasi di browser nyata (counter interaktif,
+  tanpa mismatch) — test otomatis browser menyusul.

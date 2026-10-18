@@ -16,8 +16,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 
 - `pnpm lint` — Biome; antara lain melarang impor `node:*` di luar `packages/adapter-runtime`/`packages/compiler`.
 - `pnpm typecheck` — `tsc --noEmit` (TypeScript 7: `baseUrl` dihapus, `paths` wajib relatif `./`).
-- `pnpm test` / `pnpm bench` / `pnpm dev` — semuanya lewat `node --import ./tools/register.mjs`
-  (loader esbuild: TS + JSX automatic; ADR-0006). Butuh Node ≥24.
+- `pnpm test` / `pnpm bench` / `pnpm dev` / `pnpm build` — semuanya lewat
+  `node --import ./tools/register.mjs` (loader esbuild: TS + JSX automatic; ADR-0006). Butuh Node ≥24.
+- `pnpm build` — bundle client (Vite) ke `apps/playground/dist/client/`; **wajib** sebelum halaman interaktif.
 - Demo SSR: `pnpm dev` (default `http://localhost:3000`); hasil bench di `benchmarks/results/`.
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
@@ -33,6 +34,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - **JSX hanya lewat loader dev.** Node type stripping tidak memproses JSX; jalankan app/test dengan
   `node --import ./tools/register.mjs` (script `test`/`bench`/`dev` sudah begitu — ADR-0006).
   Paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
+- **Hydration butuh build.** Jalankan `pnpm build` dulu; tanpa itu `/assets/client.js` 404 dan
+  halaman tidak interaktif. Payload `window.__RAMONYX__` + container `#ramonyx-root`; loader data
+  wajib JSON-serializable; halaman error tidak di-hydrate (ADR-0007).
 - **`node:*` hanya di `packages/adapter-runtime` dan `packages/compiler` (build-time)**, plus
   test/benchmark/playground; ditegakkan lint.
 - **Nama proyek: `ramonyx` (final).**
@@ -55,8 +59,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 ## Baseline teknis (blueprint §6, ADR-0002)
 
 TypeScript strict · ESM-only · source-first (exports `.ts`) · pnpm workspaces · Node ≥24 ·
-loader dev esbuild (ADR-0006) · adapter UI pertama React (ADR-0003) · host runtime Rust + V8
-(Phase 4+) · CI: lint → typecheck → test → security checks (build menyusul, ADR-0005).
+loader dev esbuild (ADR-0006) · adapter UI pertama React (ADR-0003) · bundler Vite (ADR-0005/0007) ·
+host runtime Rust + V8 (Phase 4+) · CI: lint → typecheck → test → build → security checks.
 
 ## Benchmark (blueprint §8)
 
@@ -65,6 +69,7 @@ Warm-up + beberapa ulangan, laporkan distribusi (p50/p90/p97_5/p99), bukan rata-
 
 ## Status & langkah berikutnya
 
-Phase 2 berjalan — file routing API + halaman (layout/loader/error) + SSR React tanpa hydration
-selesai; 70 tes hijau. Berikutnya: bundler Vite + hydration, dev server/HMR. Keputusan terbuka:
+Phase 2 berjalan — file routing (API + halaman), SSR React, dan hydration (Vite bundle, ADR-0007)
+selesai; 75 tes hijau (hydration juga diverifikasi manual di browser). Berikutnya: dev server/HMR
+dan client navigation. Keputusan terbuka:
 scope npm & lisensi, matrix browser, rekonsiliasi PRD (lihat `docs/roadmap/phase-0-1.md`).

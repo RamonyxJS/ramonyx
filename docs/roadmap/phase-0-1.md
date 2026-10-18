@@ -193,8 +193,10 @@ pekerjaan Phase 5.
       `stats.hangs`; temuan: mode non-supervisi perlu reap sendiri + tandai stopped (ketangkap
       test)
 - [x] **Perf regression gate (report-only)** (ADR-0045): `pnpm bench:report` (bandingkan vs
-      baseline tanpa menimpanya) + unit `benchmarks/http/compare.test.ts` + langkah CI
-      non-blocking; temuan run pertama: p50 +37% vs baseline (ditinjau, belum memblokir)
+      baseline tanpa menimpanya) + unit compare/stats + langkah CI non-blocking; **kalibrasi
+      tuntas**: protokol §8 penuh (warm-up + 5 ulangan, median/spread) membuktikan peringatan
+      p50 +37% = artefak sekali-jalan; baseline direfresh eksplisit (p50 34 / p90 48 / p99 72 /
+      rps 1318); advisory `uuid` ditutup via override `hyperid@4` (audit bersih)
 - [x] **Source map produksi** (ADR-0046): `buildClient` default `sourcemap: true`; paket npm
       `sourceMap + inlineSources`; `verify-release` memeriksa map + `sourcesContent` di tarball
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:

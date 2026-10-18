@@ -31,7 +31,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   dari `RUNS` eksekusi; hasil → `benchmarks/results/runtime-startup.json`; butuh build release).
 - `pnpm bench:report` — benchmark HTTP **report-only** (bandingkan vs baseline tanpa menimpanya;
   artefak `benchmarks/results/latest-http.json`; gate belum memblokir — ADR-0045).
-- `pnpm bench` — autocannon HTTP baseline (menulis ulang baseline ter-commit; eksplisit); `pnpm bench:security` — abuse-case + soak
+- `pnpm bench` — autocannon HTTP baseline (**protokol §8 penuh**: warm-up 3 s + 5 ulangan,
+  median/spread; menulis ulang baseline ter-commit — eksplisit); `pnpm bench:security` — abuse-case + soak
   (spawn server terpisah, RSS via /proc; `SOAK_SECONDS=300` untuk soak panjang). Hasil di
   `benchmarks/results/`.
 - `pnpm audit --audit-level high` — audit dependency (juga berjalan di CI + cron mingguan).
@@ -159,4 +160,4 @@ Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 133 tes Node + 5 e2e + 101 test Rust hijau.
+(ADR-0016); 136 tes Node + 5 e2e + 101 test Rust hijau.

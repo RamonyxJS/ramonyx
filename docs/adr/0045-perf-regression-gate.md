@@ -42,14 +42,31 @@ menimpa baseline".
 - Baseline **tidak tersentuh** (`git status` bersih; artefak laporan terpisah & gitignored).
 - 133 tes Node total (sebelumnya 128).
 
+## Kalibrasi (2026-10-18, lanjutan)
+
+- **Protokol §8 penuh diterapkan** pada bench HTTP: warm-up 3 s dibuang + **5 ulangan** ×10 s;
+  artefak melaporkan **median antar-run** + `spread` min/max + `perRun` (agregasi murni di
+  `benchmarks/http/stats.ts`, diuji unit).
+- **Temuan kalibrasi:** peringatan awal `p50 +31–37%` adalah **artefak metodologi sekali-jalan
+  tanpa warm-up** — dengan protokol penuh, median p50 = 33–35 ms (sama dengan baseline lama),
+  p90/p99 bahkan lebih baik. Ulangan pertama memang lebih lambat (p50 44 ms) sebelum stabil;
+  warm-up + median menyerap efek itu.
+- **Stabilitas terukur:** median antar-invokasi bervariasi ≤ ~9% (p50 33→35, p90 45→49,
+  rps 1398→1295); spread dalam satu invokasi rps ±15%.
+- **Baseline diperbarui secara eksplisit** (`pnpm bench`, bukan otomatis): p50 34 / p90 48 /
+  p99 72 / rps 1318 (5 ulangan + warm-up). Nilai baseline lama (sekali-jalan: p50 35 / p90 62 /
+  p99 123 / rps 1177,5) tetap ada di riwayat git dan dokumen audit.
+- **Konfirmasi:** `pnpm bench:report` berikutnya membandingkan dalam toleransi di semua metrik
+  (p50 +2.9%, p90 +2.1%, p99 +5.6%, rps −0.4%).
+
 ## Batasan yang dicatat jujur
 
-- Gate **belum memblokir** (sesuai rencana); risiko flakiness mesin dev masih nyata — sinyal
-  p50 di atas perlu ditinjau, bukan langsung dianggap regresi kode (lingkungan bisa berbeda).
-- Benchmark HTTP = satu run 10 s (belum warm-up + beberapa ulangan seperti protokol §8 penuh);
-  laporan mencetak catatan bila `cpuModel` baseline berbeda.
-- Threshold 25% adalah pilihan awal, bukan hasil kalibrasi statistik.
-- Bandingkan hanya di mesin sebanding; angka tidak dijadikan klaim publik.
+- Gate **belum memblokir** (sesuai rencana); `--strict` menunggu beberapa invokasi tenang lagi
+  untuk metrik yang paling stabil (p50/p90; p99 lebih bervariasi).
+- Threshold 25% dipertahankan sebagai pilihan awal — konsisten dengan variasi antar-invokasi
+  yang terukur (≤ ~9% untuk median), belum hasil kalibrasi multi-mesin.
+- Bandingkan hanya di mesin sebanding; laporan mencetak catatan bila `cpuModel` baseline
+  berbeda. Angka tidak dijadikan klaim publik.
 
 ## Alternatif yang ditolak
 

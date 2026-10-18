@@ -72,9 +72,11 @@ ini kecuali disebut lain.
 ## 4. Pekerjaan Parsial dan Gap
 
 1. **Performance regression gate (benchmark)** — *selesai 2026-10-18 (ADR-0045):* `pnpm bench:report`
-   (report-only, tanpa menimpa baseline) + unit compare + langkah CI non-blocking; temuan run
-   pertama: `p50 35 → 48 ms (+37%)` ditandai ⚠ (dalam tinjauan). Sisa: kalibrasi toleransi +
-   protokol §8 penuh (warm-up, ulangan, distribusi).
+   (report-only) + unit compare + langkah CI non-blocking; **kalibrasi tuntas**: protokol §8
+   penuh (warm-up 3 s + 5 ulangan, median + spread via `stats.ts`), peringatan `p50 +37%`
+   sebelumnya terbukti **artefak sekali-jalan tanpa warm-up**, baseline diperbarui eksplisit
+   (p50 34 / p90 48 / p99 72 / rps 1318), perbandingan lanjutan semua dalam toleransi
+   (≤ 5.6%). Sisa: multi-invokasi tambahan bila ingin `--strict`.
    — *kondisi awal:* artefak baseline ada
    (`benchmarks/results/*.json`), harness ada, tetapi CI hanya mengunggah artefak tanpa
    membandingkan threshold, dan audit ini tidak menjalankan bench karena skrip menulis ulang
@@ -92,10 +94,9 @@ ini kecuali disebut lain.
    streaming hanya ada di runtime (React `renderToReadableStream`) dan respons chunked runtime.
    *Dampak:* TTFB HTML besar tidak optimal di Node. *Langkah:* jalur `renderToReadableStream` →
    `Response` stream di `@ramonyx/ssr`, test parity konten dengan jalur sinkron.
-4. **Advisory dependency dev-only** — *kondisi:* `pnpm audit` melaporkan 1 moderate
-   (`uuid <11.1.1`) melalui `autocannon → hyperid` (tooling benchmark, bukan artefak rilis).
-   *Dampak:* tidak masuk paket terbit; tetap muncul di audit. *Langkah:* tunggu rilis autocannon
-   yang memakai uuid ≥11.1.1, atau pin/hapus jalur tersebut saat tooling diperbarui.
+4. ~~Advisory dependency dev-only~~ — *selesai 2026-10-18:* override `hyperid: 4.0.0`
+   (menjatuhkan `uuid <11.1.1`) di `pnpm-workspace.yaml`; autocannon 8 tetap berfungsi (dibuktikan
+   dengan menjalankan `pnpm bench:report`); `pnpm audit` → **No known vulnerabilities found**.
 5. **Plugin: health-check kooperatif** — *kondisi:* deteksi hang memerlukan
    `ramonyx.heartbeat()` dan hanya dievaluasi saat induk menunggu (`receive`). *Dampak:* plugin
    idle panjang dapat dianggap hang bila salah konfigurasi. *Langkah:* health-check otomatis
@@ -111,7 +112,7 @@ ini kecuali disebut lain.
 | Lint | `pnpm lint` | **PASS** | 155 file diperiksa; tanpa perbaikan |
 | Typecheck | `pnpm typecheck` | **PASS** | exit 0 |
 | Tes Node (unit+integration+fuzz+security) | `pnpm test` | **PASS** | 128 tes, 0 gagal |
-| Audit dependency | `pnpm audit --audit-level high` | **PASS** | exit 0; 1 moderate dev-only (`uuid` via `autocannon→hyperid`) |
+| Audit dependency | `pnpm audit --audit-level high` | **PASS** | **No known vulnerabilities found** (setelah override `hyperid@4`) |
 | Rust format | `cargo fmt --all --check` | **PASS** | exit 0 |
 | Rust lint | `cargo clippy --workspace --all-targets -- -D warnings` | **PASS** | exit 0 |
 | Tes Rust | `cargo test --workspace` | **PASS** | 101 lulus, 0 gagal |
@@ -121,7 +122,9 @@ ini kecuali disebut lain.
 | Perf report gate | `pnpm bench:report` | **PASS (⚠ terdeteksi)** | Report-only: `p50 35 → 48 ms (+37.1%)` ditandai; p90/p99 + throughput dalam toleransi; baseline tidak tersentuh |
 | Source map build | `pnpm build` + inspeksi `client.js.map` | **PASS** | 19 sumber dengan `sourcesContent` |
 | Source map paket | `pnpm release` + `verify-release` | **PASS** | `*.js.map` ada di tarball; `sourcesContent` non-kosong |
-| Tes Node (pembaruan) | `pnpm test` | **PASS** | **133 tes** (128 + 5 compare) |
+| Tes Node (pembaruan) | `pnpm test` | **PASS** | **136 tes** (128 + 5 compare + 3 stats) |
+| Kalibrasi bench (protokol §8) | `pnpm bench:report` ×2 + `pnpm bench` (refresh baseline) | **PASS** | median p50 33–35 ms (stabil ≤ ~9% antar-invokasi); perbandingan lanjutan ≤ 5.6% |
+| Refresh baseline HTTP | `pnpm bench` | **PASS** | baseline baru: p50 34 / p90 48 / p99 72 / rps 1318 (5 ulangan + warm-up 3 s) |
 | Benchmark HTTP | `pnpm bench` | **NOT RUN** | Skrip menulis ulang `benchmarks/results/phase1-baseline.json` (artefak ter-commit) — tidak dijalankan agar tidak mengubah artefak saat audit |
 | Benchmark keamanan/soak | `pnpm bench:security` | **NOT RUN** | Harness abuse+soak (menulis artefak & menjalankan soak) — di luar cakupan audit ini |
 | Baseline startup runtime | `benchmarks/runtime-startup.sh` | **NOT RUN** | Sama: menulis ulang `benchmarks/results/runtime-startup.json` |
@@ -170,7 +173,7 @@ diukur ulang dalam audit ini:
 
 | Artefak | Tanggal | Lingkup | Catatan |
 |---|---|---|---|
-| `benchmarks/results/phase1-baseline.json` | 2026-10-17 | HTTP baseline Phase 1 (autocannon) | env: linux x64, Node v24.22.0, 8 vCPU (AMD Ryzen 5 7520U) |
+| `benchmarks/results/phase1-baseline.json` | 2026-10-18 (refresh; sebelumnya 2026-10-17) | HTTP baseline (autocannon, **warm-up + 5 ulangan**) | env: linux x64, Node v24.22.0, 8 vCPU (AMD Ryzen 5 7520U); median p50 34 / p90 48 / p99 72 / rps 1318 |
 | `benchmarks/results/phase2-web-vitals.json` | 2026-10-18 | Web Vitals beranda (Playwright) | "baseline artefak — bukan klaim; threshold menyusul" |
 | `benchmarks/results/phase3-abuse.json` | 2026-10-18 | Abuse-case + soak ringkas | env sama; "bukan klaim" |
 | `benchmarks/results/runtime-startup.json` | 2026-10-18 | Startup runtime (7 run, median) | `mini` ~42 ms wall; `four-workers` ~84 ms; detail breakdown `v8Ms/bootstrapMs/webShimMs` (ADR-0037) |
@@ -181,9 +184,9 @@ diukur ulang dalam audit ini:
   belum ditetapkan** dan audit ini tidak menjalankan ulang benchmark (alasan di §5).
 - **Profiling runtime** tersedia: `engine.executed` (timings per fase) + `--op-metrics`
   (ADR-0037).
-- **Report gate berjalan** (ADR-0045): `pnpm bench:report` membandingkan vs baseline tanpa
-  menimpanya; run pertama menandai `p50 +37%` (⚠) — belum disimpulkan sebagai regresi kode
-  (variasi mesin dev; protokol §8 penuh belum dijalankan).
+- **Report gate berjalan** (ADR-0045) dengan **protokol §8 penuh**: warm-up + 5 ulangan,
+  median + spread; kalibrasi membuktikan peringatan `p50 +37%` sebelumnya adalah artefak
+  sekali-jalan (median protokol penuh = 33–35 ms). Baseline diperbarui eksplisit.
 
 ## 8. Keputusan Arsitektur yang Sudah Ada
 

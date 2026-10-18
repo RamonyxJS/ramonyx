@@ -45,7 +45,11 @@
 
 - Skrip per area di `benchmarks/<area>/` (router, http, scalar, ssr, startup, memory).
 - Hasil JSON + ringkasan disimpan sebagai **artefak CI**.
-- Baseline Phase 1 di-commit (mis. `benchmarks/results/phase1-baseline.json`) sebagai pembanding regresi.
+- Baseline Phase 1 di-commit (mis. `benchmarks/results/phase1-baseline.json`) sebagai pembanding
+  regresi. Bench HTTP kini menerapkan prosedur ini: **warm-up 3 s (dibuang) + 5 ulangan**,
+  artefak = median antar-run + `spread` (`pnpm bench` memperbarui baseline secara eksplisit).
+- **Mode report-only** (`pnpm bench:report`) membandingkan hasil vs baseline **tanpa** menimpanya
+  (toleransi 25%, belum memblokir) dan dipakai langkah CI non-blocking — ADR-0045.
 - Web Vitals (Phase 2): baseline `benchmarks/results/phase2-web-vitals.json` (diperbarui via
   `UPDATE_BASELINE_VITALS=1`); run biasa menulis `test-results/web-vitals-latest.json`.
 - Abuse-case & soak (Phase 3): `benchmarks/results/phase3-abuse.json` (`pnpm bench:security`,

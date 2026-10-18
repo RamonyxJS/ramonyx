@@ -12,7 +12,7 @@
 - **Fase saat ini (berdasarkan bukti):** Phase 0–3 **selesai**; **exit criteria Phase 4 tercapai**
   (ADR-0032); **Phase 5 berjalan dengan sebagian besar item selesai** (isolasi worker, kuota
   resource, streaming request, pipeline rilis, isolasi proses plugin + supervisi + health-check).
-  Sisa Phase 5: publikasi npm sebenarnya dan sandbox OS.
+  Sisa Phase 5: evaluasi `--strict` bench + hosting dokumentasi (opsional).
 - **Status keseluruhan:** seluruh gate yang dijalankan dalam audit **hijau** — lint, typecheck,
   128 tes Node, 5 e2e, fmt/clippy, 101 tes Rust, build produksi, dan verifikasi rilis
   (instalasi tarball di proyek konsumen bersih). Tidak ada TODO/FIXME di source.
@@ -36,11 +36,11 @@
 | 7. SSR, streaming, hydration, client navigation | DONE (dengan catatan) | `packages/ssr/src/pages.ts` (loader → render → dokumen + payload `window.__RAMONYX__`), `packages/react/src/{renderer,client}.ts` (hydrate + soft navigation + payload segar setelah navigasi); e2e `ssr.spec.ts`, `navigation.spec.ts` (5/5 lulus audit) | SSR streaming Node terintegrasi (ADR-0047: `Renderer.renderStream` + `react-dom/server.edge`, opt-in `streaming: true` — playground dev+produksi mengaktifkan; parity byte-per-byte + aliran + batas diuji); jalur sinkron tetap dipakai untuk halaman error |
 | 8. Compiler, bundler, route manifest, source maps | DONE | `packages/compiler/src/{manifest,pages,client-entry}.ts`, test 5 file; **source map produksi aktif** (ADR-0046): `buildClient` default `sourcemap: true`, paket npm `sourceMap+inlineSources`, `verify-release` memeriksa map + `sourcesContent` | — |
 | 9. Security baseline & threat-model | DONE (dengan catatan) | `packages/security` (headers, CSP nonce, CSRF double-submit, rate limit, SSRF guard) + limit body/timeout/concurrency di server; `docs/security/{threat-model,asvs-mapping,dependency-policy}.md`; test `packages/security/test/*` (5 file), `tests/security/`, fuzz; `pnpm audit --audit-level high` exit 0, **No known vulnerabilities found** (override `hyperid@4`) | pentest/escape plugin belum dinilai (lihat §6) |
-| 10. Testing, compatibility, regression | DONE | 156 tes Node (termasuk fuzz fast-check), 5 e2e Playwright, 104 tes Rust (termasuk **8 file integrasi** compat: framework, SSR, SSR streaming, security, playground subset, TLS fetch, isolasi proses plugin, CLI) | — |
+| 10. Testing, compatibility, regression | DONE | 156 tes Node (termasuk fuzz fast-check), 5 e2e Playwright, 111 tes Rust (termasuk **8 file integrasi** compat: framework, SSR, SSR streaming, security, playground subset, TLS fetch, isolasi proses plugin, CLI) | — |
 | 11. Benchmark, profiling, memory, regression | DONE (gate report-only) | Artefak baseline + harness; **gate report-only**: HTTP (ADR-0045), **SSR** (ADR-0048: `benchmarks/ssr/bench.tsx` — paritas byte-per-byte + suspense + `--expose-gc`), **Web Vitals** (median 3 load + ambang absolut); unit compare/stats + langkah CI non-blocking + perbandingan `benchmarks/runtime-startup.sh`; timings+metrik op runtime (ADR-0037) | Gate **belum memblokir** (disengaja); toleransi belum dikalibrasi multi-mesin |
 | 12. Developer tooling, CLI, dev server, diagnostics | DONE | `tools/register.mjs` (loader esbuild, ADR-0006), `apps/playground/src/dev.ts` (Vite+HMR→SSR), CLI runtime `ramonyx-runtime` (R0+flag permission/kuota/profiling), `apps/create-app` (scaffolder + smoke), `apps/docs` (dogfood SSR+hydration), `--op-metrics` + log `engine.executed` | — |
 | 13. Runtime host & engine integration | DONE (eksperimental) | `runtime/crates/{cli,js-engine,runtime-core}` (deno_core/V8, ADR-0020), compile & 101 tes Rust lulus | Klaim produksi tidak dibuat; lihat batasan per ADR |
-| 14. Runtime module loading/fs/net/permission | DONE (subset terdokumentasi) | ESM+TS+`node_modules` v1, interop CommonJS, `web_shim`, builtin `node:net`/`node:dns/promises`, HTTP server pull-model (streaming request+respons), permission deny-all + revoke, kuota heap/CPU/RSS/timeout, worker isolate, proses plugin + supervisi + health-check + backoff eksponensial + watchdog (ADR-0021–0044, ADR-0050) | Batasan eksplisit: tanpa HTTPS server/h2, CommonJS subset, tanpa worker fairness/quota CPU lintas proses, sandbox OS belum (ADR-0040/0043/0044) |
+| 14. Runtime module loading/fs/net/permission | DONE (subset terdokumentasi) | ESM+TS+`node_modules` v1, interop CommonJS, `web_shim`, builtin `node:net`/`node:dns/promises`, HTTP server pull-model (streaming request+respons), permission deny-all + revoke, kuota heap/CPU/RSS/timeout, worker isolate, proses plugin + supervisi + health-check + backoff eksponensial + watchdog + **sandbox OS (Landlock: FS kelas-denotasi + TCP)** (ADR-0021–0044, ADR-0050/0051) | Batasan eksplisit: tanpa HTTPS server/h2, CommonJS subset, tanpa worker fairness/quota CPU lintas proses, tanpa isolasi namespace/PID (Landlock saja), net deny hanya TCP (bukan UDP/DNS) |
 | 15. Docs, examples, CI, release readiness | DONE | 49 ADR (`docs/adr/`), BLUEPRINT/PRD/architecture/api-contract/security docs, situs docs `pnpm docs`, CI `.github/workflows/ci.yml` (**hijau di runner**), release pipeline `.github/workflows/release.yml` (**dieksekusi sukses pada tag `v0.1.0`** — ADR-0049) + `pnpm release` + `pnpm release:verify` | **Terbit di npm** (13 paket @ 0.1.0) + **GitHub Release** (16 aset); secret `NPM_TOKEN` terpasang untuk rilis berikutnya — `docs/releasing.md` |
 
 ## 3. Implementasi yang Sudah Terverifikasi
@@ -107,9 +107,11 @@ ini kecuali disebut lain.
    `ramonyx.heartbeat()` dan hanya dievaluasi saat induk menunggu (`receive`). *Dampak:* plugin
    idle panjang dapat dianggap hang bila salah konfigurasi. *Langkah:* health-check otomatis
    (liveness dari sisi runtime) atau dokumentasi pola heartbeat lebih menonjol di template.
-6. **Sandbox OS untuk plugin** — *kondisi:* isolasi proses ada (ADR-0040) tetapi tanpa
-   seccomp/namespace. *Dampak:* plugin tetap berbagi kernel/FS host. *Langkah:* profil sandbox
-   opsional (`--sandbox`) dengan uji positif/negatif di Linux.
+6. ~~Sandbox OS untuk plugin~~ — *selesai 2026-10-18 (ADR-0051):* **Landlock LSM** opt-in
+   (`--sandbox*` di CLI; `ramonyx.spawn(..., { sandbox })`), kelas eksplisit (baca/tulis/TCP),
+   irisan dengan permission efektif, auto-izin entry dir/CA TLS/proc-self kuota, fail-hard bila
+   tak didukung. Uji positif/negatif kernel lulus. Batasan dicatat: tanpa namespace/PID,
+   net deny hanya TCP, AllowAll murni tidak bisa dipersempit.
 
 ## 5. Hasil Verifikasi
 
@@ -137,6 +139,7 @@ ini kecuali disebut lain.
 | CI GitHub (setelah semua perbaikan) | run `948aaf5` | **PASS** | gate (lint→test→build→e2e→security) + Rust (fmt/clippy/test) — keduanya hijau di runner |
 | Workflow Release `v0.1.0` (ADR-0049) | tag `v0.1.0` → run 39134803417 | **PASS** | 14 artefak + verifikasi penuh (konsumen bersih + scaffold `create-ramonyx-app` build/start/SSR dari tarball + runtime); **GitHub Release** 16 aset (13 tarball + runtime + SHA256SUMS + manifest); job publish skip (NPM_TOKEN belum ada saat itu — secret kini terpasang) |
 | Backoff + watchdog plugin (ADR-0050) | `cargo test --workspace` | **PASS** | 104 test Rust; watchdog membunuh plugin senyap **tanpa `receive`** (test baru), reset kuota setelah generasi stabil (test baru), unit backoff eksponensial; 10 test plugin lama tetap hijau |
+| Sandbox OS plugin (ADR-0051) | `cargo test --workspace` | **PASS** | 111 test Rust; kernel menolak baca `/etc/hostname` walau permission JS `read: true` (uji fs), `fetch` ditolak kernel saat `sandbox: { net: false }` (ABI≥4), unit saringan ABI+irisan+parse CLI |
 | Verifikasi rilis (ADR-0049) | `pnpm release` + `release:verify` | **PASS** | 14 artefak; konsumen bersih + source map + **scaffold `app-baru`** + **build + start + SSR halaman dengan Node polos dari tarball** + runtime jalan |
 | Loader runtime publik (ADR-0049) | `node --import @ramonyx/compiler/register` | **PASS** | app hasil scaffold jalan tanpa loader repo (Node menolak type-strip .ts di node_modules); pnpm `allowBuilds: esbuild` disertakan template |
 | Benchmark HTTP | `pnpm bench` | **NOT RUN** | Skrip menulis ulang `benchmarks/results/phase1-baseline.json` (artefak ter-commit) — tidak dijalankan agar tidak mengubah artefak saat audit |
@@ -231,8 +234,8 @@ diukur ulang dalam audit ini:
   terbuka: semver versi-tunggal vs independent, dan siapa pemegang kredensial.
 - **ADR: Strategi performance regression** — threshold per skenario, mode report-only, dan
   kebijakan menaikkan baseline.
-- **ADR: Sandbox plugin** — apakah seccomp/namespace menjadi default atau opt-in, dan batasan
-  kompatibilitasnya.
+- **ADR: Sandbox plugin** — *dijawab ADR-0051*: opt-in, Landlock (tanpa namespace/PID),
+  batasan kompatibilitas didokumentasikan (Linux-only, TCP-only, fail-hard).
 
 ## 9. Risiko dan Blocker
 
@@ -276,9 +279,10 @@ Tidak ada blocker teknis (P0): seluruh build/test/gate hijau pada commit audit.
 
 **P3 — Future (runtime eksperimental):**
 
-6. Sandbox OS plugin (opt-in) — seccomp/namespace + uji positif/negatif.
+6. ~~Sandbox OS plugin (opt-in)~~ — **selesai (ADR-0051)**: Landlock (FS + TCP), uji
+   positif/negatif kernel, irisan permission, fail-hard bila tak didukung.
 7. ~~Health-check otomatis plugin (liveness sisi runtime) dan backoff eksponensial~~ — **selesai
-   (ADR-0050)**: watchdog latar + backoff eksponensial + reset stabil; sisa: sandbox OS.
+   (ADR-0050)**: watchdog latar + backoff eksponensial + reset stabil.
 8. Baseline benchmark publik di hardware/CI standar (bila ingin klaim performa §10 BLUEPRINT).
 
 ## 11. Definition of Done untuk Fase Berikutnya (Rilis 0.1.0)
@@ -311,7 +315,7 @@ Tidak ada blocker teknis (P0): seluruh build/test/gate hijau pada commit audit.
   dilakukan lokal lewat script yang sama.
 - **Platform audit:** linux x64, Node v24.22.0, pnpm 12.14.0, Rust 1.99.0 (toolchain dipin).
   Hasil di platform lain belum diverifikasi (kuota CPU/RSS runtime memang Linux-only).
-- **Auth/authz, i18n, database/ORM, dan plugin sandbox OS** tidak dinilai (tidak ada
-  implementasinya di repository pada commit ini).
+- **Auth/authz, i18n, database/ORM, dan pentest escape sandbox** tidak dinilai (sandbox OS
+  plugin kini ada — ADR-0051 — tetapi belum diuji sebagai target escape/pentest).
 - Tidak ada secret/kredensial yang dibaca atau ditampilkan; variabel yang relevan hanya nama
   (`NPM_TOKEN` untuk publikasi).

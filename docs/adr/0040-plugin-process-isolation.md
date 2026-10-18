@@ -3,6 +3,8 @@
 - Status: Accepted (2026-10-18)
 - Tanggal: 2026-10-18
 - Sumber: BLUEPRINT §5 ("isolasi plugin di level proses/OS") & §9 (Phase 5), ADR-0034 (worker)
+- **Diperbarui ADR-0051**: sandbox OS (Landlock) kini tersedia sebagai opsi opt-in —
+  batasan "tanpa sandbox OS" di bawah sudah tidak berlaku (isolation namespace/PID tetap belum).
 
 ## Konteks
 

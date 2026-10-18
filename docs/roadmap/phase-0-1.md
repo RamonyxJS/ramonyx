@@ -221,8 +221,12 @@ pekerjaan Phase 5.
       (`delayMs·2^n` ≤ `backoffMaxMs`), kuota restart di-reset setelah generasi stabil
       (`stableAfterMs`), terminal eksplisit `supervisor_gave_up`, reader latar + watchdog
       (deteksi tanpa `receive`), stats `nextBackoffMs`/`droppedMessages`; 104 test Rust
-- [ ] **Fase 5 sisa** — kandidat lanjutan: sandbox OS (seccomp/namespace), evaluasi `--strict`
-      bench setelah beberapa invokasi tenang lagi, hosting dokumentasi
+- [x] **Sandbox OS plugin** (ADR-0051): Landlock LSM opt-in — `--sandbox`/`--sandbox-allow-read/-
+      write`/`--sandbox-deny-net` di CLI, `ramonyx.spawn(..., { sandbox })` (irisan permission),
+      auto-izin entry dir/CA TLS/proc-self kuota, fail-hard bila kernel tak mendukung; uji kernel
+      positif/negatif (FS + TCP); 111 test Rust
+- [ ] **Fase 5 sisa** — kandidat lanjutan: evaluasi `--strict` bench setelah beberapa invokasi
+      tenang lagi, hosting dokumentasi
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

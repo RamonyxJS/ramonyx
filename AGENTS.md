@@ -105,8 +105,10 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   (`ramonyx.spawn` + `--plugin`, protokol JSON stdin/stdout, permission irisan, kill — ADR-0040),
   **supervisi restart plugin** (`restart` + `plugin.stats()` — ADR-0043), serta **health-check
   plugin** (`healthCheck` + `ramonyx.heartbeat()` — ADR-0044), serta **perf report gate**
-  (`pnpm bench:report`, report-only — ADR-0045) + **source map produksi** (ADR-0046) —
-  tetapi **belum**: publikasi npm sebenarnya (kredensial), sandbox OS, health-check otomatis;
+  (`pnpm bench:report`, report-only — ADR-0045) + **source map produksi** (ADR-0046),
+  **backoff eksponensial + health-check otomatis plugin** (ADR-0050), serta **sandbox OS
+  plugin** (Landlock: FS + TCP kernel-level, ADR-0051). Publikasi npm **selesai** (13 paket
+  @ 0.1.0); sisa kandidat: evaluasi `--strict` bench + hosting dokumentasi;
   **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
   dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
   **subset** (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak
@@ -170,7 +172,7 @@ watchdog timeout, pencabutan permission runtime — ADR-0033), **isolasi worker 
 + binary runtime, verifikasi instalasi konsumen — ADR-0039), **isolasi level proses untuk plugin**
 (`ramonyx.spawn`, protokol JSON, permission irisan, kill, **supervisi restart** — ADR-0040/0043,
 **health-check heartbeat** — ADR-0044, **backoff eksponensial + health-check otomatis
-(watchdog)** — ADR-0050),
+(watchdog)** — ADR-0050, **sandbox OS (Landlock)** — ADR-0051),
 **scaffolder aplikasi**
 (`pnpm create:app` — template file-routing **SSR React + hydration**, ADR-0041), **SSR streaming
 Node** (`renderToReadableStream` via `react-dom/server.edge` — ADR-0047; jalur sinkron tetap
@@ -183,10 +185,9 @@ semuanya diverifikasi test + smoke.
 terbit — `@ramonyx/*`, `ramonyx`, `create-ramonyx-app`; verifikasi registry end-to-end ✓;
 **workflow `release.yml` dieksekusi sukses** pada tag `v0.1.0` → GitHub Release 16 aset, publish
 idempoten; CI runner hijau).
-Sisa Phase 5/kandidat: sandbox OS (seccomp/namespace), evaluasi `--strict` bench, hosting
-dokumentasi.
+Sisa Phase 5/kandidat: evaluasi `--strict` bench, hosting dokumentasi.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 156 tes Node + 5 e2e + 104 test Rust hijau.
+(ADR-0016); 156 tes Node + 5 e2e + 111 test Rust hijau.

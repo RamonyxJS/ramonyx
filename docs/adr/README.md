@@ -57,3 +57,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0048](0048-bench-ssr-vitals.md) | Bench SSR + ambang Web Vitals (report-only) + `NODE_ENV` produksi | Accepted |
 | [0049](0049-pra-publikasi.md) | Kesiapan pra-publikasi: publish dari artefak terverifikasi + dist-tag + `create-ramonyx-app` | Accepted |
 | [0050](0050-plugin-backoff-watchdog.md) | Plugin: backoff eksponensial + health-check otomatis (watchdog) | Accepted |
+| [0051](0051-plugin-sandbox-landlock.md) | Sandbox OS plugin (Landlock LSM): FS + TCP kernel-level | Accepted |

@@ -6,6 +6,7 @@
       "!**/node_modules",
       "!**/dist",
       "!**/.ramonyx",
+      "!**/target",
       "!**/test-results",
       "!**/playwright-report",
       "!benchmarks/results"

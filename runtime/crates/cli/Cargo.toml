@@ -1,0 +1,15 @@
+[package]
+name = "ramonyx-runtime-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "CLI runtime Ramonyx (R0): version, config, run (eksekusi JS menyusul di R1)."
+
+[[bin]]
+name = "ramonyx-runtime"
+path = "src/main.rs"
+
+[dependencies]
+js-engine = { path = "../js-engine" }
+runtime-core = { path = "../runtime-core" }
+serde_json.workspace = true

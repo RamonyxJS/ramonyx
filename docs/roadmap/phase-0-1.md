@@ -113,7 +113,10 @@ Phase 4 (runtime alpha).
 - [x] **R2b** — Cancellation klien (`ObservedIo` + `op_http_watch` + `request.signal`) dan
       **keep-alive** (ADR-0024); server tetap hidup saat klien putus; respons ke klien yang pergi
       menjadi no-op; diuji (abort saat handler berjalan, dua request satu koneksi)
-- [ ] **R2 sisa** — **streaming** body (request/response), graceful shutdown terkoordinasi
+- [x] **R2c** — **Streaming respons chunked** (ADR-0025): handler `body` sebagai AsyncIterable;
+      ops `stream_start/chunk/end` dengan backpressure; `Transfer-Encoding: chunked` via hyper;
+      cancellation tetap berlaku; diuji 3 chunk berurutan
+- [ ] **R2 sisa** — streaming **request** (body masuk bertahap), graceful shutdown terkoordinasi
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

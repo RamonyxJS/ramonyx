@@ -51,3 +51,5 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0041](0041-create-app.md) | `apps/create-app` — scaffolder aplikasi | Accepted |
 | [0042](0042-docs-app.md) | `apps/docs` — situs dokumentasi (dogfood SSR React) | Accepted |
 | [0043](0043-plugin-supervision.md) | Supervisi restart plugin (`restart` pada `ramonyx.spawn`) | Accepted |\n| [0044](0044-plugin-health-check.md) | Health-check plugin (heartbeat + deteksi senyap) | Accepted |
+| [0045](0045-perf-regression-gate.md) | Performance regression gate (report-only) | Accepted |
+| [0046](0046-source-maps.md) | Source map produksi (client bundle + paket npm) | Accepted |

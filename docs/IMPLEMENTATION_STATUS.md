@@ -34,10 +34,10 @@
 | 5. Runtime schema validation | DONE | `packages/schema/src/validate.ts` (Standard Schema v1 struktural), adapter (`adapters.test.ts` termasuk zod), fuzz `validate.fuzz.test.ts`; validasi input+output di server (`validateInput`/`validateOutput`) | — |
 | 6. Server/client boundary & build output | DONE | `packages/bundler/src/build.ts` (Vite → `dist/client/client.js`), codegen entry `packages/compiler/src/client-entry.ts`; audit menjalankan `pnpm build` → `apps/playground/dist/client` | Belum ada code splitting/chunk manual (default Vite) |
 | 7. SSR, streaming, hydration, client navigation | DONE (dengan catatan) | `packages/ssr/src/pages.ts` (loader → render → dokumen + payload `window.__RAMONYX__`), `packages/react/src/{renderer,client}.ts` (hydrate + soft navigation + payload segar setelah navigasi); e2e `ssr.spec.ts`, `navigation.spec.ts` (5/5 lulus audit) | **SSR React di Node memakai `renderToString` (sinkron)**; streaming React (`renderToReadableStream`) hanya diverifikasi di runtime Rust (ADR-0030), belum diintegrasikan ke `@ramonyx/ssr` |
-| 8. Compiler, bundler, route manifest, source maps | PARTIAL | `packages/compiler/src/{manifest,pages,client-entry}.ts` (file routing API+halaman, `pageFile`/`layoutFiles`), test `manifest/pages/client-entry` (5 file test) | **Source map produksi belum diaktifkan** (`buildClient` tanpa `build.sourcemap`); error stack runtime tetap dapat `sourceURL` |
+| 8. Compiler, bundler, route manifest, source maps | DONE | `packages/compiler/src/{manifest,pages,client-entry}.ts`, test 5 file; **source map produksi aktif** (ADR-0046): `buildClient` default `sourcemap: true`, paket npm `sourceMap+inlineSources`, `verify-release` memeriksa map + `sourcesContent` | — |
 | 9. Security baseline & threat-model | DONE (dengan catatan) | `packages/security` (headers, CSP nonce, CSRF double-submit, rate limit, SSRF guard) + limit body/timeout/concurrency di server; `docs/security/{threat-model,asvs-mapping,dependency-policy}.md`; test `packages/security/test/*` (5 file), `tests/security/`, fuzz; `pnpm audit --audit-level high` exit 0 | 1 advisory **moderate dev-only** (`uuid <11.1.1` via `autocannon → hyperid`); pentest/escape plugin belum dinilai (lihat §6) |
 | 10. Testing, compatibility, regression | DONE | 128 tes Node (termasuk fuzz fast-check), 5 e2e Playwright, 101 tes Rust (termasuk **8 file integrasi** compat: framework, SSR, SSR streaming, security, playground subset, TLS fetch, isolasi proses plugin, CLI) | Belum ada performance-regression gate di CI (§7) |
-| 11. Benchmark, profiling, memory, regression | PARTIAL | Artefak: `benchmarks/results/phase1-baseline.json`, `phase2-web-vitals.json`, `phase3-abuse.json`, `runtime-startup.json`; harness `benchmarks/{http,security}`, `benchmarks/runtime-startup.sh`; timings+metrik op runtime (ADR-0037) | **Tidak dijalankan ulang dalam audit** (akan menimpa baseline ter-commit); threshold/regression gate belum ada di CI |
+| 11. Benchmark, profiling, memory, regression | DONE (gate report-only) | Artefak baseline + harness; **regression gate report-only** (ADR-0045): `pnpm bench:report` + unit `benchmarks/http/compare.test.ts` (5 test) + langkah CI non-blocking + perbandingan di `benchmarks/runtime-startup.sh`; timings+metrik op runtime (ADR-0037) | Gate **belum memblokir** (disengaja); benchmark tetap tidak dijalankan ulang saat audit awal |
 | 12. Developer tooling, CLI, dev server, diagnostics | DONE | `tools/register.mjs` (loader esbuild, ADR-0006), `apps/playground/src/dev.ts` (Vite+HMR→SSR), CLI runtime `ramonyx-runtime` (R0+flag permission/kuota/profiling), `apps/create-app` (scaffolder + smoke), `apps/docs` (dogfood SSR+hydration), `--op-metrics` + log `engine.executed` | — |
 | 13. Runtime host & engine integration | DONE (eksperimental) | `runtime/crates/{cli,js-engine,runtime-core}` (deno_core/V8, ADR-0020), compile & 101 tes Rust lulus | Klaim produksi tidak dibuat; lihat batasan per ADR |
 | 14. Runtime module loading/fs/net/permission | DONE (subset terdokumentasi) | ESM+TS+`node_modules` v1, interop CommonJS, `web_shim`, builtin `node:net`/`node:dns/promises`, HTTP server pull-model (streaming request+respons), permission deny-all + revoke, kuota heap/CPU/RSS/timeout, worker isolate, proses plugin + supervisi + health-check (ADR-0021–0044) | Batasan eksplisit: tanpa HTTPS server/h2, CommonJS subset, tanpa worker fairness/quota CPU lintas proses, sandbox OS belum (ADR-0040/0043/0044) |
@@ -71,13 +71,20 @@ ini kecuali disebut lain.
 
 ## 4. Pekerjaan Parsial dan Gap
 
-1. **Performance regression gate (benchmark)** — *kondisi:* artefak baseline ada
+1. **Performance regression gate (benchmark)** — *selesai 2026-10-18 (ADR-0045):* `pnpm bench:report`
+   (report-only, tanpa menimpa baseline) + unit compare + langkah CI non-blocking; temuan run
+   pertama: `p50 35 → 48 ms (+37%)` ditandai ⚠ (dalam tinjauan). Sisa: kalibrasi toleransi +
+   protokol §8 penuh (warm-up, ulangan, distribusi).
+   — *kondisi awal:* artefak baseline ada
    (`benchmarks/results/*.json`), harness ada, tetapi CI hanya mengunggah artefak tanpa
    membandingkan threshold, dan audit ini tidak menjalankan bench karena skrip menulis ulang
    baseline ter-commit. *Dampak:* regresi performa tidak terdeteksi otomatis. *Langkah:*
    tambahkan mode bench "report-only" (tanpa menimpa baseline), bandingkan p50/p90 terhadap
    baseline dengan toleransi, jadikan gate non-blocking dahulu.
-2. **Source map produksi** — *kondisi:* `buildClient` tidak mengaktifkan `build.sourcemap`.
+2. **Source map produksi** — *selesai 2026-10-18 (ADR-0046):* `buildClient` default
+   `sourcemap: true`; paket npm `sourceMap + inlineSources`; `verify-release` memeriksa map di
+   tarball; bukti: `client.js.map` 19 sumber + `sourcesContent`, asersi create-app/docs lulus.
+   — *kondisi awal:* `buildClient` tidak mengaktifkan `build.sourcemap`.
    *Dampak:* stack trace produksi menunjuk ke bundel terminifikasi (minify juga off saat ini).
    *Langkah:* opsi `sourcemap: true` + unggah `.map` sebagai artefak rilis; verifikasi dengan
    memicu error di browser produksi.
@@ -110,7 +117,11 @@ ini kecuali disebut lain.
 | Tes Rust | `cargo test --workspace` | **PASS** | 101 lulus, 0 gagal |
 | Build produksi | `pnpm build` | **PASS** | `apps/playground/dist/client/client.js` |
 | Browser e2e | `PLAYWRIGHT_EXECUTABLE_PATH=<cache ms-playwright chromium-1248> pnpm test:e2e` | **PASS** | 5/5 (10.2 s) |
-| Verifikasi rilis | `pnpm release:verify` | **PASS** | tarball npm + binary runtime terpasang & jalan di proyek konsumen |
+| Verifikasi rilis | `pnpm release:verify` | **PASS** | tarball npm + binary runtime terpasang & jalan; **termasuk pemeriksaan source map** (`✓ npm: source map (1 sumber)`) |
+| Perf report gate | `pnpm bench:report` | **PASS (⚠ terdeteksi)** | Report-only: `p50 35 → 48 ms (+37.1%)` ditandai; p90/p99 + throughput dalam toleransi; baseline tidak tersentuh |
+| Source map build | `pnpm build` + inspeksi `client.js.map` | **PASS** | 19 sumber dengan `sourcesContent` |
+| Source map paket | `pnpm release` + `verify-release` | **PASS** | `*.js.map` ada di tarball; `sourcesContent` non-kosong |
+| Tes Node (pembaruan) | `pnpm test` | **PASS** | **133 tes** (128 + 5 compare) |
 | Benchmark HTTP | `pnpm bench` | **NOT RUN** | Skrip menulis ulang `benchmarks/results/phase1-baseline.json` (artefak ter-commit) — tidak dijalankan agar tidak mengubah artefak saat audit |
 | Benchmark keamanan/soak | `pnpm bench:security` | **NOT RUN** | Harness abuse+soak (menulis artefak & menjalankan soak) — di luar cakupan audit ini |
 | Baseline startup runtime | `benchmarks/runtime-startup.sh` | **NOT RUN** | Sama: menulis ulang `benchmarks/results/runtime-startup.json` |
@@ -170,6 +181,9 @@ diukur ulang dalam audit ini:
   belum ditetapkan** dan audit ini tidak menjalankan ulang benchmark (alasan di §5).
 - **Profiling runtime** tersedia: `engine.executed` (timings per fase) + `--op-metrics`
   (ADR-0037).
+- **Report gate berjalan** (ADR-0045): `pnpm bench:report` membandingkan vs baseline tanpa
+  menimpanya; run pertama menandai `p50 +37%` (⚠) — belum disimpulkan sebagai regresi kode
+  (variasi mesin dev; protokol §8 penuh belum dijalankan).
 
 ## 8. Keputusan Arsitektur yang Sudah Ada
 
@@ -229,11 +243,13 @@ Tidak ada blocker teknis (P0): seluruh build/test/gate hijau pada commit audit.
 
 **P2 — Hardening:**
 
-3. **Source map produksi + unggah artefak rilis.**
-   *Acceptance:* error runtime produksi menunjuk sumber TS; `.map` ada di release.
-4. **Resolusi advisory `uuid` dev-only.**
+3. ~~Source map produksi~~ — **selesai (ADR-0046)**.
+4. **Kalibrasi perf gate** — jalankan `pnpm bench:report` beberapa kali di mesin tenang,
+   tetapkan toleransi realistis, lalu evaluasi `--strict` untuk metrik yang stabil
+   (protokol §8 penuh: warm-up + ulangan + distribusi).
+5. **Resolusi advisory `uuid` dev-only.**
    *Acceptance:* `pnpm audit --audit-level high` tanpa moderate pada chain tooling.
-5. **SSR streaming Node (`renderToReadableStream` → Response stream).**
+6. **SSR streaming Node (`renderToReadableStream` → Response stream).**
    *Acceptance:* parity konten dengan jalur sinkron + e2e baru.
 
 **P3 — Future (runtime eksperimental):**

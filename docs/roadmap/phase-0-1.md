@@ -192,8 +192,14 @@ pekerjaan Phase 5.
       `ramonyx.heartbeat()`; senyap saat induk menunggu → SIGKILL → restart (bila supervisor),
       `stats.hangs`; temuan: mode non-supervisi perlu reap sendiri + tandai stopped (ketangkap
       test)
+- [x] **Perf regression gate (report-only)** (ADR-0045): `pnpm bench:report` (bandingkan vs
+      baseline tanpa menimpanya) + unit `benchmarks/http/compare.test.ts` + langkah CI
+      non-blocking; temuan run pertama: p50 +37% vs baseline (ditinjau, belum memblokir)
+- [x] **Source map produksi** (ADR-0046): `buildClient` default `sourcemap: true`; paket npm
+      `sourceMap + inlineSources`; `verify-release` memeriksa map + `sourcesContent` di tarball
 - [ ] **Fase 5 sisa** — publikasi npm sebenarnya (butuh kredensial pemilik); kandidat lanjutan:
-      sandbox OS (seccomp/namespace), health-check otomatis, backoff eksponensial
+      sandbox OS (seccomp/namespace), health-check otomatis, backoff eksponensial,
+      kalibrasi toleransi bench + protokol §8 penuh
 - [x] **R3a** — **Permission model** (ADR-0023): default **deny-all**; flag
       `--allow-read/write/net/env[=daftar]`; penegakan di ops fs/env/serve dengan pesan berisi
       petunjuk flag; canonicalization path (traversal tertutup); diverifikasi unit + engine + CLI

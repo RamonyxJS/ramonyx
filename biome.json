@@ -9,7 +9,9 @@
       "!**/target",
       "!**/test-results",
       "!**/playwright-report",
-      "!benchmarks/results"
+      "!benchmarks/results",
+      "!docs/machine",
+      "!TODO.md"
     ]
   },
   "formatter": {

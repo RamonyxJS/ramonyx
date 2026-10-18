@@ -559,3 +559,120 @@ test("streaming: renderStream menolak → halaman error sinkron + log", async ()
     lines.some((line) => line.level === "error" && line.message === "Render halaman gagal"),
   );
 });
+
+test("action: POST merender ulang halaman dengan hasil action (progressive enhancement)", async () => {
+  const page = basePage("/form", {
+    default: Page,
+    loader: async () => ({ awal: true }),
+    action: ({ formData }) => {
+      const nama = String(formData.get("nama") ?? "");
+      return nama.length < 2 ? { errors: { nama: "terlalu pendek" } } : { message: `Halo ${nama}` };
+    },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: fakeRenderer(),
+      client: { script: "/assets/client.js" },
+    }),
+  });
+
+  // Sukses: status 200, loader jalan lagi, hasil action masuk props + payload hydration.
+  const sukses = new FormData();
+  sukses.set("nama", "Rina");
+  const response = await handler(
+    new Request("http://test.local/form", { method: "POST", body: sukses }),
+  );
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.ok(html.includes('"message":"Halo Rina"'), "hasil action ada di props");
+  assert.ok(html.includes('"action":{"ok":true'), "payload hydration memuat action");
+  assert.ok(html.includes('"awal":true'), "loader dijalankan lagi setelah action");
+
+  // Validasi gagal: status 400 + errors terstruktur (tanpa melempar).
+  const gagal = new FormData();
+  gagal.set("nama", "A");
+  const invalid = await handler(
+    new Request("http://test.local/form", { method: "POST", body: gagal }),
+  );
+  assert.equal(invalid.status, 400);
+  const invalidHtml = await invalid.text();
+  assert.ok(invalidHtml.includes('"errors":{"nama":"terlalu pendek"}'));
+  assert.ok(invalidHtml.includes('"action":{"ok":false'));
+});
+
+test("action: redirect → 303 See Other (PRG)", async () => {
+  const page = basePage("/kirim", {
+    default: Page,
+    action: () => ({ redirect: "/sukses" }),
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+
+  const response = await handler(
+    new Request("http://test.local/kirim", { method: "POST", body: new FormData() }),
+  );
+  assert.equal(response.status, 303);
+  assert.equal(response.headers.get("location"), "/sukses");
+  assert.equal(await response.text(), "");
+});
+
+test("actionSchema: validasi FormData sebelum action dijalankan (Standard Schema)", async () => {
+  let actionDipanggil = 0;
+  const schema = {
+    "~standard": {
+      version: 1 as const,
+      vendor: "uji",
+      validate: (value: unknown) => {
+        const record = value as Record<string, unknown>;
+        const nama = record.nama;
+        if (typeof nama === "string" && nama.length >= 2) {
+          return { value: record };
+        }
+        return { issues: [{ message: "Nama wajib (≥2 karakter)", path: ["nama"] }] };
+      },
+    },
+  };
+  const page = basePage("/daftar", {
+    default: Page,
+    actionSchema: schema,
+    action: () => {
+      actionDipanggil += 1;
+      return { message: "terdaftar" };
+    },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+
+  const pendek = new FormData();
+  pendek.set("nama", "A");
+  const invalid = await handler(
+    new Request("http://test.local/daftar", { method: "POST", body: pendek }),
+  );
+  assert.equal(invalid.status, 400);
+  assert.ok((await invalid.text()).includes('"nama":"Nama wajib (≥2 karakter)"'));
+  assert.equal(actionDipanggil, 0, "action tidak dijalankan saat schema gagal");
+
+  const valid = new FormData();
+  valid.set("nama", "Rina");
+  const ok = await handler(
+    new Request("http://test.local/daftar", { method: "POST", body: valid }),
+  );
+  assert.equal(ok.status, 200);
+  assert.equal(actionDipanggil, 1);
+});
+
+test("halaman tanpa action: POST → 405 Method Not Allowed", async () => {
+  const page = basePage("/", { default: Page });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+
+  const response = await handler(
+    new Request("http://test.local/", { method: "POST", body: new FormData() }),
+  );
+  assert.equal(response.status, 405);
+  assert.equal(response.headers.get("allow"), "GET");
+});

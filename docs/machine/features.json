@@ -208,20 +208,26 @@
     },
     {
       "id": "mutations-server-actions",
-      "name": "Mutations / server actions / form actions",
-      "status": "planned",
+      "name": "Server actions (mutasi form per halaman: FormData, actionSchema, PRG, progressive enhancement)",
+      "status": "implemented",
       "since": null,
-      "priority": "p1",
+      "priority": "p0",
       "packages": [
-        "@ramonyx/core"
+        "@ramonyx/core",
+        "@ramonyx/ssr",
+        "@ramonyx/react"
       ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/server/src/handler.ts",
-        "packages/schema/src/validate.ts"
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/pages.test.ts",
+        "packages/react/src/client.ts",
+        "apps/playground/e2e/form.spec.ts",
+        "docs/adr/0057-server-actions.md"
       ],
       "limitations": [
-        "Belum ada implementasi; saat ini POST manual lewat API route"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Revalidasi antar-halaman menyusul (p1-revalidate)",
+        "Tanpa pending state klien/optimistic UI"
       ]
     },
     {
@@ -728,17 +734,22 @@
     },
     {
       "id": "forms",
-      "name": "Form handling (parsing, validasi, progressive enhancement)",
-      "status": "planned",
+      "name": "Form handling (action + FormData + actionSchema + progressive enhancement)",
+      "status": "implemented",
       "since": null,
       "priority": "p2",
-      "packages": [],
+      "packages": [
+        "@ramonyx/ssr"
+      ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/schema/src/validate.ts"
+        "packages/ssr/src/pages.ts",
+        "packages/core/src/page.ts",
+        "packages/core/test/page.test.ts",
+        "docs/adr/0057-server-actions.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Upload file besar belum dioptimasi (multipart di-buffer FormData)"
       ]
     },
     {

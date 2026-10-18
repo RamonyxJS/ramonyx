@@ -1,11 +1,14 @@
 import {
+  formDataToObject,
   HttpError,
   type LoadedPage,
   NONCE_HEADER,
+  type PageActionState,
   type RouteEntry,
   type RouteHandlerContext,
   route,
 } from "@ramonyx/core";
+import { type ValidationIssue, validate } from "@ramonyx/schema";
 import { defaultDocument, escapeHtml } from "./document.ts";
 import type { DocumentRenderer, ElementDescriptor, Renderer } from "./types.ts";
 
@@ -112,10 +115,11 @@ function buildPageTree(
   page: LoadedPage,
   data: unknown,
   params: Record<string, string>,
+  action: PageActionState | undefined,
 ): ElementDescriptor {
   let tree: ElementDescriptor = {
     type: page.page.default,
-    props: { data, params },
+    props: { data, params, action },
     children: [],
   };
   for (let index = page.layouts.length - 1; index >= 0; index -= 1) {
@@ -174,6 +178,8 @@ async function renderPage(
   client: ClientOptions | undefined,
   maxDocumentBytes: number,
   streaming: boolean,
+  actionState?: PageActionState,
+  statusOverride?: number,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
@@ -191,7 +197,7 @@ async function renderPage(
             log,
           });
 
-    const configuredStatus = page.page.metadata?.status;
+    const configuredStatus = statusOverride ?? page.page.metadata?.status;
     const status =
       typeof configuredStatus === "number" &&
       Number.isInteger(configuredStatus) &&
@@ -203,7 +209,7 @@ async function renderPage(
     const title = page.page.metadata?.title ?? "";
     const scripts = hydrationScripts(
       client,
-      { path: page.path, params, data },
+      { path: page.path, params, data, action: actionState },
       context.request.headers.get(NONCE_HEADER) ?? undefined,
     );
     const renderStream = renderer.renderStream?.bind(renderer);
@@ -214,7 +220,7 @@ async function renderPage(
       if (markerIndex !== -1) {
         const prefix = encoder.encode(shell.slice(0, markerIndex));
         const suffix = encoder.encode(shell.slice(markerIndex + BODY_MARKER.length));
-        const body = await renderStream(buildPageTree(page, data, params));
+        const body = await renderStream(buildPageTree(page, data, params, actionState));
         return new Response(
           streamDocument(
             body,
@@ -238,7 +244,7 @@ async function renderPage(
       // Dokumen kustom mengabaikan body/penanda → fallback sinkron di bawah (ADR-0047).
     }
 
-    const body = await renderer.render(buildPageTree(page, data, params));
+    const body = await renderer.render(buildPageTree(page, data, params, actionState));
     const document = documentRenderer({ title, body, status, scripts });
 
     if (document.length > maxDocumentBytes) {
@@ -302,6 +308,91 @@ async function renderPage(
   }
 }
 
+async function readFormData(request: Request): Promise<FormData> {
+  const type = (request.headers.get("content-type") ?? "").toLowerCase();
+  if (type.includes("multipart/form-data") || type.includes("application/x-www-form-urlencoded")) {
+    try {
+      return await request.formData();
+    } catch {
+      return new FormData();
+    }
+  }
+  return new FormData();
+}
+
+/** Issue validasi → pesan per field (kunci = segmen path pertama, `_` untuk akar). */
+function issuesToErrors(issues: readonly ValidationIssue[]): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const issue of issues) {
+    const key = issue.path.length > 0 ? String(issue.path[0]) : "_";
+    errors[key] ??= issue.message;
+  }
+  return errors;
+}
+
+/** POST ke halaman ber-`action`: validasi schema → action → render ulang (PRG 303 bila redirect). */
+async function runAction(
+  page: LoadedPage,
+  context: RouteHandlerContext,
+  renderer: Renderer,
+  documentRenderer: DocumentRenderer,
+  client: ClientOptions | undefined,
+  maxDocumentBytes: number,
+  streaming: boolean,
+): Promise<Response> {
+  const params = context.params as Record<string, string>;
+  const request = context.request;
+  const formData = await readFormData(request);
+
+  let actionState: PageActionState | undefined;
+  let status: number | undefined;
+
+  const schema = page.page.actionSchema;
+  if (schema !== undefined) {
+    const result = await validate(schema, formDataToObject(formData));
+    if (!result.ok) {
+      actionState = { ok: false, errors: issuesToErrors(result.issues) };
+      status = 400;
+    }
+  }
+
+  if (actionState === undefined) {
+    const action = page.page.action;
+    const result =
+      (await action?.({
+        params,
+        formData,
+        request,
+        env: context.env,
+        log: context.log,
+        json: <T = unknown>() => request.clone().json() as Promise<T>,
+      })) ?? {};
+    if (typeof result.redirect === "string" && result.redirect.length > 0) {
+      // PRG: 303 agar refresh tidak mengirim ulang POST (progressive enhancement).
+      return new Response(null, { status: 303, headers: { location: result.redirect } });
+    }
+    actionState = {
+      ok: result.errors === undefined,
+      errors: result.errors,
+      message: result.message,
+      data: result.data,
+    };
+    status = result.status ?? (result.errors === undefined ? 200 : 400);
+  }
+
+  return renderPage(
+    page,
+    context,
+    renderer,
+    documentRenderer,
+    client,
+    maxDocumentBytes,
+    streaming,
+    actionState,
+    status,
+  );
+}
+
 /**
  * Mengubah `LoadedPage[]` (hasil `@ramonyx/compiler`) menjadi `RouteEntry[]`
  * yang siap dipasang di `createHandler`.
@@ -310,26 +401,51 @@ async function renderPage(
  * Error: `HttpError` menentukan status/pesan publik; `error.tsx` terdekat dirender bila ada;
  * selain itu jatuh ke halaman fallback. Dengan `streaming: true` (dan renderer yang
  * menyediakan `renderStream`) body dikirim sebagai aliran; halaman error tetap sinkron.
+ *
+ * Halaman dengan `export const action` juga mendapat route **POST** di path yang sama
+ * (mutasi form + progressive enhancement — ADR-0057).
  */
 export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[] {
   const documentRenderer = options.document ?? defaultDocument;
   const maxDocumentBytes = options.maxDocumentBytes ?? DEFAULT_MAX_DOCUMENT_BYTES;
   const streaming = options.streaming === true;
 
-  return options.pages.map((page) => ({
-    method: "GET",
-    path: page.path,
-    definition: route({
-      handler: (context) =>
-        renderPage(
-          page,
-          context,
-          options.renderer,
-          documentRenderer,
-          options.client,
-          maxDocumentBytes,
-          streaming,
-        ),
-    }),
-  }));
+  const routes: RouteEntry[] = [];
+  for (const page of options.pages) {
+    routes.push({
+      method: "GET",
+      path: page.path,
+      definition: route({
+        handler: (context) =>
+          renderPage(
+            page,
+            context,
+            options.renderer,
+            documentRenderer,
+            options.client,
+            maxDocumentBytes,
+            streaming,
+          ),
+      }),
+    });
+    if (page.page.action !== undefined) {
+      routes.push({
+        method: "POST",
+        path: page.path,
+        definition: route({
+          handler: (context) =>
+            runAction(
+              page,
+              context,
+              options.renderer,
+              documentRenderer,
+              options.client,
+              maxDocumentBytes,
+              streaming,
+            ),
+        }),
+      });
+    }
+  }
+  return routes;
 }

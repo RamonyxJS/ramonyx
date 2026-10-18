@@ -63,3 +63,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0054](0054-machine-readable-docs.md) | Lapisan dokumentasi machine-readable (`docs/machine/`, llms.txt, validator CI) | Accepted |
 | [0055](0055-http-production-basics.md) | Dasar HTTP produksi: kompresi, ETag/304, fingerprinting aset, helper cache | Accepted |
 | [0056](0056-static-generation.md) | Static generation: `prerenderRoutes` + `ramonyx build --static` (dogfood docs, 404 HTML, NODE_ENV produksi) | Accepted |
+| [0057](0057-server-actions.md) | Server actions: `action` per halaman (FormData, actionSchema, PRG 303, progressive enhancement) | Accepted |

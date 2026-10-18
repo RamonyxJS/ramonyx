@@ -144,6 +144,15 @@ if (data.halo !== "dunia") throw new Error("isi halo: " + JSON.stringify(data));
 const rahasia = await app(new Request("http://uji/api/rahasia"));
 if (rahasia.status !== 403) throw new Error("rahasia: " + rahasia.status);
 
+// Action form (ADR-0057): POST ke path yang sama → HTML dirender ulang dengan pesan.
+const form = new FormData();
+form.set("nama", "Ramonyx");
+const aksi = await app(new Request("http://uji/", { method: "POST", body: form }));
+if (aksi.status !== 200) throw new Error("status action: " + aksi.status);
+const aksiHtml = await aksi.text();
+if (!aksiHtml.includes("Halo, Ramonyx!")) throw new Error("pesan action tidak tampil");
+if (!aksiHtml.includes('"action":{"ok":true')) throw new Error("payload action tidak ada");
+
 const hilang = await app(new Request("http://uji/tidak-ada"));
 if (hilang.status !== 404) throw new Error("404: " + hilang.status);
 console.log("SMOKE APP OK");

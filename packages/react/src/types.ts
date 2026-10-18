@@ -1,3 +1,4 @@
+import type { PageActionState } from "@ramonyx/core";
 import type { ReactNode } from "react";
 
 export interface PageProps<
@@ -6,6 +7,8 @@ export interface PageProps<
 > {
   readonly data: Data;
   readonly params: Params;
+  /** Hasil action terakhir (POST) — tersedia setelah mutasi form (ADR-0057). */
+  readonly action?: PageActionState;
 }
 
 export interface LayoutProps {

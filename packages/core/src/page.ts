@@ -1,3 +1,4 @@
+import type { StandardSchema } from "@ramonyx/schema";
 import type { EnvReader, Logger } from "./types.ts";
 
 export interface PageMetadata {
@@ -19,6 +20,52 @@ export type PageLoader<P = unknown, Q = unknown, D = unknown> = (
   context: PageLoaderContext<P, Q>,
 ) => D | Promise<D>;
 
+/** Konteks action halaman (mutasi lewat POST — ADR-0057). */
+export interface PageActionContext<P = Record<string, string>> {
+  readonly params: P;
+  /** Data form (kosong bila body bukan form). */
+  readonly formData: FormData;
+  readonly request: Request;
+  readonly env: EnvReader;
+  readonly log: Logger;
+  /** Body JSON (bila `content-type: application/json`) — untuk pemanggilan programatik. */
+  json<T = unknown>(): Promise<T>;
+}
+
+/** Hasil action yang dipakai halaman (tersedia sebagai prop `action` + payload hydration). */
+export interface PageActionState {
+  readonly ok: boolean;
+  readonly errors?: Readonly<Record<string, string>>;
+  readonly message?: string;
+  readonly data?: unknown;
+}
+
+/** Nilai balik action: `redirect` (PRG 303), `errors` (validasi), atau pesan/data. */
+export interface PageActionResult {
+  readonly redirect?: string;
+  readonly status?: number;
+  readonly errors?: Readonly<Record<string, string>>;
+  readonly message?: string;
+  readonly data?: unknown;
+}
+
+export type PageAction<P = Record<string, string>> = (
+  context: PageActionContext<P>,
+) => PageActionResult | undefined | Promise<PageActionResult | undefined>;
+
+/**
+ * FormData → objek biasa untuk validasi schema: nilai tunggal → string/File,
+ * nilai berulang → array. Koersi tipe (angka/boolean) diserahkan ke schema.
+ */
+export function formDataToObject(formData: FormData): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const key of new Set(formData.keys())) {
+    const values = formData.getAll(key);
+    result[key] = values.length === 1 ? values[0] : values;
+  }
+  return result;
+}
+
 /**
  * Bentuk modul page/layout/error (`page.tsx`, `layout.tsx`, `error.tsx`).
  * `default` sengaja `unknown`: core tidak tahu UI library-nya apa (ADR-0003).
@@ -39,6 +86,10 @@ export interface PageModule {
   readonly getStaticPaths?: () =>
     | ReadonlyArray<Record<string, string>>
     | Promise<ReadonlyArray<Record<string, string>>>;
+  /** Mutasi form untuk halaman ini (POST ke path yang sama) — ADR-0057. */
+  readonly action?: PageAction<Record<string, string>>;
+  /** Validasi FormData (Standard Schema) sebelum action dijalankan. */
+  readonly actionSchema?: StandardSchema<unknown, unknown>;
 }
 
 /** Hasil pemindaian halaman oleh `@ramonyx/compiler`, siap dirender `@ramonyx/ssr`. */

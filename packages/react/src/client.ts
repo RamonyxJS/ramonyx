@@ -1,4 +1,4 @@
-import type { PageModule } from "@ramonyx/core";
+import type { PageActionState, PageModule } from "@ramonyx/core";
 import { createElement, type ElementType, type ReactElement } from "react";
 import { hydrateRoot, type Root } from "react-dom/client";
 
@@ -13,6 +13,8 @@ export interface HydrationPayload {
   readonly path: string;
   readonly params: Record<string, string>;
   readonly data: unknown;
+  /** Hasil action terakhir (ADR-0057). */
+  readonly action?: PageActionState;
 }
 
 declare global {
@@ -37,6 +39,7 @@ function buildElement(registry: ClientRegistry, payload: HydrationPayload): Reac
   let element: ReactElement = createElement(entry.page.default as ElementType, {
     data: payload.data,
     params: payload.params,
+    action: payload.action,
   });
   for (let index = entry.layouts.length - 1; index >= 0; index -= 1) {
     const layout = entry.layouts[index];
@@ -79,14 +82,49 @@ function readPayloadFromDocument(doc: Document): HydrationPayload | null {
 }
 
 /**
- * Soft navigation: klik link same-origin → fetch HTML → tukar isi `#ramonyx-root`
- * → hydrate ulang → `pushState`. Fallback ke navigasi penuh bila respons bukan HTML.
+ * Soft navigation + progressive enhancement form (ADR-0008/ADR-0057):
+ * - klik link same-origin → fetch HTML → tukar isi `#ramonyx-root` → hydrate ulang → `pushState`;
+ * - submit form `method="post"` same-origin → fetch FormData → tukar HTML (tanpa reload);
+ *   respons non-HTML / error jaringan → jatuh ke submit native.
+ * Fallback penuh bila respons bukan HTML.
  */
 export function enableClientNavigation(registry: ClientRegistry): ClientNavigation {
   let controller: AbortController | null = null;
 
   const fullLoad = (url: string): void => {
     window.location.assign(url);
+  };
+
+  /** Terapkan dokumen HTML baru (navigasi atau respons action). `false` → pemanggil fallback. */
+  const applyHtml = (html: string, url: string, push: boolean, scroll = true): boolean => {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const nextContainer = doc.getElementById(MOUNT_ID);
+    const payload = readPayloadFromDocument(doc);
+    const container = document.getElementById(MOUNT_ID);
+    if (nextContainer === null || payload === null || container === null) {
+      return false;
+    }
+
+    const element = buildElement(registry, payload);
+    if (element === null) {
+      return false;
+    }
+
+    activeRoot?.unmount();
+    container.innerHTML = nextContainer.innerHTML;
+    activeRoot = hydrateRoot(container, element);
+
+    // Payload global harus mencerminkan halaman AKTIF (kontrak `window.__RAMONYX__`);
+    // tanpa ini, kode yang membacanya setelah soft navigation melihat data basi.
+    window.__RAMONYX__ = payload;
+    document.title = doc.title;
+    if (push) {
+      window.history.pushState({ ramonyx: true }, "", url);
+    }
+    if (scroll) {
+      window.scrollTo(0, 0);
+    }
+    return true;
   };
 
   const navigate = async (url: string, push: boolean): Promise<void> => {
@@ -105,39 +143,50 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
         fullLoad(url);
         return;
       }
-
-      const doc = new DOMParser().parseFromString(await response.text(), "text/html");
-      const nextContainer = doc.getElementById(MOUNT_ID);
-      const payload = readPayloadFromDocument(doc);
-      const container = document.getElementById(MOUNT_ID);
-      if (nextContainer === null || payload === null || container === null) {
+      if (!applyHtml(await response.text(), url, push)) {
         fullLoad(url);
-        return;
       }
-
-      const element = buildElement(registry, payload);
-      if (element === null) {
-        fullLoad(url);
-        return;
-      }
-
-      activeRoot?.unmount();
-      container.innerHTML = nextContainer.innerHTML;
-      activeRoot = hydrateRoot(container, element);
-
-      // Payload global harus mencerminkan halaman AKTIF (kontrak `window.__RAMONYX__`);
-      // tanpa ini, kode yang membacanya setelah soft navigation melihat data basi.
-      window.__RAMONYX__ = payload;
-      document.title = doc.title;
-      if (push) {
-        window.history.pushState({ ramonyx: true }, "", url);
-      }
-      window.scrollTo(0, 0);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         return;
       }
       fullLoad(url);
+    }
+  };
+
+  const submitForm = async (
+    form: HTMLFormElement,
+    url: string,
+    submitter: HTMLElement | null,
+  ): Promise<void> => {
+    controller?.abort();
+    const current = new AbortController();
+    controller = current;
+
+    try {
+      const body = new FormData(form, submitter instanceof HTMLElement ? submitter : undefined);
+      const response = await fetch(url, {
+        method: "POST",
+        body,
+        credentials: "same-origin",
+        headers: { "x-ramonyx-action": "1" },
+        signal: current.signal,
+      });
+      const isHtml = (response.headers.get("content-type") ?? "").includes("text/html");
+      if (!isHtml) {
+        form.submit();
+        return;
+      }
+      const target = response.redirected ? response.url : url;
+      // Pertahankan posisi scroll: halaman yang sama dirender ulang dengan pesan/kesalahan form.
+      if (!applyHtml(await response.text(), target, response.redirected, false)) {
+        form.submit();
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+      form.submit();
     }
   };
 
@@ -182,16 +231,42 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
     void navigate(url.href, true);
   };
 
+  const onSubmit = (event: SubmitEvent): void => {
+    if (event.defaultPrevented) {
+      return;
+    }
+    const form = event.target instanceof HTMLFormElement ? event.target : null;
+    if (form === null || (form.method || "get").toLowerCase() !== "post") {
+      return;
+    }
+    if (form.hasAttribute("data-ramonyx-native")) {
+      return;
+    }
+    let action: URL;
+    try {
+      action = new URL(form.action || window.location.href, window.location.href);
+    } catch {
+      return;
+    }
+    if (action.origin !== window.location.origin) {
+      return;
+    }
+    event.preventDefault();
+    void submitForm(form, action.href, event.submitter);
+  };
+
   const onPopState = (): void => {
     void navigate(window.location.href, false);
   };
 
   document.addEventListener("click", onClick);
+  document.addEventListener("submit", onSubmit);
   window.addEventListener("popstate", onPopState);
 
   return {
     dispose(): void {
       document.removeEventListener("click", onClick);
+      document.removeEventListener("submit", onSubmit);
       window.removeEventListener("popstate", onPopState);
       controller?.abort();
     },

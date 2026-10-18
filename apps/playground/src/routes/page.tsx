@@ -6,7 +6,7 @@ export const metadata = { title: "Beranda — Ramonyx Playground" };
 export async function loader() {
   return {
     greeting: "Halo dari loader SSR",
-    links: ["/users", "/api/hello"],
+    links: ["/users", "/form", "/api/hello"],
   };
 }
 

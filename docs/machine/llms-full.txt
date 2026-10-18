@@ -216,20 +216,26 @@
     },
     {
       "id": "mutations-server-actions",
-      "name": "Mutations / server actions / form actions",
-      "status": "planned",
+      "name": "Server actions (mutasi form per halaman: FormData, actionSchema, PRG, progressive enhancement)",
+      "status": "implemented",
       "since": null,
-      "priority": "p1",
+      "priority": "p0",
       "packages": [
-        "@ramonyx/core"
+        "@ramonyx/core",
+        "@ramonyx/ssr",
+        "@ramonyx/react"
       ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/server/src/handler.ts",
-        "packages/schema/src/validate.ts"
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/pages.test.ts",
+        "packages/react/src/client.ts",
+        "apps/playground/e2e/form.spec.ts",
+        "docs/adr/0057-server-actions.md"
       ],
       "limitations": [
-        "Belum ada implementasi; saat ini POST manual lewat API route"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Revalidasi antar-halaman menyusul (p1-revalidate)",
+        "Tanpa pending state klien/optimistic UI"
       ]
     },
     {
@@ -736,17 +742,22 @@
     },
     {
       "id": "forms",
-      "name": "Form handling (parsing, validasi, progressive enhancement)",
-      "status": "planned",
+      "name": "Form handling (action + FormData + actionSchema + progressive enhancement)",
+      "status": "implemented",
       "since": null,
       "priority": "p2",
-      "packages": [],
+      "packages": [
+        "@ramonyx/ssr"
+      ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/schema/src/validate.ts"
+        "packages/ssr/src/pages.ts",
+        "packages/core/src/page.ts",
+        "packages/core/test/page.test.ts",
+        "docs/adr/0057-server-actions.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Upload file besar belum dioptimasi (multipart di-buffer FormData)"
       ]
     },
     {
@@ -1841,6 +1852,24 @@
         "static-export",
         "cli-devtools"
       ]
+    },
+    {
+      "id": "ADR-0057",
+      "file": "0057-server-actions.md",
+      "title": "Server Actions — Mutasi Form First-Class per Halaman",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Mutasi form lewat `export const action` di halaman (POST ke path yang sama, FormData, actionSchema opsional, PRG 303 untuk redirect) dengan render ulang + prop `action` di payload; klien mengintersepsi submit untuk pengalaman tanpa reload, tetap berfungsi tanpa JavaScript.",
+      "related": [
+        "ADR-0004",
+        "ADR-0007",
+        "ADR-0008"
+      ],
+      "features": [
+        "mutations-server-actions",
+        "forms"
+      ]
     }
   ]
 }
@@ -1860,7 +1889,10 @@
       "good": "export type Status = \"ok\" | \"error\";\nconst STATUS = { ok: \"ok\" } as const;",
       "bad": "enum Status { Ok, Error }\nclass X { constructor(private y: number) {} }",
       "enforcement": "tsconfig `erasableSyntaxOnly` + `verbatimModuleSyntax`; `pnpm typecheck`",
-      "adrs": ["ADR-0002", "ADR-0006"]
+      "adrs": [
+        "ADR-0002",
+        "ADR-0006"
+      ]
     },
     {
       "id": "relative-imports-extension",
@@ -1870,7 +1902,9 @@
       "good": "import { createApp } from \"./app.ts\";",
       "bad": "import { createApp } from \"./app\";",
       "enforcement": "Konsisten di seluruh repo; test loader akan gagal bila salah",
-      "adrs": ["ADR-0002"]
+      "adrs": [
+        "ADR-0002"
+      ]
     },
     {
       "id": "node-builtins-boundary",
@@ -1880,7 +1914,10 @@
       "good": "// packages/security/src/ssrf.ts\nimport { lookup } from \"node:dns/promises\";",
       "bad": "// packages/core/src/route.ts\nimport { readFile } from \"node:fs/promises\";",
       "enforcement": "Lint (Biome) melarang `node:*` di luar paket yang diizinkan",
-      "adrs": ["ADR-0002", "ADR-0015"]
+      "adrs": [
+        "ADR-0002",
+        "ADR-0015"
+      ]
     },
     {
       "id": "no-jsx-in-framework",
@@ -1890,7 +1927,9 @@
       "good": "// packages/react/src/renderer.ts — fungsi murni tanpa JSX\nreturn createElement(page.component, props);",
       "bad": "// packages/react/src/renderer.ts\nreturn <page.component {...props} />;",
       "enforcement": "Struktur repo (tidak ada `.tsx` di packages/*/src) + test",
-      "adrs": ["ADR-0006"]
+      "adrs": [
+        "ADR-0006"
+      ]
     },
     {
       "id": "test-server-close-finally",
@@ -1910,7 +1949,9 @@
       "good": "\"start\": \"NODE_ENV=production node --import ./tools/register.mjs src/server.ts\"",
       "bad": "\"start\": \"node src/server.ts\"",
       "enforcement": "Template + skrip repo sudah benar; CI menjalankan build produksi di e2e",
-      "adrs": ["ADR-0048"]
+      "adrs": [
+        "ADR-0048"
+      ]
     },
     {
       "id": "loader-data-json",
@@ -1920,7 +1961,9 @@
       "good": "export function load() { return { items: [\"a\", \"b\"] }; }",
       "bad": "export function load() { return { when: new Date(), fn: () => 1 }; }",
       "enforcement": "Serialisasi payload saat render; test SSR",
-      "adrs": ["ADR-0007"]
+      "adrs": [
+        "ADR-0007"
+      ]
     },
     {
       "id": "streaming-server-edge",
@@ -1930,7 +1973,9 @@
       "good": "import { renderToReadableStream } from \"react-dom/server.edge\";",
       "bad": "import { renderToReadableStream } from \"react-dom/server.browser\";",
       "enforcement": "Impor langsung di `packages/ssr`; test streaming + e2e",
-      "adrs": ["ADR-0047"]
+      "adrs": [
+        "ADR-0047"
+      ]
     },
     {
       "id": "error-pages-not-hydrated",
@@ -1940,7 +1985,9 @@
       "good": "// error.tsx: tautan <a href> biasa",
       "bad": "// error.tsx: useEffect(() => fetch(...)) berharap hydration jalan",
       "enforcement": "Renderer tidak menyuntikkan script client di halaman error; e2e errors.spec",
-      "adrs": ["ADR-0007"]
+      "adrs": [
+        "ADR-0007"
+      ]
     },
     {
       "id": "docs-relative-links",
@@ -1950,7 +1997,9 @@
       "good": "[arsitektur](../architecture.md)",
       "bad": "[arsitektur](/dokumen/architecture)",
       "enforcement": "Rewriter tautan markdown otomatis + validasi `pnpm docs:validate`",
-      "adrs": ["ADR-0052"]
+      "adrs": [
+        "ADR-0052"
+      ]
     },
     {
       "id": "numbers-single-source",
@@ -1960,7 +2009,9 @@
       "good": "Angka aktual: `docs/machine/stats.json` (generate: `pnpm docs:stats`).",
       "bad": "Repo punya 161 tes Node dan 111 tes Rust.",
       "enforcement": "`pnpm docs:validate` + review",
-      "adrs": ["ADR-0054"]
+      "adrs": [
+        "ADR-0054"
+      ]
     },
     {
       "id": "claims-need-evidence",
@@ -1990,7 +2041,10 @@
       "good": "pnpm bench:report   # CI: report-only",
       "bad": "VITALS_STRICT=1 di CI tanpa baseline per-lingkungan",
       "enforcement": "Guard `cpuModel` di runner bench",
-      "adrs": ["ADR-0045", "ADR-0048"]
+      "adrs": [
+        "ADR-0045",
+        "ADR-0048"
+      ]
     },
     {
       "id": "dependency-quarantine",
@@ -2000,7 +2054,9 @@
       "good": "Tunggu ≥24 jam setelah rilis versi baru sebelum menaikkan dependency.",
       "bad": "pnpm add lib@latest && pnpm install --config.minimumReleaseAge=0",
       "enforcement": "`pnpm-workspace.yaml` + review",
-      "adrs": ["ADR-0016"]
+      "adrs": [
+        "ADR-0016"
+      ]
     },
     {
       "id": "node-version",
@@ -2010,7 +2066,10 @@
       "good": "node --import ./tools/register.mjs src/server.ts",
       "bad": "node src/server.tsx   # JSX tidak diproses Node murni",
       "enforcement": "`engines` di package.json; loader publik `@ramonyx/compiler/register`",
-      "adrs": ["ADR-0002", "ADR-0006"]
+      "adrs": [
+        "ADR-0002",
+        "ADR-0006"
+      ]
     },
     {
       "id": "client-server-boundary",
@@ -2021,6 +2080,18 @@
       "bad": "import { readFile } from \"node:fs/promises\" di komponen yang di-hydrate",
       "enforcement": "BELUM ditegakkan lint — kandidat TODO (analisis batas server/client)",
       "adrs": []
+    },
+    {
+      "id": "mutations-via-action",
+      "rule": "Mutasi yang berasal dari form ditulis sebagai `export const action` di halaman (POST ke path yang sama), bukan API route + fetch manual.",
+      "rationale": "Action memberi validasi (actionSchema), pesan error terstruktur, dan progressive enhancement (berfungsi tanpa JS) tanpa boilerplate state client.",
+      "scope": "app",
+      "good": "export function action({ formData }: PageActionContext) {\n  const nama = String(formData.get(\"nama\") ?? \"\").trim();\n  if (nama.length < 2) return { errors: { nama: \"Nama minimal 2 karakter\" } };\n  return { message: `Halo, ${nama}!` };\n}",
+      "bad": "// fetch manual + useState untuk error di setiap form\nonSubmit = async (e) => { e.preventDefault(); const res = await fetch(\"/api/simpan\", { method: \"POST\", body: JSON.stringify(...) }); ... }",
+      "enforcement": "Konvensi + test (ssr action tests, e2e form); API route tetap sah untuk non-form",
+      "adrs": [
+        "ADR-0057"
+      ]
     }
   ]
 }
@@ -2406,7 +2477,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T18:36:18.914Z",
+  "generatedAt": "2026-10-18T21:01:34.830Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2482,10 +2553,20 @@
       "source": "packages/core/src/index.ts",
       "values": [
         "HttpError",
+        "LoadedPage",
         "NONCE_HEADER",
+        "PageAction",
+        "PageActionContext",
+        "PageActionResult",
+        "PageActionState",
+        "PageLoader",
+        "PageLoaderContext",
+        "PageMetadata",
+        "PageModule",
         "REMOTE_ADDRESS_HEADER",
         "cacheControl",
         "defineConfig",
+        "formDataToObject",
         "resolveConfig",
         "route",
         "silentLogger"
@@ -2496,14 +2577,9 @@
         "EnvReader",
         "FetchHandler",
         "HttpErrorOptions",
-        "LoadedPage",
         "Logger",
         "Middleware",
         "MiddlewareContext",
-        "PageLoader",
-        "PageLoaderContext",
-        "PageMetadata",
-        "PageModule",
         "RamonyxConfig",
         "RamonyxConfigInput",
         "RouteDefinition",
@@ -2535,7 +2611,9 @@
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "HttpError",
+        "cacheControl",
         "defineConfig",
+        "formDataToObject",
         "resolveConfig",
         "route"
       ],
@@ -2545,6 +2623,10 @@
         "Logger",
         "Middleware",
         "MiddlewareContext",
+        "PageAction",
+        "PageActionContext",
+        "PageActionResult",
+        "PageActionState",
         "RamonyxConfig",
         "RamonyxConfigInput",
         "RouteDefinition",
@@ -2679,7 +2761,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T18:36:20.041Z",
+  "generatedAt": "2026-10-18T21:01:35.622Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2743,8 +2825,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-18T18:35:28.257Z",
-  "commit": "9ef774ec888a91cdc5eda8dd74fc2126d35767a2",
+  "generatedAt": "2026-10-18T21:00:41.564Z",
+  "commit": "7b5166335b7a6ba408b0805f15cd84b3f902f9e6",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -2766,11 +2848,11 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 56,
+  "adrs": 57,
   "tests": {
-    "node": 179,
+    "node": 184,
     "rust": 111,
-    "e2eSpecFiles": 4
+    "e2eSpecFiles": 5
   }
 }
 ```

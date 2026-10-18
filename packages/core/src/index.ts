@@ -6,12 +6,17 @@ export { NONCE_HEADER, REMOTE_ADDRESS_HEADER } from "./constants.ts";
 export type { HttpErrorOptions } from "./errors.ts";
 export { HttpError } from "./errors.ts";
 export { silentLogger } from "./logger.ts";
-export type {
-  LoadedPage,
-  PageLoader,
-  PageLoaderContext,
-  PageMetadata,
-  PageModule,
+export {
+  formDataToObject,
+  type LoadedPage,
+  type PageAction,
+  type PageActionContext,
+  type PageActionResult,
+  type PageActionState,
+  type PageLoader,
+  type PageLoaderContext,
+  type PageMetadata,
+  type PageModule,
 } from "./page.ts";
 export { route } from "./route.ts";
 export type {

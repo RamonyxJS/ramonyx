@@ -22,7 +22,7 @@
 
 ### `p0-server-actions` — Server actions & form handling (mutasi first-class)
 
-*tema: data · ukuran: L · status: open · sumber: gap §3 (mutations)*
+*tema: data · ukuran: L · status: done · sumber: gap §3 (mutations) — selesai ADR-0057*
 
 - **Apa**: API `action()` untuk mutasi dari form/komponen: validasi schema di trust boundary, error kembali ke form, progressive enhancement (bekerja tanpa JS), revalidasi data setelah mutasi.
 - **Kenapa penting untuk bersaing**: Tanpa mutasi first-class setiap aplikasi harus merakit API route + fetch manual + state client; framework pesaing menjadikan mutasi sebagai jalur utama sehingga CRUD sederhana pun jauh lebih ringkas di sana.

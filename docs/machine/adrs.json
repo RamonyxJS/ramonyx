@@ -727,6 +727,24 @@
         "static-export",
         "cli-devtools"
       ]
+    },
+    {
+      "id": "ADR-0057",
+      "file": "0057-server-actions.md",
+      "title": "Server Actions — Mutasi Form First-Class per Halaman",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Mutasi form lewat `export const action` di halaman (POST ke path yang sama, FormData, actionSchema opsional, PRG 303 untuk redirect) dengan render ulang + prop `action` di payload; klien mengintersepsi submit untuk pengalaman tanpa reload, tetap berfungsi tanpa JavaScript.",
+      "related": [
+        "ADR-0004",
+        "ADR-0007",
+        "ADR-0008"
+      ],
+      "features": [
+        "mutations-server-actions",
+        "forms"
+      ]
     }
   ]
 }

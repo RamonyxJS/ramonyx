@@ -9,7 +9,10 @@
       "good": "export type Status = \"ok\" | \"error\";\nconst STATUS = { ok: \"ok\" } as const;",
       "bad": "enum Status { Ok, Error }\nclass X { constructor(private y: number) {} }",
       "enforcement": "tsconfig `erasableSyntaxOnly` + `verbatimModuleSyntax`; `pnpm typecheck`",
-      "adrs": ["ADR-0002", "ADR-0006"]
+      "adrs": [
+        "ADR-0002",
+        "ADR-0006"
+      ]
     },
     {
       "id": "relative-imports-extension",
@@ -19,7 +22,9 @@
       "good": "import { createApp } from \"./app.ts\";",
       "bad": "import { createApp } from \"./app\";",
       "enforcement": "Konsisten di seluruh repo; test loader akan gagal bila salah",
-      "adrs": ["ADR-0002"]
+      "adrs": [
+        "ADR-0002"
+      ]
     },
     {
       "id": "node-builtins-boundary",
@@ -29,7 +34,10 @@
       "good": "// packages/security/src/ssrf.ts\nimport { lookup } from \"node:dns/promises\";",
       "bad": "// packages/core/src/route.ts\nimport { readFile } from \"node:fs/promises\";",
       "enforcement": "Lint (Biome) melarang `node:*` di luar paket yang diizinkan",
-      "adrs": ["ADR-0002", "ADR-0015"]
+      "adrs": [
+        "ADR-0002",
+        "ADR-0015"
+      ]
     },
     {
       "id": "no-jsx-in-framework",
@@ -39,7 +47,9 @@
       "good": "// packages/react/src/renderer.ts — fungsi murni tanpa JSX\nreturn createElement(page.component, props);",
       "bad": "// packages/react/src/renderer.ts\nreturn <page.component {...props} />;",
       "enforcement": "Struktur repo (tidak ada `.tsx` di packages/*/src) + test",
-      "adrs": ["ADR-0006"]
+      "adrs": [
+        "ADR-0006"
+      ]
     },
     {
       "id": "test-server-close-finally",
@@ -59,7 +69,9 @@
       "good": "\"start\": \"NODE_ENV=production node --import ./tools/register.mjs src/server.ts\"",
       "bad": "\"start\": \"node src/server.ts\"",
       "enforcement": "Template + skrip repo sudah benar; CI menjalankan build produksi di e2e",
-      "adrs": ["ADR-0048"]
+      "adrs": [
+        "ADR-0048"
+      ]
     },
     {
       "id": "loader-data-json",
@@ -69,7 +81,9 @@
       "good": "export function load() { return { items: [\"a\", \"b\"] }; }",
       "bad": "export function load() { return { when: new Date(), fn: () => 1 }; }",
       "enforcement": "Serialisasi payload saat render; test SSR",
-      "adrs": ["ADR-0007"]
+      "adrs": [
+        "ADR-0007"
+      ]
     },
     {
       "id": "streaming-server-edge",
@@ -79,7 +93,9 @@
       "good": "import { renderToReadableStream } from \"react-dom/server.edge\";",
       "bad": "import { renderToReadableStream } from \"react-dom/server.browser\";",
       "enforcement": "Impor langsung di `packages/ssr`; test streaming + e2e",
-      "adrs": ["ADR-0047"]
+      "adrs": [
+        "ADR-0047"
+      ]
     },
     {
       "id": "error-pages-not-hydrated",
@@ -89,7 +105,9 @@
       "good": "// error.tsx: tautan <a href> biasa",
       "bad": "// error.tsx: useEffect(() => fetch(...)) berharap hydration jalan",
       "enforcement": "Renderer tidak menyuntikkan script client di halaman error; e2e errors.spec",
-      "adrs": ["ADR-0007"]
+      "adrs": [
+        "ADR-0007"
+      ]
     },
     {
       "id": "docs-relative-links",
@@ -99,7 +117,9 @@
       "good": "[arsitektur](../architecture.md)",
       "bad": "[arsitektur](/dokumen/architecture)",
       "enforcement": "Rewriter tautan markdown otomatis + validasi `pnpm docs:validate`",
-      "adrs": ["ADR-0052"]
+      "adrs": [
+        "ADR-0052"
+      ]
     },
     {
       "id": "numbers-single-source",
@@ -109,7 +129,9 @@
       "good": "Angka aktual: `docs/machine/stats.json` (generate: `pnpm docs:stats`).",
       "bad": "Repo punya 161 tes Node dan 111 tes Rust.",
       "enforcement": "`pnpm docs:validate` + review",
-      "adrs": ["ADR-0054"]
+      "adrs": [
+        "ADR-0054"
+      ]
     },
     {
       "id": "claims-need-evidence",
@@ -139,7 +161,10 @@
       "good": "pnpm bench:report   # CI: report-only",
       "bad": "VITALS_STRICT=1 di CI tanpa baseline per-lingkungan",
       "enforcement": "Guard `cpuModel` di runner bench",
-      "adrs": ["ADR-0045", "ADR-0048"]
+      "adrs": [
+        "ADR-0045",
+        "ADR-0048"
+      ]
     },
     {
       "id": "dependency-quarantine",
@@ -149,7 +174,9 @@
       "good": "Tunggu ≥24 jam setelah rilis versi baru sebelum menaikkan dependency.",
       "bad": "pnpm add lib@latest && pnpm install --config.minimumReleaseAge=0",
       "enforcement": "`pnpm-workspace.yaml` + review",
-      "adrs": ["ADR-0016"]
+      "adrs": [
+        "ADR-0016"
+      ]
     },
     {
       "id": "node-version",
@@ -159,7 +186,10 @@
       "good": "node --import ./tools/register.mjs src/server.ts",
       "bad": "node src/server.tsx   # JSX tidak diproses Node murni",
       "enforcement": "`engines` di package.json; loader publik `@ramonyx/compiler/register`",
-      "adrs": ["ADR-0002", "ADR-0006"]
+      "adrs": [
+        "ADR-0002",
+        "ADR-0006"
+      ]
     },
     {
       "id": "client-server-boundary",
@@ -170,6 +200,18 @@
       "bad": "import { readFile } from \"node:fs/promises\" di komponen yang di-hydrate",
       "enforcement": "BELUM ditegakkan lint — kandidat TODO (analisis batas server/client)",
       "adrs": []
+    },
+    {
+      "id": "mutations-via-action",
+      "rule": "Mutasi yang berasal dari form ditulis sebagai `export const action` di halaman (POST ke path yang sama), bukan API route + fetch manual.",
+      "rationale": "Action memberi validasi (actionSchema), pesan error terstruktur, dan progressive enhancement (berfungsi tanpa JS) tanpa boilerplate state client.",
+      "scope": "app",
+      "good": "export function action({ formData }: PageActionContext) {\n  const nama = String(formData.get(\"nama\") ?? \"\").trim();\n  if (nama.length < 2) return { errors: { nama: \"Nama minimal 2 karakter\" } };\n  return { message: `Halo, ${nama}!` };\n}",
+      "bad": "// fetch manual + useState untuk error di setiap form\nonSubmit = async (e) => { e.preventDefault(); const res = await fetch(\"/api/simpan\", { method: \"POST\", body: JSON.stringify(...) }); ... }",
+      "enforcement": "Konvensi + test (ssr action tests, e2e form); API route tetap sah untuk non-form",
+      "adrs": [
+        "ADR-0057"
+      ]
     }
   ]
 }

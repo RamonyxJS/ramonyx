@@ -63,7 +63,7 @@ test("playground API end-to-end (file routing + createTestServer)", async () => 
 
 test("playground halaman SSR (layout, loader, error boundary)", async () => {
   const { logger, lines } = collectingLogger();
-  const app = await createApp({ logger });
+  const app = await createApp({ logger, clientScript: "/assets/client.js" });
   const server = await createTestServerFromHandler(app);
 
   try {
@@ -74,6 +74,9 @@ test("playground halaman SSR (layout, loader, error boundary)", async () => {
     assert.ok(homeHtml.includes("<title>Beranda — Ramonyx Playground</title>"));
     assert.ok(homeHtml.includes("Halo dari loader SSR"));
     assert.ok(homeHtml.includes("<strong>Ramonyx Playground</strong>"), "layout root terpakai");
+    assert.ok(homeHtml.includes("Klik saya:"), "komponen interaktif dirender server");
+    assert.ok(homeHtml.includes('window.__RAMONYX__={"path":"/","params":{}'));
+    assert.ok(homeHtml.includes('<script type="module" src="/assets/client.js"></script>'));
 
     const users = await server.fetch("/users");
     assert.equal(users.status, 200);

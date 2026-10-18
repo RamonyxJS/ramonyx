@@ -14,6 +14,8 @@ export interface DocumentOptions {
   readonly title: string;
   readonly body: string;
   readonly head?: string;
+  /** HTML mentah yang ditempatkan sebelum `</body>` (mis. script hydration). */
+  readonly scripts?: string;
   readonly status: number;
 }
 

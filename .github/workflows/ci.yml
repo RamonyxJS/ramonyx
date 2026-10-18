@@ -25,6 +25,7 @@ jobs:
         run: pnpm typecheck
       - name: Test
         run: pnpm test
+      - name: Build (client bundle)
+        run: pnpm build
       - name: Security checks
         run: pnpm audit --audit-level high
-      # Build menyusul Phase 2 (ADR-0005: tanpa bundler di Phase 1)

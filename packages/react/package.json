@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
   },
   "dependencies": {
+    "@ramonyx/core": "workspace:*",
     "@ramonyx/ssr": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1"

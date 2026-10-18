@@ -8,10 +8,17 @@ import {
 import { defaultDocument, escapeHtml } from "./document.ts";
 import type { DocumentRenderer, ElementDescriptor, Renderer } from "./types.ts";
 
+export interface ClientOptions {
+  /** URL bundle client, mis. "/assets/client.js". */
+  readonly script: string;
+}
+
 export interface CreatePageRoutesOptions {
   readonly pages: readonly LoadedPage[];
   readonly renderer: Renderer;
   readonly document?: DocumentRenderer;
+  /** Isi untuk mengaktifkan hydration (payload + `<script type="module">`). */
+  readonly client?: ClientOptions;
 }
 
 interface PublicError {
@@ -60,11 +67,25 @@ function fallbackBody(error: PublicError): string {
   return `<h1>${error.status}</h1><p>${escapeHtml(error.message)}</p>`;
 }
 
+/** Payload hydration → JSON yang aman ditempel di dalam `<script>` (escape `<`). */
+function serializePayload(payload: unknown): string {
+  return JSON.stringify(payload).replaceAll("<", "\\u003c");
+}
+
+function hydrationScripts(client: ClientOptions | undefined, payload: unknown): string {
+  if (client === undefined) {
+    return "";
+  }
+  return `<script>window.__RAMONYX__=${serializePayload(payload)}</script>
+<script type="module" src="${escapeHtml(client.script)}"></script>`;
+}
+
 async function renderPage(
   page: LoadedPage,
   context: RouteHandlerContext,
   renderer: Renderer,
   documentRenderer: DocumentRenderer,
+  client: ClientOptions | undefined,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
@@ -84,7 +105,12 @@ async function renderPage(
 
     const body = await renderer.render(buildPageTree(page, data, params));
     return htmlResponse(
-      documentRenderer({ title: page.page.metadata?.title ?? "", body, status: 200 }),
+      documentRenderer({
+        title: page.page.metadata?.title ?? "",
+        body,
+        status: 200,
+        scripts: hydrationScripts(client, { path: page.path, params, data }),
+      }),
       200,
     );
   } catch (error) {
@@ -146,7 +172,8 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
     method: "GET",
     path: page.path,
     definition: route({
-      handler: (context) => renderPage(page, context, options.renderer, documentRenderer),
+      handler: (context) =>
+        renderPage(page, context, options.renderer, documentRenderer, options.client),
     }),
   }));
 }

@@ -190,3 +190,62 @@ test("renderer melempar saat render halaman & error page → fallback 500", asyn
   const html = await response.text();
   assert.ok(html.includes("Internal Server Error"));
 });
+
+test("client option: payload hydration + script module + container", async () => {
+  const page = basePage("/users/[id]", {
+    default: Page,
+    metadata: { title: "H" },
+    loader: async ({ params }) => ({ id: params.id }),
+  });
+
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: fakeRenderer(),
+      client: { script: "/assets/client.js" },
+    }),
+  });
+  const html = await (await handler(new Request("http://test.local/users/42"))).text();
+
+  assert.ok(
+    html.includes(
+      'window.__RAMONYX__={"path":"/users/[id]","params":{"id":"42"},"data":{"id":"42"}}',
+    ),
+  );
+  assert.ok(html.includes('<script type="module" src="/assets/client.js"></script>'));
+  assert.ok(html.includes('<div id="ramonyx-root">'));
+});
+
+test("payload meng-escape `<` agar tidak bisa keluar dari <script>", async () => {
+  const page = basePage("/", {
+    default: Page,
+    loader: async () => ({ text: "</script><script>alert(1)</script>" }),
+  });
+
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: fakeRenderer(),
+      client: { script: "/assets/client.js" },
+    }),
+  });
+  const html = await (await handler(new Request("http://test.local/"))).text();
+
+  // Catatan: fake renderer menulis props mentah ke body; yang diuji di sini adalah payload.
+  const payloadMatch = /window\.__RAMONYX__=(.*?)<\/script>/.exec(html);
+  assert.ok(payloadMatch, "payload script ada");
+  const payload = payloadMatch[1] ?? "";
+  assert.ok(!payload.includes("</script><script>alert(1)"));
+  assert.ok(payload.includes("\\u003c/script"));
+});
+
+test("tanpa client option: tidak ada payload/script hydration", async () => {
+  const page = basePage("/", { default: Page });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+  const html = await (await handler(new Request("http://test.local/"))).text();
+
+  assert.ok(!html.includes("window.__RAMONYX__"));
+  assert.ok(!html.includes('type="module"'));
+});

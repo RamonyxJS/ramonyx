@@ -36,4 +36,8 @@ export interface LoadedPage {
   /** `error.tsx` terdekat (naik ke atas sampai root). */
   readonly error?: PageModule;
   readonly directory: string;
+  /** Path sumber file (dipakai codegen client bundle); diisi `loadPageRoutes`. */
+  readonly pageFile?: string;
+  readonly layoutFiles?: readonly string[];
+  readonly errorFile?: string;
 }

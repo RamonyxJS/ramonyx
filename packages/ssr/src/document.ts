@@ -1,5 +1,8 @@
 import type { DocumentRenderer } from "./types.ts";
 
+/** Id container tempat React hydrate (dipakai server maupun client). */
+export const RAMONYX_MOUNT_ID = "ramonyx-root";
+
 export function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -9,8 +12,9 @@ export function escapeHtml(value: string): string {
 }
 
 /** Dokumen HTML default; aplikasi boleh mengganti lewat opsi `document`. */
-export const defaultDocument: DocumentRenderer = ({ title, body, head = "" }) => {
+export const defaultDocument: DocumentRenderer = ({ title, body, head = "", scripts = "" }) => {
   const extraHead = head.length > 0 ? `\n${head}` : "";
+  const extraScripts = scripts.length > 0 ? `\n${scripts}` : "";
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -19,7 +23,7 @@ export const defaultDocument: DocumentRenderer = ({ title, body, head = "" }) =>
 <title>${escapeHtml(title)}</title>${extraHead}
 </head>
 <body>
-${body}
+<div id="${RAMONYX_MOUNT_ID}">${body}</div>${extraScripts}
 </body>
 </html>
 `;

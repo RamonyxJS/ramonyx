@@ -1,0 +1,14 @@
+{
+  "name": "@ramonyx/bundler",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@ramonyx/compiler": "workspace:*",
+    "@ramonyx/core": "workspace:*",
+    "vite": "8.3.4"
+  }
+}

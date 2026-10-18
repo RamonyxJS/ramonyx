@@ -9,6 +9,7 @@ const app = await createApp({
   env: host.env,
   logger: createConsoleLogger(),
   strictValidation: resolved.app.strictValidation,
+  clientScript: "/assets/client.js",
 });
 
 const server = await host.serve(app, {

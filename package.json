@@ -10,6 +10,7 @@
     "lint": "biome check .",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "test": "node --import ./tools/register.mjs --test \"packages/*/test/**/*.test.ts\" \"packages/*/test/**/*.test.tsx\" \"apps/*/test/**/*.test.ts\" \"apps/*/test/**/*.test.tsx\"",
+    "build": "node --import ./tools/register.mjs apps/playground/build.ts",
     "bench": "node --import ./tools/register.mjs benchmarks/http/bench.ts",
     "dev": "node --import ./tools/register.mjs apps/playground/src/main.ts"
   },

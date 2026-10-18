@@ -7,6 +7,9 @@ build/
 out/
 *.tsbuildinfo
 
+# Codegen ramonyx (client entry, dsb.)
+.ramonyx/
+
 # Rust (Phase 4+)
 target/
 

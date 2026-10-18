@@ -119,23 +119,36 @@ export async function loadPageRoutes(options: LoadPageRoutesOptions): Promise<Lo
     const page = await loadPageModule(pageFile, `halaman ${path}`);
 
     const layouts: PageModule[] = [];
+    const layoutFiles: string[] = [];
     for (const ancestor of ancestorDirs(dir, pageDir)) {
       const layoutFile = directories.get(ancestor)?.layout;
       if (layoutFile !== undefined) {
         layouts.push(await loadPageModule(layoutFile, `layout ${routePathForDir(dir, ancestor)}`));
+        layoutFiles.push(layoutFile);
       }
     }
 
     let error: PageModule | undefined;
+    let errorFile: string | undefined;
     for (const ancestor of ancestorDirs(dir, pageDir).reverse()) {
-      const errorFile = directories.get(ancestor)?.error;
-      if (errorFile !== undefined) {
-        error = await loadPageModule(errorFile, `error page ${routePathForDir(dir, ancestor)}`);
+      const candidate = directories.get(ancestor)?.error;
+      if (candidate !== undefined) {
+        error = await loadPageModule(candidate, `error page ${routePathForDir(dir, ancestor)}`);
+        errorFile = candidate;
         break;
       }
     }
 
-    pages.push({ path, page, layouts, error, directory: pageDir });
+    pages.push({
+      path,
+      page,
+      layouts,
+      error,
+      directory: pageDir,
+      pageFile,
+      layoutFiles,
+      errorFile,
+    });
   }
 
   return pages;

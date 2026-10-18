@@ -3,6 +3,13 @@ export { defineConfig, resolveConfig } from "./config.ts";
 export type { HttpErrorOptions } from "./errors.ts";
 export { HttpError } from "./errors.ts";
 export { silentLogger } from "./logger.ts";
+export type {
+  LoadedPage,
+  PageLoader,
+  PageLoaderContext,
+  PageMetadata,
+  PageModule,
+} from "./page.ts";
 export { route } from "./route.ts";
 export type {
   EnvReader,

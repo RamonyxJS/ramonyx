@@ -1,19 +1,13 @@
 import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
-import { pathToFileURL } from "node:url";
 import type { RouteDefinition, RouteEntry } from "@ramonyx/core";
+import { RouteManifestError } from "./errors.ts";
+import { importModule } from "./import.ts";
 
 export const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"] as const;
 
 export type HttpMethod = (typeof HTTP_METHODS)[number];
-
-export class RouteManifestError extends Error {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-    this.name = "RouteManifestError";
-  }
-}
 
 export interface CreateRouteManifestOptions {
   /** Direktori `src/routes` aplikasi. */
@@ -90,20 +84,6 @@ async function collectRouteFiles(dir: string, apiDir: string): Promise<RouteFile
   return files;
 }
 
-async function importRouteModule(
-  absolute: string,
-  routePath: string,
-): Promise<Record<string, unknown>> {
-  try {
-    return (await import(pathToFileURL(absolute).href)) as Record<string, unknown>;
-  } catch (error) {
-    throw new RouteManifestError(
-      `Gagal mengimpor route ${routePath} (${absolute}): ${error instanceof Error ? error.message : String(error)}`,
-      { cause: error },
-    );
-  }
-}
-
 /**
  * Memindai `src/routes/api/**` dan membangun manifest `RouteEntry[]`.
  *
@@ -118,7 +98,7 @@ export async function createRouteManifest(
   const entries: RouteEntry[] = [];
 
   for (const file of files) {
-    const module = await importRouteModule(file.absolute, file.routePath);
+    const module = await importModule(file.absolute, `route ${file.routePath}`);
     const exported = HTTP_METHODS.filter((method) => module[method] !== undefined);
     if (exported.length === 0) {
       throw new RouteManifestError(

@@ -1,3 +1,7 @@
 packages:
   - "packages/*"
   - "apps/*"
+
+# esbuild (dipakai tsx) butuh postinstall untuk memverifikasi binary platform.
+allowBuilds:
+  esbuild: true

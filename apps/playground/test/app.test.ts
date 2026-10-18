@@ -22,7 +22,7 @@ function collectingLogger(): {
 
 const knownUserId = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
 
-test("playground end-to-end lewat file routing + createTestServer", async () => {
+test("playground API end-to-end (file routing + createTestServer)", async () => {
   const { logger, lines } = collectingLogger();
   const resolved = resolveConfig(config);
   const app = await createApp({ logger, strictValidation: resolved.app.strictValidation });
@@ -56,6 +56,45 @@ test("playground end-to-end lewat file routing + createTestServer", async () => 
     for (const log of requestLogs) {
       assert.equal(typeof log.data?.status, "number");
     }
+  } finally {
+    await server.close();
+  }
+});
+
+test("playground halaman SSR (layout, loader, error boundary)", async () => {
+  const { logger, lines } = collectingLogger();
+  const app = await createApp({ logger });
+  const server = await createTestServerFromHandler(app);
+
+  try {
+    const home = await server.fetch("/");
+    assert.equal(home.status, 200);
+    assert.match(home.headers.get("content-type") ?? "", /text\/html/);
+    const homeHtml = await home.text();
+    assert.ok(homeHtml.includes("<title>Beranda — Ramonyx Playground</title>"));
+    assert.ok(homeHtml.includes("Halo dari loader SSR"));
+    assert.ok(homeHtml.includes("<strong>Ramonyx Playground</strong>"), "layout root terpakai");
+
+    const users = await server.fetch("/users");
+    assert.equal(users.status, 200);
+    const usersHtml = await users.text();
+    assert.ok(usersHtml.includes("Rina") && usersHtml.includes("Budi"));
+
+    const user = await server.fetch(`/users/${knownUserId}`);
+    assert.equal(user.status, 200);
+    const userHtml = await user.text();
+    assert.ok(userHtml.includes("<h1>Rina</h1>"));
+    assert.ok(userHtml.replaceAll("<!-- -->", "").includes(`Parameter route: ${knownUserId}`));
+
+    const missing = await server.fetch("/users/9c858901-8a57-4791-81fe-4c455b000000");
+    assert.equal(missing.status, 404);
+    assert.ok((await missing.text()).includes("Pengguna tidak ditemukan"));
+
+    const invalid = await server.fetch("/users/bukan-uuid");
+    assert.equal(invalid.status, 400);
+    assert.ok((await invalid.text()).includes("ID pengguna tidak valid"));
+
+    assert.equal(lines.filter((line) => line.message === "request").length, 5);
   } finally {
     await server.close();
   }

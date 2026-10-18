@@ -1,6 +1,8 @@
 import { fileURLToPath } from "node:url";
-import { createRouteManifest } from "@ramonyx/compiler";
+import { createRouteManifest, loadPageRoutes } from "@ramonyx/compiler";
+import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
+import { createPageRoutes } from "@ramonyx/ssr";
 import type { EnvReader, FetchHandler, Logger } from "ramonyx";
 import middleware from "./routes/middleware.ts";
 
@@ -10,14 +12,17 @@ export interface CreateAppOptions {
   readonly strictValidation?: boolean;
 }
 
-/** Memindai `src/routes` → manifest → handler siap dilayani host apa pun. */
+/** Route API + halaman SSR dari `src/routes` → handler siap dilayani host apa pun. */
 export async function createApp(options: CreateAppOptions = {}): Promise<FetchHandler> {
-  const routes = await createRouteManifest({
-    dir: fileURLToPath(new URL("./routes", import.meta.url)),
-  });
+  const dir = fileURLToPath(new URL("./routes", import.meta.url));
+  const [apiRoutes, pages] = await Promise.all([
+    createRouteManifest({ dir }),
+    loadPageRoutes({ dir }),
+  ]);
+  const pageRoutes = createPageRoutes({ pages, renderer: createReactRenderer() });
 
   return createHandler({
-    routes,
+    routes: [...apiRoutes, ...pageRoutes],
     middleware,
     env: options.env,
     logger: options.logger,

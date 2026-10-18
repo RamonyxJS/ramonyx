@@ -9,8 +9,9 @@
   "scripts": {
     "lint": "biome check .",
     "typecheck": "tsc --project tsconfig.json --noEmit",
-    "test": "node --test \"packages/*/test/**/*.test.ts\" \"apps/*/test/**/*.test.ts\"",
-    "bench": "node benchmarks/http/bench.ts"
+    "test": "node --import ./tools/register.mjs --test \"packages/*/test/**/*.test.ts\" \"packages/*/test/**/*.test.tsx\" \"apps/*/test/**/*.test.ts\" \"apps/*/test/**/*.test.tsx\"",
+    "bench": "node --import ./tools/register.mjs benchmarks/http/bench.ts",
+    "dev": "node --import ./tools/register.mjs apps/playground/src/main.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
@@ -19,6 +20,7 @@
     "@types/autocannon": "7.12.7",
     "@types/node": "26.6.5",
     "autocannon": "8.0.0",
+    "esbuild": "0.28.2",
     "typescript": "7.0.2"
   }
 }

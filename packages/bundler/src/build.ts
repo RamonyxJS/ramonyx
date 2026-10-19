@@ -1,12 +1,20 @@
+import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { generateClientEntry } from "@ramonyx/compiler";
 import type { LoadedPage } from "@ramonyx/core";
 import { build, type PluginOption } from "vite";
+import { collectAssets, DEFAULT_ASSETS_DIR } from "./assets.ts";
+import {
+  type AssetManifest,
+  CLIENT_MANIFEST_FILE,
+  readAssetManifest,
+  writeAssetManifest,
+} from "./manifest.ts";
 import { serverOnlyPlugin } from "./server-only.ts";
 
-/** Nama berkas manifest aset di direktori keluaran klien (ADR-0055). */
-export const CLIENT_MANIFEST_FILE = "ramonyx.assets.json";
+export type { AssetEntry, AssetManifest, AssetMap } from "./manifest.ts";
+export { CLIENT_MANIFEST_FILE, readAssetManifest } from "./manifest.ts";
 
 const SERVER_ONLY_IMPORT = /(?:from|import\s*\(|require\s*\()\s*["'](node:[^"']+)["']/g;
 const BROWSER_EXTERNAL_MARKER = "__vite-browser-external";
@@ -23,6 +31,11 @@ export interface BuildClientOptions {
   readonly minify?: boolean;
   /** Plugin Vite tambahan (dari plugin Ramonyx — ADR-0067). */
   readonly plugins?: readonly PluginOption[];
+  /**
+   * Direktori aset (relatif appDir) yang dipindai & disalin ber-hash ke `assets/**` +
+   * dicatat di manifest (ADR-0069). Default `src/assets` bila ada; `false` mematikan.
+   */
+  readonly assetsDir?: string | false;
 }
 
 export interface BuildClientResult {
@@ -31,12 +44,6 @@ export interface BuildClientResult {
   readonly scriptPath: string;
   readonly entryFile: string;
   /** Nama berkas (relatif terhadap outDir) yang dihasilkan build. */
-  readonly files: readonly string[];
-}
-
-/** Manifest aset hasil build (`dist/client/ramonyx.assets.json`). */
-export interface AssetManifest {
-  readonly client: string;
   readonly files: readonly string[];
 }
 
@@ -151,25 +158,26 @@ export async function buildClient(options: BuildClientOptions): Promise<BuildCli
     throw new Error(`build klien tidak menghasilkan client-<hash>.js di ${outDir}`);
   }
 
-  const manifest: AssetManifest = { client: clientFile, files: [...files].sort() };
-  await writeFile(join(outDir, CLIENT_MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`);
+  // Pipeline aset (ADR-0069): pindai `src/assets/**` → salin ber-hash + catat di manifest.
+  const assetsDir =
+    options.assetsDir === false
+      ? null
+      : join(options.appDir, options.assetsDir ?? DEFAULT_ASSETS_DIR);
+  let assets: Awaited<ReturnType<typeof collectAssets>>["assets"] = {};
+  if (assetsDir !== null && existsSync(assetsDir)) {
+    const collected = await collectAssets(assetsDir, outDir);
+    assets = collected.assets;
+  }
+
+  const manifest: AssetManifest = {
+    client: clientFile,
+    files: [...files].sort(),
+    ...(Object.keys(assets).length > 0 ? { assets } : {}),
+  };
+  await writeAssetManifest(outDir, manifest);
 
   const prefix = (options.assetsUrlPrefix ?? "/assets").replace(/\/$/, "");
   return { outDir, scriptPath: `${prefix}/${clientFile}`, entryFile, files: manifest.files };
-}
-
-/** Baca manifest aset; `null` bila belum pernah dibangun. */
-export async function readAssetManifest(clientDir: string): Promise<AssetManifest | null> {
-  try {
-    const raw = await readFile(join(clientDir, CLIENT_MANIFEST_FILE), "utf8");
-    const parsed = JSON.parse(raw) as Partial<AssetManifest>;
-    if (typeof parsed.client !== "string" || parsed.client.length === 0) {
-      return null;
-    }
-    return { client: parsed.client, files: Array.isArray(parsed.files) ? parsed.files : [] };
-  } catch {
-    return null;
-  }
 }
 
 /**

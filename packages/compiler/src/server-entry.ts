@@ -17,6 +17,11 @@ export interface GenerateServerEntryOptions {
   readonly clientScript?: string;
   /** Aktifkan SSR streaming (renderer React mendukung `renderStream`). */
   readonly streaming?: boolean;
+  /**
+   * Peta aset (path relatif → URL publik) di-inline ke entry — artefak edge tidak punya
+   * filesystem untuk membaca manifest (ADR-0069).
+   */
+  readonly assets?: Readonly<Record<string, string>>;
 }
 
 function toImportSpecifier(from: string, file: string): string {
@@ -115,6 +120,13 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
     "  };",
     "};",
     "",
+    options.assets === undefined || Object.keys(options.assets).length === 0
+      ? null
+      : `const assetMap = ${JSON.stringify(options.assets)};`,
+    options.assets === undefined || Object.keys(options.assets).length === 0
+      ? null
+      : 'const assets = { url: (path) => assetMap[String(path).replace(/^\\.?\\//, "")] };',
+    "",
     "const handler = createHandler({",
     "  routes: [",
     "    ...apiRoutes,",
@@ -125,6 +137,9 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
       ? null
       : `      client: { script: ${JSON.stringify(options.clientScript)} },`,
     options.streaming === true ? "      streaming: true," : null,
+    options.assets === undefined || Object.keys(options.assets).length === 0
+      ? null
+      : "      assets,",
     "    }),",
     "  ],",
     middlewareVar === undefined ? null : `  middleware: ${middlewareVar}.default,`,

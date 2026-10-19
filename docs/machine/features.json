@@ -716,17 +716,24 @@
     },
     {
       "id": "image-optimization",
-      "name": "Optimasi gambar (komponen Image, resize, format modern)",
-      "status": "planned",
+      "name": "Aset: komponen Image (anti-CLS, lazy) — tanpa resize/format modern (M1)",
+      "status": "partial",
       "since": null,
       "priority": "p3",
-      "packages": [],
+      "packages": [
+        "@ramonyx/react",
+        "@ramonyx/bundler"
+      ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/bundler/src/build.ts"
+        "packages/react/src/assets.ts",
+        "packages/react/test/image.test.ts",
+        "docs/assets.md",
+        "docs/adr/0069-asset-pipeline-m1.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Tanpa resize/format modern (M2 gate: plugin + audit dependency + build-time)",
+        "srcSet manual (tanpa varian otomatis)"
       ]
     },
     {
@@ -1274,6 +1281,31 @@
         "Kontrak experimental (stabil setelah >=2 plugin nyata)",
         "Tanpa registry/ramonyx add",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
+      ]
+    },
+    {
+      "id": "asset-pipeline",
+      "name": "Pipeline aset (src/assets/** → hash + manifest + resolver + preload font)",
+      "status": "implemented",
+      "since": null,
+      "priority": "p2",
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/bundler/src/assets.ts",
+        "packages/bundler/src/manifest.ts",
+        "packages/bundler/test/assets.test.ts",
+        "apps/create-app/template/src/assets/logo.svg",
+        "docs/assets.md",
+        "docs/adr/0069-asset-pipeline-m1.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",
+        "Tanpa kompresi otomatis"
       ]
     }
   ]

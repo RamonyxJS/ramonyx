@@ -1,5 +1,6 @@
 import {
   type AppHooks,
+  type AssetResolver,
   type Cache,
   fillRouteParams,
   formDataToObject,
@@ -47,6 +48,11 @@ export interface CreatePageRoutesOptions {
    * Default: tanpa cache. `createCache()` dari core menyediakan store + `revalidate()`.
    */
   readonly cache?: Cache;
+  /**
+   * Resolver aset (ADR-0069) — diteruskan ke konteks loader sebagai `assets`
+   * (mis. dari `createAssetResolver()` di `@ramonyx/bundler`).
+   */
+  readonly assets?: AssetResolver;
 }
 
 const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
@@ -262,6 +268,10 @@ function metadataHead(metadata: PageMetadata | undefined, request: Request): str
     }
   }
 
+  if (metadata.head !== undefined && metadata.head.length > 0) {
+    tags.push(metadata.head);
+  }
+
   return tags.join("\n");
 }
 
@@ -331,6 +341,7 @@ async function renderPage(
   extraHeaders?: Readonly<Record<string, string>>,
   hooks?: AppHooks,
   cache?: Cache,
+  assets?: AssetResolver,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
@@ -349,6 +360,7 @@ async function renderPage(
           request: context.request,
           env: context.env,
           log,
+          assets,
         });
         hooks?.onLoaderEnd?.({
           path: page.path,
@@ -542,6 +554,7 @@ async function renderPageTimed(
   extraHeaders: Readonly<Record<string, string>> | undefined,
   hooks: AppHooks | undefined,
   cache?: Cache,
+  assets?: AssetResolver,
 ): Promise<Response> {
   const started = hooks?.onRenderEnd !== undefined ? performance.now() : 0;
   const response = await renderPage(
@@ -557,6 +570,7 @@ async function renderPageTimed(
     extraHeaders,
     hooks,
     cache,
+    assets,
   );
   hooks?.onRenderEnd?.({
     path: page.path,
@@ -578,6 +592,7 @@ async function runAction(
   streaming: boolean,
   hooks?: AppHooks,
   cache?: Cache,
+  assets?: AssetResolver,
 ): Promise<Response> {
   const params = context.params as Record<string, string>;
   const request = context.request;
@@ -660,6 +675,7 @@ async function runAction(
     extraHeaders,
     hooks,
     cache,
+    assets,
   );
 }
 
@@ -702,6 +718,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
             undefined,
             options.hooks,
             options.cache,
+            options.assets,
           ),
       }),
     });
@@ -722,6 +739,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
               streaming,
               options.hooks,
               options.cache,
+              options.assets,
             ),
         }),
       });

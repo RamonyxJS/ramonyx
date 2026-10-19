@@ -1,6 +1,6 @@
 import type { StandardSchema } from "@ramonyx/schema";
 import type { RevalidateOptions } from "./revalidate.ts";
-import type { EnvReader, Logger, Middleware } from "./types.ts";
+import type { AssetResolver, EnvReader, Logger, Middleware } from "./types.ts";
 
 export interface PageMetadata {
   readonly title?: string;
@@ -16,6 +16,11 @@ export interface PageMetadata {
   readonly type?: string;
   /** `noindex` → halaman disembunyikan dari mesin pencari + dikeluarkan dari sitemap. */
   readonly robots?: "index" | "noindex";
+  /**
+   * HTML mentah tambahan untuk `<head>` (mis. `<link rel="preload">` font dari
+   * `fontPreloadTag()` — ADR-0069). Ditulis developer (tepercaya); tidak di-escape.
+   */
+  readonly head?: string;
 }
 
 /** Konteks loader halaman (halaman hanya GET; tidak ada body). */
@@ -25,6 +30,11 @@ export interface PageLoaderContext<P = unknown, Q = unknown> {
   readonly request: Request;
   readonly env: EnvReader;
   readonly log: Logger;
+  /**
+   * Resolver aset (ADR-0069) — ada bila aplikasi memasang `createPageRoutes({ assets })`
+   * (mis. dari `createAssetResolver()` di bundler). `undefined` di setup tanpa aset.
+   */
+  readonly assets?: AssetResolver;
 }
 
 export type PageLoader<P = unknown, Q = unknown, D = unknown> = (

@@ -134,6 +134,7 @@ if (!html.includes('id="ramonyx-payload"')) throw new Error("payload hydration t
 if (!html.includes("window.__RAMONYX__")) throw new Error("window.__RAMONYX__ tidak ada");
 if (!html.includes('src="/assets/client.js"')) throw new Error("script klien tidak ada");
 if (!html.includes("Klik saya:")) throw new Error("counter SSR tidak dirender");
+if (!html.includes('src="/assets/logo.svg"')) throw new Error("Image logo (fallback aset) tidak ada");
 if (halaman.headers.get("x-content-type-options") !== "nosniff") throw new Error("security header hilang");
 
 const halo = await app(new Request("http://uji/api/halo/dunia"));
@@ -195,6 +196,15 @@ test("app hasil scaffold: build klien + aset disajikan", async () => {
     "bundel memuat hydration",
   );
 
+  // Pipeline aset (ADR-0069): logo.svg dipindai, di-hash, dan dicatat di manifest.
+  const asetManifest = JSON.parse(
+    readFileSync(join(target, "dist/client/ramonyx.assets.json"), "utf8"),
+  ) as { assets?: Record<string, { file: string }> };
+  const logo = asetManifest.assets?.["logo.svg"];
+  assert.ok(logo !== undefined, "manifest memuat aset logo.svg");
+  assert.match(logo.file, /^assets\/logo-[0-9a-f]{10}\.svg$/);
+  assert.ok(existsSync(join(target, "dist/client", logo.file)), "aset tersalin ke dist/client");
+
   // Source map produksi: ada dan memuat sumber asli (sourcesContent) — ADR-0046.
   const peta = JSON.parse(
     readFileSync(join(target, "dist/client", `${manifest.client}.map`), "utf8"),
@@ -236,6 +246,7 @@ test("app hasil scaffold: build --static (SSG + 404 HTML + aset)", async () => {
 
   const index = readFileSync(join(target, "dist/static/index.html"), "utf8");
   assert.ok(index.includes("Halo dari SSR Ramonyx"), "index terprerender");
+  assert.ok(index.includes("/assets/logo-"), "URL aset ber-hash di HTML prerender (ADR-0069)");
   assert.ok(index.includes("window.__RAMONYX__"), "payload hydration ada");
 
   const notFound = readFileSync(join(target, "dist/static/404.html"), "utf8");
@@ -279,6 +290,7 @@ if (halaman.status !== 200) throw new Error("status halaman: " + halaman.status)
 const html = await halaman.text();
 if (!html.includes("Halo dari SSR Ramonyx")) throw new Error("SSR tidak jalan");
 if (!html.includes("/assets/client-")) throw new Error("script klien ber-hash hilang");
+if (!html.includes("/assets/logo-")) throw new Error("URL aset ber-hash hilang");
 
 const api = await handler(new Request("http://edge.local/api/halo/edge"));
 if (api.status !== 200) throw new Error("status api: " + api.status);

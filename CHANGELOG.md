@@ -60,6 +60,12 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   (`createHandler({ envFromRequest })`, `EnvReader.getRaw`, `WeakMap` di entry edge);
   smoke **workerd** (runtime Cloudflare) sebagai langkah CI blocking (`pnpm test:edge`) —
   SSR/API/action/env/middleware/404 diuji di runtime nyata; `buildEdge` menormalkan path absolut.
+- **Pipeline aset M1** (ADR-0069): `src/assets/**` dipindai saat build → disalin ber-hash ke
+  `dist/client/assets/**` + dicatat di `ramonyx.assets.json` (`assets`); resolver
+  (`assetUrl`/`createAssetResolver`) lewat `createPageRoutes({ assets })` → `loader({ assets })`;
+  komponen **`Image`** (`@ramonyx/react/assets`, anti-CLS + lazy); `fontPreloadTag()` +
+  `PageMetadata.head`; dev menyajikan `src/assets` tanpa hash; peta aset **di-inline** ke artefak
+  edge; docs `docs/assets.md`. Resize/format (M2) tetap gate dependency.
 
 ### Perubahan API (pra-1.0)
 

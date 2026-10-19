@@ -34,6 +34,7 @@ export { route } from "./route.ts";
 export type { KeyValueStore, MemoryStoreOptions, StoreEntry, StoreSetOptions } from "./store.ts";
 export { createMemoryStore } from "./store.ts";
 export type {
+  AssetResolver,
   EnvReader,
   FetchHandler,
   Logger,

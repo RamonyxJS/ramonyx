@@ -3,6 +3,12 @@ import type { StandardSchema } from "@ramonyx/schema";
 /** Handler yang menerima `Request` standar web dan mengembalikan `Response`. */
 export type FetchHandler = (request: Request) => Promise<Response>;
 
+/** Resolver aset (ADR-0069) — dibangun dari manifest build; `undefined` bila tidak ada. */
+export interface AssetResolver {
+  /** URL publik aset (mis. `/assets/img/logo-abc123.png`) atau `undefined`. */
+  url(path: string): string | undefined;
+}
+
 export interface EnvReader {
   get(name: string): string | undefined;
   /**

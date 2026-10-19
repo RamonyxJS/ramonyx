@@ -1,6 +1,7 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import type { ServerResponse } from "node:http";
-import { join, relative } from "node:path";
+import { extname, join, relative } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import {
@@ -9,7 +10,7 @@ import {
   type ModuleImporter,
   RouteManifestError,
 } from "@ramonyx/compiler";
-import { type Connect, createServer, type PluginOption } from "vite";
+import { type Connect, createServer, type Plugin, type PluginOption } from "vite";
 import { serverOnlyPlugin } from "./server-only.ts";
 
 export interface DevServerOptions {
@@ -30,6 +31,66 @@ export interface DevServer {
 }
 
 const ENTRY_FILE = "client-entry.ts";
+
+const DEV_ASSET_TYPES: Record<string, string> = {
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".avif": "image/avif",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+  ".otf": "font/otf",
+};
+
+/**
+ * Dev: sajikan `src/assets/**` apa adanya di `/assets/*` (tanpa hash) — paritas dengan
+ * resolver aset dev (`createAssetResolver(..., { fallbackToPath: true })`, ADR-0069).
+ */
+function assetsDevPlugin(appDir: string): Plugin {
+  return {
+    name: "ramonyx-assets-dev",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = req.url ?? "";
+        if (!url.startsWith("/assets/")) {
+          next();
+          return;
+        }
+        let rel: string;
+        try {
+          rel = decodeURIComponent(url.slice("/assets/".length).split("?")[0] ?? "");
+        } catch {
+          next();
+          return;
+        }
+        if (rel.length === 0 || rel.includes("..")) {
+          next();
+          return;
+        }
+        const file = join(appDir, "src", "assets", rel);
+        if (!existsSync(file)) {
+          next();
+          return;
+        }
+        void readFile(file)
+          .then((data) => {
+            res.setHeader(
+              "content-type",
+              DEV_ASSET_TYPES[extname(file).toLowerCase()] ?? "application/octet-stream",
+            );
+            res.setHeader("cache-control", "no-cache");
+            res.end(data);
+          })
+          .catch(() => next());
+      });
+    },
+  };
+}
 
 /** Path yang dimiliki Vite (jangan diproksikan ke SSR). */
 function isViteRequest(url: string): boolean {
@@ -129,6 +190,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     plugins: [
       ...(options.plugins ?? []),
       serverOnlyPlugin(),
+      assetsDevPlugin(appDir),
       {
         name: "ramonyx-ssr-proxy",
         configureServer(server) {

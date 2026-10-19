@@ -75,3 +75,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0066](0066-revalidate.md) | Revalidasi data (ISR-lite): cache loader + SWR + invalidasi path/tag dari action | Accepted |
 | [0067](0067-plugin-ecosystem.md) | Plugin: passthrough Vite + middleware pre-routing (`withMiddleware`) + hooks dari config | Accepted |
 | [0068](0068-edge-env-and-smoke.md) | Binding env platform edge (`envFromRequest`) + smoke di runtime nyata (workerd) | Accepted |
+| [0069](0069-asset-pipeline-m1.md) | Pipeline aset M1: manifest + resolver + `Image` (tanpa dependency, tanpa loader) | Accepted |

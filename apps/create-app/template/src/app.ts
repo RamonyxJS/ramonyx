@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { serveStatic } from "@ramonyx/adapter-runtime";
+import { createAssetResolver } from "@ramonyx/bundler";
 import { createRouteManifest, loadPageRoutes, type ModuleImporter } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
@@ -9,6 +10,9 @@ import type { AppHooks, FetchHandler } from "ramonyx";
 // Aset statis hanya untuk host Node (edge: platform menyajikan aset; `middleware.ts` tetap
 // edge-safe agar `ramonyx build --target edge` bisa membundelnya — ADR-0058).
 const clientDir = fileURLToPath(new URL("../dist/client", import.meta.url));
+// Resolver aset (ADR-0069): produksi memakai manifest (ber-hash); dev memakai fallback
+// (`fallbackToPath`) yang disajikan Vite dari `src/assets/**`.
+const assets = await createAssetResolver(clientDir, { fallbackToPath: true });
 const staticAssets = serveStatic({
   dir: clientDir,
   prefix: "/assets",
@@ -67,6 +71,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
           streaming: options.streaming,
           cache: options.cache,
           hooks: options.hooks,
+          assets,
         }),
       ],
       middleware: [staticAssets],

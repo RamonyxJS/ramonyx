@@ -349,7 +349,7 @@
       "theme": "rendering",
       "priority": "p2",
       "size": "L",
-      "status": "open",
+      "status": "in-progress",
       "what": "Komponen `<Image>` (resize/format modern, width/height otomatis) + helper font (self-host + preload + fallback metrik) + impor aset dari komponen.",
       "why": "Gambar dan font adalah penyebab utama CLS/LCP buruk; Next/Nuxt/Astro semuanya menyediakan pipeline bawaan, dan tanpa itu pengguna harus merakit sendiri.",
       "done": [
@@ -360,7 +360,7 @@
       "areas": ["packages/bundler", "packages/react", "packages/devtools"],
       "adrs": ["ADR baru"],
       "competitor": "next/image + next/font; @nuxt/image + @nuxt/fonts; Astro `<Image>` + fontsource.",
-      "source": "gap §3 (assets)",
+      "source": "gap §3 (assets) — M1 selesai (ADR-0069); M2 resize gate dependency",
       "strategic": true
     },
     {

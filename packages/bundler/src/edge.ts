@@ -9,7 +9,9 @@ import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { generateServerEntry, listApiRoutes, loadPageRoutes } from "@ramonyx/compiler";
 import { build, type PluginOption } from "vite";
+import { assetUrl } from "./assets.ts";
 import { readClientScript } from "./build.ts";
+import { readAssetManifest } from "./manifest.ts";
 
 export interface BuildEdgeOptions {
   readonly appDir: string;
@@ -56,8 +58,18 @@ export async function buildEdge(options: BuildEdgeOptions): Promise<BuildEdgeRes
 
   const middlewareCandidate = join(routesDir, "middleware.ts");
   const middlewareFile = existsSync(middlewareCandidate) ? middlewareCandidate : undefined;
-  const clientScript =
-    options.clientScript ?? (await readClientScript(join(appDir, "dist/client")));
+  const clientDir = join(appDir, "dist/client");
+  const clientScript = options.clientScript ?? (await readClientScript(clientDir));
+
+  // Peta aset di-inline (artefak edge tanpa fs — ADR-0069).
+  const manifest = await readAssetManifest(clientDir);
+  const assets: Record<string, string> = {};
+  for (const path of Object.keys(manifest?.assets ?? {})) {
+    const url = assetUrl(manifest, path);
+    if (url !== undefined) {
+      assets[path] = url;
+    }
+  }
 
   await mkdir(entryDir, { recursive: true });
   await writeFile(
@@ -69,6 +81,7 @@ export async function buildEdge(options: BuildEdgeOptions): Promise<BuildEdgeRes
       middlewareFile,
       clientScript,
       streaming: options.streaming ?? true,
+      assets,
     }),
   );
 

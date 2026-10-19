@@ -933,6 +933,24 @@
       "features": [
         "adapter-serverless-edge"
       ]
+    },
+    {
+      "id": "ADR-0069",
+      "file": "0069-asset-pipeline-m1.md",
+      "title": "Pipeline Aset M1 — Manifest + Resolver (Tanpa Dependency, Tanpa Loader Kustom)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "buildClient memindai src/assets/** → salin ber-hash + manifest.assets (aditif); resolver (assetUrl/createAssetResolver) diteruskan ke loader via createPageRoutes({assets}); komponen Image (@ramonyx/react/assets) default anti-CLS/lazy; dev memakai fallback tanpa hash + plugin Vite penyaji; edge meng-inline peta aset saat build; M2 resize tetap gate (plugin + audit + build-time).",
+      "related": [
+        "ADR-0055",
+        "ADR-0067",
+        "ADR-0058"
+      ],
+      "features": [
+        "asset-pipeline",
+        "image-optimization"
+      ]
     }
   ]
 }

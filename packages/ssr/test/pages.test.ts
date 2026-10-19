@@ -774,3 +774,25 @@ test("hooks: onLoaderEnd & onRenderEnd (termasuk flag streaming) — ADR-0065", 
   assert.equal(renders.length, 2);
   assert.equal(renders[1]?.streaming, true, "onRenderEnd menandai jalur streaming");
 });
+
+test("assets: resolver diteruskan ke konteks loader (ADR-0069)", async () => {
+  let diterima: unknown;
+  const page = basePage("/aset", {
+    default: Page,
+    loader: async ({ assets }) => {
+      diterima = assets;
+      return { logo: assets?.url("logo.svg") };
+    },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: fakeRenderer(),
+      assets: { url: (path) => (path === "logo.svg" ? "/assets/logo-abc.svg" : undefined) },
+    }),
+  });
+
+  const html = await (await handler(new Request("http://test.local/aset"))).text();
+  assert.ok(diterima !== undefined, "loader menerima resolver aset");
+  assert.ok(html.includes("/assets/logo-abc.svg"), "URL aset masuk ke data halaman");
+});

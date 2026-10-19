@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T06:35:21.700Z",
+  "generatedAt": "2026-10-19T07:05:33.343Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -31,21 +31,33 @@
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
+        "DEFAULT_ASSETS_DIR",
+        "assetUrl",
+        "assetsDirExists",
         "buildClient",
         "buildEdge",
+        "collectAssets",
+        "createAssetResolver",
         "createDevServer",
         "definePlugin",
+        "fontPreloadTag",
         "loadPlugins",
         "prerenderRoutes",
         "readAssetManifest",
-        "readClientScript"
+        "readClientScript",
+        "writeAssetManifest"
       ],
       "types": [
+        "AssetEntry",
         "AssetManifest",
+        "AssetMap",
+        "AssetUrlOptions",
         "BuildClientOptions",
         "BuildClientResult",
         "BuildEdgeOptions",
         "BuildEdgeResult",
+        "CollectAssetsResult",
+        "CreateAssetResolverOptions",
         "DevServer",
         "DevServerOptions",
         "LoadedPlugins",
@@ -116,6 +128,7 @@
       "types": [
         "AppConfig",
         "AppHooks",
+        "AssetResolver",
         "Cache",
         "CacheControlOptions",
         "CreateCacheOptions",

@@ -1,4 +1,5 @@
 import type { PageProps } from "@ramonyx/react";
+import { Image } from "@ramonyx/react/assets";
 import type { PageActionContext } from "ramonyx";
 import { useState } from "react";
 
@@ -9,8 +10,12 @@ export const metadata = {
 /** Cache data loader 60 dtk (ADR-0066) — hapus atau sesuaikan bila data harus selalu segar. */
 export const revalidate = 60;
 
-export async function loader() {
-  return { pesan: "Halo dari SSR Ramonyx", fitur: ["SSR React", "hydration", "route API"] };
+export async function loader({ assets }: { assets?: { url(path: string): string | undefined } }) {
+  return {
+    pesan: "Halo dari SSR Ramonyx",
+    fitur: ["SSR React", "hydration", "route API"],
+    logo: assets?.url("logo.svg"),
+  };
 }
 
 /** Mutasi form: POST ke path yang sama (progressive enhancement — ADR-0057). */
@@ -34,10 +39,15 @@ function Counter() {
   );
 }
 
-export default function Beranda({ data, action }: PageProps<{ pesan: string; fitur: string[] }>) {
+export default function Beranda({
+  data,
+  action,
+}: PageProps<{ pesan: string; fitur: string[]; logo?: string }>) {
   return (
     <main>
-      <h1>{data.pesan}</h1>
+      <h1>
+        <Image src={data.logo} alt="Logo" width={32} height={32} /> {data.pesan}
+      </h1>
       <ul>
         {data.fitur.map((item) => (
           <li key={item}>{item}</li>

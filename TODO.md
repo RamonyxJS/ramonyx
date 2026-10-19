@@ -284,7 +284,7 @@
 
 ### `p2-asset-pipeline` — Pipeline aset: komponen Image + font self-host
 
-*tema: rendering · ukuran: L · status: open · sumber: gap §3 (assets)*
+*tema: rendering · ukuran: L · status: in-progress · sumber: gap §3 (assets) — M1 selesai (ADR-0069); M2 resize gate dependency*
 
 - **Apa**: Komponen `<Image>` (resize/format modern, width/height otomatis) + helper font (self-host + preload + fallback metrik) + impor aset dari komponen.
 - **Kenapa penting untuk bersaing**: Gambar dan font adalah penyebab utama CLS/LCP buruk; Next/Nuxt/Astro semuanya menyediakan pipeline bawaan, dan tanpa itu pengguna harus merakit sendiri.

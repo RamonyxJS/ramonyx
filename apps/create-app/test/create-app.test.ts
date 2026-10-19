@@ -378,6 +378,73 @@ test("build --watch: build ulang saat berkas berubah — ADR-0070", async () => 
   }
 });
 
+test("konvensi src/server.ts: CLI memakai entry kustom (ADR-0076)", async () => {
+  mkdirSync(workDir, { recursive: true });
+  const target = join(workDir, "app-server-entry");
+  runCli([target]);
+
+  writeFileSync(
+    join(target, "src/server.ts"),
+    `import { withMiddleware } from "@ramonyx/server";
+import type { AppHooks, FetchHandler } from "ramonyx";
+import { createApp } from "./app.ts";
+
+export interface ServerEntryOptions {
+  readonly clientScript?: string;
+  readonly hooks?: AppHooks;
+}
+
+export async function createHandler(options: ServerEntryOptions = {}): Promise<FetchHandler> {
+  const handler = await createApp({ clientScript: options.clientScript, hooks: options.hooks });
+  return withMiddleware(handler, [
+    async (_context, next) => {
+      const response = await next();
+      const headers = new Headers(response.headers);
+      headers.set("x-server-entry", "1");
+      return new Response(response.body, { status: response.status, headers });
+    },
+  ]);
+}
+`,
+  );
+
+  const child = spawn(
+    process.execPath,
+    ["--import", loader, devtoolsCli, "start", "--app", target, "--port", "0"],
+    { cwd: target, stdio: ["ignore", "pipe", "pipe"] },
+  );
+  let keluaran = "";
+  child.stdout.on("data", (chunk: Buffer) => {
+    keluaran += chunk.toString();
+  });
+  child.stderr.on("data", (chunk: Buffer) => {
+    keluaran += chunk.toString();
+  });
+
+  const tunggu = async (predikat: () => boolean, timeoutMs: number): Promise<void> => {
+    const mulai = Date.now();
+    while (!predikat()) {
+      if (Date.now() - mulai > timeoutMs) {
+        throw new Error(`timeout menunggu output CLI; terlihat:\n${keluaran}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  };
+
+  try {
+    await tunggu(() => /Ramonyx berjalan di http:\/\/[^\s:]+:\d+/.test(keluaran), 30_000);
+    const url = /Ramonyx berjalan di (http:\/\/[^\s:]+:\d+)/.exec(keluaran)?.[1];
+    assert.ok(url !== undefined, "URL server terbaca");
+
+    const response = await fetch(`${url}/`);
+    assert.equal(response.status, 200, "halaman dilayani lewat entry kustom");
+    assert.equal(response.headers.get("x-server-entry"), "1", "CLI memakai src/server.ts");
+  } finally {
+    child.kill("SIGTERM");
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
+});
+
 test("help menampilkan penggunaan", () => {
   const output = runCli(["--help"]);
   assert.match(output, /create-ramonyx-app/);

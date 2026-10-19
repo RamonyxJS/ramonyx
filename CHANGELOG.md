@@ -86,6 +86,10 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   kill switch, kuota CPU, permukaan API) — temuan F1 (plugin bisa spawn plugin → amplifikasi 8ⁿ)
   **diperbaiki: plugin leaf-only**; asesmen + residual jujur di
   `docs/security/plugin-isolation-assessment.md`.
+- **Konvensi `src/server.ts` + migrasi CLI** (ADR-0076): `ramonyx dev|start` memakai entry kustom
+  opsional `src/server.ts` (`createHandler(options)`; CLI tetap host + plugin); `app.streaming`
+  masuk config tervalidasi; playground & situs docs kini berjalan lewat CLI (entry lama dihapus,
+  bench keamanan spawn CLI); uji konvensi di CI.
 - **Typed routes** (ADR-0073): `ramonyx build|dev` menulis modul generate `.ramonyx/routes.ts`
   (`RouteParamsMap` + `routeHref` bertipe, membungkus `fillHref` runtime) — pola/param salah
   tertangkap saat typecheck; komponen `Link` (`@ramonyx/react/link`) memakai navigasi klien +

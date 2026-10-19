@@ -118,11 +118,17 @@ test("app: index, halaman dokumen, hydration, 404, traversal, API", async () => 
 test("build klien: bundel hydrate + soft navigation disajikan sebagai aset", async () => {
   rmSync(join(appDir, "dist"), { recursive: true, force: true });
 
-  const output = execFileSync(process.execPath, ["--import", loader, "build.ts"], {
-    cwd: appDir,
-    encoding: "utf8",
-    env: { ...process.env, NODE_ENV: "production" },
-  });
+  // Migrasi ke CLI (ADR-0076): build situs docs lewat `ramonyx build`.
+  const devtoolsCli = join(appDir, "..", "..", "packages", "devtools", "src", "cli.ts");
+  const output = execFileSync(
+    process.execPath,
+    ["--import", loader, devtoolsCli, "build", "--app", appDir],
+    {
+      cwd: appDir,
+      encoding: "utf8",
+      env: { ...process.env, NODE_ENV: "production" },
+    },
+  );
   assert.match(output, /client bundle/);
 
   const manifest = JSON.parse(

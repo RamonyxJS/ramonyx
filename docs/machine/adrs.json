@@ -1055,6 +1055,24 @@
         "runtime-plugin-process",
         "runtime-plugin-sandbox"
       ]
+    },
+    {
+      "id": "ADR-0076",
+      "file": "0076-server-entry-cli-migration.md",
+      "title": "Konvensi `src/server.ts` + Migrasi Playground/Docs ke CLI",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "ramonyx dev|start memakai src/server.ts opsional (createHandler(options) → FetchHandler; CLI tetap host + plugin); app.streaming masuk config tervalidasi; playground/docs/bencmark scripts migrasi ke CLI (entry lama dihapus); uji konvensi spawn CLI + probe header.",
+      "related": [
+        "ADR-0053",
+        "ADR-0067",
+        "ADR-0047"
+      ],
+      "features": [
+        "cli-devtools",
+        "dev-server-hmr"
+      ]
     }
   ]
 }

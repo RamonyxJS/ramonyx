@@ -2,6 +2,11 @@ import { errorHint } from "./errors-docs.ts";
 
 export interface AppConfig {
   readonly strictValidation?: boolean;
+  /**
+   * Aktifkan SSR streaming (ADR-0047) — dibaca CLI (`ramonyx dev|start`) dan diteruskan ke
+   * `createPageRoutes({ streaming })`. Default false.
+   */
+  readonly streaming?: boolean;
 }
 
 export interface ServerConfig {
@@ -44,6 +49,13 @@ export function resolveConfig(input: RamonyxConfigInput = {}): RamonyxConfig {
   if (typeof strictValidation !== "boolean") {
     throw new Error(
       `Config tidak valid: app.strictValidation harus boolean, menerima ${typeof strictValidation}. ${errorHint("RMX-CONFIG-1")}`,
+    );
+  }
+
+  const streaming = input.app?.streaming;
+  if (streaming !== undefined && typeof streaming !== "boolean") {
+    throw new Error(
+      `Config tidak valid: app.streaming harus boolean, menerima ${typeof streaming}. ${errorHint("RMX-CONFIG-1")}`,
     );
   }
 

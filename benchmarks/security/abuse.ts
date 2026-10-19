@@ -45,7 +45,7 @@ const registerPath = fileURLToPath(new URL("../../tools/register.mjs", import.me
 
 const serverProcess = spawn(
   process.execPath,
-  ["--import", registerPath, "apps/playground/src/main.ts"],
+  ["--import", registerPath, "packages/devtools/src/cli.ts", "start", "--app", "apps/playground"],
   {
     cwd: repoRoot,
     stdio: ["ignore", "pipe", "pipe"],

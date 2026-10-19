@@ -12,6 +12,10 @@
         "strictValidation": {
           "type": "boolean",
           "description": "Default true. Validasi schema runtime di trust boundary."
+        },
+        "streaming": {
+          "type": "boolean",
+          "description": "Default false. SSR streaming (ADR-0047) — dibaca CLI dev/start."
         }
       }
     },

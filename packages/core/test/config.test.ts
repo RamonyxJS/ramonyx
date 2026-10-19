@@ -41,6 +41,12 @@ test("defineConfig mengembalikan input apa adanya (identitas tipe)", () => {
   assert.equal(defineConfig(input), input);
 });
 
+test("app.streaming divalidasi boolean (ADR-0076)", () => {
+  assert.equal(resolveConfig({ app: { streaming: true } } as never).app.streaming, true);
+  assert.equal(resolveConfig({} as never).app.streaming, undefined, "default: tidak diset");
+  assert.throws(() => resolveConfig({ app: { streaming: "ya" } } as never), /app\.streaming/);
+});
+
 test("pass-through: key tak dikenal dipertahankan (root, app, server) — ADR-0065", () => {
   const resolved = resolveConfig({
     plugins: [{ name: "uji" }],

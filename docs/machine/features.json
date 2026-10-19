@@ -436,7 +436,9 @@
       ],
       "evidence": [
         "packages/bundler/src/dev.ts",
-        "docs/adr/0009-dev-server.md"
+        "packages/devtools/src/commands.ts",
+        "docs/adr/0009-dev-server.md",
+        "docs/adr/0076-server-entry-cli-migration.md"
       ],
       "limitations": []
     },
@@ -490,7 +492,7 @@
     },
     {
       "id": "cli-devtools",
-      "name": "CLI `ramonyx` (dev, build, build --static/--target edge/--watch, start, doctor)",
+      "name": "CLI `ramonyx` (dev, build --static/--target edge/--watch, start, doctor, konvensi src/server.ts)",
       "status": "implemented",
       "since": "0.1.1",
       "priority": "p0",
@@ -499,13 +501,15 @@
       ],
       "evidence": [
         "packages/devtools/src/commands.ts",
-        "packages/devtools/test/cli.test.ts",
+        "packages/devtools/src/load.ts",
+        "apps/create-app/test/create-app.test.ts",
         "docs/adr/0053-devtools-cli.md",
-        "docs/adr/0056-static-generation.md",
-        "docs/adr/0070-watch-mode.md"
+        "docs/adr/0070-watch-mode.md",
+        "docs/adr/0076-server-entry-cli-migration.md"
       ],
       "limitations": [
-        "`start --watch` (restart server) belum"
+        "`start --watch` (restart server) belum",
+        "Plugin hooks butuh createApp meneruskan opsi hooks (template & aplikasi repo sudah)"
       ]
     },
     {

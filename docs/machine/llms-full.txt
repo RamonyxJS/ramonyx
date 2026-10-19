@@ -444,7 +444,9 @@
       ],
       "evidence": [
         "packages/bundler/src/dev.ts",
-        "docs/adr/0009-dev-server.md"
+        "packages/devtools/src/commands.ts",
+        "docs/adr/0009-dev-server.md",
+        "docs/adr/0076-server-entry-cli-migration.md"
       ],
       "limitations": []
     },
@@ -498,7 +500,7 @@
     },
     {
       "id": "cli-devtools",
-      "name": "CLI `ramonyx` (dev, build, build --static/--target edge/--watch, start, doctor)",
+      "name": "CLI `ramonyx` (dev, build --static/--target edge/--watch, start, doctor, konvensi src/server.ts)",
       "status": "implemented",
       "since": "0.1.1",
       "priority": "p0",
@@ -507,13 +509,15 @@
       ],
       "evidence": [
         "packages/devtools/src/commands.ts",
-        "packages/devtools/test/cli.test.ts",
+        "packages/devtools/src/load.ts",
+        "apps/create-app/test/create-app.test.ts",
         "docs/adr/0053-devtools-cli.md",
-        "docs/adr/0056-static-generation.md",
-        "docs/adr/0070-watch-mode.md"
+        "docs/adr/0070-watch-mode.md",
+        "docs/adr/0076-server-entry-cli-migration.md"
       ],
       "limitations": [
-        "`start --watch` (restart server) belum"
+        "`start --watch` (restart server) belum",
+        "Plugin hooks butuh createApp meneruskan opsi hooks (template & aplikasi repo sudah)"
       ]
     },
     {
@@ -2410,6 +2414,24 @@
         "runtime-plugin-process",
         "runtime-plugin-sandbox"
       ]
+    },
+    {
+      "id": "ADR-0076",
+      "file": "0076-server-entry-cli-migration.md",
+      "title": "Konvensi `src/server.ts` + Migrasi Playground/Docs ke CLI",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "ramonyx dev|start memakai src/server.ts opsional (createHandler(options) → FetchHandler; CLI tetap host + plugin); app.streaming masuk config tervalidasi; playground/docs/bencmark scripts migrasi ke CLI (entry lama dihapus); uji konvensi spawn CLI + probe header.",
+      "related": [
+        "ADR-0053",
+        "ADR-0067",
+        "ADR-0047"
+      ],
+      "features": [
+        "cli-devtools",
+        "dev-server-hmr"
+      ]
     }
   ]
 }
@@ -3172,7 +3194,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T11:19:41.750Z",
+  "generatedAt": "2026-10-19T11:37:13.402Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3538,7 +3560,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T11:19:42.995Z",
+  "generatedAt": "2026-10-19T11:37:14.624Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3612,8 +3634,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-19T11:18:38.563Z",
-  "commit": "812808a6fc478aa98f9b24c3f1414ca2dc83591c",
+  "generatedAt": "2026-10-19T11:36:06.651Z",
+  "commit": "daec7c8080a833dbae6e19c1ca8948ea8b08e0ab",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -3635,9 +3657,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 75,
+  "adrs": 76,
   "tests": {
-    "node": 246,
+    "node": 248,
     "rust": 116,
     "e2eSpecFiles": 7
   }
@@ -3661,6 +3683,10 @@
         "strictValidation": {
           "type": "boolean",
           "description": "Default true. Validasi schema runtime di trust boundary."
+        },
+        "streaming": {
+          "type": "boolean",
+          "description": "Default false. SSR streaming (ADR-0047) — dibaca CLI dev/start."
         }
       }
     },

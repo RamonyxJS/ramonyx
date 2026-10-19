@@ -21,9 +21,9 @@ import {
 } from "@ramonyx/bundler";
 import { generateRouteTypes, loadPageRoutes } from "@ramonyx/compiler";
 import { withMiddleware } from "@ramonyx/server";
-import type { RamonyxConfig } from "ramonyx";
+import type { FetchHandler, RamonyxConfig } from "ramonyx";
 
-import { loadConfigFile, loadCreateApp } from "./load.ts";
+import { type CreateAppOptions, loadConfigFile, loadCreateApp, loadServerEntry } from "./load.ts";
 
 const USAGE = `ramonyx — CLI pengembangan Ramonyx
 
@@ -140,6 +140,19 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
     flags: { appDir, configPath, port, devPort, static: isStatic, target, watch },
     help,
   };
+}
+
+/**
+ * Handler aplikasi: `src/server.ts` bila ada (entry kustom — ADR-0076), jika tidak `src/app.ts`.
+ * CLI tetap yang menjalankan (port/host dari config) dan membungkus plugin.
+ */
+async function resolveAppHandler(appDir: string, options: CreateAppOptions): Promise<FetchHandler> {
+  const serverEntry = await loadServerEntry(appDir);
+  if (serverEntry !== undefined) {
+    return await serverEntry(options);
+  }
+  const createApp = await loadCreateApp(appDir);
+  return await createApp(options);
 }
 
 /** Muat plugin dari config (pass-through ADR-0065) + PluginContext (ADR-0067). */
@@ -318,14 +331,17 @@ async function commandStart(flags: Flags): Promise<number> {
   // React produksi: harus diset SEBELUM `src/app.ts` (dan react) diimpor.
   process.env.NODE_ENV ??= "production";
   const { config } = await loadConfigFile(flags.appDir, flags.configPath);
-  const createApp = await loadCreateApp(flags.appDir);
   const host = createNodeHost();
   const plugins = await resolvePlugins(flags.appDir, config, "start");
   // Nama berkas ber-hash dari manifest build (ADR-0055); fallback aman bila belum dibangun.
   const manifest = await readAssetManifest(join(flags.appDir, "dist/client"));
   const clientScript = manifest === null ? "/assets/client.js" : `/assets/${manifest.client}`;
   const app = withMiddleware(
-    await createApp({ clientScript, hooks: plugins.hooks }),
+    await resolveAppHandler(flags.appDir, {
+      clientScript,
+      hooks: plugins.hooks,
+      streaming: config.app.streaming === true,
+    }),
     plugins.middleware,
     { env: host.env, logger: createConsoleLogger() },
   );
@@ -355,15 +371,15 @@ async function commandDev(flags: Flags): Promise<number> {
     port: flags.devPort ?? 5173,
     plugins: plugins.vite,
   });
-  const createApp = await loadCreateApp(flags.appDir);
   const host = createNodeHost();
   const app = withMiddleware(
-    await createApp({
+    await resolveAppHandler(flags.appDir, {
       clientScript: "/.ramonyx/client-entry.ts",
       clientModules: ["/@vite/client"],
       importer: dev.importer,
       reloadManifests: true,
       hooks: plugins.hooks,
+      streaming: config.app.streaming === true,
     }),
     plugins.middleware,
     { env: host.env, logger: createConsoleLogger() },

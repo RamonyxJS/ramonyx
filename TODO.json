@@ -446,7 +446,7 @@
       "theme": "quality",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Ganti skrip ad-hoc repo (build/dev/start playground & docs) dengan CLI `ramonyx` — dogfood CLI di aplikasi nyata milik repo sendiri.",
       "why": "Kandidat lama; dogfooding membuktikan CLI cukup untuk aplikasi nyata dan menutup celah antara template dan praktik repo (dokumen dan CLI tidak boleh divergen).",
       "done": [
@@ -457,7 +457,7 @@
       "areas": ["apps/playground", "apps/docs", "packages/devtools"],
       "adrs": [],
       "competitor": "Dogfooding CLI adalah standar framework (create-next-app memakai next, Nuxt memakai nuxi, SvelteKit memakai vite/svelte-kit).",
-      "source": "kandidat lama"
+      "source": "kandidat lama — selesai ADR-0076"
     },
     {
       "id": "p2-testing-docs",

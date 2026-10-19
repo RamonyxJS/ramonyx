@@ -349,7 +349,7 @@
 
 ### `p2-cli-migration` — Migrasi playground & docs ke CLI `ramonyx`
 
-*tema: quality · ukuran: M · status: open · sumber: kandidat lama*
+*tema: quality · ukuran: M · status: done · sumber: kandidat lama — selesai ADR-0076*
 
 - **Apa**: Ganti skrip ad-hoc repo (build/dev/start playground & docs) dengan CLI `ramonyx` — dogfood CLI di aplikasi nyata milik repo sendiri.
 - **Kenapa penting untuk bersaing**: Kandidat lama; dogfooding membuktikan CLI cukup untuk aplikasi nyata dan menutup celah antara template dan praktik repo (dokumen dan CLI tidak boleh divergen).

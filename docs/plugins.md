@@ -49,15 +49,32 @@ export default defineConfig({
 `ramonyx dev|build|start` memuat plugin dari config (key `plugins` — pass-through ADR-0065) dan
 melaporkan namanya (`✓ plugin: kunjungan`).
 
-**Entry kustom** (mis. `src/main.ts` sendiri) memakai helper yang sama dengan CLI:
+**Entry kustom** (`src/server.ts`, ADR-0076): bila aplikasi butuh logger/cache/instrumentasi
+sendiri, buat `src/server.ts` yang mengekspor `createHandler(options)` — CLI tetap menjalankan
+(port/host dari config) dan **plugin tetap dimuat & dibungkus CLI**:
 
 ```ts
-import { type RamonyxPlugin, loadPlugins } from "@ramonyx/bundler";
-import { withMiddleware } from "@ramonyx/server";
+// src/server.ts
+import type { AppHooks, FetchHandler } from "ramonyx";
+import { createApp } from "./app.ts";
 
-const plugins = await loadPlugins(config.plugins as RamonyxPlugin[], { appDir, config, logger, mode: "start" });
-const app = withMiddleware(await createApp({ hooks: plugins.hooks }), plugins.middleware, { logger });
+export interface ServerEntryOptions {
+  readonly clientScript?: string;
+  readonly hooks?: AppHooks;
+  readonly streaming?: boolean;
+}
+
+export async function createHandler(options: ServerEntryOptions = {}): Promise<FetchHandler> {
+  return createApp({
+    clientScript: options.clientScript,
+    hooks: options.hooks,          // hook plugin dari CLI
+    streaming: options.streaming,  // dari config app.streaming
+  });
+}
 ```
+
+`ramonyx dev|start` otomatis memakai `src/server.ts` bila ada (jika tidak: `src/app.ts`).
+Helper `loadPlugins` + `withMiddleware` tetap tersedia untuk skenario programatik lain.
 
 ## Aturan
 

@@ -23,6 +23,7 @@ Struktur:
 
 ```
 src/app.ts              createApp() — wiring handler (API + halaman + middleware)
+src/server.ts           (opsional) entry server kustom — dipakai CLI bila ada (ADR-0076)
 src/routes/             file routing
   page.tsx              halaman "/" (loader + action + komponen)
   layout.tsx            layout root

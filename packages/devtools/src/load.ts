@@ -67,6 +67,31 @@ export async function loadConfigFile(
   return { config: resolveConfig(input), file: found };
 }
 
+export type CreateHandler = (options?: CreateAppOptions) => Promise<FetchHandler>;
+
+/**
+ * Muat entry server kustom `src/server.ts` (opsional — ADR-0076): aplikasi dengan kebutuhan
+ * khusus (logger, cache, streaming, instrumentasi) mengembalikan handler-nya sendiri; CLI tetap
+ * yang menjalankan (port/host dari config, plugin dimuat CLI). Bila tidak ada → `undefined`
+ * (CLI memakai `src/app.ts`).
+ */
+export async function loadServerEntry(appDir: string): Promise<CreateHandler | undefined> {
+  for (const relative of ["src/server.ts", "src/server.tsx", "src/server.js"]) {
+    const candidate = join(appDir, relative);
+    if (!existsSync(candidate)) {
+      continue;
+    }
+    const mod = (await import(pathToFileURL(candidate).href)) as { createHandler?: CreateHandler };
+    if (typeof mod.createHandler !== "function") {
+      throw new Error(
+        `${relative} ada tetapi tidak mengekspor fungsi createHandler(options?) — lihat dokumen (ADR-0076).`,
+      );
+    }
+    return mod.createHandler;
+  }
+  return undefined;
+}
+
 /** Muat `createApp` dari `src/app.ts` (konvensi CLI). */
 export async function loadCreateApp(appDir: string): Promise<CreateApp> {
   for (const relative of ["src/app.ts", "src/app.tsx", "src/app.js"]) {

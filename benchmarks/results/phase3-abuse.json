@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T22:06:53.750Z",
+  "generatedAt": "2026-10-19T11:34:11.284Z",
   "scenario": "abuse-case + soak memori (playground; tanpa build client)",
   "environment": {
     "platform": "linux",
@@ -35,12 +35,12 @@
       "ok": true,
       "url": "http://localhost:3000/api/echo",
       "requests": {
-        "total": 499,
-        "perSecond": 249.5
+        "total": 512,
+        "perSecond": 256
       },
       "codes": {
         "twoxx": 0,
-        "fourxx": 499,
+        "fourxx": 512,
         "fivexx": 0
       },
       "errors": 0,
@@ -52,12 +52,12 @@
       "ok": true,
       "url": "http://localhost:3000/api/echo",
       "requests": {
-        "total": 686,
-        "perSecond": 343
+        "total": 701,
+        "perSecond": 350.5
       },
       "codes": {
         "twoxx": 0,
-        "fourxx": 686,
+        "fourxx": 701,
         "fivexx": 0
       },
       "errors": 0,
@@ -69,12 +69,12 @@
       "ok": true,
       "url": "http://localhost:3000/assets/..%2f..%2fpackage.json",
       "requests": {
-        "total": 454,
-        "perSecond": 227
+        "total": 716,
+        "perSecond": 358
       },
       "codes": {
         "twoxx": 0,
-        "fourxx": 454,
+        "fourxx": 716,
         "fivexx": 0
       },
       "errors": 0,
@@ -86,11 +86,11 @@
       "ok": true,
       "url": "http://localhost:3000/api/hello?k0=v&k1=v&k2=v&k3=v&k4=v&k5=v&k6=v&k7=v&k8=v&k9=v&k10=v&k11=v&k12=v&k13=v&k14=v&k15=v&k16=v&k17=v&k18=v&k19=v&k20=v&k21=v&k22=v&k23=v&k24=v&k25=v&k26=v&k27=v&k28=v&k29=v&k30=v&k31=v&k32=v&k33=v&k34=v&k35=v&k36=v&k37=v&k38=v&k39=v&k40=v&k41=v&k42=v&k43=v&k44=v&k45=v&k46=v&k47=v&k48=v&k49=v&k50=v&k51=v&k52=v&k53=v&k54=v&k55=v&k56=v&k57=v&k58=v&k59=v&k60=v&k61=v&k62=v&k63=v&k64=v&k65=v&k66=v&k67=v&k68=v&k69=v&k70=v&k71=v&k72=v&k73=v&k74=v&k75=v&k76=v&k77=v&k78=v&k79=v&k80=v&k81=v&k82=v&k83=v&k84=v&k85=v&k86=v&k87=v&k88=v&k89=v&k90=v&k91=v&k92=v&k93=v&k94=v&k95=v&k96=v&k97=v&k98=v&k99=v&k100=v&k101=v&k102=v&k103=v&k104=v&k105=v&k106=v&k107=v&k108=v&k109=v&k110=v&k111=v&k112=v&k113=v&k114=v&k115=v&k116=v&k117=v&k118=v&k119=v&k120=v&k121=v&k122=v&k123=v&k124=v&k125=v&k126=v&k127=v&k128=v&k129=v&k130=v&k131=v&k132=v&k133=v&k134=v&k135=v&k136=v&k137=v&k138=v&k139=v&k140=v&k141=v&k142=v&k143=v&k144=v&k145=v&k146=v&k147=v&k148=v&k149=v&k150=v&k151=v&k152=v&k153=v&k154=v&k155=v&k156=v&k157=v&k158=v&k159=v&k160=v&k161=v&k162=v&k163=v&k164=v&k165=v&k166=v&k167=v&k168=v&k169=v&k170=v&k171=v&k172=v&k173=v&k174=v&k175=v&k176=v&k177=v&k178=v&k179=v&k180=v&k181=v&k182=v&k183=v&k184=v&k185=v&k186=v&k187=v&k188=v&k189=v&k190=v&k191=v&k192=v&k193=v&k194=v&k195=v&k196=v&k197=v&k198=v&k199=v",
       "requests": {
-        "total": 589,
-        "perSecond": 294.5
+        "total": 624,
+        "perSecond": 312
       },
       "codes": {
-        "twoxx": 589,
+        "twoxx": 624,
         "fourxx": 0,
         "fivexx": 0
       },
@@ -103,11 +103,11 @@
       "ok": true,
       "url": "http://localhost:3000/api/echo",
       "requests": {
-        "total": 788,
-        "perSecond": 394
+        "total": 796,
+        "perSecond": 398
       },
       "codes": {
-        "twoxx": 788,
+        "twoxx": 796,
         "fourxx": 0,
         "fivexx": 0
       },
@@ -120,280 +120,287 @@
     "loadSeconds": 20,
     "drainSeconds": 3,
     "measurement": "RSS proses server (anak) via /proc/<pid>/status — bukan proses klien",
-    "requestsPerSecond": 582.25,
+    "requestsPerSecond": 556,
     "latency": {
-      "p50": 81,
-      "p99": 140
+      "p50": 84,
+      "p99": 157
     },
     "errors": 0,
     "rssMb": {
       "samples": [
-        217,
-        222,
-        225,
-        252,
-        260,
-        281,
-        285,
-        285,
-        289,
+        236,
+        253,
+        268,
+        292,
+        293,
+        293,
         294,
-        294,
+        296,
+        299,
         300,
-        303,
         305,
-        309,
-        313,
-        313,
-        313,
+        308,
+        312,
         315,
-        315,
-        315,
-        315,
-        315
+        319,
+        320,
+        323,
+        327,
+        331,
+        335,
+        335,
+        335,
+        335
       ],
-      "first": 217,
-      "last": 315,
-      "min": 217,
-      "max": 315,
-      "delta": 98
+      "first": 236,
+      "last": 335,
+      "min": 236,
+      "max": 335,
+      "delta": 99
     },
     "breakdown": [
       {
-        "rss": 129,
-        "heapUsed": 19,
-        "heapTotal": 35,
-        "external": 26,
-        "arrayBuffers": 3
+        "rss": 131,
+        "heapUsed": 21,
+        "heapTotal": 33,
+        "external": 32,
+        "arrayBuffers": 8
       },
       {
-        "rss": 129,
-        "heapUsed": 19,
-        "heapTotal": 35,
-        "external": 26,
-        "arrayBuffers": 3
+        "rss": 131,
+        "heapUsed": 21,
+        "heapTotal": 33,
+        "external": 32,
+        "arrayBuffers": 8
       },
       {
-        "rss": 143,
+        "rss": 134,
         "heapUsed": 23,
-        "heapTotal": 38,
-        "external": 24,
-        "arrayBuffers": 1
+        "heapTotal": 34,
+        "external": 32,
+        "arrayBuffers": 8
       },
       {
-        "rss": 160,
-        "heapUsed": 32,
-        "heapTotal": 57,
-        "external": 24,
-        "arrayBuffers": 1
-      },
-      {
-        "rss": 171,
+        "rss": 156,
         "heapUsed": 33,
-        "heapTotal": 61,
-        "external": 24,
-        "arrayBuffers": 1
+        "heapTotal": 54,
+        "external": 25,
+        "arrayBuffers": 2
       },
       {
         "rss": 176,
-        "heapUsed": 38,
-        "heapTotal": 65,
-        "external": 24,
-        "arrayBuffers": 1
+        "heapUsed": 29,
+        "heapTotal": 59,
+        "external": 25,
+        "arrayBuffers": 2
       },
       {
-        "rss": 184,
-        "heapUsed": 53,
-        "heapTotal": 99,
+        "rss": 183,
+        "heapUsed": 35,
+        "heapTotal": 97,
+        "external": 25,
+        "arrayBuffers": 2
+      },
+      {
+        "rss": 206,
+        "heapUsed": 56,
+        "heapTotal": 98,
+        "external": 25,
+        "arrayBuffers": 2
+      },
+      {
+        "rss": 213,
+        "heapUsed": 51,
+        "heapTotal": 103,
         "external": 26,
         "arrayBuffers": 3
       },
       {
-        "rss": 199,
-        "heapUsed": 30,
-        "heapTotal": 99,
-        "external": 23,
-        "arrayBuffers": 0
+        "rss": 217,
+        "heapUsed": 50,
+        "heapTotal": 106,
+        "external": 25,
+        "arrayBuffers": 2
       },
       {
-        "rss": 205,
-        "heapUsed": 54,
-        "heapTotal": 99,
-        "external": 23,
-        "arrayBuffers": 0
-      },
-      {
-        "rss": 207,
-        "heapUsed": 41,
-        "heapTotal": 100,
-        "external": 23,
-        "arrayBuffers": 0
-      },
-      {
-        "rss": 208,
-        "heapUsed": 40,
-        "heapTotal": 101,
-        "external": 23,
-        "arrayBuffers": 0
-      },
-      {
-        "rss": 209,
-        "heapUsed": 56,
-        "heapTotal": 102,
-        "external": 23,
-        "arrayBuffers": 0
-      },
-      {
-        "rss": 216,
-        "heapUsed": 46,
-        "heapTotal": 107,
-        "external": 23,
-        "arrayBuffers": 0
-      },
-      {
-        "rss": 221,
-        "heapUsed": 58,
-        "heapTotal": 109,
-        "external": 23,
-        "arrayBuffers": 0
+        "rss": 220,
+        "heapUsed": 68,
+        "heapTotal": 108,
+        "external": 25,
+        "arrayBuffers": 2
       },
       {
         "rss": 224,
-        "heapUsed": 67,
-        "heapTotal": 175,
-        "external": 23,
-        "arrayBuffers": 0
+        "heapUsed": 58,
+        "heapTotal": 110,
+        "external": 25,
+        "arrayBuffers": 2
       },
       {
-        "rss": 251,
-        "heapUsed": 51,
-        "heapTotal": 177,
-        "external": 23,
-        "arrayBuffers": 0
+        "rss": 226,
+        "heapUsed": 57,
+        "heapTotal": 112,
+        "external": 25,
+        "arrayBuffers": 2
       },
       {
-        "rss": 258,
-        "heapUsed": 85,
-        "heapTotal": 178,
-        "external": 23,
-        "arrayBuffers": 0
+        "rss": 229,
+        "heapUsed": 58,
+        "heapTotal": 114,
+        "external": 25,
+        "arrayBuffers": 2
       },
       {
-        "rss": 280,
-        "heapUsed": 74,
+        "rss": 235,
+        "heapUsed": 50,
         "heapTotal": 182,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 284,
-        "heapUsed": 66,
-        "heapTotal": 186,
+        "rss": 257,
+        "heapUsed": 92,
+        "heapTotal": 182,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 284,
-        "heapUsed": 105,
-        "heapTotal": 186,
+        "rss": 272,
+        "heapUsed": 79,
+        "heapTotal": 182,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 288,
-        "heapUsed": 93,
-        "heapTotal": 189,
+        "rss": 291,
+        "heapUsed": 67,
+        "heapTotal": 183,
         "external": 23,
         "arrayBuffers": 0
       },
       {
         "rss": 293,
-        "heapUsed": 82,
-        "heapTotal": 193,
+        "heapUsed": 58,
+        "heapTotal": 183,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 294,
-        "heapUsed": 118,
-        "heapTotal": 193,
+        "rss": 293,
+        "heapUsed": 54,
+        "heapTotal": 184,
+        "external": 23,
+        "arrayBuffers": 0
+      },
+      {
+        "rss": 293,
+        "heapUsed": 99,
+        "heapTotal": 184,
+        "external": 23,
+        "arrayBuffers": 0
+      },
+      {
+        "rss": 295,
+        "heapUsed": 96,
+        "heapTotal": 186,
         "external": 23,
         "arrayBuffers": 0
       },
       {
         "rss": 299,
-        "heapUsed": 107,
-        "heapTotal": 197,
+        "heapUsed": 88,
+        "heapTotal": 190,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 303,
-        "heapUsed": 96,
-        "heapTotal": 201,
+        "rss": 304,
+        "heapUsed": 80,
+        "heapTotal": 193,
         "external": 23,
         "arrayBuffers": 0
       },
       {
         "rss": 308,
-        "heapUsed": 82,
-        "heapTotal": 205,
+        "heapUsed": 76,
+        "heapTotal": 196,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 309,
-        "heapUsed": 124,
-        "heapTotal": 205,
+        "rss": 311,
+        "heapUsed": 71,
+        "heapTotal": 199,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 312,
-        "heapUsed": 92,
-        "heapTotal": 213,
+        "rss": 311,
+        "heapUsed": 117,
+        "heapTotal": 200,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 312,
-        "heapUsed": 79,
-        "heapTotal": 213,
+        "rss": 316,
+        "heapUsed": 114,
+        "heapTotal": 204,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 312,
-        "heapUsed": 121,
-        "heapTotal": 213,
+        "rss": 319,
+        "heapUsed": 110,
+        "heapTotal": 207,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 314,
-        "heapUsed": 105,
-        "heapTotal": 213,
+        "rss": 323,
+        "heapUsed": 102,
+        "heapTotal": 211,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 314,
-        "heapUsed": 124,
-        "heapTotal": 213,
+        "rss": 326,
+        "heapUsed": 102,
+        "heapTotal": 214,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 314,
-        "heapUsed": 124,
-        "heapTotal": 213,
+        "rss": 331,
+        "heapUsed": 103,
+        "heapTotal": 218,
         "external": 23,
         "arrayBuffers": 0
       },
       {
-        "rss": 314,
-        "heapUsed": 124,
-        "heapTotal": 213,
+        "rss": 335,
+        "heapUsed": 103,
+        "heapTotal": 223,
+        "external": 23,
+        "arrayBuffers": 0
+      },
+      {
+        "rss": 335,
+        "heapUsed": 119,
+        "heapTotal": 223,
+        "external": 23,
+        "arrayBuffers": 0
+      },
+      {
+        "rss": 335,
+        "heapUsed": 119,
+        "heapTotal": 223,
+        "external": 23,
+        "arrayBuffers": 0
+      },
+      {
+        "rss": 335,
+        "heapUsed": 119,
+        "heapTotal": 223,
         "external": 23,
         "arrayBuffers": 0
       }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T07:54:00.864Z",
+  "generatedAt": "2026-10-19T08:02:48.107Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -111,10 +111,13 @@
         "PageMetadata",
         "PageModule",
         "REMOTE_ADDRESS_HEADER",
+        "TROUBLESHOOTING_URL",
         "cacheControl",
         "createCache",
         "createMemoryStore",
         "defineConfig",
+        "docsUrl",
+        "errorHint",
         "fillRouteParams",
         "formDataToObject",
         "hasDynamicSegment",
@@ -133,6 +136,7 @@
         "CacheControlOptions",
         "CreateCacheOptions",
         "EnvReader",
+        "ErrorCode",
         "FetchHandler",
         "HttpErrorOptions",
         "InvalidateEvent",

@@ -550,20 +550,26 @@
     },
     {
       "id": "error-messages-id",
-      "name": "Pesan error konsisten (Bahasa Indonesia) dengan konteks file",
-      "status": "partial",
-      "since": "0.1.0",
+      "name": "Pesan error: kode stabil (RMX-…) + tautan troubleshooting + overlay dev (stack/sumber)",
+      "status": "implemented",
+      "since": null,
       "priority": "p3",
       "packages": [
         "@ramonyx/core",
-        "@ramonyx/compiler"
+        "@ramonyx/ssr",
+        "@ramonyx/compiler",
+        "@ramonyx/bundler"
       ],
       "evidence": [
-        "packages/core/src/errors.ts",
-        "packages/compiler/src/errors.ts"
+        "packages/core/src/errors-docs.ts",
+        "packages/ssr/src/pages.ts",
+        "docs/troubleshooting.md",
+        "docs/adr/0072-error-dx.md"
       ],
       "limitations": [
-        "Tanpa tautan ke dokumentasi per pesan"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Kode hanya untuk error framework (HttpError aplikasi bebas)",
+        "Overlay berupa halaman error ber-detail (bukan panel JS)"
       ]
     },
     {
@@ -2316,6 +2322,22 @@
         "observability-logger",
         "observability-metrics"
       ]
+    },
+    {
+      "id": "ADR-0072",
+      "file": "0072-error-dx.md",
+      "title": "DX Error — Overlay Dev, Kode Error Stabil, Tautan Docs",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "errorDetails otomatis di dev (stack+sumber di error page/fallback; produksi tidak membocorkan) + kode error stabil (ErrorCode) dengan sufiks errorHint [kode RMX-…; docs: url#kode] pada error framework (config/routes/build/edge) + docs/troubleshooting.md ber-anchor.",
+      "related": [
+        "ADR-0063",
+        "ADR-0058"
+      ],
+      "features": [
+        "error-messages-id"
+      ]
     }
   ]
 }
@@ -3068,7 +3090,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T07:54:00.864Z",
+  "generatedAt": "2026-10-19T08:02:48.107Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3179,10 +3201,13 @@
         "PageMetadata",
         "PageModule",
         "REMOTE_ADDRESS_HEADER",
+        "TROUBLESHOOTING_URL",
         "cacheControl",
         "createCache",
         "createMemoryStore",
         "defineConfig",
+        "docsUrl",
+        "errorHint",
         "fillRouteParams",
         "formDataToObject",
         "hasDynamicSegment",
@@ -3201,6 +3226,7 @@
         "CacheControlOptions",
         "CreateCacheOptions",
         "EnvReader",
+        "ErrorCode",
         "FetchHandler",
         "HttpErrorOptions",
         "InvalidateEvent",
@@ -3428,7 +3454,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T07:54:01.914Z",
+  "generatedAt": "2026-10-19T08:02:48.981Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3502,8 +3528,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-19T07:52:39.756Z",
-  "commit": "7878da382f53efe972f94e501536bafe318ff883",
+  "generatedAt": "2026-10-19T08:01:54.423Z",
+  "commit": "37b796dc3c54258ec33e257ba78e6ed488884b67",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -3525,9 +3551,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 71,
+  "adrs": 72,
   "tests": {
-    "node": 237,
+    "node": 238,
     "rust": 111,
     "e2eSpecFiles": 7
   }

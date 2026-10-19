@@ -5,6 +5,8 @@ export { defineConfig, resolveConfig } from "./config.ts";
 export { NONCE_HEADER, REMOTE_ADDRESS_HEADER } from "./constants.ts";
 export type { HttpErrorOptions } from "./errors.ts";
 export { HttpError } from "./errors.ts";
+export type { ErrorCode } from "./errors-docs.ts";
+export { docsUrl, errorHint, TROUBLESHOOTING_URL } from "./errors-docs.ts";
 export type {
   AppHooks,
   InvalidateEvent,

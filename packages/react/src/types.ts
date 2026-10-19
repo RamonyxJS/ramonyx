@@ -16,5 +16,10 @@ export interface LayoutProps {
 }
 
 export interface ErrorPageProps {
-  readonly error: { readonly status: number; readonly message: string };
+  readonly error: {
+    readonly status: number;
+    readonly message: string;
+    /** Detail dev-only (ADR-0072): stack + file sumber — jangan ditampilkan di produksi. */
+    readonly details?: { readonly stack?: string; readonly source?: string };
+  };
 }

@@ -1,7 +1,7 @@
 import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { dirname, join, relative, sep } from "node:path";
-import type { Middleware, RouteDefinition, RouteEntry } from "@ramonyx/core";
+import { errorHint, type Middleware, type RouteDefinition, type RouteEntry } from "@ramonyx/core";
 import { RouteManifestError } from "./errors.ts";
 import { type ModuleImporter, nativeImporter } from "./import.ts";
 import { ancestorDirs, scanDirectories } from "./pages.ts";
@@ -115,7 +115,7 @@ export async function listApiRoutes(options: CreateRouteManifestOptions): Promis
     const methods = HTTP_METHODS.filter((method) => module[method] !== undefined);
     if (methods.length === 0) {
       throw new RouteManifestError(
-        `Route ${file.routePath} (${file.absolute}) tidak mengekspor HTTP method. Ekspor salah satu: ${HTTP_METHODS.join(", ")}.`,
+        `Route ${file.routePath} (${file.absolute}) tidak mengekspor HTTP method. Ekspor salah satu: ${HTTP_METHODS.join(", ")}. ${errorHint("RMX-ROUTES-4")}`,
       );
     }
     const middlewareFiles = ancestorDirs(options.dir, dirname(file.absolute))
@@ -169,7 +169,7 @@ export async function createRouteManifest(
       const definition = module[method];
       if (!isRouteDefinition(definition)) {
         throw new RouteManifestError(
-          `Ekspor ${method} di ${file.routePath} bukan definisi route yang valid (butuh objek dengan fungsi "handler").`,
+          `Ekspor ${method} di ${file.routePath} bukan definisi route yang valid (butuh objek dengan fungsi "handler"). ${errorHint("RMX-ROUTES-5")}`,
         );
       }
       entries.push({ method, path: file.routePath, definition, middlewares });

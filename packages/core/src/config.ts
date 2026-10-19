@@ -1,3 +1,5 @@
+import { errorHint } from "./errors-docs.ts";
+
 export interface AppConfig {
   readonly strictValidation?: boolean;
 }
@@ -41,20 +43,22 @@ export function resolveConfig(input: RamonyxConfigInput = {}): RamonyxConfig {
   const strictValidation = input.app?.strictValidation ?? true;
   if (typeof strictValidation !== "boolean") {
     throw new Error(
-      `Config tidak valid: app.strictValidation harus boolean, menerima ${typeof strictValidation}.`,
+      `Config tidak valid: app.strictValidation harus boolean, menerima ${typeof strictValidation}. ${errorHint("RMX-CONFIG-1")}`,
     );
   }
 
   const port = input.server?.port ?? 3000;
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     throw new Error(
-      `Config tidak valid: server.port harus integer 0-65535, menerima ${String(port)}.`,
+      `Config tidak valid: server.port harus integer 0-65535, menerima ${String(port)}. ${errorHint("RMX-CONFIG-1")}`,
     );
   }
 
   const host = input.server?.host ?? "localhost";
   if (typeof host !== "string" || host.length === 0) {
-    throw new Error("Config tidak valid: server.host harus string non-kosong.");
+    throw new Error(
+      `Config tidak valid: server.host harus string non-kosong. ${errorHint("RMX-CONFIG-1")}`,
+    );
   }
 
   return {

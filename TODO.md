@@ -298,7 +298,7 @@
 
 ### `p2-error-dx` — DX error: overlay dev + tautan docs + kode error stabil
 
-*tema: dx · ukuran: M · status: open · sumber: gap §3 (DX error)*
+*tema: dx · ukuran: M · status: done · sumber: gap §3 (DX error) — selesai ADR-0072*
 
 - **Apa**: Overlay error di dev untuk kegagalan SSR/loader (bukan hanya client), pesan error dengan tautan ke halaman docs terkait, dan kode error stabil untuk pencarian.
 - **Kenapa penting untuk bersaing**: Kualitas pesan error adalah faktor adopsi yang nyata (pengalaman pertama debugging); pesaing berinvestasi besar di overlay dan pesan yang menuntun.

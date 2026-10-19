@@ -985,6 +985,22 @@
         "observability-logger",
         "observability-metrics"
       ]
+    },
+    {
+      "id": "ADR-0072",
+      "file": "0072-error-dx.md",
+      "title": "DX Error — Overlay Dev, Kode Error Stabil, Tautan Docs",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "errorDetails otomatis di dev (stack+sumber di error page/fallback; produksi tidak membocorkan) + kode error stabil (ErrorCode) dengan sufiks errorHint [kode RMX-…; docs: url#kode] pada error framework (config/routes/build/edge) + docs/troubleshooting.md ber-anchor.",
+      "related": [
+        "ADR-0063",
+        "ADR-0058"
+      ],
+      "features": [
+        "error-messages-id"
+      ]
     }
   ]
 }

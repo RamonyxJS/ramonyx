@@ -369,7 +369,7 @@
       "theme": "dx",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Overlay error di dev untuk kegagalan SSR/loader (bukan hanya client), pesan error dengan tautan ke halaman docs terkait, dan kode error stabil untuk pencarian.",
       "why": "Kualitas pesan error adalah faktor adopsi yang nyata (pengalaman pertama debugging); pesaing berinvestasi besar di overlay dan pesan yang menuntun.",
       "done": [
@@ -380,7 +380,7 @@
       "areas": ["packages/compiler", "packages/bundler", "packages/ssr"],
       "adrs": [],
       "competitor": "Next.js error overlay; SvelteKit enhanced error pages; Nuxt error page + devtools.",
-      "source": "gap §3 (DX error)"
+      "source": "gap §3 (DX error) — selesai ADR-0072"
     },
     {
       "id": "p2-watch-mode",

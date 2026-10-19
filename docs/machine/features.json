@@ -542,20 +542,26 @@
     },
     {
       "id": "error-messages-id",
-      "name": "Pesan error konsisten (Bahasa Indonesia) dengan konteks file",
-      "status": "partial",
-      "since": "0.1.0",
+      "name": "Pesan error: kode stabil (RMX-…) + tautan troubleshooting + overlay dev (stack/sumber)",
+      "status": "implemented",
+      "since": null,
       "priority": "p3",
       "packages": [
         "@ramonyx/core",
-        "@ramonyx/compiler"
+        "@ramonyx/ssr",
+        "@ramonyx/compiler",
+        "@ramonyx/bundler"
       ],
       "evidence": [
-        "packages/core/src/errors.ts",
-        "packages/compiler/src/errors.ts"
+        "packages/core/src/errors-docs.ts",
+        "packages/ssr/src/pages.ts",
+        "docs/troubleshooting.md",
+        "docs/adr/0072-error-dx.md"
       ],
       "limitations": [
-        "Tanpa tautan ke dokumentasi per pesan"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Kode hanya untuk error framework (HttpError aplikasi bebas)",
+        "Overlay berupa halaman error ber-detail (bukan panel JS)"
       ]
     },
     {

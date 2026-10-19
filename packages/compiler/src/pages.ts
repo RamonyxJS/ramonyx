@@ -1,7 +1,7 @@
 import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
-import type { LoadedPage, Middleware, PageModule } from "@ramonyx/core";
+import { errorHint, type LoadedPage, type Middleware, type PageModule } from "@ramonyx/core";
 import { RouteManifestError } from "./errors.ts";
 import { type ModuleImporter, nativeImporter } from "./import.ts";
 
@@ -60,7 +60,7 @@ export async function scanDirectories(
     dirents = await readdir(dir, { withFileTypes: true, recursive: true });
   } catch (error) {
     throw new RouteManifestError(
-      `Tidak bisa membaca direktori route "${dir}": ${error instanceof Error ? error.message : String(error)}`,
+      `Tidak bisa membaca direktori route "${dir}": ${error instanceof Error ? error.message : String(error)} ${errorHint("RMX-ROUTES-1")}`,
       { cause: error },
     );
   }
@@ -99,7 +99,7 @@ async function loadPageModule(
   const module = await importer(absolute, label);
   if (module.default === undefined) {
     throw new RouteManifestError(
-      `${label} (${absolute}) tidak punya default export (komponen halaman/layout/error).`,
+      `${label} (${absolute}) tidak punya default export (komponen halaman/layout/error). ${errorHint("RMX-ROUTES-2")}`,
     );
   }
   return module as PageModule;
@@ -156,7 +156,7 @@ export async function loadPageRoutes(options: LoadPageRoutesOptions): Promise<Lo
       if (!Array.isArray(exported) || !exported.every((item) => typeof item === "function")) {
         throw new RouteManifestError(
           `Middleware ${routePathForDir(dir, ancestor)} (${middlewareFile}) harus mengekspor array fungsi: ` +
-            "`export default [fn, ...] satisfies Middleware[]`.",
+            `\`export default [fn, ...] satisfies Middleware[]\`. ${errorHint("RMX-ROUTES-3")}`,
         );
       }
       middlewares.push(...(exported as Middleware[]));

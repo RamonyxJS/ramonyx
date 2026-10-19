@@ -24,6 +24,11 @@ test("override dikenakan", () => {
 test("port tidak valid → error jelas", () => {
   assert.throws(() => resolveConfig({ server: { port: 70000 } }), /server\.port/);
   assert.throws(() => resolveConfig({ server: { port: 1.5 } }), /server\.port/);
+  assert.throws(
+    () => resolveConfig({ server: { port: 1.5 } }),
+    /RMX-CONFIG-1.*troubleshooting/,
+    "pesan memuat kode stabil + tautan docs (ADR-0072)",
+  );
 });
 
 test("strictValidation non-boolean → error jelas", () => {

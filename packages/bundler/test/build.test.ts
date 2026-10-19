@@ -52,7 +52,7 @@ test("buildClient: `*.server.ts` distub di bundle klien; `node:*` langsung ditol
     const pagesB = await loadPageRoutes({ dir: `${appB}/src/routes` });
     await assert.rejects(
       () => buildClient({ appDir: appB, pages: pagesB }),
-      /Batas server\/client dilanggar[\s\S]*node:fs\/promises/,
+      /Batas server\/client dilanggar[\s\S]*node:fs\/promises[\s\S]*RMX-BUILD-1/,
       "impor node:* langsung dari modul klien ditolak",
     );
   } finally {

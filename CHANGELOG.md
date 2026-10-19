@@ -74,6 +74,10 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   `requestLogging()` (durasi/status/traceId lewat logger aplikasi), `createMetrics()` (hook
   request/loader/render/invalidasi) + `createMetricsRoute()` (`GET /metrics`) — di
   `@ramonyx/server`, edge-safe; dogfood playground; docs `docs/observability.md`.
+- **DX error** (ADR-0072): halaman error **dev** menampilkan stack + file sumber
+  (`errorDetails`, otomatis saat bukan produksi; produksi tetap bersih), dan error framework
+  memuat **kode stabil** + tautan docs (`RMX-CONFIG-1`, `RMX-ROUTES-1..5`, `RMX-BUILD-1/2`,
+  `RMX-EDGE-1`) → `docs/troubleshooting.md`.
 
 ### Perubahan API (pra-1.0)
 

@@ -144,7 +144,8 @@ test("error tak dikenal → 500 generik, pesan asli tidak bocor, tercatat di log
   );
 
   const handler = createHandler({
-    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+    // Produksi: detail dev tidak disertakan (ADR-0072).
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer(), errorDetails: false }),
     logger,
   });
   const response = await handler(new Request("http://test.local/"));
@@ -156,6 +157,55 @@ test("error tak dikenal → 500 generik, pesan asli tidak bocor, tercatat di log
   assert.ok(
     lines.some((line) => line.level === "error" && line.message === "Render halaman gagal"),
   );
+});
+
+test("errorDetails (dev): stack + sumber pada error page & fallback — ADR-0072", async () => {
+  const page = basePage(
+    "/gagal",
+    {
+      default: Page,
+      loader: () => {
+        throw new Error("gagal di loader");
+      },
+    },
+    { error: { default: ErrorPage }, pageFile: "/app/src/routes/gagal/page.tsx" },
+  );
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer(), errorDetails: true }),
+  });
+
+  const denganErrorPage = await handler(new Request("http://test.local/gagal"));
+  const html = await denganErrorPage.text();
+  assert.ok(html.includes("gagal di loader"), "stack tampil di dev (overlay)");
+  assert.ok(html.includes('"source"'), "file sumber disertakan");
+  assert.ok(html.includes("routes/gagal/page.tsx"), "sumber menunjuk berkas halaman");
+
+  // Fallback tanpa error module → stack juga tampil di dev.
+  const pageTanpaError = basePage("/gagal2", {
+    default: Page,
+    loader: () => {
+      throw new Error("gagal tanpa error.tsx");
+    },
+  });
+  const fallbackHandler = createHandler({
+    routes: createPageRoutes({
+      pages: [pageTanpaError],
+      renderer: fakeRenderer(),
+      errorDetails: true,
+    }),
+  });
+  const fallbackHtml = await (
+    await fallbackHandler(new Request("http://test.local/gagal2"))
+  ).text();
+  assert.ok(fallbackHtml.includes("data-error-stack"), "fallback dev memuat stack");
+  assert.ok(fallbackHtml.includes("gagal tanpa error.tsx"));
+
+  // Produksi: tidak ada detail.
+  const prodHandler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer(), errorDetails: false }),
+  });
+  const prodHtml = await (await prodHandler(new Request("http://test.local/gagal"))).text();
+  assert.ok(!prodHtml.includes("gagal di loader"), "produksi tidak membocorkan detail");
 });
 
 test("tanpa error module → halaman fallback bawaan", async () => {
@@ -546,7 +596,7 @@ test("streaming: renderStream menolak → halaman error sinkron + log", async ()
   };
   const page = basePage("/", { default: Page }, { error: { default: ErrorPage } });
   const handler = createHandler({
-    routes: createPageRoutes({ pages: [page], renderer, streaming: true }),
+    routes: createPageRoutes({ pages: [page], renderer, streaming: true, errorDetails: false }),
     logger,
   });
 

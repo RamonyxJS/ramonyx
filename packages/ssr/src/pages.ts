@@ -53,6 +53,12 @@ export interface CreatePageRoutesOptions {
    * (mis. dari `createAssetResolver()` di `@ramonyx/bundler`).
    */
   readonly assets?: AssetResolver;
+  /**
+   * Sertakan detail error (stack + file sumber) pada halaman error — overlay DX untuk dev
+   * (ADR-0072). Default: aktif bila `NODE_ENV !== "production"` (aman di edge: dicek tanpa
+   * mengasumsikan `process` ada).
+   */
+  readonly errorDetails?: boolean;
 }
 
 const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
@@ -122,6 +128,8 @@ function streamDocument(
 interface PublicError {
   readonly status: number;
   readonly message: string;
+  /** Detail dev-only (ADR-0072): stack + file sumber. */
+  readonly details?: { readonly stack?: string; readonly source?: string };
 }
 
 function toPublicError(error: unknown): PublicError {
@@ -207,7 +215,15 @@ function requestWithCookies(request: Request, setCookies: readonly string[]): Re
 }
 
 function fallbackBody(error: PublicError): string {
-  return `<h1>${error.status}</h1><p>${escapeHtml(error.message)}</p>`;
+  const detail =
+    error.details?.stack !== undefined
+      ? `<pre data-error-stack>${escapeHtml(error.details.stack)}</pre>`
+      : "";
+  const source =
+    error.details?.source !== undefined
+      ? `<p data-error-source>${escapeHtml(error.details.source)}</p>`
+      : "";
+  return `<h1>${error.status}</h1><p>${escapeHtml(error.message)}</p>${source}${detail}`;
 }
 
 /** Payload hydration → JSON yang aman ditempel di dalam `<script>` (escape `<`). */
@@ -342,6 +358,7 @@ async function renderPage(
   hooks?: AppHooks,
   cache?: Cache,
   assets?: AssetResolver,
+  errorDetails?: boolean,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
@@ -475,7 +492,17 @@ async function renderPage(
 
     return htmlResponse(document, status, extraHeaders);
   } catch (error) {
-    const publicError = toPublicError(error);
+    const dasar = toPublicError(error);
+    const publicError: PublicError =
+      errorDetails === true
+        ? {
+            ...dasar,
+            details: {
+              stack: error instanceof Error ? error.stack : undefined,
+              source: page.pageFile,
+            },
+          }
+        : dasar;
     if (!(error instanceof HttpError)) {
       log.error("Render halaman gagal", {
         path: page.path,
@@ -555,6 +582,7 @@ async function renderPageTimed(
   hooks: AppHooks | undefined,
   cache?: Cache,
   assets?: AssetResolver,
+  errorDetails?: boolean,
 ): Promise<Response> {
   const started = hooks?.onRenderEnd !== undefined ? performance.now() : 0;
   const response = await renderPage(
@@ -571,6 +599,7 @@ async function renderPageTimed(
     hooks,
     cache,
     assets,
+    errorDetails,
   );
   hooks?.onRenderEnd?.({
     path: page.path,
@@ -593,6 +622,7 @@ async function runAction(
   hooks?: AppHooks,
   cache?: Cache,
   assets?: AssetResolver,
+  errorDetails?: boolean,
 ): Promise<Response> {
   const params = context.params as Record<string, string>;
   const request = context.request;
@@ -676,6 +706,7 @@ async function runAction(
     hooks,
     cache,
     assets,
+    errorDetails,
   );
 }
 
@@ -695,6 +726,10 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
   const documentRenderer = options.document ?? defaultDocument;
   const maxDocumentBytes = options.maxDocumentBytes ?? DEFAULT_MAX_DOCUMENT_BYTES;
   const streaming = options.streaming === true;
+  // Default: detail error aktif di dev (overlay DX — ADR-0072); aman di edge (tanpa process).
+  const errorDetails =
+    options.errorDetails ??
+    (typeof process !== "undefined" && process.env.NODE_ENV !== "production");
 
   const routes: RouteEntry[] = [];
   for (const page of options.pages) {
@@ -719,6 +754,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
             options.hooks,
             options.cache,
             options.assets,
+            errorDetails,
           ),
       }),
     });
@@ -740,6 +776,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
               options.hooks,
               options.cache,
               options.assets,
+              errorDetails,
             ),
         }),
       });

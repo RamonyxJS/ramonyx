@@ -8,6 +8,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { generateServerEntry, listApiRoutes, loadPageRoutes } from "@ramonyx/compiler";
+import { errorHint } from "@ramonyx/core";
 import { build, type PluginOption } from "vite";
 import { assetUrl } from "./assets.ts";
 import { readClientScript } from "./build.ts";
@@ -115,7 +116,7 @@ export async function buildEdge(options: BuildEdgeOptions): Promise<BuildEdgeRes
   if (nodeImports.length > 0) {
     throw new Error(
       `bundel edge memuat API Node (${nodeImports.join(", ")}) — periksa middleware/kode aplikasi ` +
-        "yang memakai `node:*` (mis. `guardedFetch` dari @ramonyx/security/ssrf)",
+        `yang memakai \`node:*\` (mis. \`guardedFetch\` dari @ramonyx/security/ssrf). ${errorHint("RMX-EDGE-1")}`,
     );
   }
 

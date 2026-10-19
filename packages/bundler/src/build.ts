@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { generateClientEntry } from "@ramonyx/compiler";
-import type { LoadedPage } from "@ramonyx/core";
+import { errorHint, type LoadedPage } from "@ramonyx/core";
 import { build, type PluginOption } from "vite";
 import { collectAssets, DEFAULT_ASSETS_DIR } from "./assets.ts";
 import {
@@ -84,7 +84,7 @@ async function assertClientFilesBrowserSafe(pages: readonly LoadedPage[]): Promi
       "Batas server/client dilanggar (ADR-0063): modul yang masuk bundle klien mengimpor API server:\n" +
         violations.map((entry) => `  - ${entry}`).join("\n") +
         "\nPindahkan kode server ke modul `*.server.ts` yang hanya diimpor dari loader/action/route API, " +
-        "atau akses lewat API route.",
+        `atau akses lewat API route. ${errorHint("RMX-BUILD-1")}`,
     );
   }
 }
@@ -107,7 +107,7 @@ async function assertBundleBrowserSafe(outDir: string): Promise<void> {
     throw new Error(
       "Bundel klien memuat API server (ADR-0063) — kemungkinan impor transitif dari modul klien:\n" +
         [...violations].map((entry) => `  - ${entry}`).join("\n") +
-        "\nPisahkan modul server (`*.server.ts`) dan impor hanya dari loader/action/route API.",
+        `\nPisahkan modul server (\`*.server.ts\`) dan impor hanya dari loader/action/route API. ${errorHint("RMX-BUILD-2")}`,
     );
   }
 }

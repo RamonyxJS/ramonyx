@@ -2,7 +2,10 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikuti semver.
 
-## [Unreleased]
+## [0.4.1] — 2026-10-20
+
+Rilis remediasi: snapshot dokumentasi paket MCP hanya `docs/public/` (kebocoran dokumen internal di
+0.3.0/0.4.0) + situs publik baru yang dibangun dari konten publik saja.
 
 ### Dokumentasi & situs publik
 

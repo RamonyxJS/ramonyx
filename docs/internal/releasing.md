@@ -8,6 +8,8 @@
 - **TERBIT — 0.4.0** (2026-10-19): fitur **i18n** (ADR-0081) + benchmark pipeline gambar +
   panduan publikasi plugin (ADR-0080); 16 paket → 17 artefak; GitHub Release v0.4.0 (19 aset);
   hasil + acceptance di bagian "Hasil rilis 0.4.0".
+- **0.4.1: siap rilis (menunggu tag)** — remediasi snapshot MCP (`docs/public` saja) + situs publik
+  berbasis kebijakan konten (ADR-0082); 17 artefak; `release:verify` memeriksa kebocoran docs.
 
 ## Persiapan 0.4.0 (2026-10-19)
 

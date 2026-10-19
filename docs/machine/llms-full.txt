@@ -3234,7 +3234,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T14:32:27.707Z",
+  "generatedAt": "2026-10-19T14:36:30.237Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3637,7 +3637,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T14:32:28.895Z",
+  "generatedAt": "2026-10-19T14:36:31.441Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -4155,13 +4155,15 @@ export default [
 ## 7. Kompatibilitas & versi
 
 - Kontrak v0 berlaku sampai ada ADR yang menggantikannya; perubahan breaking butuh catatan migrasi.
-- Paket mengikuti semver setelah publikasi pertama (topologi rilis masih keputusan terbuka).
+- Paket mengikuti semver setelah publikasi pertama; **topologi rilis diputuskan** (versi tunggal dari
+  `Cargo.toml` + dist-tag, ADR-0039/0049) — terbit 0.1.0 → 0.3.0 (16 paket, provenance).
 
 ## 8. Non-goal v0
 
-Server actions, caching/ISR, websocket, upload file besar, middleware per-folder,
-route groups. Dievaluasi setelah baseline (Phase 2+). (SSR streaming halaman **sudah ada** —
-opsi `streaming` di `createPageRoutes`, ADR-0047.)
+Server actions, caching/ISR, websocket, upload file besar, middleware per-folder, route groups.
+Sejak evaluasi (Phase 2+): **sudah ada** — server actions (ADR-0057), caching/ISR data loader
+(ADR-0066), middleware per-folder + route groups (ADR-0061), SSR streaming halaman (ADR-0047);
+**tetap non-goal**: websocket, upload file besar (di luar kontrak v0).
 
 ## 9. Test yang lahir dari kontrak (Phase 1)
 
@@ -4219,7 +4221,8 @@ opsi `streaming` di `createPageRoutes`, ADR-0047.)
 # Technical Blueprint: Full-Stack TypeScript Framework & Runtime
 
 > Status: **sumber kebenaran desain** (Phase 0). Status implementasi terkini:
-> `docs/IMPLEMENTATION_STATUS.md` — per rilis 0.1.1: Phase 0–4 selesai, Phase 5 praktis tuntas.
+> `docs/machine/features.json` + `docs/machine/stats.json` (divalidasi CI) dan `docs/releasing.md`;
+> snapshot audit historis: `docs/IMPLEMENTATION_STATUS.md` (per rilis 0.1.1).
 
 **Visi:** membangun framework full-stack TypeScript dengan performa
 tinggi, keamanan sebagai prinsip desain, dan developer experience yang
@@ -4813,6 +4816,8 @@ Permission checks dan API sistem dasar.
 Exit criteria: framework demo berjalan di runtime alpha dan lulus subset
 compatibility tests.
 
+**Status: exit criteria tercapai** (ADR-0028/0032; lingkup R0–R3 selesai — ADR-0019–0026).
+
 ### Phase 5 --- Runtime beta
 
 Lingkup: - HTTP, streaming, shutdown, cancellation. - Resource
@@ -4820,6 +4825,10 @@ isolation, profiling, compatibility suite, release pipeline.
 
 Exit criteria: kriteria stabilitas, keamanan, dan performa terpenuhi
 untuk workload target.
+
+**Status: lingkup inti selesai** (worker/kuota, streaming request, TLS/fetch, plugin + sandbox
+Landlock, release pipeline — ADR-0034–0051); gate kestabilan penuh (soak berjam-jam + audit
+eksternal) **belum diklaim** — lihat `docs/security/plugin-isolation-assessment.md`.
 
 ## 10. Pisahkan fakta, target, dan klaim
 

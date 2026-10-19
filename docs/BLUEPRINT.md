@@ -1,7 +1,8 @@
 # Technical Blueprint: Full-Stack TypeScript Framework & Runtime
 
 > Status: **sumber kebenaran desain** (Phase 0). Status implementasi terkini:
-> `docs/IMPLEMENTATION_STATUS.md` — per rilis 0.1.1: Phase 0–4 selesai, Phase 5 praktis tuntas.
+> `docs/machine/features.json` + `docs/machine/stats.json` (divalidasi CI) dan `docs/releasing.md`;
+> snapshot audit historis: `docs/IMPLEMENTATION_STATUS.md` (per rilis 0.1.1).
 
 **Visi:** membangun framework full-stack TypeScript dengan performa
 tinggi, keamanan sebagai prinsip desain, dan developer experience yang
@@ -595,6 +596,8 @@ Permission checks dan API sistem dasar.
 Exit criteria: framework demo berjalan di runtime alpha dan lulus subset
 compatibility tests.
 
+**Status: exit criteria tercapai** (ADR-0028/0032; lingkup R0–R3 selesai — ADR-0019–0026).
+
 ### Phase 5 --- Runtime beta
 
 Lingkup: - HTTP, streaming, shutdown, cancellation. - Resource
@@ -602,6 +605,10 @@ isolation, profiling, compatibility suite, release pipeline.
 
 Exit criteria: kriteria stabilitas, keamanan, dan performa terpenuhi
 untuk workload target.
+
+**Status: lingkup inti selesai** (worker/kuota, streaming request, TLS/fetch, plugin + sandbox
+Landlock, release pipeline — ADR-0034–0051); gate kestabilan penuh (soak berjam-jam + audit
+eksternal) **belum diklaim** — lihat `docs/security/plugin-isolation-assessment.md`.
 
 ## 10. Pisahkan fakta, target, dan klaim
 

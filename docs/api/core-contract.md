@@ -120,13 +120,15 @@ export default [
 ## 7. Kompatibilitas & versi
 
 - Kontrak v0 berlaku sampai ada ADR yang menggantikannya; perubahan breaking butuh catatan migrasi.
-- Paket mengikuti semver setelah publikasi pertama (topologi rilis masih keputusan terbuka).
+- Paket mengikuti semver setelah publikasi pertama; **topologi rilis diputuskan** (versi tunggal dari
+  `Cargo.toml` + dist-tag, ADR-0039/0049) — terbit 0.1.0 → 0.3.0 (16 paket, provenance).
 
 ## 8. Non-goal v0
 
-Server actions, caching/ISR, websocket, upload file besar, middleware per-folder,
-route groups. Dievaluasi setelah baseline (Phase 2+). (SSR streaming halaman **sudah ada** —
-opsi `streaming` di `createPageRoutes`, ADR-0047.)
+Server actions, caching/ISR, websocket, upload file besar, middleware per-folder, route groups.
+Sejak evaluasi (Phase 2+): **sudah ada** — server actions (ADR-0057), caching/ISR data loader
+(ADR-0066), middleware per-folder + route groups (ADR-0061), SSR streaming halaman (ADR-0047);
+**tetap non-goal**: websocket, upload file besar (di luar kontrak v0).
 
 ## 9. Test yang lahir dari kontrak (Phase 1)
 

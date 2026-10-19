@@ -55,5 +55,5 @@ Please report vulnerabilities privately — see [SECURITY.md](SECURITY.md).
 
 ## Releases
 
-Maintainers only; see [docs/releasing.md](docs/releasing.md). Releases are cut from **verified
+Maintainers only; see [docs/releasing.md](docs/internal/releasing.md). Releases are cut from **verified
 tarballs** with npm **provenance** (`pnpm release` → `pnpm release:verify` → tag → workflow).

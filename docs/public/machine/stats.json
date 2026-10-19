@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "version": "0.4.0",
+  "generatedAt": "2026-10-19T17:07:13.207Z",
+  "commit": "281dc82f9cce5455a93edc22283794d35a8be0e1",
+  "node": "v24.22.0",
+  "packages": {
+    "workspace": 15,
+    "npm": 16,
+    "names": [
+      "@ramonyx/adapter-runtime",
+      "@ramonyx/bundler",
+      "@ramonyx/compiler",
+      "@ramonyx/core",
+      "@ramonyx/devtools",
+      "@ramonyx/mcp-docs-server",
+      "@ramonyx/plugin-image",
+      "ramonyx",
+      "@ramonyx/react",
+      "@ramonyx/router",
+      "@ramonyx/schema",
+      "@ramonyx/security",
+      "@ramonyx/server",
+      "@ramonyx/ssr",
+      "@ramonyx/testing",
+      "create-ramonyx-app"
+    ]
+  },
+  "adrs": 8,
+  "tests": {
+    "node": 289,
+    "rust": 116,
+    "e2eSpecFiles": 9
+  }
+}

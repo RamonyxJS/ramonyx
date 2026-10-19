@@ -6,10 +6,10 @@ import { createRouteManifest, loadPageRoutes } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
 import { createPageRoutes } from "@ramonyx/ssr";
-import type { AppHooks, FetchHandler } from "ramonyx";
+import type { AppHooks, FetchHandler, Middleware } from "ramonyx";
 
 import { setCatalog } from "./catalog.ts";
-import { loadCatalog } from "./docs.ts";
+import { loadCatalog, readPublicMachine } from "./docs.ts";
 import { createDocument } from "./document.ts";
 
 const clientDir = fileURLToPath(new URL("../dist/client", import.meta.url));
@@ -21,6 +21,27 @@ const staticAssets = serveStatic({
   immutable: true,
   headers: { "x-content-type-options": "nosniff" },
 });
+
+/**
+ * Machine layer publik (`/machine/*`) — hanya membaca `docs/public/machine` (ADR-0082).
+ * Di ekspor statis, berkas yang sama disalin ke `outDir/machine`.
+ */
+const machineAssets: Middleware = async (context, next) => {
+  const url = new URL(context.request.url);
+  const match = /^\/machine\/([a-z0-9.-]+)$/i.exec(url.pathname);
+  if (match === null) {
+    return next();
+  }
+  const isi = readPublicMachine(match[1] ?? "");
+  if (isi === null) {
+    return next();
+  }
+  // `llms.txt` berdasar teks; `llms-full.txt` juga teks; sisanya JSON.
+  const tipe = (match[1] ?? "").endsWith(".json")
+    ? "application/json; charset=utf-8"
+    : "text/plain; charset=utf-8";
+  return new Response(isi, { headers: { "content-type": tipe, "cache-control": "no-cache" } });
+};
 
 /**
  * Situs dokumentasi Ramonyx — dogfood penuh: halaman SSR React dengan **hydration +
@@ -35,7 +56,7 @@ export interface CreateAppOptions {
 
 export async function createApp(options: CreateAppOptions = {}): Promise<FetchHandler> {
   // Katalog diisi sekali di server (markdown → HTML) → modul halaman tetap browser-safe.
-  setCatalog(loadCatalog());
+  setCatalog(await loadCatalog());
 
   const basePath = (options.basePath ?? "").replace(/\/$/, "");
   const dir = fileURLToPath(new URL("./routes", import.meta.url));
@@ -60,7 +81,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
         hooks: options.hooks,
       }),
     ],
-    middleware: [staticAssets],
+    middleware: [machineAssets, staticAssets],
     hooks: options.hooks,
   });
 }

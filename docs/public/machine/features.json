@@ -1,0 +1,1004 @@
+{
+  "schemaVersion": 1,
+  "features": [
+    {
+      "id": "routing-file-based",
+      "name": "File-based routing halaman (statis, dinamis, catch-all)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/compiler", "@ramonyx/ssr"],
+      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts"],
+      "limitations": ["Route groups `(grup)` belum ada", "Middleware per-folder belum ada"]
+    },
+    {
+      "id": "routing-api-methods",
+      "name": "File-based routing API (satu file boleh mengekspor beberapa method HTTP)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/compiler", "@ramonyx/server"],
+      "evidence": ["packages/compiler/src/manifest.ts", "packages/compiler/test/manifest.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "routing-params",
+      "name": "Pencocokan rute berparameter + catch-all + prioritas statis",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/router"],
+      "evidence": [
+        "packages/router/src/match.ts",
+        "packages/router/test/match.test.ts",
+        "packages/router/test/match.fuzz.test.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "layouts-nested",
+      "name": "Layout bersarang (layout.tsx per folder, terdekat menang)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/compiler"],
+      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "error-boundaries",
+      "name": "Error boundary per folder (error.tsx, terdekat menang; halaman error tidak di-hydrate)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/compiler", "@ramonyx/ssr"],
+      "evidence": [
+        "packages/compiler/src/pages.ts",
+        "packages/compiler/test/pages.test.ts",
+        "apps/playground/e2e/errors.spec.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "middleware-global",
+      "name": "Middleware global (pre-routing: aset statis, logging) di createHandler",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/server"],
+      "evidence": ["packages/server/src/handler.ts", "packages/server/test/pipeline.test.ts"],
+      "limitations": ["Tanpa matcher per-path (semua request)"]
+    },
+    {
+      "id": "middleware-per-folder",
+      "name": "Middleware per-folder (middleware.ts, root→terdalam, otomatis via manifest)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/compiler", "@ramonyx/server"],
+      "evidence": [
+        "packages/compiler/src/pages.ts",
+        "packages/server/src/handler.ts",
+        "packages/compiler/test/playground-pages.test.ts",
+        "apps/playground/src/routes/users/middleware.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ssr-sync",
+      "name": "SSR React sinkron (renderToString) + dokumen HTML",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/ssr", "@ramonyx/react"],
+      "evidence": [
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/src/document.ts",
+        "packages/ssr/test/pages.test.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ssr-streaming",
+      "name": "SSR streaming (opt-in `streaming: true`, react-dom/server.edge)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/ssr", "@ramonyx/react"],
+      "evidence": ["packages/ssr/src/pages.ts", "docs/public/adr/0047-ssr-streaming.md"],
+      "limitations": [
+        "Error setelah byte pertama = koneksi diputus (status/error page hanya berlaku sebelum byte pertama)"
+      ]
+    },
+    {
+      "id": "hydration",
+      "name": "Hydration (payload inline `window.__RAMONYX__` + satu bundle client)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/react", "@ramonyx/compiler"],
+      "evidence": [
+        "packages/react/src/client.ts",
+        "apps/playground/e2e/ssr.spec.ts",
+        "docs/public/adr/0007-hydration.md"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "soft-navigation",
+      "name": "Soft navigation (fetch HTML → swap → re-hydrate; title + scroll direset)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/react"],
+      "evidence": [
+        "packages/react/src/client.ts",
+        "apps/playground/e2e/navigation.spec.ts",
+        "apps/playground/e2e/prefetch.spec.ts",
+        "docs/public/adr/0007-hydration.md"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "data-loaders",
+      "name": "Data loader per halaman (GET, paralel dengan layout, JSON-serializable)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "evidence": [
+        "packages/core/src/page.ts",
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/pages.test.ts"
+      ],
+      "limitations": [
+        "Hanya GET; belum ada loader dependensi antar-route",
+        "Cache opsional per halaman (ADR-0066) — data loader bisa disajikan dari cache"
+      ]
+    },
+    {
+      "id": "mutations-server-actions",
+      "name": "Server actions (mutasi form per halaman: FormData, actionSchema, PRG, progressive enhancement)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/core", "@ramonyx/ssr", "@ramonyx/react"],
+      "evidence": [
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/pages.test.ts",
+        "packages/react/src/client.ts",
+        "apps/playground/e2e/form.spec.ts",
+        "docs/public/adr/0057-server-actions.md"
+      ],
+      "limitations": [
+        "Tanpa pending state klien/optimistic UI",
+        "Revalidasi antar-halaman: manual via `revalidate({ paths })` (tanpa deklarasi otomatis)"
+      ]
+    },
+    {
+      "id": "redirect-helper",
+      "name": "Helper redirect(location, status?) pada konteks rute",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/core"],
+      "evidence": ["packages/core/src/types.ts", "packages/core/test/route.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "head-metadata",
+      "name": "Metadata halaman (title, description, canonical, OG/Twitter, robots) + injeksi <head>",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "evidence": [
+        "packages/core/src/page.ts",
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/pages.test.ts"
+      ],
+      "limitations": ["Origin kanonik dari request (di belakang proxy: pastikan header benar)"]
+    },
+    {
+      "id": "schema-validation",
+      "name": "Validasi schema runtime di trust boundary (Standard Schema)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/schema"],
+      "evidence": [
+        "packages/schema/src/validate.ts",
+        "packages/schema/test/validate.test.ts",
+        "packages/schema/test/validate.fuzz.test.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "config",
+      "name": "Konfigurasi aplikasi (createApp/createHandler + pass-through key tak dikenal)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/core"],
+      "evidence": ["packages/core/src/config.ts", "packages/core/test/config.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "security-headers",
+      "name": "Security headers (CSP, X-Frame-Options, nosniff, Referrer-Policy, dst.)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/security"],
+      "evidence": ["packages/security/src/headers.ts", "packages/security/test/headers.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "csp-nonce",
+      "name": "CSP nonce per request (inline script diizinkan tanpa unsafe-inline)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/security"],
+      "evidence": ["packages/security/src/csp.ts", "packages/security/test/csp.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "csrf",
+      "name": "Proteksi CSRF (double-submit cookie + validasi origin)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/security"],
+      "evidence": ["packages/security/src/csrf.ts", "packages/security/test/csrf.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "ssrf-guard",
+      "name": "Guard SSRF (guardedFetch: validasi host/IP, IP-pinning anti DNS-rebinding, redirect per-hop)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/security"],
+      "evidence": ["packages/security/src/ssrf.ts", "packages/security/test/ssrf.test.ts"],
+      "limitations": [
+        "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)",
+        "Body FormData/multipart belum didukung"
+      ]
+    },
+    {
+      "id": "rate-limit",
+      "name": "Rate limit per klien (token bucket, 429 + Retry-After)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/security"],
+      "evidence": [
+        "packages/security/src/rate-limit.ts",
+        "packages/security/test/rate-limit.test.ts"
+      ],
+      "limitations": ["In-memory per proses (tanpa store terdistribusi)"]
+    },
+    {
+      "id": "resource-limits",
+      "name": "Resource limits secure-by-default (body 1 MiB→413, timeout 10s→503, concurrency 100→503)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/server"],
+      "evidence": ["packages/server/src/handler.ts", "tests/security/server-hardening.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "output-limit",
+      "name": "Batas ukuran output SSR",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/ssr"],
+      "evidence": ["packages/ssr/src/pages.ts"],
+      "limitations": []
+    },
+    {
+      "id": "dev-server-hmr",
+      "name": "Dev server + HMR (Vite → SSR) + panel devtools (rute, timing, hydration, bundel)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/bundler"],
+      "evidence": [
+        "packages/bundler/src/dev.ts",
+        "packages/bundler/src/devtools.ts",
+        "packages/bundler/test/devtools.test.ts",
+        "apps/create-app/test/create-app.test.ts"
+      ],
+      "limitations": [
+        "Panel dev-only; korelasi hook→request aproksimasi (request terbuka terakhir dengan path sama)",
+        "Daftar rute halaman saja (rute API tidak discan)"
+      ]
+    },
+    {
+      "id": "client-bundle",
+      "name": "Build bundle client produksi (Vite) + route manifest + metadata build",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/bundler", "@ramonyx/compiler"],
+      "evidence": ["packages/bundler/src/build.ts"],
+      "limitations": ["Belum ada code splitting per rute"]
+    },
+    {
+      "id": "source-maps",
+      "name": "Source map produksi (client + server)",
+      "status": "implemented",
+      "since": "0.1.1",
+      "priority": "p2",
+      "packages": ["@ramonyx/bundler"],
+      "evidence": ["packages/bundler/src/index.ts"],
+      "limitations": []
+    },
+    {
+      "id": "jsx-loader",
+      "name": "Loader dev/test JSX+TS (esbuild sendiri, dipakai app & test)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/compiler"],
+      "evidence": ["packages/compiler/src/register.mjs", "packages/compiler/src/esbuild-hooks.mjs"],
+      "limitations": []
+    },
+    {
+      "id": "cli-devtools",
+      "name": "CLI `ramonyx` (dev, build --static/--target edge/--watch, start, doctor, konvensi src/server.ts)",
+      "status": "implemented",
+      "since": "0.1.1",
+      "priority": "p0",
+      "packages": ["@ramonyx/devtools"],
+      "evidence": [
+        "packages/devtools/src/commands.ts",
+        "packages/devtools/src/load.ts",
+        "apps/create-app/test/create-app.test.ts"
+      ],
+      "limitations": [
+        "`start --watch` (restart server) belum",
+        "Plugin hooks butuh createApp meneruskan opsi hooks (template & aplikasi repo sudah)"
+      ]
+    },
+    {
+      "id": "scaffolder",
+      "name": "Scaffolder aplikasi (`pnpm create:app` / `create-ramonyx-app`)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["create-ramonyx-app"],
+      "evidence": ["apps/create-app/test/create-app.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "typed-routes",
+      "name": "Typed routes (modul generate .ramonyx/routes.ts: RouteParamsMap + routeHref + Link)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/router", "@ramonyx/compiler", "@ramonyx/devtools", "@ramonyx/react"],
+      "evidence": [
+        "packages/router/src/routes.ts",
+        "packages/compiler/src/pages.ts",
+        "packages/react/src/link.ts",
+        "packages/router/test/typed-routes.test.ts"
+      ],
+      "limitations": [
+        "Impor via path relatif ke .ramonyx/routes.ts (belum ada alias)",
+        "href Link tetap string (URL konkret rute dinamis)"
+      ]
+    },
+    {
+      "id": "error-messages-id",
+      "name": "Pesan error: kode stabil (RMX-…) + tautan troubleshooting + overlay dev (stack/sumber)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p3",
+      "packages": ["@ramonyx/core", "@ramonyx/ssr", "@ramonyx/compiler", "@ramonyx/bundler"],
+      "evidence": ["packages/core/src/errors-docs.ts", "packages/ssr/src/pages.ts"],
+      "limitations": [
+        "Kode hanya untuk error framework (HttpError aplikasi bebas)",
+        "Overlay berupa halaman error ber-detail (bukan panel JS)"
+      ]
+    },
+    {
+      "id": "static-export",
+      "name": "Ekspor statis situs docs (dogfood SSG)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/bundler"],
+      "evidence": ["apps/docs/export.ts", "apps/docs/test/docs.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "ssg-first-class",
+      "name": "Static generation (SSG): prerenderRoutes + `ramonyx build --static`",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/bundler", "@ramonyx/devtools"],
+      "evidence": [
+        "packages/bundler/src/prerender.ts",
+        "packages/bundler/test/prerender.test.ts",
+        "packages/devtools/src/commands.ts"
+      ],
+      "limitations": ["Revalidasi/ISR belum (p1-revalidate)"]
+    },
+    {
+      "id": "http-cache-helpers",
+      "name": "Helper cache HTTP (cacheControl: maxAge/sMaxAge/SWR/immutable/private)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/core"],
+      "evidence": ["packages/core/src/cache.ts", "packages/core/test/cache.test.ts"],
+      "limitations": [
+        "Helper untuk header respons — bukan cache runtime (cache data loader terpisah: ADR-0066)"
+      ]
+    },
+    {
+      "id": "asset-fingerprinting",
+      "name": "Fingerprinting aset (client-<hash>.js) + manifest + cache immutable",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/bundler"],
+      "evidence": [
+        "packages/bundler/src/build.ts",
+        "packages/bundler/test/build.test.ts",
+        "apps/create-app/template/src/routes/middleware.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "adapter-node",
+      "name": "Adapter runtime Node (http server, keep-alive, streaming)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/adapter-runtime"],
+      "evidence": [
+        "packages/adapter-runtime/src/node.ts",
+        "packages/adapter-runtime/test/node.test.ts"
+      ],
+      "limitations": ["Range request belum"]
+    },
+    {
+      "id": "adapter-memory",
+      "name": "Adapter memory (test in-process tanpa port)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/adapter-runtime"],
+      "evidence": [
+        "packages/adapter-runtime/src/memory.ts",
+        "packages/adapter-runtime/test/memory.test.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "adapter-serverless-edge",
+      "name": "Adapter edge/serverless (--target edge, kontrak fetch handler, binding env, smoke workerd)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/bundler", "@ramonyx/compiler", "@ramonyx/devtools", "@ramonyx/server"],
+      "evidence": [
+        "packages/bundler/src/edge.ts",
+        "packages/compiler/src/server-entry.ts",
+        "scripts/edge-smoke.ts",
+        "apps/create-app/test/create-app.test.ts",
+        "docs/public/deployment.md",
+        "docs/public/adr/0058-edge-target.md"
+      ],
+      "limitations": [
+        "Preset Vercel/Deno Deploy belum",
+        "Deploy ke akun platform tetap langkah pengguna (tanpa kredensial di CI)"
+      ]
+    },
+    {
+      "id": "compression-etag",
+      "name": "Kompresi (brotli/gzip) di server standalone + vary + flush streaming",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/adapter-runtime"],
+      "evidence": [
+        "packages/adapter-runtime/src/node.ts",
+        "packages/adapter-runtime/test/node.test.ts"
+      ],
+      "limitations": ["Range request belum", "Aset pra-kompresi (.br/.gz) belum"]
+    },
+    {
+      "id": "image-optimization",
+      "name": "Aset: komponen Image (anti-CLS, lazy) — tanpa resize/format modern (M1)",
+      "status": "implemented",
+      "since": "0.3.0",
+      "priority": "p3",
+      "packages": ["@ramonyx/plugin-image", "@ramonyx/bundler", "@ramonyx/react"],
+      "evidence": [
+        "packages/plugin-image/src/index.ts",
+        "packages/plugin-image/test/image.test.ts",
+        "packages/bundler/src/assets.ts",
+        "packages/react/src/assets.ts",
+        "apps/playground/e2e/image.spec.ts",
+        "benchmarks/results/image-pipeline-vitals.json",
+        "docs/public/assets-and-images.md",
+        "docs/public/adr/0069-assets.md"
+      ],
+      "limitations": [
+        "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
+        "avif opt-in (jauh lebih lambat saat build); tanpa placeholder blur"
+      ]
+    },
+    {
+      "id": "i18n",
+      "name": "Internasionalisasi: routing locale (prefix) + helper terjemahan",
+      "status": "implemented",
+      "since": "0.4.0",
+      "priority": "p3",
+      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "evidence": [
+        "packages/core/src/i18n.ts",
+        "packages/ssr/src/pages.ts",
+        "packages/core/test/i18n.test.ts",
+        "packages/ssr/test/i18n.test.ts",
+        "apps/playground/e2e/i18n.spec.ts",
+        "docs/public/adr/0081-i18n.md"
+      ],
+      "limitations": [
+        "Tanpa ICU MessageFormat (interpolasi + plural Intl saja)",
+        "Tanpa deteksi/redirect otomatis — pola middleware + cookie (docs/i18n.md)",
+        "Rute didaftarkan per locale (linear); lokalisasi per-rute belum didukung"
+      ]
+    },
+    {
+      "id": "auth-session",
+      "name": "Primitif autentikasi: cookie bertanda tangan + session (HMAC, edge-safe)",
+      "status": "partial",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/security"],
+      "evidence": [
+        "packages/security/src/cookies.ts",
+        "packages/security/src/session.ts",
+        "packages/security/test/session.test.ts",
+        "apps/playground/src/routes/sesi/page.tsx"
+      ],
+      "limitations": [
+        "Ditandatangani, bukan dienkripsi",
+        "Tanpa rotasi secret otomatis / store bawaan / UI login"
+      ]
+    },
+    {
+      "id": "forms",
+      "name": "Form handling (action + FormData + actionSchema + progressive enhancement)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/ssr"],
+      "evidence": [
+        "packages/ssr/src/pages.ts",
+        "packages/core/src/page.ts",
+        "packages/core/test/page.test.ts",
+        "docs/public/adr/0057-server-actions.md"
+      ],
+      "limitations": ["Upload file besar belum dioptimasi (multipart di-buffer FormData)"]
+    },
+    {
+      "id": "observability-logger",
+      "name": "Observability: trace-id + request logging terstruktur + metrik dasar (hook)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/server"],
+      "evidence": [
+        "packages/server/src/observability.ts",
+        "packages/server/test/observability.test.ts",
+        "apps/playground/src/app.ts"
+      ],
+      "limitations": [
+        "In-memory per proses (tanpa agregasi multi-instance)",
+        "Tanpa tracing OTel native/histogram"
+      ]
+    },
+    {
+      "id": "observability-metrics",
+      "name": "Metrik operasi runtime (timings, fase startup) — runtime Rust",
+      "status": "partial",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/metrics.rs"],
+      "limitations": [
+        "Hanya di runtime eksperimental; versi Node kini punya createMetrics (ADR-0071)"
+      ]
+    },
+    {
+      "id": "benchmark-gates",
+      "name": "Benchmark + gate report-only (HTTP/SSR/Vitals/startup) dengan baseline per-lingkungan",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["benchmarks/http/bench.ts", "benchmarks/ssr/bench.tsx", "benchmarks/lib/env.ts"],
+      "limitations": [
+        "Report-only di CI (runner GitHub-hosted bervariasi); --strict sahih hanya di lingkungan baseline (guard ADR-0074)",
+        "Baseline mesin dev noisy (ambient load) — regenerasi di mesin tenang"
+      ]
+    },
+    {
+      "id": "e2e-playwright",
+      "name": "E2E browser (Playwright: SSR, hydration, navigasi, error, vitals)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["apps/playground/e2e/ssr.spec.ts", "apps/playground/e2e/navigation.spec.ts"],
+      "limitations": []
+    },
+    {
+      "id": "testing-utilities",
+      "name": "Utilitas testing (in-process handler, request helper)",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/testing"],
+      "evidence": ["packages/testing/src/index.ts", "packages/testing/test/testing.test.ts"],
+      "limitations": []
+    },
+    {
+      "id": "fuzz-tests",
+      "name": "Property-based/fuzz test (fast-check) untuk router, schema, query",
+      "status": "implemented",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": [
+        "packages/router/test/match.fuzz.test.ts",
+        "packages/schema/test/validate.fuzz.test.ts",
+        "packages/server/test/query.fuzz.test.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "runtime-permissions",
+      "name": "Permission model deny-all runtime Rust (--allow-read/write/net/env, revoke)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": [
+        "runtime/crates/runtime-core/src/permissions.rs",
+        "runtime/crates/cli/tests/cli.rs"
+      ],
+      "limitations": ["Runtime belum produksi (Phase 4+)"]
+    },
+    {
+      "id": "runtime-http-server",
+      "name": "HTTP server pull-model runtime (bind 127.0.0.1, keep-alive, cancellation)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": [
+        "runtime/crates/js-engine/src/http.rs",
+        "runtime/crates/js-engine/tests/compat_playground.rs"
+      ],
+      "limitations": ["Bind localhost; production hardening belum"]
+    },
+    {
+      "id": "runtime-streaming",
+      "name": "Streaming respons + request body runtime (chunked, 413 dini)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": [
+        "runtime/crates/js-engine/src/http.rs",
+        "runtime/crates/js-engine/tests/compat_stream_ssr.rs"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "runtime-worker-isolation",
+      "name": "Isolasi worker (thread + isolate V8 terpisah, pesan JSON, kill switch)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/worker.rs"],
+      "limitations": ["Kuota heap = heap V8 saja (ArrayBuffer besar tidak dihitung)"]
+    },
+    {
+      "id": "runtime-plugin-process",
+      "name": "Isolasi plugin level proses (ramonyx.spawn, protokol JSON, permission irisan, kill)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": [
+        "runtime/crates/js-engine/src/plugin.rs",
+        "runtime/crates/js-engine/tests/plugin_process.rs",
+        "runtime/crates/js-engine/tests/plugin_pentest.rs"
+      ],
+      "limitations": [
+        "Landlock net deny hanya TCP (bukan UDP/DNS)",
+        "Env proses diwariskan OS-level (API JS dijaga permission; env_clear selektif kandidat)",
+        "Leaf-only: plugin tidak dapat spawn plugin (ADR-0075)"
+      ]
+    },
+    {
+      "id": "runtime-plugin-supervision",
+      "name": "Supervisi plugin (restart + backoff eksponensial, health-check heartbeat, watchdog)",
+      "status": "experimental",
+      "since": "0.1.1",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/plugin.rs"],
+      "limitations": []
+    },
+    {
+      "id": "runtime-plugin-sandbox",
+      "name": "Sandbox OS plugin (Landlock: FS + TCP kernel-level)",
+      "status": "experimental",
+      "since": "0.1.1",
+      "priority": "p2",
+      "packages": [],
+      "evidence": [
+        "runtime/crates/js-engine/src/sandbox.rs",
+        "runtime/crates/js-engine/tests/plugin_process.rs",
+        "runtime/crates/js-engine/tests/plugin_pentest.rs"
+      ],
+      "limitations": [
+        "Landlock net deny hanya TCP",
+        "Pentest v1 selesai (5 skenario); audit eksternal belum"
+      ]
+    },
+    {
+      "id": "runtime-quotas",
+      "name": "Kuota runtime (heap V8, watchdog timeout, CPU per-thread, RSS proses)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/lib.rs"],
+      "limitations": [
+        "Heap hanya heap V8; alokasi ArrayBuffer raksasa tunggal masih bisa OOM fatal"
+      ]
+    },
+    {
+      "id": "runtime-compat-suite",
+      "name": "Compatibility suite runtime (pipeline framework nyata berjalan di runtime)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/tests/compat_framework.rs"],
+      "limitations": []
+    },
+    {
+      "id": "runtime-cjs-interop",
+      "name": "Interop CommonJS runtime (require subset, react/react-dom server.browser)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": ["runtime/crates/js-engine/src/cjs.rs"],
+      "limitations": ["Subset — require dinamis/modul ESM lewat require ditolak dengan pesan jelas"]
+    },
+    {
+      "id": "runtime-fetch",
+      "name": "fetch runtime (https + TLS diverifikasi, redirect per-hop, ReadableStream)",
+      "status": "experimental",
+      "since": "0.1.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": [
+        "runtime/crates/js-engine/src/http_client.rs",
+        "runtime/crates/js-engine/tests/fetch_tls.rs"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "docs-site",
+      "name": "Situs dokumentasi (dogfood penuh: SSR + hydration + soft navigation atas docs/**)",
+      "status": "implemented",
+      "since": "0.1.1",
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["apps/docs/export.ts", "apps/docs/test/docs.test.ts"],
+      "limitations": ["Di-host di GitHub Pages subpath /ramonyx/"]
+    },
+    {
+      "id": "machine-docs",
+      "name": "Lapisan dokumentasi machine-readable (docs/machine: features/adrs/rules/security/glossary/stats)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["docs/public/machine/features.json", "scripts/docs/validate.ts"],
+      "limitations": []
+    },
+    {
+      "id": "llms-txt",
+      "name": "llms.txt + llms-full.txt (digenerate, diterbitkan di situs)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": [],
+      "evidence": ["docs/public/machine/llms.txt", "docs/public/machine/llms-full.txt"],
+      "limitations": ["Belum ada markdown per halaman untuk paket npm (hanya situs)"]
+    },
+    {
+      "id": "agent-skill",
+      "name": "Skill agen untuk penulis aplikasi (.agents/skills/ramonyx)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p2",
+      "packages": [],
+      "evidence": [".agents/skills/ramonyx/SKILL.md"],
+      "limitations": ["Satu skill; tanpa instalasi otomatis di scaffolder"]
+    },
+    {
+      "id": "mcp-docs-server",
+      "name": "MCP docs server (tools untuk agen)",
+      "status": "implemented",
+      "since": "0.3.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/mcp-docs-server"],
+      "evidence": [
+        "packages/mcp-docs-server/src/index.ts",
+        "packages/mcp-docs-server/src/docs.ts",
+        "packages/mcp-docs-server/src/cli.ts",
+        "packages/mcp-docs-server/test/server.test.ts",
+        "packages/mcp-docs-server/test/stdio.test.ts",
+        "docs/public/adr/0078-mcp-docs-server.md"
+      ],
+      "limitations": [
+        "Subset protokol: stdio saja (tanpa HTTP/prompts/sampling/batching)",
+        "Snapshot docs = versi paket (docs repo terbaru butuh --docs dari clone)"
+      ]
+    },
+    {
+      "id": "static-assets",
+      "name": "Middleware aset statis (serveStatic: ETag/304, immutable, guard traversal)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p0",
+      "packages": ["@ramonyx/adapter-runtime"],
+      "evidence": [
+        "packages/adapter-runtime/src/static.ts",
+        "packages/adapter-runtime/test/static.test.ts",
+        "docs/public/adr/0069-assets.md"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "seo-helpers",
+      "name": "Helper SEO (sitemap.xml + robots.txt dari manifest rute)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/ssr"],
+      "evidence": [
+        "packages/ssr/src/seo.ts",
+        "packages/ssr/test/seo.test.ts",
+        "apps/docs/export.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "routing-route-groups",
+      "name": "Route group `(grup)` — organisasi folder tanpa segmen URL",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/compiler"],
+      "evidence": [
+        "packages/compiler/src/pages.ts",
+        "packages/compiler/src/manifest.ts",
+        "packages/compiler/test/playground-pages.test.ts"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "boundary-enforcement",
+      "name": "Penegakan batas server/client (`*.server.ts` stub + tolak node:* di bundle klien)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/bundler"],
+      "evidence": [
+        "packages/bundler/src/server-only.ts",
+        "packages/bundler/src/build.ts",
+        "packages/bundler/test/build.test.ts"
+      ],
+      "limitations": ["Lint statis (Biome) untuk konvensi belum"]
+    },
+    {
+      "id": "extension-primitives",
+      "name": "Primitif ekstensi (AppHooks, KeyValueStore + contract test, kontrak plugin experimental)",
+      "status": "experimental",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/core", "@ramonyx/bundler"],
+      "evidence": [
+        "packages/core/src/hooks.ts",
+        "packages/core/src/store.ts",
+        "packages/bundler/src/plugin.ts",
+        "tests/contracts/store.test.ts"
+      ],
+      "limitations": [
+        "Kontrak plugin experimental sampai >=2 plugin nyata",
+        "Store eksternal (redis) belum ada implementasinya"
+      ]
+    },
+    {
+      "id": "revalidate",
+      "name": "Revalidasi data (ISR-lite): cache loader + SWR + invalidasi path/tag",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p1",
+      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "evidence": [
+        "packages/core/src/revalidate.ts",
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/revalidate.test.ts",
+        "packages/core/test/revalidate.test.ts",
+        "docs/public/data-and-caching.md",
+        "docs/public/adr/0066-revalidate.md"
+      ],
+      "limitations": [
+        "In-memory per proses (store eksternal belum ada implementasinya)",
+        "Query string/cookie melewati cache (disengaja)",
+        "Tanpa purge CDN"
+      ]
+    },
+    {
+      "id": "plugin-ecosystem",
+      "name": "Plugin (vite passthrough + middleware pre-routing + hooks) dari ramonyx.config.ts",
+      "status": "partial",
+      "since": "0.2.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/bundler", "@ramonyx/devtools", "@ramonyx/server"],
+      "evidence": [
+        "packages/bundler/src/plugin.ts",
+        "packages/plugin-image/src/index.ts",
+        "apps/playground/src/plugins/kunjungan.ts",
+        "docs/public/plugins.md"
+      ],
+      "limitations": [
+        "Kontrak stabil dideklarasikan setelah satu siklus rilis tanpa perubahan aditif (ADR-0080; TODO p2-plugin-contract-freeze)",
+        "Tanpa registry/`ramonyx add` (instalasi manual)",
+        "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
+      ]
+    },
+    {
+      "id": "asset-pipeline",
+      "name": "Pipeline aset (src/assets/** → hash + manifest + resolver + preload font)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "priority": "p2",
+      "packages": ["@ramonyx/bundler", "@ramonyx/core", "@ramonyx/ssr"],
+      "evidence": [
+        "packages/bundler/src/assets.ts",
+        "packages/react/src/assets.ts",
+        "packages/bundler/test/assets.test.ts",
+        "benchmarks/vitals/image-pipeline.mjs",
+        "benchmarks/results/image-pipeline-vitals.json",
+        "docs/public/assets-and-images.md",
+        "docs/public/adr/0069-assets.md"
+      ],
+      "limitations": [
+        "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",
+        "Varian gambar hanya di build (dev menyajikan berkas asli)"
+      ]
+    }
+  ]
+}

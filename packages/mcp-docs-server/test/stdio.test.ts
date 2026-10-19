@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const cli = join(root, "packages", "mcp-docs-server", "src", "cli.ts");
 const loader = join(root, "tools", "register.mjs");
-const docsRepo = join(root, "docs");
+const docsRepo = join(root, "docs", "public");
 
 interface Pesan {
   id?: unknown;

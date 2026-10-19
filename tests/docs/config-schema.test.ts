@@ -6,7 +6,7 @@ import { resolveConfig } from "../../packages/core/src/config.ts";
 import { validateAgainstSchema } from "../../scripts/docs/schema.ts";
 
 const schema = JSON.parse(
-  readFileSync(new URL("../../docs/machine/config.schema.json", import.meta.url), "utf8"),
+  readFileSync(new URL("../../docs/public/machine/config.schema.json", import.meta.url), "utf8"),
 ) as Record<string, unknown>;
 
 test("config.schema.json menerima input valid yang sama dengan resolveConfig", () => {

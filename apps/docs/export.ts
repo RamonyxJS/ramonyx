@@ -1,9 +1,7 @@
-// Ekspor statis situs dokumentasi (hosting GitHub Pages) — ADR-0052 + ADR-0054 + ADR-0056.
+// Ekspor statis situs publik (hosting GitHub Pages) — ADR-0052/0054/0056/0082.
 //
-// Halaman HTML + 404 + aset kini lewat **fitur framework** (`prerenderRoutes`, ADR-0056) —
-// dogfood SSG: request sintetis ke handler SSR yang sama (paritas penuh), bukan renderer kedua.
-// Ekspor ini menambahkan artefak khusus situs docs untuk agen AI (ADR-0054): markdown per
-// halaman, `sitemap.md`, `llms.txt`/`llms-full.txt`, dan `machine/*.json`.
+// Hanya **docs/public/** yang dipublikasikan: halaman, markdown per halaman, sitemap, llms,
+// machine layer publik. `docs/internal/` tidak pernah dibaca.
 //
 // Jalankan: `pnpm docs:export` (default base "" → root) atau
 // `node --import ./tools/register.mjs apps/docs/export.ts --base /ramonyx --out <dir>`.
@@ -15,7 +13,7 @@ import { buildClient, prerenderRoutes } from "@ramonyx/bundler";
 import { loadPageRoutes } from "@ramonyx/compiler";
 import { sitemapXml } from "@ramonyx/ssr";
 import { createApp } from "./src/app.ts";
-import { loadCatalog } from "./src/docs.ts";
+import { loadCatalog, publicMachineDir, searchIndex } from "./src/docs.ts";
 import { rewriteDocLinks } from "./src/markdown.ts";
 
 const args = process.argv.slice(2);
@@ -25,7 +23,6 @@ const argValue = (name: string): string | undefined => {
 };
 
 const appDir = fileURLToPath(new URL(".", import.meta.url));
-const repoRoot = resolve(appDir, "..", "..");
 const basePath = (argValue("--base") ?? "").replace(/\/$/, "");
 const originArg = argValue("--origin");
 const outArg = argValue("--out");
@@ -43,21 +40,19 @@ const pages = await loadPageRoutes({ dir: join(appDir, "src/routes") });
 const build = await buildClient({ appDir, pages });
 console.log(`✓ bundel klien: ${build.scriptPath}`);
 
-// 2. Render semua halaman lewat prerender framework (request sintetis ke handler yang sama).
+// 2. Render halaman lewat prerender framework (request sintetis → handler yang sama).
 const handler = await createApp({ basePath });
-const catalog = loadCatalog();
-// Indeks "/" datang dari manifest halaman; di sini cukup rute dokumen (rute dinamis).
-const routes = catalog.map((doc) => `dokumen/${doc.slug}`);
+const catalog = await loadCatalog();
+const ruteDocs = catalog.map((doc) => `docs/${doc.slug}`);
+const ruteLegacy = catalog.map((doc) => `dokumen/${doc.slug}`);
 
-/** Sisipkan tautan discovery agen ke `<head>` (ADR-0054; spec llmstxt.org v2). */
+/** Sisipkan tautan discovery agen ke `<head>` (ADR-0054; spec llmstxt.org). */
 function withAgentLinks(html: string, routePath: string): string {
   const clean = routePath.replace(/^\//, "");
-  const markdownHref = clean.startsWith("dokumen/") ? `${clean}.md` : null;
+  const slug = clean.startsWith("docs/") ? clean.slice("docs/".length) : null;
   const links = [
-    markdownHref === null
-      ? null
-      : `<link rel="alternate" type="text/markdown" href="${markdownHref}" />`,
-    `<link rel="describedby" href="llms.txt" />`,
+    slug === null ? null : `<link rel="alternate" type="text/markdown" href="docs/${slug}.md" />`,
+    `<link rel="describedby" href="machine/llms.txt" />`,
   ].filter((link): link is string => link !== null);
   return html.replace("</head>", `${links.join("\n")}\n</head>`);
 }
@@ -66,61 +61,62 @@ const result = await prerenderRoutes({
   handler,
   pages,
   outDir,
-  paths: routes,
+  paths: ["", "docs", ...ruteDocs, "dokumen", ...ruteLegacy],
   notFoundPath: "/__tidak-ada__",
   clientDir: join(appDir, "dist/client"),
   nojekyll: true,
   transformHtml: withAgentLinks,
 });
-console.log(
-  `✓ ${result.routes.length} halaman dirender (dengan link discovery agen) + 404 + aset + .nojekyll`,
-);
+console.log(`✓ ${result.routes.length} halaman dirender + 404 + aset + .nojekyll`);
 
-// 3. Markdown mentah per halaman (tautan dokumen ditulis ulang agar benar).
+// 3. Markdown mentah per halaman publik (tautan dokumen ditulis ulang).
 for (const doc of catalog) {
-  const target = join(outDir, `dokumen/${doc.slug}.md`);
+  const target = join(outDir, `docs/${doc.slug}.md`);
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, `${rewriteDocLinks(doc.text, doc.slug).trimEnd()}\n`);
 }
-console.log(`✓ ${catalog.length} markdown per halaman (dokumen/<slug>.md)`);
+console.log(`✓ ${catalog.length} markdown per halaman (docs/<slug>.md)`);
 
-// 4. sitemap.md — indeks semua halaman untuk agen (pola Nuxt).
+// 3b. Indeks pencarian (Cmd+K statis) — hanya slug publik.
+await mkdir(join(outDir, "api"), { recursive: true });
+await writeFile(join(outDir, "api", "indeks"), `${JSON.stringify(searchIndex())}\n`);
+console.log("✓ api/indeks (indeks pencarian publik)");
+
+// 4. sitemap.md — indeks halaman untuk agen.
 const sitemapLines = [
   "# Sitemap",
   "",
-  "> Indeks semua halaman situs dokumentasi Ramonyx (markdown).",
+  "> Public documentation index (markdown).",
   "",
-  "- [Dokumentasi Ramonyx](.): daftar seluruh dokumen",
-  ...catalog.map((doc) => `- [${doc.title}](dokumen/${doc.slug}/): \`dokumen/${doc.slug}\``),
+  "- [Ramonyx](.): landing page",
+  "- [Documentation](docs/): all public pages",
+  ...catalog.map((doc) => `- [${doc.title}](docs/${doc.slug}/): \`docs/${doc.slug}\``),
   "",
 ];
 await writeFile(join(outDir, "sitemap.md"), sitemapLines.join("\n"));
 
-// 4b. sitemap.xml (SEO) — bila origin publik diberikan (ADR-0059).
+// 4b. sitemap.xml + robots.txt (SEO) — hanya URL kanonis publik.
 if (originArg !== undefined) {
-  const paths = ["", ...catalog.map((doc) => `dokumen/${doc.slug}`)];
-  await writeFile(
-    join(outDir, "sitemap.xml"),
-    sitemapXml(
-      paths.map((path) => (path === "" ? `${basePath}/` : `${basePath}/${path}`)),
-      { origin: originArg },
-    ),
+  const paths = ["", "docs", ...ruteDocs].map((path) =>
+    path === "" ? `${basePath}/` : `${basePath}/${path}`,
   );
-  console.log("✓ sitemap.xml");
+  await writeFile(join(outDir, "sitemap.xml"), sitemapXml(paths, { origin: originArg }));
+  await writeFile(
+    join(outDir, "robots.txt"),
+    `User-agent: *\nAllow: /\nSitemap: ${originArg}${basePath}/sitemap.xml\n`,
+  );
+  console.log("✓ sitemap.xml + robots.txt");
 }
 
-// 5. Machine layer + llms.txt (ADR-0054) — diterbitkan apa adanya.
-const machineDir = join(repoRoot, "docs/machine");
+// 5. Machine layer publik + llms (ADR-0054/0082) — tidak ada berkas internal.
+const machineDir = publicMachineDir();
 const machineFiles = (await readdir(machineDir)).filter(
-  (file) => file.endsWith(".json") || file.endsWith(".schema.json"),
+  (file) => file.endsWith(".json") || file.endsWith(".txt"),
 );
 await mkdir(join(outDir, "machine"), { recursive: true });
 for (const file of machineFiles) {
   await cp(join(machineDir, file), join(outDir, "machine", file));
 }
-await cp(join(machineDir, "llms.txt"), join(outDir, "llms.txt"));
-await cp(join(machineDir, "llms-full.txt"), join(outDir, "llms-full.txt"));
-await cp(join(repoRoot, "TODO.json"), join(outDir, "machine", "todo.json"));
-console.log(`✓ machine/ (${machineFiles.length} berkas) + llms.txt + llms-full.txt + sitemap.md`);
+console.log(`✓ machine/ (${machineFiles.length} berkas publik, termasuk llms.txt)`);
 
 console.log(`ekspor selesai: ${relative(process.cwd(), outDir)}`);

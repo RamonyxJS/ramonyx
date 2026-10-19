@@ -44,7 +44,7 @@ export function generateTodoMd(todo: TodoFile): string {
   lines.push(
     "> Prioritas: **P0** blocker adopsi · **P1** paritas · **P2** diferensiasi & utang yang diakui · **P3** nice-to-have. Ukuran: S (≤1 hari) · M (beberapa hari) · L (1–2 minggu).",
   );
-  lines.push("> Status fitur saat ini (bukti + batasan): `docs/machine/features.json`.");
+  lines.push("> Status fitur saat ini (bukti + batasan): `docs/public/machine/features.json`.");
   lines.push("");
 
   const byPriority = (priority: string): TodoItem[] =>

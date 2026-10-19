@@ -255,8 +255,5 @@ test("resolveDocsRoot: eksplisit (docs atau root), naik dari cwd, dan pesan jela
   const akarRepo = resolve(fixtures, "..");
   assert.equal(resolveDocsRoot({ explicit: akarRepo }), fixtures);
   assert.equal(resolveDocsRoot({ cwd: join(fixtures, "adr") }), fixtures);
-  assert.throws(
-    () => resolveDocsRoot({ explicit: join(fixtures, "adr") }),
-    /docs\/machine\/stats\.json/,
-  );
+  assert.throws(() => resolveDocsRoot({ explicit: join(fixtures, "adr") }), /machine\/stats\.json/);
 });

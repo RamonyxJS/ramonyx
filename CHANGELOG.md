@@ -2,6 +2,20 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikuti semver.
 
+## [Unreleased]
+
+### Dokumentasi & situs publik
+
+- **Karantina `docs/internal/` + situs publik** (ADR-0082): `docs/public/` menjadi satu-satunya
+  sumber build situs, llms, pencarian, dan snapshot MCP; ADR publik = 8 ringkasan Inggris (catatan
+  penuh 81 ADR tetap internal). Situs publik baru (dogfood `apps/docs`): landing `/`, docs
+  `/docs/*` + alias `/dokumen/*`, pencarian Cmd+K dari indeks publik, ToC, copy kode (Shiki,
+  server-only), dark/light, a11y (axe), e2e kebijakan (`/docs/adr/0018` → 404, pencarian internal →
+  0 hasil). Gate **`docs:no-leak`** memeriksa sumber, ekspor statis, indeks pencarian, llms,
+  sitemap, dan **tarball MCP**; CI menjalankan `test:docs` + `docs:no-leak` (blocking).
+- **Remediasi snapshot MCP**: `@ramonyx/mcp-docs-server` 0.4.1 membawa **hanya `docs/public/`**
+  (0.3.0/0.4.0 memuat dokumen internal dan di-`npm deprecate`).
+
 ## [0.4.0] — 2026-10-19
 
 Rilis fitur: **i18n** (routing locale + helper terjemahan), benchmark pipeline gambar

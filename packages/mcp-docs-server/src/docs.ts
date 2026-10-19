@@ -1,6 +1,6 @@
 // Indeks dokumen untuk MCP docs server (ADR-0078) — Node-only, tanpa dependency eksternal.
 //
-// Membaca `docs/**/*.md` + machine layer (`docs/machine/*.json|txt`) dan menyediakan pencarian,
+// Membaca `docs/**/*.md` + machine layer (`docs/machine/*.json|txt`, snapshot publik) dan menyediakan pencarian,
 // pembacaan halaman, dan akses data terstruktur (features/rules/adrs/stats) untuk tools MCP.
 // Semua pembacaan lewat indeks in-memory — tidak ada join path dari input klien (tanpa traversal).
 
@@ -26,7 +26,6 @@ export const MACHINE_FILES = {
   features: "features.json",
   adrs: "adrs.json",
   rules: "rules.json",
-  security: "security.json",
   glossary: "glossary.json",
   api: "api.json",
   cli: "cli.json",
@@ -51,14 +50,16 @@ function isDocsDir(dir: string): boolean {
 }
 
 function isRepoRoot(dir: string): boolean {
-  return isDocsDir(join(dir, "docs"));
+  // Repo: docs publik ada di `docs/public` (docs/internal tidak pernah dibaca — ADR-0082).
+  return isDocsDir(join(dir, "docs", "public")) || isDocsDir(join(dir, "docs"));
 }
 
 function walkUp(start: string): string | null {
   let dir = resolve(start);
   for (;;) {
     if (isRepoRoot(dir)) {
-      return join(dir, "docs");
+      const publik = join(dir, "docs", "public");
+      return isDocsDir(publik) ? publik : join(dir, "docs");
     }
     if (isDocsDir(dir)) {
       return dir;
@@ -78,14 +79,21 @@ function walkUp(start: string): string | null {
 export function resolveDocsRoot(options: ResolveDocsOptions = {}): string {
   if (options.explicit !== undefined && options.explicit.length > 0) {
     const eksplisit = resolve(options.cwd ?? process.cwd(), options.explicit);
+    // Root repo → docs/public (karantina docs/internal, ADR-0082).
     if (isRepoRoot(eksplisit)) {
-      return join(eksplisit, "docs");
+      const publik = join(eksplisit, "docs", "public");
+      return isDocsDir(publik) ? publik : join(eksplisit, "docs");
+    }
+    // Direktori `docs/` (berisi public/ + internal/) → hanya public.
+    const publikLangsung = join(eksplisit, "public");
+    if (isDocsDir(publikLangsung)) {
+      return publikLangsung;
     }
     if (isDocsDir(eksplisit)) {
       return eksplisit;
     }
     throw new Error(
-      `--docs ${options.explicit}: tidak menemukan docs/machine/stats.json (berikan root repo atau direktori docs Ramonyx).`,
+      `--docs ${options.explicit}: tidak menemukan machine/stats.json (berikan root repo, docs/public, atau direktori docs Ramonyx).`,
     );
   }
 
@@ -101,7 +109,7 @@ export function resolveDocsRoot(options: ResolveDocsOptions = {}): string {
   }
 
   throw new Error(
-    "Tidak menemukan docs/machine/stats.json — jalankan dari root repo Ramonyx, atau set `--docs <dir>` / RAMONYX_DOCS_DIR.",
+    "Tidak menemukan machine/stats.json — jalankan dari root repo Ramonyx (docs/public), atau set `--docs <dir>` / RAMONYX_DOCS_DIR.",
   );
 }
 

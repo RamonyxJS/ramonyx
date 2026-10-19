@@ -12,16 +12,16 @@ import { generateTodoMd } from "./todo.ts";
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 
 const api = generateApi();
-writeFileSync(`${ROOT}docs/machine/api.json`, `${JSON.stringify(api, null, 2)}\n`);
+writeFileSync(`${ROOT}docs/public/machine/api.json`, `${JSON.stringify(api, null, 2)}\n`);
 console.log(`✓ api.json (${api.packages.length} paket)`);
 
 const cli = generateCli();
-writeFileSync(`${ROOT}docs/machine/cli.json`, `${JSON.stringify(cli, null, 2)}\n`);
+writeFileSync(`${ROOT}docs/public/machine/cli.json`, `${JSON.stringify(cli, null, 2)}\n`);
 console.log(`✓ cli.json (${cli.commands.length} perintah, ${cli.flags.length} flag)`);
 
 const llms = generateLlms();
-writeFileSync(`${ROOT}docs/machine/llms.txt`, llms.llms);
-writeFileSync(`${ROOT}docs/machine/llms-full.txt`, llms.llmsFull);
+writeFileSync(`${ROOT}docs/public/machine/llms.txt`, llms.llms);
+writeFileSync(`${ROOT}docs/public/machine/llms-full.txt`, llms.llmsFull);
 console.log(`✓ llms.txt (${llms.llms.length} byte) + llms-full.txt (${llms.llmsFull.length} byte)`);
 
 const todo = JSON.parse(readFileSync(`${ROOT}TODO.json`, "utf8")) as never;

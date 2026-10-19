@@ -562,6 +562,27 @@
       "adrs": ["ADR-0080"],
       "source": "turunan ADR-0080",
       "competitor": "Nuxt modules (versi modul + kompatibilitas Nuxt); SvelteKit/Vite plugin ecosystem (peer deps standar)"
+    },
+    {
+      "id": "p2-public-site-content-policy",
+      "title": "Situs publik + karantina docs/internal (landing + docs, gate kebocoran)",
+      "theme": "docs",
+      "priority": "p1",
+      "size": "L",
+      "status": "done",
+      "what": "Pisahkan docs/public vs docs/internal; bangun landing + docs (dogfood SSR) hanya dari docs/public; ADR publik = ringkasan Inggris; validator dua lapis + verify-no-leak (sumber/ekspor/tarball); snapshot MCP publik-only; CI blocking (docs:validate, test:docs, docs:no-leak).",
+      "why": "Tiga kanal kebocoran dokumen internal ditemukan live (Pages, llms, tarball MCP); kebijakan karantina menghilangkan kemungkinan build 'kebetulan' merilis internal.",
+      "done": [
+        "docs/public + docs/internal + docs/CONTENT_POLICY.md (pemetaan 100%)",
+        "Situs publik (landing + /docs) dari docs/public; alias /dokumen; Cmd+K; Shiki; dark/light; a11y",
+        "Gates: docs:validate (publik+internal, satu arah), docs:no-leak, e2e kebijakan+a11y; CI blocking",
+        "Rilis MCP 0.4.1 (snapshot publik) + deprecate 0.3.0/0.4.0"
+      ],
+      "areas": ["apps/docs", "docs", "scripts", "packages/mcp-docs-server"],
+      "adrs": ["ADR-0082"],
+      "source": "audit kebocoran + prompt situs publik",
+      "strategic": true,
+      "competitor": "Remix.run docs (dogfood publik), Astro content collections, Next.js docs; tidak ada kompetitor dengan karantina internal + gate tarball"
     }
   ]
 }

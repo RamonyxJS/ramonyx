@@ -3,20 +3,20 @@
 > **Sumber tunggal: `TODO.json`** — berkas ini hasil generate, jangan diedit manual.
 > Generate: `pnpm docs:generate` · Validasi: `pnpm docs:validate` · Konteks: `docs/PLAN-docs-consolidation.md` §3–4.
 > Prioritas: **P0** blocker adopsi · **P1** paritas · **P2** diferensiasi & utang yang diakui · **P3** nice-to-have. Ukuran: S (≤1 hari) · M (beberapa hari) · L (1–2 minggu).
-> Status fitur saat ini (bukti + batasan): `docs/machine/features.json`.
+> Status fitur saat ini (bukti + batasan): `docs/public/machine/features.json`.
 
 ## Ringkasan
 
 | Prioritas | Jumlah | Item |
 | --- | --- | --- |
 | P0 — blocker adopsi | 5 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` |
-| P1 — paritas | 8 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` |
+| P1 — paritas | 9 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` |
 | P2 — diferensiasi & utang | 13 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` |
 | P3 — nice-to-have | 3 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` |
 
 **Quick wins** (dampak besar, usaha kecil): `p0-http-production-basics` · `p1-prefetch` · `p1-docs-tutorial` · `p2-watch-mode` · `p2-context7` · `p2-testing-docs`
 
-**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives`
+**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy`
 
 ## P0 — blocker adopsi
 
@@ -209,6 +209,21 @@
   - [ ] Contoh akhir yang bisa di-scaffold
 - **Area kode**: `docs`, `apps/docs`
 - **Pembanding**: Next.js Learn; React Router tutorial; SvelteKit tutorial; Nuxt getting started; Astro tutorial.
+
+### `p2-public-site-content-policy` — Situs publik + karantina docs/internal (landing + docs, gate kebocoran)
+
+*tema: docs · ukuran: L · status: done · sumber: audit kebocoran + prompt situs publik*
+
+- **Apa**: Pisahkan docs/public vs docs/internal; bangun landing + docs (dogfood SSR) hanya dari docs/public; ADR publik = ringkasan Inggris; validator dua lapis + verify-no-leak (sumber/ekspor/tarball); snapshot MCP publik-only; CI blocking (docs:validate, test:docs, docs:no-leak).
+- **Kenapa penting untuk bersaing**: Tiga kanal kebocoran dokumen internal ditemukan live (Pages, llms, tarball MCP); kebijakan karantina menghilangkan kemungkinan build 'kebetulan' merilis internal.
+- **Selesai bila**:
+  - [ ] docs/public + docs/internal + docs/CONTENT_POLICY.md (pemetaan 100%)
+  - [ ] Situs publik (landing + /docs) dari docs/public; alias /dokumen; Cmd+K; Shiki; dark/light; a11y
+  - [ ] Gates: docs:validate (publik+internal, satu arah), docs:no-leak, e2e kebijakan+a11y; CI blocking
+  - [ ] Rilis MCP 0.4.1 (snapshot publik) + deprecate 0.3.0/0.4.0
+- **Area kode**: `apps/docs`, `docs`, `scripts`, `packages/mcp-docs-server`
+- **ADR**: ADR-0082
+- **Pembanding**: Remix.run docs (dogfood publik), Astro content collections, Next.js docs; tidak ada kompetitor dengan karantina internal + gate tarball
 
 ## P2 — diferensiasi & utang
 

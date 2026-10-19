@@ -1,6 +1,6 @@
 // Generator stats.json — SATU-SATUNYA tempat angka berada (ADR-0054).
 //
-//   pnpm docs:stats                # jalankan suite Node + Rust, tulis docs/machine/stats.json
+//   pnpm docs:stats                # jalankan suite Node + Rust, tulis docs/public/machine/stats.json
 //   pnpm docs:stats --node-only    # hanya suite Node
 //   pnpm docs:stats --rust-only    # hanya suite Rust
 //
@@ -12,7 +12,7 @@ import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
-const STATS_PATH = `${ROOT}docs/machine/stats.json`;
+const STATS_PATH = `${ROOT}docs/public/machine/stats.json`;
 
 const args = new Set(process.argv.slice(2));
 const nodeOnly = args.has("--node-only");
@@ -51,7 +51,8 @@ function packageNames(): string[] {
 }
 
 function adrCount(): number {
-  return readdirSync(`${ROOT}docs/adr`).filter((file) => /^[0-9]{4}-.+\.md$/.test(file)).length;
+  return readdirSync(`${ROOT}docs/public/adr`).filter((file) => /^[0-9]{4}-.+\.md$/.test(file))
+    .length;
 }
 
 function e2eSpecCount(): number {
@@ -152,5 +153,5 @@ if (rustOnly || nodeOnly) {
 
 writeFileSync(STATS_PATH, `${JSON.stringify(stats, null, 2)}\n`);
 console.log(
-  `docs/machine/stats.json ditulis: v${stats.version}, ${stats.adrs} ADR, ${stats.packages.npm} paket npm, tests node=${stats.tests.node} rust=${stats.tests.rust}`,
+  `docs/public/machine/stats.json ditulis: v${stats.version}, ${stats.adrs} ADR, ${stats.packages.npm} paket npm, tests node=${stats.tests.node} rust=${stats.tests.rust}`,
 );

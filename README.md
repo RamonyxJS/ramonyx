@@ -10,7 +10,7 @@ tepi kepercayaan, dan benchmark/gate reproducible.
 > Framework Node adalah baseline produksi; runtime Rust/V8 eksperimental. Aplikasi baru:
 > `pnpm create ramonyx-app aplikasi-saya` → `pnpm dev|build|start` (CLI `ramonyx`).
 > Verifikasi registry end-to-end: scaffold → install → build → start → SSR + API.
-> Checklist rilis: [docs/releasing.md](docs/releasing.md).
+> Checklist rilis (internal): [docs/internal/releasing.md](docs/internal/releasing.md).
 
 ## Mulai cepat
 
@@ -45,12 +45,12 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
   **edge/serverless** (`--target edge` → `{ fetch }`, diuji smoke workerd di CI).
 - **Docs agen (MCP)**: `@ramonyx/mcp-docs-server` — tools `search_docs`/`get_page`/
   `get_feature_status`/`get_rules`/`list_adrs` (stdio, `npx -y @ramonyx/mcp-docs-server`;
-  pemasangan: [docs/mcp.md](docs/mcp.md)).
+  pemasangan: [docs/public/for-agents.md](docs/public/for-agents.md)).
 - **Benchmark**: protokol §8 (warm-up + ulangan + distribusi) dengan gate **report-only** —
   HTTP, SSR (sinkron vs streaming + suspense), Web Vitals di e2e, baseline per-lingkungan.
 - **Runtime Rust/V8 (eksperimental)**: ESM + TypeScript + `node_modules`, permission **deny-all**,
   isolasi worker + plugin (proses terpisah + supervisi), HTTP streaming, resource limits —
-  lihat `runtime/` dan `docs/adr/`.
+  lihat `runtime/` dan `docs/internal/adr/`.
 
 ## Verifikasi
 
@@ -63,7 +63,7 @@ pnpm audit --audit-level high              # bersih
 ```
 
 Angka aktual (versi, jumlah paket/ADR/test) ada di satu tempat:
-[docs/machine/stats.json](docs/machine/stats.json) — generate ulang: `pnpm docs:stats`.
+[docs/machine/stats.json](docs/public/machine/stats.json) — generate ulang: `pnpm docs:stats`.
 
 ## Struktur
 
@@ -75,20 +75,20 @@ Angka aktual (versi, jumlah paket/ADR/test) ada di satu tempat:
 | `apps/create-app` | scaffolder (`create-ramonyx-app`) |
 | `runtime/` | runtime Rust + V8 — Cargo workspace (eksperimental) |
 | `benchmarks/` | protokol §8: HTTP, SSR, security/soak, startup |
-| `docs/` | blueprint, arsitektur, ADR, roadmap, audit status |
+| `docs/public` | dokumentasi publik (situs) · `docs/internal` | blueprint, roadmap, audit, ADR penuh (karantina) · `docs/CONTENT_POLICY.md` |
 
 ## Dokumentasi
 
-**Online:** https://ramonyxjs.github.io/ramonyx/ (situs docs di-host dari `docs/**` — ADR-0052).
+**Online:** https://ramonyxjs.github.io/ramonyx/ (situs di-host dari **`docs/public/` saja** — ADR-0052/0082).
 
-Mulai dari [docs/BLUEPRINT.md](docs/BLUEPRINT.md) (sumber kebenaran teknis),
-[docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) (status audit berbasis bukti),
-dan [docs/adr/README.md](docs/adr/README.md) (keputusan arsitektur).
+Mulai dari [docs/internal/BLUEPRINT.md](docs/internal/BLUEPRINT.md) (blueprint internal),
+[docs/internal/IMPLEMENTATION_STATUS.md](docs/internal/IMPLEMENTATION_STATUS.md) (snapshot audit internal),
+dan [docs/public/adr/README.md](docs/public/adr/README.md) (keputusan publik) / [docs/internal/adr/README.md](docs/internal/adr/README.md) (catatan penuh).
 
-Untuk agen AI dan fakta terstruktur: [docs/machine/README.md](docs/machine/README.md) —
+Untuk agen AI dan fakta terstruktur: [docs/public/machine/README.md](docs/public/machine/README.md) —
 status fitur + bukti (`features.json`), indeks ADR (`adrs.json`), aturan menulis aplikasi
 (`rules.json`), kontrol keamanan (`security.json`), dan `llms.txt`/`llms-full.txt`.
-Kanal MCP: `npx -y @ramonyx/mcp-docs-server` — [docs/mcp.md](docs/mcp.md).
+Kanal MCP: `npx -y @ramonyx/mcp-docs-server` — [docs/public/for-agents.md](docs/public/for-agents.md).
 
 ## Lisensi
 

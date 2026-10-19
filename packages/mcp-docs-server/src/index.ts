@@ -154,7 +154,11 @@ function cocok(haystack: string, needle: string): boolean {
 
 /** Server MCP: `handleLine` memproses satu baris JSON-RPC dan mengembalikan respons (atau null). */
 export function createMcpServer(options: McpServerOptions = {}) {
-  const index: DocsIndex = createDocsIndex(options.docsRoot ?? resolveDocsRoot(options));
+  // `docsRoot` eksplisit tetap divalidasi/dipetakan lewat resolveDocsRoot — mencegah `--docs`
+  // menunjuk direktori `docs/` dan menyedot docs/internal (ADR-0082).
+  const index: DocsIndex = createDocsIndex(
+    resolveDocsRoot({ ...options, explicit: options.docsRoot }),
+  );
   const serverInfo = {
     name: "ramonyx-docs",
     title: "Ramonyx Docs",
@@ -306,7 +310,7 @@ export function createMcpServer(options: McpServerOptions = {}) {
         name: `machine/${file}`,
         title: `Machine layer: ${file}`,
         mimeType: file.endsWith(".json") ? "application/json" : "text/plain",
-        description: `Berkas machine layer docs/machine/${file}`,
+        description: `Berkas machine layer publik (docs/public/machine/${file})`,
       });
     }
     for (const doc of index.listDocs()) {

@@ -74,6 +74,10 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: E2E (browser)
         run: pnpm test:e2e
+      - name: Docs site E2E (publik, a11y, kebijakan konten — blocking)
+        run: pnpm test:docs
+      - name: Docs no-leak gate (blocking)
+        run: pnpm docs:no-leak
       - name: Edge smoke (workerd — runtime platform nyata)
         run: pnpm test:edge
       - name: Security benchmark (abuse-case + soak)

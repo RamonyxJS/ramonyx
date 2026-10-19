@@ -6,15 +6,15 @@ eksperimental (Phase 4 selesai, ADR-0001).
 
 ## Baca dulu, berurutan
 
-1. `docs/BLUEPRINT.md` — sumber kebenaran teknis: arsitektur, stack, threat model, roadmap fase.
-2. `docs/architecture.md` — ringkasan arsitektur, peta package, kontrak `RuntimeHost`.
-3. `docs/api/core-contract.md` — kontrak API v0 + catatan implementasi (§10).
-4. `docs/roadmap/phase-0-1.md` — catatan per fase (historis); status terkini: `docs/machine/`
-   + `docs/releasing.md`.
-5. `docs/PRD.md` — level produk; pertanyaan terbuka sudah direkonsiliasi (ADR-0018).
-6. `docs/machine/README.md` — lapisan dokumentasi machine-readable (status fitur + bukti, indeks
+1. `docs/internal/BLUEPRINT.md` — sumber kebenaran teknis: arsitektur, stack, threat model, roadmap fase.
+2. `docs/internal/architecture.md` — ringkasan arsitektur, peta package, kontrak `RuntimeHost`.
+3. `docs/public/api/core-contract.md` — kontrak API v0 + catatan implementasi (§10).
+4. `docs/internal/roadmap/phase-0-1.md` — catatan per fase (historis); status terkini: `docs/public/machine/`
+   + `docs/internal/releasing.md`.
+5. `docs/internal/PRD.md` — level produk; pertanyaan terbuka sudah direkonsiliasi (ADR-0018).
+6. `docs/public/machine/README.md` — lapisan dokumentasi machine-readable (status fitur + bukti, indeks
    ADR, aturan agen, kontrol keamanan, glosarium, llms.txt); **sumber angka tunggal**:
-   `docs/machine/stats.json` (jangan mengetik angka di dokumen lain).
+   `docs/public/machine/stats.json` (jangan mengetik angka di dokumen lain).
 
 ## Perintah
 
@@ -28,18 +28,21 @@ eksperimental (Phase 4 selesai, ADR-0001).
   CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.
 - `pnpm create:app <dir>` — scaffold aplikasi Ramonyx baru (template minimal yang berjalan).
 - `pnpm docs` — situs dokumentasi lokal (dogfood **penuh**: SSR React + hydration/soft navigation
-  atas `docs/**`) di http://127.0.0.1:4000 (build klien + start).
+  atas `docs/public/**`) di http://127.0.0.1:4000 (build klien + start).
 - `pnpm docs:export` — ekspor statis situs docs (`apps/docs/export.ts`) untuk hosting;
   workflow `pages.yml` memakai `--base /ramonyx` → https://ramonyxjs.github.io/ramonyx/ (ADR-0052).
+- `pnpm test:docs` — e2e situs publik (ekspor statis + kebijakan konten + a11y) dan
+  `pnpm docs:no-leak` — gate kebocoran (sumber/ekspor/indeks/llms/sitemap/tarball MCP); keduanya
+  blocking di CI (ADR-0082).
 - `pnpm docs:validate` / `pnpm docs:generate` / `pnpm docs:stats` — dokumentasi machine-readable
-  (`docs/machine/`, ADR-0054): validasi blocking (skema, bukti, indeks ADR, kesegaran, link),
+  (`docs/public/machine/`, ADR-0054): validasi blocking (skema, bukti, indeks ADR, kesegaran, link),
   regenerate artefak turunan (api/cli/llms/TODO.md), dan regenerate `stats.json` dari suite.
 - Plugin gambar (`@ramonyx/plugin-image`, ADR-0079): varian resize + WebP/AVIF saat build
   (`sharp` peer opsional, cache `.ramonyx/image-cache`); hook kontrak plugin `assets`;
   `assets.image()` + `Image` → `<picture>`; dipakai playground (dogfood + e2e).
 - MCP docs server (`@ramonyx/mcp-docs-server`, ADR-0078): bin `ramonyx-mcp-docs` (stdio) —
   di repo: `node --import ./tools/register.mjs packages/mcp-docs-server/src/cli.ts --docs .`;
-  tools: search_docs/get_page/get_feature_status/get_rules/list_adrs; pemasangan `docs/mcp.md`.
+  tools: search_docs/get_page/get_feature_status/get_rules/list_adrs; pemasangan `docs/public/for-agents.md`.
 - CLI devtools (`@ramonyx/devtools`, ADR-0053): di repo jalankan lewat loader —
   `node --import ./tools/register.mjs packages/devtools/src/cli.ts <dev|build|start|doctor> --app <dir>`;
   aplikasi (template) memakai `ramonyx dev|build|start` dengan konvensi `src/app.ts` `createApp()`.
@@ -47,7 +50,7 @@ eksperimental (Phase 4 selesai, ADR-0001).
   di `dist/`; **17 artefak** — 16 paket npm (termasuk `create-ramonyx-app`, `@ramonyx/mcp-docs-server`,
   `@ramonyx/plugin-image`) + binary runtime); `pnpm release:verify` — verifikasi
   instalasi di proyek konsumen bersih (Node polos), termasuk scaffold `create-ramonyx-app`.
-  Publikasi: `docs/releasing.md` (checklist pemilik; workflow publish dari tarball terverifikasi —
+  Publikasi: `docs/internal/releasing.md` (checklist pemilik; workflow publish dari tarball terverifikasi —
   ADR-0049).
 - `benchmarks/runtime-startup.sh` — baseline startup runtime Rust (median wall/startup/load/eval
   dari `RUNS` eksekusi; hasil → `benchmarks/results/runtime-startup.json`; butuh build release).
@@ -70,6 +73,9 @@ eksperimental (Phase 4 selesai, ADR-0001).
 
 ## Jebakan yang paling mudah kena
 
+- **`docs/internal/` adalah karantina (ADR-0082).** Build situs/llms/pencarian/ekspor dan snapshot
+  npm MCP hanya membaca `docs/public/`; jangan menautkan dari publik ke internal (gate CI
+  `docs:no-leak`). Ringkasan publik wajib ditulis manual — tidak ada redaksi otomatis.
 - **Blueprint §4/§5 sebagian besar sudah diimplementasikan** (server actions ADR-0057, i18n
   ADR-0081, dst.); yang **masih rancangan**: code splitting per-rute — jangan diasumsikan ada. Yang nyata:
   `packages/*` (termasuk `@ramonyx/devtools` — CLI `ramonyx`), `apps/playground`, `apps/docs`,
@@ -206,7 +212,7 @@ Node** (`renderToReadableStream` via `react-dom/server.edge` — ADR-0047; jalur
 untuk halaman error), **bench SSR + ambang Web Vitals** (report-only — ADR-0048), **pra-publikasi**
 (publish dari tarball terverifikasi + guard tag↔versi + dist-tag + `create-ramonyx-app` — ADR-0049),
 dan **situs
-dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042),
+dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/public/**` — ADR-0042),
 **di-host di GitHub Pages** (ekspor statis + `<base href>` subpath — ADR-0052) —
 semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; **publikasi npm selesai** (0.1.0 → **0.3.0**: **16 paket**
@@ -217,4 +223,4 @@ Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); angka test terkini: `docs/machine/stats.json` (satu sumber angka, divalidasi CI).
+(ADR-0016); angka test terkini: `docs/public/machine/stats.json` (satu sumber angka, divalidasi CI).

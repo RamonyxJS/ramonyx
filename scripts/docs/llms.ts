@@ -1,16 +1,18 @@
-// Generator llms.txt + llms-full.txt (ADR-0054; spec llmstxt.org v2).
-// Deterministik (tanpa timestamp) agar `pnpm docs:validate` bisa memeriksa kesegaran.
-import { readFileSync } from "node:fs";
+// Generator llms.txt + llms-full.txt (spesifikasi llmstxt.org) — **hanya dari konten publik**
+// (`docs/public/`), ADR-0054/0082. Deterministik (tanpa timestamp) agar kesegaran bisa divalidasi.
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const SITE = "https://ramonyxjs.github.io/ramonyx";
+const PUBLIC = "docs/public";
 
+// Machine layer publik — security.json sengaja TIDAK ada (internal).
 const MACHINE_FILES = [
   "features.json",
   "adrs.json",
   "rules.json",
-  "security.json",
   "glossary.json",
   "api.json",
   "cli.json",
@@ -18,85 +20,92 @@ const MACHINE_FILES = [
   "config.schema.json",
 ] as const;
 
-const HUMAN_DOCS = [
-  "README.md",
-  "docs/architecture.md",
-  "docs/api/core-contract.md",
-  "docs/BLUEPRINT.md",
-  "docs/PRD.md",
-  "docs/security/threat-model.md",
-  "docs/benchmark-protocol.md",
-  "docs/releasing.md",
-  "docs/coding-standards.md",
-  "AGENTS.md",
-] as const;
+function read(relativePath: string): string {
+  return readFileSync(`${ROOT}${relativePath}`, "utf8");
+}
 
-function read(relative: string): string {
-  return readFileSync(`${ROOT}${relative}`, "utf8");
+function collectDocs(dir: string, found: string[] = []): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === "machine" || entry.name.startsWith(".")) {
+      continue;
+    }
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      collectDocs(path, found);
+    } else if (entry.name.endsWith(".md")) {
+      found.push(path);
+    }
+  }
+  return found;
+}
+
+function slugFor(file: string): string {
+  return relative(join(ROOT, PUBLIC), file).split(sep).join("/").replace(/\.md$/, "");
+}
+
+function titleOf(markdown: string): string {
+  for (const line of markdown.split("\n")) {
+    if (line.startsWith("# ")) {
+      return line.slice(2).trim();
+    }
+  }
+  return "Untitled";
 }
 
 export function generateLlms(): { llms: string; llmsFull: string } {
-  const stats = JSON.parse(read("docs/machine/stats.json")) as { adrs: number; version: string };
+  const stats = JSON.parse(read("docs/public/machine/stats.json")) as {
+    adrs: number;
+    version: string;
+  };
+  const docs = collectDocs(join(ROOT, PUBLIC)).sort((a, b) => slugFor(a).localeCompare(slugFor(b)));
+
   const llms = `# Ramonyx
 
-> Framework full-stack TypeScript (runtime MVP Node.js) dengan SSR React, hydration, soft navigation, keamanan bawaan, dan runtime Rust/V8 eksperimental. Disiplin bukti: setiap klaim punya ADR/test/benchmark.
+> Full-stack TypeScript framework (Node.js ≥ 24) with file routing, SSR React + hydration, soft
+> navigation, secure defaults, server actions, edge/static targets, and an experimental Rust/V8 runtime.
 
-Dokumentasi lengkap: ${SITE}/ . Fakta terstruktur (sumber kebenaran status/angka): ${SITE}/machine/ .
+Documentation: ${SITE}/ . Structured facts: ${SITE}/machine/ .
 
-## Machine-readable (sumber kebenaran fakta)
+## Machine-readable (public only)
 
-- [features.json](${SITE}/machine/features.json): status setiap fitur (implemented/partial/experimental/planned) + paket + bukti + batasan
-- [adrs.json](${SITE}/machine/adrs.json): indeks ${stats.adrs} ADR — keputusan satu kalimat + relasi
-- [rules.json](${SITE}/machine/rules.json): aturan menulis aplikasi di atas Ramonyx, dengan contoh benar/salah
-- [security.json](${SITE}/machine/security.json): kontrol keamanan + status + celah yang diakui
-- [glossary.json](${SITE}/machine/glossary.json): istilah + peta konsep
-- [stats.json](${SITE}/machine/stats.json): versi, jumlah paket/ADR/test — satu-satunya tempat angka
-- [api.json](${SITE}/machine/api.json) dan [cli.json](${SITE}/machine/cli.json): referensi API/CLI hasil ekstraksi kode
-- [config.schema.json](${SITE}/machine/config.schema.json): bentuk ramonyx.config.ts (diverifikasi test)
+- [features.json](${SITE}/machine/features.json): feature status (implemented/partial/experimental/planned), packages, evidence, limitations
+- [adrs.json](${SITE}/machine/adrs.json): ${stats.adrs} public architecture decisions (one-line decision + relations)
+- [rules.json](${SITE}/machine/rules.json): rules for writing apps, with good/bad examples
+- [glossary.json](${SITE}/machine/glossary.json): terms and concept map
+- [stats.json](${SITE}/machine/stats.json): version, packages, public ADR count, test counts
+- [api.json](${SITE}/machine/api.json) and [cli.json](${SITE}/machine/cli.json): extracted API/CLI reference
+- [config.schema.json](${SITE}/machine/config.schema.json): ramonyx.config.ts shape (verified by tests)
 
-## Dokumen inti
+## Documentation
 
-- [README (repo)](https://github.com/RamonyxJS/ramonyx/blob/main/README.md): ikhtisar, instalasi, perintah
-- [Architecture](${SITE}/dokumen/architecture/): peta paket + kontrak RuntimeHost
-- [Core contract (API v0)](${SITE}/dokumen/api/core-contract/): kontrak API
-- [BLUEPRINT](${SITE}/dokumen/BLUEPRINT/): sumber kebenaran teknis
-- [Threat model](${SITE}/dokumen/security/threat-model/)
-- [Benchmark protocol](${SITE}/dokumen/benchmark-protocol/)
-- [Releasing](${SITE}/dokumen/releasing/)
-- [Roadmap](${SITE}/dokumen/roadmap/phase-0-1/)
-- [Status implementasi](${SITE}/dokumen/IMPLEMENTATION_STATUS/)
-- [ADR index](${SITE}/dokumen/adr/README/)
+${docs.map((file) => `- [${titleOf(readFileSync(file, "utf8"))}](${SITE}/docs/${slugFor(file)}/)`).join("\n")}
 
-## Untuk agen
+## For agents
 
-- [llms-full.txt](${SITE}/llms-full.txt): seluruh machine layer + dokumen inti dalam satu berkas
-- Markdown per halaman: tambahkan \`.md\` pada URL halaman (mis. ${SITE}/dokumen/architecture.md) — discovery via \`<link rel="alternate" type="text/markdown">\`
-- [sitemap.md](${SITE}/sitemap.md): indeks semua halaman
-- Skill agen: \`.agents/skills/ramonyx/SKILL.md\` di repo
+- [llms-full.txt](${SITE}/machine/llms-full.txt): public machine layer + all public docs in one file
+- Markdown per page: append \`.md\` to a docs URL (e.g. ${SITE}/docs/getting-started.md)
+- MCP server: \`npx -y @ramonyx/mcp-docs-server\` (stdio; public docs snapshot)
 `;
 
   const parts: string[] = [
-    `# Ramonyx — llms-full`,
+    `# Ramonyx — llms-full (public)`,
     ``,
-    `> Teks lengkap untuk agen: seluruh machine layer (JSON) + dokumen inti. Sumber: repo RamonyxJS/ramonyx (${SITE}).`,
-    `> Status/angka otoritatif ada di machine layer; teks ADR lengkap di docs/adr/*.md (indeks: adrs.json).`,
+    `> Full public corpus for agents: public machine layer (JSON) + public documentation.`,
+    `> Source: repo RamonyxJS/ramonyx (${SITE}). Internal docs are never included.`,
     ``,
   ];
-
   for (const file of MACHINE_FILES) {
     parts.push(
-      `## docs/machine/${file}`,
+      `## docs/public/machine/${file}`,
       "",
       "```json",
-      read(`docs/machine/${file}`).trimEnd(),
+      read(`docs/public/machine/${file}`).trimEnd(),
       "```",
       "",
     );
   }
-
-  for (const doc of HUMAN_DOCS) {
-    parts.push(`## ${doc}`, "", read(doc).trimEnd(), "");
+  for (const file of docs) {
+    parts.push(`## docs/public/${slugFor(file)}.md`, "", readFileSync(file, "utf8").trimEnd(), "");
   }
-
   return { llms, llmsFull: `${parts.join("\n")}\n` };
 }

@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "adrs": [
+    {
+      "id": "ADR-0007",
+      "file": "0007-hydration.md",
+      "title": "Hydration — Inline Payload + One Client Bundle",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-18",
+      "decision": "Embed a JSON hydration payload in the document and hydrate from one hashed client bundle; error pages are server-only.",
+      "related": ["ADR-0047"],
+      "features": ["soft-navigation"],
+      "visibility": "public"
+    },
+    {
+      "id": "ADR-0047",
+      "file": "0047-ssr-streaming.md",
+      "title": "SSR Streaming — Opt-in, Edge Renderer",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-18",
+      "decision": "Streaming is opt-in via app.streaming/createPageRoutes; react-dom/server.edge renderers; error pages stay synchronous and errors after the first byte close the stream.",
+      "related": ["ADR-0007"],
+      "features": ["ssr-streaming"],
+      "visibility": "public"
+    },
+    {
+      "id": "ADR-0057",
+      "file": "0057-server-actions.md",
+      "title": "Server Actions — Form Mutations First-Class",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-18",
+      "decision": "Pages may export action + actionSchema (POST to the same path); 303 PRG redirects; forms work without JavaScript; action result re-renders the page.",
+      "related": ["ADR-0004", "ADR-0066"],
+      "features": ["mutations-server-actions"],
+      "visibility": "public"
+    },
+    {
+      "id": "ADR-0058",
+      "file": "0058-edge-target.md",
+      "title": "Target Edge/Serverless",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-18",
+      "decision": "ramonyx build --target edge emits a single { fetch } artifact with statically imported pages/API/middleware, inlined asset map, and a build guard against node:*; workerd smoke test in CI.",
+      "related": ["ADR-0068"],
+      "features": ["adapter-serverless-edge"],
+      "visibility": "public"
+    },
+    {
+      "id": "ADR-0066",
+      "file": "0066-revalidate.md",
+      "title": "Revalidation (ISR-lite) — Loader Data, Not HTML",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-19",
+      "decision": "revalidate caches loader data with stale-while-revalidate; cookies/query bypass the cache; cacheTags + revalidate() invalidate on demand; store is pluggable.",
+      "related": ["ADR-0007", "ADR-0065"],
+      "features": ["revalidate"],
+      "visibility": "public"
+    },
+    {
+      "id": "ADR-0069",
+      "file": "0069-assets.md",
+      "title": "Asset Pipeline — Manifest + Resolver",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-19",
+      "decision": "src/assets is hashed into a manifest; assets.url()/assets.image() feed loaders and Image; edge inlines the map; URLs map 1:1 to the client output root.",
+      "related": ["ADR-0055", "ADR-0079"],
+      "features": ["asset-pipeline", "image-optimization"],
+      "visibility": "public"
+    },
+    {
+      "id": "ADR-0078",
+      "file": "0078-mcp-docs-server.md",
+      "title": "MCP Docs Server — stdio, No Hosting",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-19",
+      "decision": "Package @ramonyx/mcp-docs-server runs MCP over stdio with no external dependencies and five tools; the npm package bundles a public docs snapshot and is verified in the release pipeline.",
+      "related": ["ADR-0054"],
+      "features": ["mcp-docs-server"],
+      "visibility": "public"
+    },
+    {
+      "id": "ADR-0081",
+      "file": "0081-i18n.md",
+      "title": "i18n — Primitives + Locale Routing",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-19",
+      "decision": "Edge-safe primitives (negotiation, localePath, createTranslator); per-locale literal routes; default locale unprefixed with 308 normalization; lang/dir + hreflang; locale-aware cache keys; no automatic redirects.",
+      "related": ["ADR-0066"],
+      "features": ["i18n"],
+      "visibility": "public"
+    }
+  ]
+}

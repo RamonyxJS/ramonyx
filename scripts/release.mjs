@@ -121,11 +121,11 @@ function stagePackage(entry, releaseVersion) {
       .replace(/\.ts$/, ".js");
   }
 
-  // Snapshot docs untuk @ramonyx/mcp-docs-server (ADR-0078): server berfungsi tanpa clone repo,
-  // versi docs = versi paket.
+  // Snapshot docs PUBLIK untuk @ramonyx/mcp-docs-server (ADR-0078/0082): server berfungsi tanpa
+  // clone repo. `docs/internal/` TIDAK pernah ikut — snapshot hanya dari `docs/public/`.
   const extraFiles = [];
   if (source.name === "@ramonyx/mcp-docs-server") {
-    cpSync(join(root, "docs"), join(staging, "docs"), { recursive: true });
+    cpSync(join(root, "docs", "public"), join(staging, "docs"), { recursive: true });
     extraFiles.push("docs");
   }
 

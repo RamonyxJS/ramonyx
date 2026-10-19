@@ -359,11 +359,28 @@ console.log("SMOKE OK halo,dunia paket", process.versions.node);
     console.log("  ✓ create-ramonyx-app: build + start + SSR halaman (Node polos, dari tarball)");
   }
 
-  // MCP docs server (ADR-0078): snapshot docs dibundel + bin menjawab handshake/tools dari tarball.
+  // MCP docs server (ADR-0078/0082): snapshot docs PUBLIK dibundel + bin menjawab handshake/tools.
   const mcpDir = join(workDir, "node_modules", "@ramonyx", "mcp-docs-server");
   if (existsSync(mcpDir)) {
     if (!existsSync(join(mcpDir, "docs", "machine", "stats.json"))) {
       fail("snapshot docs tidak ikut di tarball @ramonyx/mcp-docs-server");
+    }
+    // Gate kebocoran: tarball tidak boleh memuat dokumen internal.
+    const mcpDocs = join(mcpDir, "docs");
+    const terlarang = [
+      "PRD.md",
+      "IMPLEMENTATION_STATUS.md",
+      "BLUEPRINT.md",
+      "PLAN-docs-consolidation.md",
+      join("security", "threat-model.md"),
+      join("security", "asvs-mapping.md"),
+      join("security", "plugin-isolation-assessment.md"),
+      "internal",
+    ];
+    for (const path of terlarang) {
+      if (existsSync(join(mcpDocs, path))) {
+        fail(`tarball MCP memuat dokumen internal: docs/${path}`);
+      }
     }
     if (!existsSync(join(workDir, "node_modules", ".bin", "ramonyx-mcp-docs"))) {
       fail("bin ramonyx-mcp-docs tidak terpasang dari tarball");

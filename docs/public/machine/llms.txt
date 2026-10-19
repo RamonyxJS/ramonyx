@@ -1,0 +1,45 @@
+# Ramonyx
+
+> Full-stack TypeScript framework (Node.js ≥ 24) with file routing, SSR React + hydration, soft
+> navigation, secure defaults, server actions, edge/static targets, and an experimental Rust/V8 runtime.
+
+Documentation: https://ramonyxjs.github.io/ramonyx/ . Structured facts: https://ramonyxjs.github.io/ramonyx/machine/ .
+
+## Machine-readable (public only)
+
+- [features.json](https://ramonyxjs.github.io/ramonyx/machine/features.json): feature status (implemented/partial/experimental/planned), packages, evidence, limitations
+- [adrs.json](https://ramonyxjs.github.io/ramonyx/machine/adrs.json): 8 public architecture decisions (one-line decision + relations)
+- [rules.json](https://ramonyxjs.github.io/ramonyx/machine/rules.json): rules for writing apps, with good/bad examples
+- [glossary.json](https://ramonyxjs.github.io/ramonyx/machine/glossary.json): terms and concept map
+- [stats.json](https://ramonyxjs.github.io/ramonyx/machine/stats.json): version, packages, public ADR count, test counts
+- [api.json](https://ramonyxjs.github.io/ramonyx/machine/api.json) and [cli.json](https://ramonyxjs.github.io/ramonyx/machine/cli.json): extracted API/CLI reference
+- [config.schema.json](https://ramonyxjs.github.io/ramonyx/machine/config.schema.json): ramonyx.config.ts shape (verified by tests)
+
+## Documentation
+
+- [ADR-0007: Hydration — Inline Payload + One Client Bundle](https://ramonyxjs.github.io/ramonyx/docs/adr/0007-hydration/)
+- [ADR-0047: SSR Streaming — Opt-in, Edge Renderer](https://ramonyxjs.github.io/ramonyx/docs/adr/0047-ssr-streaming/)
+- [ADR-0057: Server Actions — Form Mutations First-Class](https://ramonyxjs.github.io/ramonyx/docs/adr/0057-server-actions/)
+- [ADR-0058: Target Edge/Serverless](https://ramonyxjs.github.io/ramonyx/docs/adr/0058-edge-target/)
+- [ADR-0066: Revalidation (ISR-lite) — Loader Data, Not HTML](https://ramonyxjs.github.io/ramonyx/docs/adr/0066-revalidate/)
+- [ADR-0069: Asset Pipeline — Manifest + Resolver](https://ramonyxjs.github.io/ramonyx/docs/adr/0069-assets/)
+- [ADR-0078: MCP Docs Server — stdio, No Hosting](https://ramonyxjs.github.io/ramonyx/docs/adr/0078-mcp-docs-server/)
+- [ADR-0081: i18n — Primitives + Locale Routing](https://ramonyxjs.github.io/ramonyx/docs/adr/0081-i18n/)
+- [Architecture Decision Records (public)](https://ramonyxjs.github.io/ramonyx/docs/adr/README/)
+- [API Reference](https://ramonyxjs.github.io/ramonyx/docs/api/core-contract/)
+- [Assets & Images](https://ramonyxjs.github.io/ramonyx/docs/assets-and-images/)
+- [Data & Caching](https://ramonyxjs.github.io/ramonyx/docs/data-and-caching/)
+- [Frontend stack decisions (docs site + landing)](https://ramonyxjs.github.io/ramonyx/docs/decisions/frontend-stack/)
+- [Deployment](https://ramonyxjs.github.io/ramonyx/docs/deployment/)
+- [For Agents](https://ramonyxjs.github.io/ramonyx/docs/for-agents/)
+- [Getting Started](https://ramonyxjs.github.io/ramonyx/docs/getting-started/)
+- [Plugins](https://ramonyxjs.github.io/ramonyx/docs/plugins/)
+- [Routing](https://ramonyxjs.github.io/ramonyx/docs/routing/)
+- [Security Overview](https://ramonyxjs.github.io/ramonyx/docs/security/overview/)
+- [SSR & Hydration](https://ramonyxjs.github.io/ramonyx/docs/ssr-hydration/)
+
+## For agents
+
+- [llms-full.txt](https://ramonyxjs.github.io/ramonyx/machine/llms-full.txt): public machine layer + all public docs in one file
+- Markdown per page: append `.md` to a docs URL (e.g. https://ramonyxjs.github.io/ramonyx/docs/getting-started.md)
+- MCP server: `npx -y @ramonyx/mcp-docs-server` (stdio; public docs snapshot)

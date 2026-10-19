@@ -14,6 +14,8 @@ export interface CatalogDoc extends CatalogEntry {
   readonly html: string;
   /** Markdown mentah (untuk pencarian isi di server). */
   readonly text: string;
+  /** Daftar heading (ToC) hasil render. */
+  readonly toc: readonly { readonly id: string; readonly text: string; readonly depth: number }[];
 }
 
 export interface CatalogHit extends CatalogEntry {

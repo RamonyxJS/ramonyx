@@ -1,0 +1,102 @@
+# Assets & Images
+
+Files in `src/assets/**` are hashed at build time, recorded in a manifest, and resolved through the
+server-side asset resolver. Node cannot `import photo.png`, so the resolver is the contract between
+SSR and the client bundle.
+
+## Add an asset
+
+```
+src/assets/
+  logo.svg
+  img/hero.png
+  fonts/inter.woff2
+```
+
+Wire the resolver once in `src/app.ts`:
+
+```ts
+import { createAssetResolver } from "@ramonyx/bundler";
+
+const assets = await createAssetResolver(clientDir, { fallbackToPath: true });
+
+createPageRoutes({ pages, renderer, assets /* ... */ });
+```
+
+Loaders receive `assets`:
+
+```ts
+export async function loader({ assets }) {
+  return {
+    logo: assets.url("logo.svg"),        // "/assets/logo-3f9a1c2b7d.svg"
+    hero: assets.image("img/hero.png"),  // { src, width, height, srcSet?, sources? }
+  };
+}
+```
+
+## Rendering images
+
+`Image` from `@ramonyx/react/assets` supplies safe defaults: explicit dimensions (no layout shift),
+`loading="lazy"`, `decoding="async"`, and an optional `<picture>` when responsive variants exist.
+
+```tsx
+import { Image } from "@ramonyx/react/assets";
+
+<Image {...data.hero} alt="Hero" sizes="(max-width: 768px) 100vw, 640px" />;
+```
+
+With the image plugin enabled, `assets.image()` returns `srcSet` and `<source>` entries, so the
+markup renders:
+
+```html
+<picture>
+  <source type="image/webp" srcset="/assets/img/hero-320-….webp 320w, …" sizes="…" />
+  <img src="/assets/img/hero-….png" width="800" height="600" srcset="…" … />
+</picture>
+```
+
+## Responsive images (build-time variants)
+
+```bash
+pnpm add @ramonyx/plugin-image sharp
+```
+
+```ts
+// ramonyx.config.ts
+import { imageOptimizer } from "@ramonyx/plugin-image";
+import { defineConfig } from "ramonyx";
+
+export default defineConfig({
+  plugins: [imageOptimizer({ widths: [320, 640, 960, 1280], formats: ["webp"] })],
+});
+```
+
+- Variants are generated at build time (resize + WebP; AVIF is opt-in because it is slower).
+- `sharp` is an **optional peer** — installed by the app, not by the framework.
+- Results are cached by content hash in `.ramonyx/image-cache`; unchanged images are not re-encoded.
+- The original file is always copied and used as the universal fallback.
+- Colors/dimensions are recorded in `ramonyx.assets.json` (`width`, `height`, `variants`).
+
+`avif` can be added to `formats` for smaller files at the cost of build time. SVG is passed through
+(vector assets do not need variants).
+
+## Fonts
+
+Fonts are hashed like any asset. Preload a font by putting a `<link rel="preload">` tag in page
+metadata:
+
+```ts
+import { fontPreloadTag } from "@ramonyx/bundler";
+
+export const metadata = {
+  title: "Home",
+  head: fontPreloadTag("/assets/fonts/inter-6a1b2c3d.woff2"),
+};
+```
+
+## Honest limitations
+
+- Development serves `src/assets/**` as-is (no hashes, no variants); build output is the source of
+  truth for production behavior.
+- No blur placeholders (LQIP) or on-demand dev variants yet.
+- Image optimization only runs for raster formats (PNG/JPEG/WebP/AVIF/TIFF).

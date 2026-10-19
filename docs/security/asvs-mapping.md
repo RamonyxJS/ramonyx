@@ -1,6 +1,7 @@
 # Pemetaan Awal OWASP ASVS — Ramonyx
 
-- Status: pemetaan awal (2026-10-18); **bukan klaim kepatuhan** (BLUEPRINT §10).
+- Status: pemetaan awal (2026-10-18; diperiksa ulang 2026-10-19); **bukan klaim kepatuhan**
+  (BLUEPRINT §10).
 - Tujuan: basis acceptance criteria keamanan per fase (BLUEPRINT §7), ditumbuhkan seiring Phase 3–4 (keduanya selesai).
 - Legenda: ✅ ada + diuji · 🟡 sebagian/primitif · ⬜ belum · ➖ tanggung jawab aplikasi/deployment
 
@@ -13,7 +14,7 @@
 | V5 Validasi input & output | Standard Schema di trust boundary | ✅ | `@ramonyx/schema` + test; validasi output |
 | V6 Kriptografi | Web Crypto untuk token CSRF, perbandingan waktu-konstan; TLS = deployment | 🟡 | `crypto.getRandomValues` (ADR-0013) |
 | V7 Logging & error handling | Error aman (tanpa bocor), structured log | ✅ | `HttpError` + test; larangan secrets di log |
-| V8 Data protection | Payload JSON-serializable; secret→client belum dijaga build | 🟡 | ADR-0007; analisis boundary menyusul |
+| V8 Data protection | Payload JSON-serializable; batas server/client ditegakkan build (`*.server.ts` poison-pill + tolak `node:*` di modul klien); secret di modul biasa tetap tanggung jawab aplikasi | 🟡 | ADR-0007; ADR-0063 (`packages/compiler`/`bundler` + test) |
 | V9 Komunikasi | HSTS/redirect HTTPS = deployment | ➖ | dicatat di `securityHeaders` |
 | V10 Kode berbahaya | Tanpa `eval` di paket; fuzz input | 🟡 | Biome + fuzz `fast-check` |
 | V11 Logika bisnis | Anti-automation (rate limit per klien) | ✅ | `rateLimit()` ADR-0017 |

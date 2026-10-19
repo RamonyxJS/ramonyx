@@ -3,7 +3,7 @@
 Ramonyx menyediakan cache **data loader** per halaman: TTL + stale-while-revalidate +
 invalidasi on-demand dari action/API route. Keputusan desain: ADR-0066.
 
-- Status: tersedia (setelah 0.1.1).
+- Status: tersedia sejak 0.2.0 (ADR-0066).
 - Prinsip: yang di-cache adalah **data**, bukan HTML — HTML memuat nonce CSP per request
   (ADR-0014), sehingga men-cache HTML akan memakai ulang nonce (tidak aman).
 

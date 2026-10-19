@@ -1,8 +1,9 @@
 # Roadmap Phase 0–1
 
-- Status per 2026-10-18 (diperbarui): **Phase 0–4 selesai** (exit criteria Phase 4 tercapai);
-  **Phase 5 praktis tuntas** — **0.1.1 terbit** (14 paket, provenance; docs di-host).
-  Sisa kandidat: baseline bench per-lingkungan di CI, migrasi playground/docs ke CLI (opsional), watch mode.
+- Status per 2026-10-19 (diperbarui): **Phase 0–5 praktis tuntas** — **0.3.0 terbit** (16 paket,
+  provenance; docs di-host). Sisa kandidat lama (baseline bench per-lingkungan, migrasi CLI, watch
+  mode) **semua selesai** (ADR-0074/0076/0070). Status terkini: `docs/machine/` (features/stats,
+  divalidasi CI) + `docs/releasing.md`; dokumen ini menyimpan catatan per fase (historis).
 - Sumber: `docs/BLUEPRINT.md` §9 dan §12.
 
 ## Phase 0 — Foundation & RFC ✅
@@ -45,7 +46,7 @@ Catatan implementasi Phase 1:
 - Handler menerima output hasil validasi schema (transform/strip diterapkan), bukan input mentah.
 - Manifest route eksplisit; file-based routing (Phase 2) sudah ada.
 
-## Phase 2 — Full-stack (berjalan)
+## Phase 2 — Full-stack ✅
 
 - [x] File routing API: `createRouteManifest` (`packages/compiler`) — pindai `src/routes/api/**`,
       `index`/`[param]`, prefix `_` diabaikan, file tanpa method → error saat startup
@@ -62,7 +63,7 @@ Catatan implementasi Phase 1:
 
 **Phase 2 selesai** (2026-10-18).
 
-## Phase 3 — Security & performance hardening (berjalan)
+## Phase 3 — Security & performance hardening ✅
 
 Exit criteria: acceptance criteria keamanan yang ditetapkan lulus (BLUEPRINT §9).
 
@@ -104,8 +105,9 @@ Phase 4 (runtime alpha).
 subset compatibility tests" — aplikasi berbentuk playground (halaman SSR React + API + POST +
 middleware security) berjalan di runtime lewat `ramonyx.serveHandler`, dan subset compatibility
 (core/router/schema/server/security/ssr/react + CJS + fetch/streams) lulus di CI (ADR-0032).
-Di luar klaim: `@ramonyx/compiler` (Node-only), https/TLS, streaming request, worker/kuota —
-pekerjaan Phase 5.
+Di luar klaim saat itu — **kini selesai** (Phase 5): https/TLS + redirect (ADR-0036), streaming
+request + batas body server (ADR-0035), worker/kuota (ADR-0034/0038); `@ramonyx/compiler` tetap
+Node-only (build-time) by design.
 
 - [x] **R0** — Workspace Cargo (root `Cargo.toml`, members `runtime/crates/*`), toolchain dipin
       (`rust-toolchain.toml` 1.99.0 + rustfmt/clippy), `runtime-core` (config `ramonyx.runtime.json`

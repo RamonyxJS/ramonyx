@@ -28,13 +28,26 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
 - **Framework**: file routing (`src/routes`), lifecycle loader → render → dokumen; **SSR React**
   dengan **streaming** (opt-in, `createPageRoutes({ streaming: true })`) + payload hydration
   `window.__RAMONYX__` + soft navigation.
-- **CLI devtools** (`@ramonyx/devtools`): `ramonyx dev` (Vite + HMR), `ramonyx build`,
-  `ramonyx start` (produksi), `ramonyx doctor` — konvensi `src/app.ts` `createApp(options?)`.
+- **CLI devtools** (`@ramonyx/devtools`): `ramonyx dev` (Vite + HMR + **panel devtools**
+  `/__ramonyx/devtools`: rute, timing, hydration, bundel), `ramonyx build`
+  (`--static`, `--target edge`, `--watch`), `ramonyx start`, `ramonyx doctor` — konvensi
+  `src/app.ts` `createApp(options?)` (+ `src/server.ts` opsional untuk entry kustom).
 - **Server**: middleware `next(request?)`, timeout 10 dtk → 503, batas body 1 MiB → 413, load
   shedding (concurrency 100), rate limit per klien, validasi schema (Standard Schema) di tepi.
 - **Security**: security headers, CSP nonce, CSRF double-submit, SSRF guard (`@ramonyx/security`).
+- **Data & aset**: revalidasi/ISR-lite (`export const revalidate` + cache tags, ADR-0066);
+  pipeline aset `src/assets/**` (hash + manifest, ADR-0069) + **varian gambar WebP/AVIF** via
+  plugin (`@ramonyx/plugin-image`, `sharp` opsional) → `assets.image()` + `Image` `<picture>`.
+- **Ekstensi**: kontrak plugin (`ramonyx.config.ts` → Vite + middleware + hooks + hook `assets`),
+  typed routes (`.ramonyx/routes.ts`), metadata/SEO (sitemap/robots), observability
+  (trace-id/log/metrik), server actions (progressive enhancement).
+- **Deploy**: Node (`ramonyx start`), **statis** (`--static`, prerender + 404.html),
+  **edge/serverless** (`--target edge` → `{ fetch }`, diuji smoke workerd di CI).
+- **Docs agen (MCP)**: `@ramonyx/mcp-docs-server` — tools `search_docs`/`get_page`/
+  `get_feature_status`/`get_rules`/`list_adrs` (stdio, `npx -y @ramonyx/mcp-docs-server`;
+  pemasangan: [docs/mcp.md](docs/mcp.md)).
 - **Benchmark**: protokol §8 (warm-up + ulangan + distribusi) dengan gate **report-only** —
-  HTTP, SSR (sinkron vs streaming + suspense), Web Vitals di e2e.
+  HTTP, SSR (sinkron vs streaming + suspense), Web Vitals di e2e, baseline per-lingkungan.
 - **Runtime Rust/V8 (eksperimental)**: ESM + TypeScript + `node_modules`, permission **deny-all**,
   isolasi worker + plugin (proses terpisah + supervisi), HTTP streaming, resource limits —
   lihat `runtime/` dan `docs/adr/`.
@@ -56,7 +69,7 @@ Angka aktual (versi, jumlah paket/ADR/test) ada di satu tempat:
 
 | Path | Isi |
 | --- | --- |
-| `packages/*` | framework: `core`, `router`, `schema`, `server`, `ssr`, `react`, `compiler`, `bundler`, `security`, `adapter-runtime`, `testing`, `devtools` (CLI), meta `ramonyx` |
+| `packages/*` | framework: `core`, `router`, `schema`, `server`, `ssr`, `react`, `compiler`, `bundler`, `security`, `adapter-runtime`, `testing`, `devtools` (CLI), `mcp-docs-server` (MCP), `plugin-image` (gambar), meta `ramonyx` |
 | `apps/playground` | app demo (SSR + hydration + streaming + security) |
 | `apps/docs` | situs dokumentasi (dogfood penuh: SSR + soft navigation) |
 | `apps/create-app` | scaffolder (`create-ramonyx-app`) |
@@ -75,6 +88,7 @@ dan [docs/adr/README.md](docs/adr/README.md) (keputusan arsitektur).
 Untuk agen AI dan fakta terstruktur: [docs/machine/README.md](docs/machine/README.md) —
 status fitur + bukti (`features.json`), indeks ADR (`adrs.json`), aturan menulis aplikasi
 (`rules.json`), kontrol keamanan (`security.json`), dan `llms.txt`/`llms-full.txt`.
+Kanal MCP: `npx -y @ramonyx/mcp-docs-server` — [docs/mcp.md](docs/mcp.md).
 
 ## Lisensi
 

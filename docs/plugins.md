@@ -3,8 +3,10 @@
 Plugin memperluas aplikasi pada tiga titik: **build** (plugin Vite), **request** (middleware
 global), dan **runtime** (hook aplikasi). Keputusan desain: ADR-0067; kontrak dasar: ADR-0065.
 
-> Status: **experimental** — stabil untuk dipakai, tetapi dapat bertambah (aditif) sampai ada
-> ≥2 plugin nyata. Laporkan kebutuhan kontrak lewat issue.
+> Status: **experimental** — stabil untuk dipakai, tetapi kontrak masih dapat bertambah (aditif).
+> **Dua plugin nyata sudah ada** (`kunjungan` di playground + `@ramonyx/image`), dan hook `assets`
+> baru ditambahkan (ADR-0079); kontrak dibekukan setelah satu siklus rilis tanpa perubahan.
+> Laporkan kebutuhan kontrak lewat issue.
 
 ## Menulis plugin
 

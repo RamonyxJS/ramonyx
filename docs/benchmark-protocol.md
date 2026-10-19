@@ -1,6 +1,9 @@
 # Protokol Benchmark — Ramonyx
 
-- Status: **berlaku** (protokol Phase 0; diimplementasikan untuk HTTP/SSR/Web Vitals — ADR-0045/0048; baris matriks lain menyusul). Sumber: `docs/BLUEPRINT.md` §8.
+- Status: **berlaku** (protokol Phase 0). Terimplementasi: **HTTP** (`pnpm bench`), **SSR**
+  (sinkron vs streaming), **Web Vitals** (e2e), **security abuse/soak** (termasuk RSS proses),
+  **startup runtime**, dan **baseline per-lingkungan** — ADR-0045/0048/0074. Belum: bench
+  router/serialization/build (kandidat). Sumber: `docs/BLUEPRINT.md` §8.
 - Aturan utama: **tidak ada klaim performa tanpa pengukuran yang bisa dijalankan.**
 
 ## 1. Prinsip

@@ -28,12 +28,12 @@
     },
     {
       "id": "node-builtins-boundary",
-      "rule": "Impor `node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan `packages/security` (guard SSRF). Di kode aplikasi: boleh di sisi server, DILARANG di modul yang masuk bundle client.",
-      "rationale": "Menjaga core framework portable dan bundle client bersih dari API server.",
+      "rule": "Impor `node:*` hanya di paket Node-only (adapter-runtime, compiler, bundler, ssr, react, security, devtools, mcp-docs-server, plugin-image). Paket edge-safe (core, router, schema, server, testing, ramonyx) dilarang.",
+      "rationale": "Paket edge-safe harus berjalan di runtime edge/serverless tanpa `node:*` (artefak `--target edge`, ADR-0058); paket Node-only memang butuh fs/net/build.",
       "scope": "framework",
       "good": "// packages/security/src/ssrf.ts\nimport { lookup } from \"node:dns/promises\";",
       "bad": "// packages/core/src/route.ts\nimport { readFile } from \"node:fs/promises\";",
-      "enforcement": "Lint (Biome) melarang `node:*` di luar paket yang diizinkan",
+      "enforcement": "Biome `noRestrictedImports` (packages/core|router|schema|server|testing|ramonyx) + guard build edge",
       "adrs": [
         "ADR-0002",
         "ADR-0015"

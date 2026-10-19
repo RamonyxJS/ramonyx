@@ -1,6 +1,7 @@
 # Arsitektur Ramonyx
 
-- Status: **berlaku** (diperbarui 2026-10-18; Phase 0–4 selesai, Phase 5 praktis tuntas, **0.1.1 terbit**). Turunan `docs/BLUEPRINT.md` §2/§5/§6 — jika bertentangan, **blueprint menang**.
+- Status: **berlaku** (diperbarui 2026-10-19; Phase 0–5 praktis tuntas, **0.3.0 terbit** —
+  16 paket). Turunan `docs/BLUEPRINT.md` §2/§5/§6 — jika bertentangan, **blueprint menang**.
 - Komponen di dokumen ini **sudah dibuat** kecuali yang ditandai lain di kolom Status.
 
 ## 1. Prinsip yang mengikat
@@ -35,16 +36,17 @@ Layer 3, dan runtime Rust/V8 sendiri juga sudah ada (Phase 4 selesai — eksperi
 | `packages/react` | Adapter UI React (ADR-0003): SSR (sinkron + stream) + hydration + navigasi client | Phase 2 | selesai |
 | `packages/ssr` | Render halaman → HTML (+ streaming Node, ADR-0047) | Phase 2 | selesai |
 | `packages/client` | Tidak dibuat terpisah — hydration + navigasi client ada di `@ramonyx/react/client` (ADR-0007/0008) | — | digabung |
-| `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`, `generateClientEntry`), transformasi + loader `register` | Phase 2 | file routing + halaman + codegen selesai (analisis batas server/client **belum**) |
+| `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`, `generateClientEntry`), transformasi + loader `register` | Phase 2 | selesai (batas server/client ditegakkan build — ADR-0063) |
 | `packages/bundler` | Pembungkus Vite (ADR-0005): build client + dev server (ADR-0009) | Phase 2 | selesai |
 | `packages/security` | Header keamanan + CSP nonce + CSRF + rate limit + SSRF guard | Phase 3 | selesai (ADR-0013–0017) |
 | `packages/devtools` | CLI `ramonyx` (dev/build/start/doctor), dev server, diagnostics | Phase 2–3 | **v1 selesai** (ADR-0053) |
 | `packages/mcp-docs-server` | MCP docs server (stdio): tools agen di atas machine layer + docs (ADR-0078) | Phase 5+ | selesai (paket ke-15) |
+| `packages/plugin-image` | Plugin varian gambar build-time: resize + WebP/AVIF (`sharp` peer opsional, ADR-0079) | Phase 5+ | selesai (paket ke-16) |
 | `apps/playground` | App demo/uji end-to-end (SSR streaming + security) | Phase 1 | selesai |
 | `apps/docs` | Dokumentasi publik (SSG ekspor + hosting) | Phase 2 | selesai (ADR-0052) |
 | `apps/create-app` | CLI scaffolding (konvensi CLI devtools) | Phase 2–3 | selesai (ADR-0041/0053) |
 | `runtime/crates/*` | Host Rust + V8 (runtime-core, cli, js-engine) | Phase 4 | selesai (eksperimental): V8/deno_core, ESM+TS, HTTP streaming, permission deny-all, worker/plugin + sandbox Landlock (ADR-0019–0051) |
-| `benchmarks/*` | Skrip benchmark per area | Phase 1 | selesai (HTTP/SSR/security/startup — ADR-0045/0048) |
+| `benchmarks/*` | Skrip benchmark per area | Phase 1 | selesai (HTTP/SSR/security/startup/Web Vitals + baseline per-lingkungan — ADR-0045/0048/0074) |
 
 Status Phase 1–3: **selesai** — file routing API + halaman (loader/layout/error), SSR React +
 **streaming** (ADR-0047), hydration (ADR-0007), client navigation (ADR-0008), dev server HMR
@@ -53,7 +55,8 @@ Status Phase 1–3: **selesai** — file routing API + halaman (loader/layout/er
 (ADR-0018); CLI devtools v1 (ADR-0053); situs docs di-host (ADR-0052).
 
 Peta ini rambu, bukan larangan: jangan memecah paket lebih halus sebelum batas tanggung jawabnya
-jelas (BLUEPRINT §5 aturan 5). Scope npm `@ramonyx/*` + meta `ramonyx` (ADR-0018); 0.1.1 terbit.
+jelas (BLUEPRINT §5 aturan 5). Scope npm `@ramonyx/*` + meta `ramonyx` (ADR-0018); 0.3.0 terbit
+(16 paket).
 
 ## 4. Aturan dependency
 
@@ -63,9 +66,11 @@ jelas (BLUEPRINT §5 aturan 5). Scope npm `@ramonyx/*` + meta `ramonyx` (ADR-001
 4. FFI adalah boundary yang diaudit: `unsafe` dibatasi, invarian didokumentasikan.
 5. Hindari memecah semua fitur menjadi package terpisah sebelum batas tanggung jawab jelas.
 
-Konsekuensi operasional yang ditegakkan lint: hanya `packages/adapter-runtime`, `packages/compiler`
-(build-time), dan `packages/security` (guard SSRF) yang boleh mengimpor `node:*`; paket runtime lain
-hanya memakai kontrak §5. Tooling dev (test/benchmark/playground) bebas.
+Konsekuensi operasional yang ditegakkan lint (biome `noRestrictedImports`): paket **edge-safe**
+(`core`, `router`, `schema`, `server`, `testing`, `ramonyx`) dilarang mengimpor `node:*`; paket
+Node-only (`adapter-runtime`, `compiler`, `bundler`, `ssr`, `react`, `security`, `devtools`,
+`mcp-docs-server`, `plugin-image`) boleh — dengan `react` menjaga API browser tetap di
+`src/client.ts`. Tooling dev (test/benchmark/playground) bebas.
 
 App code ber-JSX dijalankan lewat loader dev `tools/register.mjs` (esbuild, JSX automatic —
 ADR-0006); paket framework sendiri tetap tanpa JSX agar bisa berjalan di Node murni.
@@ -103,8 +108,8 @@ Status: diimplementasikan (Phase 1) di `packages/adapter-runtime` — `RuntimeHo
 ## 6. Alur request (target)
 
 ``` text
-Phase 1 (berjalan): HTTP → adapter-runtime (Node) → server → middleware → router → handler → Response
-Phase 2 (berjalan): Request → router → loader → render (adapter React) → HTML stream → Response
+HTTP → adapter-runtime (Node) → server → middleware → router → handler → Response
+Request → router → loader → render (adapter React) → HTML stream → Response
 ```
 
 ## 7. Batas MVP (Phase 1 — historis; semuanya sudah selesai, lihat roadmap)
@@ -113,16 +118,16 @@ Phase 2 (berjalan): Request → router → loader → render (adapter React) →
 context; middleware; error handling; validasi schema input/output; adapter Node + in-memory;
 demo app; integration tests; baseline benchmark.
 
-**Keluar dari MVP (fase lain):** SSR/hydration/navigasi client (Phase 2); dev server/HMR
-(Phase 2); security hardening, fuzz, load test (Phase 3); runtime Rust/V8 (Phase 4+);
-server actions & fitur lanjutan (setelah baseline stabil, BLUEPRINT §11). ORM, package manager,
-dan renderer UI sendiri tidak direncanakan.
+**Keluar dari MVP — kini selesai semua:** SSR/hydration/navigasi client (Phase 2); dev server/HMR
+(Phase 2); security hardening, fuzz, load test (Phase 3); runtime Rust/V8 (Phase 4, eksperimental);
+server actions & fitur lanjutan (ADR-0055–0079). ORM, package manager, dan renderer UI sendiri
+tidak direncanakan.
 
 ## 8. Keputusan terbuka
 
 | Topik | Status | Lokasi |
 | --- | --- | --- |
-| Topologi rilis & versioning | **diputuskan**: versi tunggal (`Cargo.toml`) + dist-tag alpha/beta/rc/latest (ADR-0039/0049); terbit 0.1.1 | — |
+| Topologi rilis & versioning | **diputuskan**: versi tunggal (`Cargo.toml`) + dist-tag alpha/beta/rc/latest (ADR-0039/0049); terbit 0.3.0 | — |
 
 Diputuskan pemilik 2026-10-18: lisensi **MIT**, scope **`@ramonyx/*`**, browser matrix evergreen
 (2 versi terakhir, ES2022), rekonsiliasi PRD — lihat ADR-0018.
@@ -130,5 +135,6 @@ Diputuskan pemilik 2026-10-18: lisensi **MIT**, scope **`@ramonyx/*`**, browser 
 ## 9. Menguji framework tanpa runtime sendiri
 
 In-memory adapter (§5) + `createTestServer` (`packages/testing`) menjalankan integration test di
-Node tanpa port nyata. Browser test (hydration) baru relevan di Phase 2. Runtime Rust nanti cukup
-memenuhi kontrak §5 + compatibility suite — tanpa perubahan `core`.
+Node tanpa port nyata. Browser test (hydration/soft navigation + varian gambar) ada di
+`apps/playground/e2e` (Playwright). Runtime Rust cukup memenuhi kontrak §5 + compatibility suite —
+tanpa perubahan `core` (ADR-0028).

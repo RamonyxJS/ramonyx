@@ -73,14 +73,15 @@ Tanpa tes yang lulus, klaim keamanan tidak boleh dipakai di README/docs/landing 
 boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerabilities", atau
 "aman" tanpa syarat dilarang (konsisten dengan BLUEPRINT §10).
 
-## 9. Status mitigasi (2026-10-18)
+## 9. Status mitigasi (2026-10-19)
 
 - Oversized/malformed body: ✅ batas ukuran + 413, header + streaming (ADR-0011), diuji `tests/security/`.
 - DoS handler/loader/render: ✅ timeout 10s + abort `request.signal` (ADR-0011);
   ✅ concurrency limit 100 dengan load shedding 503 + `Retry-After` (ADR-0012);
   ✅ output limit dokumen SSR 2 MiB → 500 (ADR-0015).
 - SSRF: ✅ `guardedFetch` (ADR-0015) — tolak alamat privat/loopback/link-local + validasi per hop
-  redirect; catatan rebinding di ADR (IP-pinning menyusul).
+  redirect; ✅ **IP-pinning** (ADR-0064): DNS di-resolve sekali lalu alamat dipatok ke koneksi
+  (Host/SNI tetap hostname asli) — menutup jendela DNS-rebinding.
 - Prototype pollution (query): ✅ `parseQuery` aman (ADR-0011), diuji fuzz + e2e.
 - Robustness parser/matcher: ✅ fuzz `fast-check` (router, query, normalisasi schema).
 - Abuse-case terukur: ✅ 6 skenario (oversized/JSON rusak/schema invalid/traversal/query raksasa/echo)

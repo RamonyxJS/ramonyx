@@ -230,8 +230,8 @@
         "docs/adr/0057-server-actions.md"
       ],
       "limitations": [
-        "Revalidasi antar-halaman menyusul (p1-revalidate)",
-        "Tanpa pending state klien/optimistic UI"
+        "Tanpa pending state klien/optimistic UI",
+        "Revalidasi antar-halaman: manual via `revalidate({ paths })` (tanpa deklarasi otomatis)"
       ]
     },
     {
@@ -627,7 +627,7 @@
         "docs/adr/0055-http-production-basics.md"
       ],
       "limitations": [
-        "Revalidate/ISR per rute menyusul (p1-revalidate)"
+        "Helper untuk header respons — bukan cache runtime (cache data loader terpisah: ADR-0066)"
       ]
     },
     {

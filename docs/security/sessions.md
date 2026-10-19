@@ -4,7 +4,7 @@ Ramonyx menyediakan **primitif** sesi: cookie bertanda tangan (HMAC-SHA256, Web 
 edge-safe, tanpa dependency. Framework tidak menyediakan UI login atau penyimpanan pengguna;
 aplikasi yang memutuskan itu.
 
-- Status: tersedia di `@ramonyx/security` (sejak setelah 0.1.1).
+- Status: tersedia di `@ramonyx/security` (sejak 0.2.0 — ADR-0062).
 - Keputusan desain: ADR-0062.
 
 ## Ringkas

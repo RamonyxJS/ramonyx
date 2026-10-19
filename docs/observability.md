@@ -56,8 +56,8 @@ return createHandler({
   Vector, OTLP log exporter).
 - **Metrik**: `metrics.snapshot()` mengembalikan angka kumulatif — jadwalkan ekspor berkala
   (mis. `setInterval`) ke endpoint OTLP/Prometheus, atau tarik lewat `GET /metrics`.
-- **Trace**: `traceId` adalah id korelasi sederhana (bukan W3C `traceparent` penuh). Integrasi
-  span OTel native menyusul bila ada permintaan (dicatat di TODO).
+- **Trace**: `traceId` adalah id korelasi sederhana (bukan W3C `traceparent` penuh). Span OTel
+  native belum ada — kandidat bila ada permintaan nyata (tidak dicatat di TODO).
 
 ## Dogfood
 

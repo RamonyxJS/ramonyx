@@ -1,11 +1,10 @@
 # Panduan Rilis — Checklist Pra-Publikasi
 
-- Status: **TERBIT** — **0.2.0** (2026-10-19, 14 paket, **dengan provenance**; GitHub Release
-  v0.2.0, 17 aset) di atas 0.1.1 (2026-10-18, 14 paket) dan 0.1.0 (2026-10-18, 13 paket).
-  Verifikasi registry end-to-end lolos untuk ketiganya. Kebijakan ADR-0039/0049 di bawah berlaku
-  untuk rilis berikutnya.
-- **TERBIT — 0.3.0** (2026-10-19): **16 paket** (baru: `@ramonyx/mcp-docs-server`,
-  `@ramonyx/plugin-image`) + GitHub Release v0.3.0 (19 aset); hasil + acceptance di bagian bawah.
+- Status: **TERBIT — 0.3.0** (2026-10-19): **16 paket** (baru: `@ramonyx/mcp-docs-server`,
+  `@ramonyx/plugin-image`) + GitHub Release v0.3.0 (19 aset). Riwayat: 0.2.0 (2026-10-19,
+  14 paket, GitHub Release 17 aset), 0.1.1 (2026-10-18, 14 paket), 0.1.0 (2026-10-18, 13 paket) —
+  verifikasi registry end-to-end lolos untuk semuanya. Kebijakan ADR-0039/0049 di bawah berlaku
+  untuk rilis berikutnya; hasil + acceptance 0.3.0 di bagian bawah.
 
 ## Hasil rilis 0.3.0 (2026-10-19)
 
@@ -34,23 +33,21 @@
   `stagePackage` tidak menyalin `peerDependencies`/`peerDependenciesMeta` (peer opsional `sharp`
   hilang dari tarball plugin-image; tertangkap inspeksi tarball).
 - `npm publish --dry-run` ×16 → exit 0 tanpa warning.
-- **Langkah tersisa (pemilik)**: `git tag v0.3.0 && git push origin main --tags`.
-- **Rilis berikutnya**: membawa **paket ke-15** `@ramonyx/mcp-docs-server` (ADR-0078) dan
-  **paket ke-16** `@ramonyx/plugin-image` (ADR-0079) → **17 artefak** (16 tarball npm + binary
-  runtime); snapshot `docs/` dibundel di tarball MCP dan `pnpm release:verify` menjalankan
-  handshake MCP dari tarball.
-- Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
-  binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
-  `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).
+- **Langkah tersisa (pemilik)**: `git tag v0.3.0 && git push origin main --tags` — **selesai**
+  (lihat "Hasil rilis 0.3.0").
+- Verifikasi lokal terakhir (2026-10-19, 0.3.0): `pnpm release` → **17 artefak** (16 tarball npm +
+  binary runtime) → `npm publish --dry-run` ×16 (exit 0, tanpa warning) →
+  `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + **handshake
+  MCP dari tarball** + binary runtime).
 
-## Prasyarat pemilik (belum bisa diotomasi dari repo)
+## Prasyarat pemilik (status saat ini: terpenuhi)
 
-1. **Remote GitHub** — repo belum punya remote; tanpa itu `release.yml` tidak bisa jalan dan
-   provenance npm tidak mungkin. Push `main`, lalu tag.
-2. **Scope npm** `@ramonyx` dan nama `ramonyx` / `create-ramonyx-app` atas akun/org pemilik.
-3. **`NPM_TOKEN`** (automation token, 2FA-safe) sebagai secret repo bernama `NPM_TOKEN`.
-4. **Keputusan tag pertama** — mis. `v0.1.0-alpha.1` (dist-tag `alpha`) untuk uji registry,
-   promosikan setelah yakin; atau langsung `v0.1.0` (dist-tag `latest`).
+1. **Remote GitHub** — ✅ repo publik (`github.com/RamonyxJS/ramonyx`); `release.yml` berjalan
+   dari tag dan provenance npm aktif.
+2. **Scope npm** — ✅ `@ramonyx`, `ramonyx`, `create-ramonyx-app` atas akun/org pemilik.
+3. **`NPM_TOKEN`** — ✅ terpasang sebagai secret repo (automation token).
+4. **Keputusan tag** — ✅ konvensi `vX.Y.Z` (dist-tag `latest`) dipakai sejak 0.1.0; dist-tag
+   `alpha`/`beta`/`rc` tersedia dari nama tag.
 
 ## Kebijakan (ditegakkan workflow)
 

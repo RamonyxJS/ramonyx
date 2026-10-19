@@ -1,15 +1,16 @@
 # AGENTS.md — Ramonyx
 
 Framework full-stack TypeScript + runtime eksperimental (Rust + V8) — dua proyek yang terintegrasi
-tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V8 baru Phase 4+
-(ADR-0001).
+tetapi terpisah. **Phase 0–5 praktis tuntas; rilis 0.3.0 terbit (16 paket npm)**; runtime Rust/V8
+eksperimental (Phase 4 selesai, ADR-0001).
 
 ## Baca dulu, berurutan
 
 1. `docs/BLUEPRINT.md` — sumber kebenaran teknis: arsitektur, stack, threat model, roadmap fase.
 2. `docs/architecture.md` — ringkasan arsitektur, peta package, kontrak `RuntimeHost`.
 3. `docs/api/core-contract.md` — kontrak API v0 + catatan implementasi (§10).
-4. `docs/roadmap/phase-0-1.md` — status kerja & langkah berikutnya.
+4. `docs/roadmap/phase-0-1.md` — catatan per fase (historis); status terkini: `docs/machine/`
+   + `docs/releasing.md`.
 5. `docs/PRD.md` — level produk; pertanyaan terbuka sudah direkonsiliasi (ADR-0018).
 6. `docs/machine/README.md` — lapisan dokumentasi machine-readable (status fitur + bukti, indeks
    ADR, aturan agen, kontrol keamanan, glosarium, llms.txt); **sumber angka tunggal**:
@@ -17,7 +18,7 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 
 ## Perintah
 
-- `pnpm lint` — Biome; antara lain melarang impor `node:*` di luar `packages/adapter-runtime`/`packages/compiler`.
+- `pnpm lint` — Biome; antara lain melarang impor `node:*` di paket edge-safe (core/router/schema/server/testing/ramonyx).
 - `pnpm typecheck` — `tsc --noEmit` (TypeScript 7: `baseUrl` dihapus, `paths` wajib relatif `./`).
 - `pnpm test` / `pnpm bench` / `pnpm dev` / `pnpm build` — semuanya lewat
   `node --import ./tools/register.mjs` (loader esbuild: TS + JSX automatic; ADR-0006). Butuh Node ≥24.
@@ -130,14 +131,16 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   (`pnpm bench:report`, report-only — ADR-0045) + **source map produksi** (ADR-0046),
   **backoff eksponensial + health-check otomatis plugin** (ADR-0050), serta **sandbox OS
   plugin** (Landlock: FS + TCP kernel-level, ADR-0051). Publikasi npm **selesai** (13 paket
-  @ 0.1.0); sisa kandidat: evaluasi `--strict` bench + hosting dokumentasi;
+  @ 0.1.0); kandidat saat itu (`--strict` bench ADR-0074, hosting dokumentasi ADR-0052) **selesai**;
   **kuota heap hanya heap V8** — data `ArrayBuffer` besar tidak
   dihitung dan alokasi raksasa tunggal masih bisa OOM fatal V8 (batasan dicatat); CommonJS pun
   **subset** (require dinamis, modul bawaan Node lewat require, dan require modul ESM ditolak
   dengan pesan jelas) — jangan diklaim lebih. Build pertama V8/deno_core+deno_ast+hyper ±3 menit;
   biarkan `target/` cache.
-- **`node:*` hanya di `packages/adapter-runtime`, `packages/compiler` (build-time), dan
-  `packages/security` (guard SSRF)**, plus test/benchmark/playground; ditegakkan lint.
+- **`node:*` dilarang di paket edge-safe** (`core`, `router`, `schema`, `server`, `testing`,
+  `ramonyx` — ditegakkan lint `noRestrictedImports`); paket Node-only (adapter-runtime, compiler,
+  bundler, ssr, react, security, devtools, mcp-docs-server, plugin-image) bebas,
+  plus test/benchmark/playground.
 - **Nama proyek: `ramonyx` (final).**
 - **Disiplin klaim (BLUEPRINT §10).** Jangan menulis klaim performa/keamanan tanpa bukti yang bisa
   dijalankan.
@@ -206,13 +209,12 @@ dan **situs
 dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/**` — ADR-0042),
 **di-host di GitHub Pages** (ekspor statis + `<base href>` subpath — ADR-0052) —
 semuanya diverifikasi test + smoke.
-**Exit criteria Phase 4 tercapai**; **publikasi npm selesai** (0.1.0 pada 2026-10-18; **0.1.1**
-sore harinya: **14 paket** — kini termasuk `@ramonyx/devtools` — dengan **provenance**, GitHub
-Release v0.1.1; verifikasi registry end-to-end lewat alur CLI ✓).
-Sisa kandidat: baseline bench per-lingkungan di CI, migrasi playground/docs ke CLI (opsional),
-watch mode.
+**Exit criteria Phase 4 tercapai**; **publikasi npm selesai** (0.1.0 → **0.3.0**: **16 paket**
+dengan **provenance** + GitHub Release tiap tag; verifikasi registry end-to-end lewat alur CLI ✓).
+Sisa kandidat lama **selesai** (baseline bench per-lingkungan ADR-0074, migrasi CLI ADR-0076,
+watch mode ADR-0070); backlog aktif: `TODO.md`.
 Ringkas Phase 3: limits body/timeout/concurrency +
 rate limit per klien (ADR-0011/0012/0017), security headers + CSRF + CSP nonce + SSRF guard +
 output limit (`@ramonyx/security`, ADR-0013–0015), fuzz fast-check, suite `tests/security/`,
 abuse/soak `pnpm bench:security`, ASVS mapping (12 kriteria teruji), dependency policy + Dependabot
-(ADR-0016); 161 tes Node + 5 e2e + 111 test Rust hijau.
+(ADR-0016); angka test terkini: `docs/machine/stats.json` (satu sumber angka, divalidasi CI).

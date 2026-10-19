@@ -45,7 +45,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server
 }
 ```
 
-**Dari repo (sebelum terbit di npm / pengembangan)**
+**Dari repo (pengembangan)**
 
 ```bash
 node --import ./tools/register.mjs packages/mcp-docs-server/src/cli.ts --docs .

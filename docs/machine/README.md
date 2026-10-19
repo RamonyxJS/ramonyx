@@ -55,6 +55,12 @@ dokumen rencana — sekarang menunjuk **kode terdekat** (mis. `asset-fingerprint
 
 ## Riwayat konsolidasi (aturan "jangan hapus informasi")
 
+- **2026-10-19 — audit dokumen vs kondisi aktual** (pasca 0.3.0): 16 berkas dikoreksi —
+  versi/paket (0.1.1 → 0.3.0, 16 paket), klaim "menyusul/ditunda" yang sudah selesai
+  (IP-pinning ADR-0064, batas server/client ADR-0063, revalidate di server actions, OTel),
+  aturan `node:*` diselaraskan dengan penegakan lint nyata (paket edge-safe vs Node-only),
+  peta paket + benchmark + roadmap/rilis diperbarui; `rules.json` `node-builtins-boundary`
+  dikoreksi. Tidak ada klaim baru tanpa bukti.
 - **2026-10-18 — audit sinkronisasi menyeluruh** (commit `307bd1b`): 13 dokumen dikoreksi terhadap
   kode aktual; overclaim "analisis batas server/client" di architecture dikoreksi menjadi "belum";
   direktori nyasar `apps/docs/apps/` dihapus. Klaim lama yang basi (128/101 test) diganti angka

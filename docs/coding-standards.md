@@ -16,10 +16,12 @@
 ## 2. Batas & dependensi
 
 - Semua input eksternal divalidasi schema di trust boundary; tidak ada validasi ad-hoc tersebar.
-- Hanya `packages/adapter-runtime` (dan tooling dev) yang boleh mengimpor `node:*`; paket lain
-  memakai kontrak `RuntimeHost` — ditegakkan lint.
+- Paket **edge-safe** (`core`, `router`, `schema`, `server`, `testing`, `ramonyx`) dilarang
+  mengimpor `node:*` — ditegakkan lint (`noRestrictedImports`); paket Node-only
+  (`adapter-runtime`, `compiler`, `bundler`, `ssr`, `react`, `security`, `devtools`,
+  `mcp-docs-server`, `plugin-image`) boleh.
 - **API browser hanya di `packages/react/src/client.ts`** (satu-satunya file client runtime);
-  `lib: DOM` aktif di tsconfig, jadi aturan ini konvensi + review (penegakan lint menyusul).
+  `lib: DOM` aktif di tsconfig, jadi aturan ini **konvensi + review** (belum ada penegakan lint).
 - Dependency runtime baru butuh alasan tertulis; lockfile di-commit; audit berjalan di CI.
 
 ## 3. Error & logging

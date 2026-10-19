@@ -1,10 +1,9 @@
 # Panduan Rilis — Checklist Pra-Publikasi
 
-- Status: **TERBIT** — **0.1.1** (2026-10-18, 14 paket termasuk `@ramonyx/devtools`, **dengan
-  provenance**; GitHub Release v0.1.1) di atas 0.1.0 (2026-10-18, 13 paket). Verifikasi registry
-  end-to-end lolos untuk keduanya. Kebijakan ADR-0039/0049 di bawah berlaku untuk rilis berikutnya.
-- **0.2.0: siap rilis (menunggu tag)** — bump `Cargo.toml` + 14 paket + template `^0.2.0`
-  (2026-10-19); verifikasi lokal lengkap lolos (lihat bagian di bawah).
+- Status: **TERBIT** — **0.2.0** (2026-10-19, 14 paket, **dengan provenance**; GitHub Release
+  v0.2.0, 17 aset) di atas 0.1.1 (2026-10-18, 14 paket) dan 0.1.0 (2026-10-18, 13 paket).
+  Verifikasi registry end-to-end lolos untuk ketiganya. Kebijakan ADR-0039/0049 di bawah berlaku
+  untuk rilis berikutnya.
 - Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
   binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
   `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).
@@ -64,6 +63,18 @@ cd demo-app && pnpm install && pnpm build && pnpm start
   untuk rilis berikutnya — rilis baru cukup: bump versi di `Cargo.toml` → commit → tag `vX.Y.Z`.
 - Catatan higiene: jangan pernah menempelkan nilai token sebagai **nama** `gh secret set`
   (nama secret terlihat di pengaturan repo — token harus dianggap terekspos dan dirotasi).
+
+## Hasil rilis 0.2.0 (2026-10-19)
+
+- Tag `v0.2.0` → workflow `release.yml`: job **Build artefak rilis + verifikasi** dan
+  **Publikasi npm** keduanya **success**; **14 paket @ 0.2.0 terbit** (`npm publish` ×14,
+  dist-tag `latest`, **provenance** — terverifikasi di registry: `dist.attestations` ada) +
+  **GitHub Release v0.2.0 (17 aset)**.
+- Catatan operasional: `npm view` untuk sebagian paket sempat menampilkan `0.1.1` (CDN metadata
+  lag ±beberapa menit) — log workflow menunjukkan 14× `+ <paket>@0.2.0`; tunggu/bersihkan cache
+  metadata pnpm saat menguji segera setelah publish.
+- Dokumentasi pasca-terbit: klaim "belum dirilis" di `docs/machine/features.json` dihapus
+  (25 fitur → `since: 0.2.0`); README + status rilis diperbarui.
 
 ## Persiapan 0.2.0 (2026-10-19)
 

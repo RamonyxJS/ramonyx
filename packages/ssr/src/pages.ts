@@ -1,14 +1,19 @@
 import {
   type AppHooks,
+  type Cache,
+  fillRouteParams,
   formDataToObject,
   HttpError,
   type LoadedPage,
   NONCE_HEADER,
   type PageActionState,
   type PageMetadata,
+  pathTag,
+  type RevalidateOptions,
   type RouteEntry,
   type RouteHandlerContext,
   route,
+  routeTag,
 } from "@ramonyx/core";
 import { type ValidationIssue, validate } from "@ramonyx/schema";
 import { defaultDocument, escapeHtml } from "./document.ts";
@@ -37,6 +42,11 @@ export interface CreatePageRoutesOptions {
   readonly streaming?: boolean;
   /** Hook aplikasi (ADR-0065) — `onLoaderEnd`/`onRenderEnd`; zero-cost bila tidak diisi. */
   readonly hooks?: AppHooks;
+  /**
+   * Cache data loader (ADR-0066): aktif untuk halaman ber-`revalidate` (GET tanpa query/cookie).
+   * Default: tanpa cache. `createCache()` dari core menyediakan store + `revalidate()`.
+   */
+  readonly cache?: Cache;
 }
 
 const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
@@ -277,6 +287,37 @@ function hydrationScripts(
   ].join("\n");
 }
 
+/** Refresh latar belakang (SWR) — dedupe per key agar tidak stampede. */
+const pendingRefreshes = new Map<string, Promise<void>>();
+
+function scheduleRefresh(
+  cache: Cache,
+  key: string,
+  tags: readonly string[],
+  revalidateSeconds: number,
+  runLoader: () => Promise<unknown>,
+  log: { warn(message: string, data?: Record<string, unknown>): void },
+  path: string,
+): void {
+  if (pendingRefreshes.has(key)) {
+    return;
+  }
+  const refresh = (async () => {
+    try {
+      const data = await runLoader();
+      await cache.store.set(key, { data }, { ttlSeconds: revalidateSeconds * 2, tags });
+    } catch (error) {
+      log.warn("Refresh cache gagal — data lama tetap disajikan", {
+        path,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      pendingRefreshes.delete(key);
+    }
+  })();
+  pendingRefreshes.set(key, refresh);
+}
+
 async function renderPage(
   page: LoadedPage,
   context: RouteHandlerContext,
@@ -289,6 +330,7 @@ async function renderPage(
   statusOverride?: number,
   extraHeaders?: Readonly<Record<string, string>>,
   hooks?: AppHooks,
+  cache?: Cache,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
@@ -299,19 +341,55 @@ async function renderPage(
     if (loader === undefined) {
       data = undefined;
     } else {
-      const loaderStarted = hooks?.onLoaderEnd !== undefined ? performance.now() : 0;
-      data = await loader({
-        params,
-        query: context.query,
-        request: context.request,
-        env: context.env,
-        log,
-      });
-      hooks?.onLoaderEnd?.({
-        path: page.path,
-        durationMs: performance.now() - loaderStarted,
-        cached: false,
-      });
+      const runLoader = async (): Promise<unknown> => {
+        const loaderStarted = hooks?.onLoaderEnd !== undefined ? performance.now() : 0;
+        const result = await loader({
+          params,
+          query: context.query,
+          request: context.request,
+          env: context.env,
+          log,
+        });
+        hooks?.onLoaderEnd?.({
+          path: page.path,
+          durationMs: performance.now() - loaderStarted,
+          cached: false,
+        });
+        return result;
+      };
+
+      const revalidateSeconds = page.page.revalidate;
+      const url = new URL(context.request.url);
+      // Keamanan: respons yang bergantung sesi (cookie) atau query tidak di-cache (ADR-0066).
+      const cacheable =
+        cache !== undefined &&
+        typeof revalidateSeconds === "number" &&
+        revalidateSeconds > 0 &&
+        context.request.method === "GET" &&
+        url.search.length === 0 &&
+        !context.request.headers.has("cookie");
+
+      if (!cacheable || cache === undefined || typeof revalidateSeconds !== "number") {
+        data = await runLoader();
+      } else {
+        const key = `page:${page.path}:${JSON.stringify(params)}`;
+        const concretePath = fillRouteParams(page.path, params) ?? page.path;
+        const tags = [pathTag(concretePath), routeTag(page.path), ...(page.page.cacheTags ?? [])];
+        const entry = await cache.store.get<{ data: unknown }>(key);
+
+        if (entry === undefined) {
+          data = await runLoader();
+          await cache.store.set(key, { data }, { ttlSeconds: revalidateSeconds * 2, tags });
+        } else {
+          data = entry.value.data;
+          hooks?.onLoaderEnd?.({ path: page.path, durationMs: 0, cached: true });
+          // Paruh kedua masa simpan = jendela stale → sajikan lama, refresh di belakang.
+          const ttlMs = revalidateSeconds * 1000;
+          if (entry.expiresAt === null || entry.expiresAt - Date.now() <= ttlMs) {
+            scheduleRefresh(cache, key, tags, revalidateSeconds, runLoader, log, page.path);
+          }
+        }
+      }
     }
 
     const configuredStatus = statusOverride ?? page.page.metadata?.status;
@@ -463,6 +541,7 @@ async function renderPageTimed(
   statusOverride: number | undefined,
   extraHeaders: Readonly<Record<string, string>> | undefined,
   hooks: AppHooks | undefined,
+  cache?: Cache,
 ): Promise<Response> {
   const started = hooks?.onRenderEnd !== undefined ? performance.now() : 0;
   const response = await renderPage(
@@ -477,6 +556,7 @@ async function renderPageTimed(
     statusOverride,
     extraHeaders,
     hooks,
+    cache,
   );
   hooks?.onRenderEnd?.({
     path: page.path,
@@ -497,6 +577,7 @@ async function runAction(
   maxDocumentBytes: number,
   streaming: boolean,
   hooks?: AppHooks,
+  cache?: Cache,
 ): Promise<Response> {
   const params = context.params as Record<string, string>;
   const request = context.request;
@@ -517,6 +598,19 @@ async function runAction(
 
   if (actionState === undefined) {
     const action = page.page.action;
+    const revalidateContext =
+      cache === undefined
+        ? undefined
+        : async (options: RevalidateOptions): Promise<number> => {
+            const removed = await cache.revalidate(options);
+            hooks?.onInvalidate?.({
+              paths: options.paths,
+              tags: options.tags,
+              reason: options.reason ?? "action",
+            });
+            return removed;
+          };
+
     const result =
       (await action?.({
         params,
@@ -525,6 +619,7 @@ async function runAction(
         env: context.env,
         log: context.log,
         json: <T = unknown>() => request.clone().json() as Promise<T>,
+        revalidate: revalidateContext,
       })) ?? {};
     if (typeof result.redirect === "string" && result.redirect.length > 0) {
       // PRG: 303 agar refresh tidak mengirim ulang POST (progressive enhancement).
@@ -564,6 +659,7 @@ async function runAction(
     status,
     extraHeaders,
     hooks,
+    cache,
   );
 }
 
@@ -605,6 +701,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
             undefined,
             undefined,
             options.hooks,
+            options.cache,
           ),
       }),
     });
@@ -624,6 +721,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
               maxDocumentBytes,
               streaming,
               options.hooks,
+              options.cache,
             ),
         }),
       });

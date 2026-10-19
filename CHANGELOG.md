@@ -48,6 +48,11 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   + `createMemoryStore` + contract test; **kontrak plugin** (`definePlugin`/`loadPlugins`,
   passthrough Vite + middleware + hooks, experimental) di `@ramonyx/bundler`.
   Catatan: hasil `resolveConfig` kini memuat key tambahan (perilaku pass-through).
+- **Revalidasi data / ISR-lite** (ADR-0066): `export const revalidate` (TTL) + `cacheTags` per
+  halaman; `createCache()` (store in-memory default, pluggable) + `revalidate({paths,tags})`;
+  stale-while-revalidate dengan refresh latar belakang (dedupe); **cache data loader, bukan HTML**
+  (nonce CSP); GET tanpa query/cookie saja; `context.revalidate` di action + hook `onInvalidate`;
+  docs `docs/caching.md`; dogfood playground & template.
 
 ### Perubahan API (pra-1.0)
 

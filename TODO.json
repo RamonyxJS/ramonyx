@@ -171,7 +171,7 @@
       "theme": "data",
       "priority": "p1",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Cache loader/rute dengan TTL + stale-while-revalidate, dan invalidasi on-demand (API/action) — tanpa rebuild penuh.",
       "why": "Konten semi-statis (beranda, katalog) adalah kasus paling umum di produksi; parity ISR/route-rules adalah pembeda antara \"bisa dipakai\" dan \"dipakai serius\".",
       "done": [
@@ -183,7 +183,7 @@
       "adrs": ["ADR baru"],
       "competitor": "Next.js ISR + revalidateTag; Nuxt route rules + SWR; Astro (di level adapter/CDN).",
       "dependsOn": ["p0-static-generation"],
-      "source": "gap §3 (ISR/caching)",
+      "source": "gap §3 (ISR/caching) — selesai ADR-0066",
       "strategic": true
     },
     {

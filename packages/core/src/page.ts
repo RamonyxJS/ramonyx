@@ -1,4 +1,5 @@
 import type { StandardSchema } from "@ramonyx/schema";
+import type { RevalidateOptions } from "./revalidate.ts";
 import type { EnvReader, Logger, Middleware } from "./types.ts";
 
 export interface PageMetadata {
@@ -40,6 +41,11 @@ export interface PageActionContext<P = Record<string, string>> {
   readonly log: Logger;
   /** Body JSON (bila `content-type: application/json`) — untuk pemanggilan programatik. */
   json<T = unknown>(): Promise<T>;
+  /**
+   * Invalidasi cache data (ADR-0066) — tersedia bila halaman/app memakai cache; mengembalikan
+   * jumlah entri terhapus. Memicu `onInvalidate` hook.
+   */
+  revalidate?(options: RevalidateOptions): Promise<number>;
 }
 
 /** Hasil action yang dipakai halaman (tersedia sebagai prop `action` + payload hydration). */
@@ -103,6 +109,13 @@ export interface PageModule {
     | Promise<ReadonlyArray<Record<string, string>>>;
   /** Mutasi form untuk halaman ini (POST ke path yang sama) — ADR-0057. */
   readonly action?: PageAction<Record<string, string>>;
+  /**
+   * Cache data loader (detik) — TTL + stale-while-revalidate (ADR-0066). Hanya berlaku untuk
+   * GET tanpa query dan tanpa cookie (respons bergantung sesi tidak di-cache).
+   */
+  readonly revalidate?: number;
+  /** Tag kustom untuk invalidasi kelompok (`revalidate({ tags })`). */
+  readonly cacheTags?: readonly string[];
   /** Validasi FormData (Standard Schema) sebelum action dijalankan. */
   readonly actionSchema?: StandardSchema<unknown, unknown>;
 }

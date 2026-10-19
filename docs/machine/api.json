@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T05:58:04.893Z",
+  "generatedAt": "2026-10-19T06:10:08.582Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -100,20 +100,25 @@
         "PageModule",
         "REMOTE_ADDRESS_HEADER",
         "cacheControl",
+        "createCache",
         "createMemoryStore",
         "defineConfig",
         "fillRouteParams",
         "formDataToObject",
         "hasDynamicSegment",
         "mergeHooks",
+        "pathTag",
         "resolveConfig",
         "route",
+        "routeTag",
         "silentLogger"
       ],
       "types": [
         "AppConfig",
         "AppHooks",
+        "Cache",
         "CacheControlOptions",
+        "CreateCacheOptions",
         "EnvReader",
         "FetchHandler",
         "HttpErrorOptions",
@@ -129,6 +134,7 @@
         "RenderEndEvent",
         "RequestEndEvent",
         "RequestStartEvent",
+        "RevalidateOptions",
         "RouteDefinition",
         "RouteEntry",
         "RouteHandler",
@@ -161,14 +167,19 @@
       "values": [
         "HttpError",
         "cacheControl",
+        "createCache",
+        "createMemoryStore",
         "defineConfig",
         "formDataToObject",
         "resolveConfig",
         "route"
       ],
       "types": [
+        "AppHooks",
+        "Cache",
         "EnvReader",
         "FetchHandler",
+        "KeyValueStore",
         "Logger",
         "Middleware",
         "MiddlewareContext",
@@ -179,6 +190,7 @@
         "PageLoaderContext",
         "RamonyxConfig",
         "RamonyxConfigInput",
+        "RevalidateOptions",
         "RouteDefinition",
         "RouteEntry",
         "RouteHandlerContext"

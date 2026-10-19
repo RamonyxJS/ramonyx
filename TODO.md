@@ -158,7 +158,7 @@
 
 ### `p1-revalidate` — Revalidasi data (ISR-lite): `revalidate()` + cache server
 
-*tema: data · ukuran: L · status: open · dependensi: `p0-static-generation` · sumber: gap §3 (ISR/caching)*
+*tema: data · ukuran: L · status: done · dependensi: `p0-static-generation` · sumber: gap §3 (ISR/caching) — selesai ADR-0066*
 
 - **Apa**: Cache loader/rute dengan TTL + stale-while-revalidate, dan invalidasi on-demand (API/action) — tanpa rebuild penuh.
 - **Kenapa penting untuk bersaing**: Konten semi-statis (beranda, katalog) adalah kasus paling umum di produksi; parity ISR/route-rules adalah pembeda antara "bisa dipakai" dan "dipakai serius".

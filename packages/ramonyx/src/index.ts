@@ -1,6 +1,9 @@
 export type {
+  AppHooks,
+  Cache,
   EnvReader,
   FetchHandler,
+  KeyValueStore,
   Logger,
   Middleware,
   MiddlewareContext,
@@ -11,12 +14,15 @@ export type {
   PageLoaderContext,
   RamonyxConfig,
   RamonyxConfigInput,
+  RevalidateOptions,
   RouteDefinition,
   RouteEntry,
   RouteHandlerContext,
 } from "@ramonyx/core";
 export {
   cacheControl,
+  createCache,
+  createMemoryStore,
   defineConfig,
   formDataToObject,
   HttpError,

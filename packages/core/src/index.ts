@@ -28,6 +28,8 @@ export {
   type PageModule,
 } from "./page.ts";
 export { fillRouteParams, hasDynamicSegment } from "./params.ts";
+export type { Cache, CreateCacheOptions, RevalidateOptions } from "./revalidate.ts";
+export { createCache, pathTag, routeTag } from "./revalidate.ts";
 export { route } from "./route.ts";
 export type { KeyValueStore, MemoryStoreOptions, StoreEntry, StoreSetOptions } from "./store.ts";
 export { createMemoryStore } from "./store.ts";

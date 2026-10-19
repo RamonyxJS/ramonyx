@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { createConsoleLogger, createNodeHost } from "@ramonyx/adapter-runtime";
 import { createDevServer } from "@ramonyx/bundler";
-import { resolveConfig } from "ramonyx";
+import { createCache, resolveConfig } from "ramonyx";
 import config from "../ramonyx.config.ts";
 import { createApp } from "./app.ts";
 
@@ -22,6 +22,7 @@ const app = await createApp({
   importer: dev.importer,
   reloadManifests: true,
   streaming: true,
+  cache: createCache(),
 });
 
 await host.serve(app, { port: resolved.server.port, host: resolved.server.host });

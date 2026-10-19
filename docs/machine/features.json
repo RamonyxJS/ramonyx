@@ -211,7 +211,8 @@
         "packages/ssr/test/pages.test.ts"
       ],
       "limitations": [
-        "Hanya GET; belum ada loader dependensi antar-route"
+        "Hanya GET; belum ada loader dependensi antar-route",
+        "Cache opsional per halaman (ADR-0066) — data loader bisa disajikan dari cache"
       ]
     },
     {
@@ -1219,6 +1220,31 @@
         "Belum dirilis di npm (setelah 0.1.1)",
         "Kontrak plugin experimental sampai >=2 plugin nyata",
         "Store eksternal (redis) belum ada implementasinya"
+      ]
+    },
+    {
+      "id": "revalidate",
+      "name": "Revalidasi data (ISR-lite): cache loader + SWR + invalidasi path/tag",
+      "status": "implemented",
+      "since": null,
+      "priority": "p1",
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/core/src/revalidate.ts",
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/revalidate.test.ts",
+        "packages/core/test/revalidate.test.ts",
+        "docs/caching.md",
+        "docs/adr/0066-revalidate.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "In-memory per proses (store eksternal belum ada implementasinya)",
+        "Query string/cookie melewati cache (disengaja)",
+        "Tanpa purge CDN"
       ]
     }
   ]

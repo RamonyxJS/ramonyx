@@ -219,7 +219,8 @@
         "packages/ssr/test/pages.test.ts"
       ],
       "limitations": [
-        "Hanya GET; belum ada loader dependensi antar-route"
+        "Hanya GET; belum ada loader dependensi antar-route",
+        "Cache opsional per halaman (ADR-0066) — data loader bisa disajikan dari cache"
       ]
     },
     {
@@ -1228,6 +1229,31 @@
         "Kontrak plugin experimental sampai >=2 plugin nyata",
         "Store eksternal (redis) belum ada implementasinya"
       ]
+    },
+    {
+      "id": "revalidate",
+      "name": "Revalidasi data (ISR-lite): cache loader + SWR + invalidasi path/tag",
+      "status": "implemented",
+      "since": null,
+      "priority": "p1",
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/core/src/revalidate.ts",
+        "packages/ssr/src/pages.ts",
+        "packages/ssr/test/revalidate.test.ts",
+        "packages/core/test/revalidate.test.ts",
+        "docs/caching.md",
+        "docs/adr/0066-revalidate.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "In-memory per proses (store eksternal belum ada implementasinya)",
+        "Query string/cookie melewati cache (disengaja)",
+        "Tanpa purge CDN"
+      ]
     }
   ]
 }
@@ -2119,6 +2145,24 @@
         "extension-primitives",
         "config"
       ]
+    },
+    {
+      "id": "ADR-0066",
+      "file": "0066-revalidate.md",
+      "title": "Revalidasi Data (ISR-lite) — Cache Loader + SWR + Invalidasi On-Demand",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Cache DATA loader (bukan HTML — nonce CSP) via `export const revalidate` + createCache (store pluggable); SWR dengan TTL 2x (paruh kedua stale + refresh belakang, dedupe); GET tanpa query/cookie saja; invalidasi path/tag dari action (context.revalidate + onInvalidate) atau API route (cache.revalidate).",
+      "related": [
+        "ADR-0065",
+        "ADR-0056",
+        "ADR-0014"
+      ],
+      "features": [
+        "revalidate",
+        "data-loaders"
+      ]
     }
   ]
 }
@@ -2366,6 +2410,18 @@
       "enforcement": "Review + ADR + test; fitur baru wajib memakai primitif yang ada (hooks/store/config pass-through) alih-alih mekanisme baru",
       "adrs": [
         "ADR-0065"
+      ]
+    },
+    {
+      "id": "cache-session-safety",
+      "rule": "Jangan cache data yang bergantung sesi/cookie atau query; `revalidate` hanya untuk data publik (GET tanpa query/cookie — ditegakkan otomatis oleh framework).",
+      "rationale": "Cache data sesi dapat menyajikan data pengguna lain (kebocoran lintas pengguna) — kesalahan kelas keamanan paling berbahaya pada caching.",
+      "scope": "app",
+      "good": "// data publik (katalog) → boleh\nexport const revalidate = 60;",
+      "bad": "// data per pengguna → jangan\nexport const revalidate = 60;\nexport async function loader({ request }) { return profil(request.headers.get(\"cookie\")); }",
+      "enforcement": "Framework melewati cache saat ada cookie/query (test: packages/ssr/test/revalidate.test.ts)",
+      "adrs": [
+        "ADR-0066"
       ]
     }
   ]
@@ -2859,7 +2915,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T05:58:04.893Z",
+  "generatedAt": "2026-10-19T06:10:08.582Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2959,20 +3015,25 @@
         "PageModule",
         "REMOTE_ADDRESS_HEADER",
         "cacheControl",
+        "createCache",
         "createMemoryStore",
         "defineConfig",
         "fillRouteParams",
         "formDataToObject",
         "hasDynamicSegment",
         "mergeHooks",
+        "pathTag",
         "resolveConfig",
         "route",
+        "routeTag",
         "silentLogger"
       ],
       "types": [
         "AppConfig",
         "AppHooks",
+        "Cache",
         "CacheControlOptions",
+        "CreateCacheOptions",
         "EnvReader",
         "FetchHandler",
         "HttpErrorOptions",
@@ -2988,6 +3049,7 @@
         "RenderEndEvent",
         "RequestEndEvent",
         "RequestStartEvent",
+        "RevalidateOptions",
         "RouteDefinition",
         "RouteEntry",
         "RouteHandler",
@@ -3020,14 +3082,19 @@
       "values": [
         "HttpError",
         "cacheControl",
+        "createCache",
+        "createMemoryStore",
         "defineConfig",
         "formDataToObject",
         "resolveConfig",
         "route"
       ],
       "types": [
+        "AppHooks",
+        "Cache",
         "EnvReader",
         "FetchHandler",
+        "KeyValueStore",
         "Logger",
         "Middleware",
         "MiddlewareContext",
@@ -3038,6 +3105,7 @@
         "PageLoaderContext",
         "RamonyxConfig",
         "RamonyxConfigInput",
+        "RevalidateOptions",
         "RouteDefinition",
         "RouteEntry",
         "RouteHandlerContext"
@@ -3184,7 +3252,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T05:58:05.773Z",
+  "generatedAt": "2026-10-19T06:10:09.448Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3253,8 +3321,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-19T05:57:10.744Z",
-  "commit": "95a17ab57c64fc0132d173a9c7ba4b1abef0a7be",
+  "generatedAt": "2026-10-19T06:09:15.311Z",
+  "commit": "6bee940a8ec1e657372802c51c9b8100de789d07",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -3276,9 +3344,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 65,
+  "adrs": 66,
   "tests": {
-    "node": 214,
+    "node": 223,
     "rust": 111,
     "e2eSpecFiles": 7
   }

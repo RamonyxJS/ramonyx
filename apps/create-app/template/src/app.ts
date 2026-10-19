@@ -28,6 +28,8 @@ export interface CreateAppOptions {
   readonly strictValidation?: boolean;
   /** SSR streaming untuk halaman (ADR-0047). */
   readonly streaming?: boolean;
+  /** Cache data loader (ADR-0066) — halaman ber-`revalidate` memakainya. */
+  readonly cache?: import("ramonyx").Cache;
 }
 
 /**
@@ -61,6 +63,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
           renderer: createReactRenderer(),
           client,
           streaming: options.streaming,
+          cache: options.cache,
         }),
       ],
       middleware: [staticAssets],

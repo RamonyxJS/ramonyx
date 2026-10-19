@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-19T05:57:10.744Z",
-  "commit": "95a17ab57c64fc0132d173a9c7ba4b1abef0a7be",
+  "generatedAt": "2026-10-19T06:09:15.311Z",
+  "commit": "6bee940a8ec1e657372802c51c9b8100de789d07",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -24,9 +24,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 65,
+  "adrs": 66,
   "tests": {
-    "node": 214,
+    "node": 223,
     "rust": 111,
     "e2eSpecFiles": 7
   }

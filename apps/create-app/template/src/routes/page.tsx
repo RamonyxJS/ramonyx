@@ -6,6 +6,8 @@ export const metadata = {
   title: "__APP_NAME__",
   description: "Aplikasi Ramonyx — SSR React, file routing, dan server actions.",
 };
+/** Cache data loader 60 dtk (ADR-0066) — hapus atau sesuaikan bila data harus selalu segar. */
+export const revalidate = 60;
 
 export async function loader() {
   return { pesan: "Halo dari SSR Ramonyx", fitur: ["SSR React", "hydration", "route API"] };

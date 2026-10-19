@@ -238,6 +238,18 @@
       "adrs": [
         "ADR-0065"
       ]
+    },
+    {
+      "id": "cache-session-safety",
+      "rule": "Jangan cache data yang bergantung sesi/cookie atau query; `revalidate` hanya untuk data publik (GET tanpa query/cookie — ditegakkan otomatis oleh framework).",
+      "rationale": "Cache data sesi dapat menyajikan data pengguna lain (kebocoran lintas pengguna) — kesalahan kelas keamanan paling berbahaya pada caching.",
+      "scope": "app",
+      "good": "// data publik (katalog) → boleh\nexport const revalidate = 60;",
+      "bad": "// data per pengguna → jangan\nexport const revalidate = 60;\nexport async function loader({ request }) { return profil(request.headers.get(\"cookie\")); }",
+      "enforcement": "Framework melewati cache saat ada cookie/query (test: packages/ssr/test/revalidate.test.ts)",
+      "adrs": [
+        "ADR-0066"
+      ]
     }
   ]
 }

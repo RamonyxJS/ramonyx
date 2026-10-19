@@ -881,6 +881,24 @@
         "extension-primitives",
         "config"
       ]
+    },
+    {
+      "id": "ADR-0066",
+      "file": "0066-revalidate.md",
+      "title": "Revalidasi Data (ISR-lite) — Cache Loader + SWR + Invalidasi On-Demand",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Cache DATA loader (bukan HTML — nonce CSP) via `export const revalidate` + createCache (store pluggable); SWR dengan TTL 2x (paruh kedua stale + refresh belakang, dedupe); GET tanpa query/cookie saja; invalidasi path/tag dari action (context.revalidate + onInvalidate) atau API route (cache.revalidate).",
+      "related": [
+        "ADR-0065",
+        "ADR-0056",
+        "ADR-0014"
+      ],
+      "features": [
+        "revalidate",
+        "data-loaders"
+      ]
     }
   ]
 }

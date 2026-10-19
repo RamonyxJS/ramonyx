@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createConsoleLogger, createNodeHost } from "@ramonyx/adapter-runtime";
 import { readClientScript } from "@ramonyx/bundler";
-import { resolveConfig } from "ramonyx";
+import { createCache, resolveConfig } from "ramonyx";
 import config from "../ramonyx.config.ts";
 import { createApp } from "./app.ts";
 
@@ -15,6 +15,7 @@ const app = await createApp({
   strictValidation: resolved.app.strictValidation,
   clientScript: await readClientScript(join(appDir, "dist/client")),
   streaming: true,
+  cache: createCache(),
 });
 
 const server = await host.serve(app, {

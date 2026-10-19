@@ -5,9 +5,9 @@
   14 paket, GitHub Release 17 aset), 0.1.1 (2026-10-18, 14 paket), 0.1.0 (2026-10-18, 13 paket) —
   verifikasi registry end-to-end lolos untuk semuanya. Kebijakan ADR-0039/0049 di bawah berlaku
   untuk rilis berikutnya; hasil + acceptance 0.3.0 di bagian bawah.
-- **0.4.0: siap rilis (menunggu tag)** — fitur **i18n** (ADR-0081) + benchmark pipeline gambar +
-  panduan publikasi plugin (ADR-0080); 16 paket → 17 artefak; bump `Cargo.toml` + 16 paket +
-  template `^0.4.0` (2026-10-19); verifikasi lokal lengkap lolos (bagian "Persiapan 0.4.0").
+- **TERBIT — 0.4.0** (2026-10-19): fitur **i18n** (ADR-0081) + benchmark pipeline gambar +
+  panduan publikasi plugin (ADR-0080); 16 paket → 17 artefak; GitHub Release v0.4.0 (19 aset);
+  hasil + acceptance di bagian "Hasil rilis 0.4.0".
 
 ## Persiapan 0.4.0 (2026-10-19)
 
@@ -17,7 +17,19 @@
 - `pnpm release:verify` → lolos penuh (konsumen bersih + source map + scaffold build/start/SSR +
   handshake MCP dari tarball + binary runtime).
 - `npm publish --dry-run` ×16 → exit 0 tanpa warning.
-- **Langkah tersisa (pemilik)**: `git tag v0.4.0 && git push origin main --tags`.
+- **Langkah tersisa (pemilik)**: `git tag v0.4.0 && git push origin main --tags` — **selesai**
+  (lihat "Hasil rilis 0.4.0").
+
+## Hasil rilis 0.4.0 (2026-10-19)
+
+- Tag `v0.4.0` → workflow: build+verifikasi dan **publish 16 paket @ 0.4.0** (provenance) +
+  **GitHub Release v0.4.0 (19 aset)**.
+- **Acceptance registry end-to-end**: `create-ramonyx-app@0.4.0` → install → `ramonyx build` →
+  `ramonyx start` → home 200 + payload hydration + API 200 ✓.
+- **i18n dari registry**: `import { createTranslator, negotiateLocale, localePath } from "ramonyx"`
+  → "Hello Rina" / `id` / `/en/tentang` ✓ (primitif ikut di tarball `@ramonyx/core`).
+- Peer metadata `@ramonyx/plugin-image@0.4.0` (sharp opsional) tetap terdeklarasi ✓; provenance
+  terverifikasi (`dist.attestations`).
 
 ## Hasil rilis 0.3.0 (2026-10-19)
 

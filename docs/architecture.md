@@ -1,6 +1,6 @@
 # Arsitektur Ramonyx
 
-- Status: **berlaku** (diperbarui 2026-10-19; Phase 0–5 praktis tuntas, **0.3.0 terbit** —
+- Status: **berlaku** (diperbarui 2026-10-19; Phase 0–5 praktis tuntas, **0.4.0 terbit** —
   16 paket). Turunan `docs/BLUEPRINT.md` §2/§5/§6 — jika bertentangan, **blueprint menang**.
 - Komponen di dokumen ini **sudah dibuat** kecuali yang ditandai lain di kolom Status.
 

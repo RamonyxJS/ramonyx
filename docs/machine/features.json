@@ -754,7 +754,7 @@
       "id": "i18n",
       "name": "Internasionalisasi: routing locale (prefix) + helper terjemahan",
       "status": "implemented",
-      "since": null,
+      "since": "0.4.0",
       "priority": "p3",
       "packages": [
         "@ramonyx/core",
@@ -770,7 +770,6 @@
         "docs/adr/0081-i18n.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (menyusul rilis berikutnya)",
         "Tanpa ICU MessageFormat (interpolasi + plural Intl saja)",
         "Tanpa deteksi/redirect otomatis — pola middleware + cookie (docs/i18n.md)",
         "Rute didaftarkan per locale (linear); lokalisasi per-rute belum didukung"

@@ -1,6 +1,7 @@
 # ADR-0045: Performance Regression Gate (Report-Only)
 
 - Status: Accepted (2026-10-18)
+- Diperbarui oleh: ADR-0074 (baseline per-lingkungan + guard `--strict` lintas lingkungan)
 - Tanggal: 2026-10-18
 - Sumber: audit implementasi (`docs/IMPLEMENTATION_STATUS.md` §4/§10), BLUEPRINT §8/§10
 

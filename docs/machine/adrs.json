@@ -1018,6 +1018,25 @@
       "features": [
         "typed-routes"
       ]
+    },
+    {
+      "id": "ADR-0074",
+      "file": "0074-bench-env-baseline.md",
+      "title": "Baseline Benchmark Per-Lingkungan + Guard `--strict`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Baseline per-lingkungan (envKey platform/arch/nodeMajor/cpuModel → baselines/<bench>-<key>.json, fallback baseline lama); environmentsMatch memperkuat guard --strict (refus lintas lingkungan dengan catatan field); CI tetap report-only (runner bervariasi) dengan jalur self-hosted untuk blocking.",
+      "related": [
+        "ADR-0045",
+        "ADR-0048"
+      ],
+      "updates": [
+        "ADR-0045"
+      ],
+      "features": [
+        "benchmark-gates"
+      ]
     }
   ]
 }

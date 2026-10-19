@@ -849,7 +849,7 @@
     },
     {
       "id": "benchmark-gates",
-      "name": "Benchmark + gate report-only (HTTP, SSR, Web Vitals, startup, security)",
+      "name": "Benchmark + gate report-only (HTTP/SSR/Vitals/startup) dengan baseline per-lingkungan",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
@@ -857,12 +857,13 @@
       "evidence": [
         "benchmarks/http/bench.ts",
         "benchmarks/ssr/bench.tsx",
+        "benchmarks/lib/env.ts",
         "docs/adr/0045-perf-regression-gate.md",
-        "docs/adr/0048-bench-ssr-vitals.md"
+        "docs/adr/0074-bench-env-baseline.md"
       ],
       "limitations": [
-        "Report-only — belum memblokir regresi",
-        "Strict hanya sahih di mesin baseline (guard lintas-mesin)"
+        "Report-only di CI (runner GitHub-hosted bervariasi); --strict sahih hanya di lingkungan baseline (guard ADR-0074)",
+        "Baseline mesin dev noisy (ambient load) — regenerasi di mesin tenang"
       ]
     },
     {

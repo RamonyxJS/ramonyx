@@ -291,7 +291,7 @@
       "theme": "perf",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Baseline benchmark per-lingkungan (runner CI) + skrip pembanding; keputusan ADR apakah gate dapat naik dari report-only menjadi blocking di lingkungan dengan baseline cocok.",
       "why": "Utang yang diakui: gate report-only tidak menahan regresi; CI ±3× lebih cepat dari mesin dev sehingga `--strict` tidak sahih lintas-mesin tanpa baseline terpisah.",
       "done": [
@@ -302,7 +302,7 @@
       "areas": ["benchmarks", ".github/workflows"],
       "adrs": ["ADR-0045 (perbarui)"],
       "competitor": "Turbopack benchmarks, SvelteKit bench, Nuxt bundle metrics — semuanya punya gate performa di CI.",
-      "source": "utang (ADR-0045) + kandidat lama",
+      "source": "utang ADR-0045 + kandidat lama — selesai ADR-0074",
       "strategic": true
     },
     {

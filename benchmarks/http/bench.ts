@@ -1,9 +1,15 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { cpus } from "node:os";
 import { dirname, relative, resolve } from "node:path";
 import { createNodeHost } from "@ramonyx/adapter-runtime";
 import autocannon from "autocannon";
 import { createApp } from "../../apps/playground/src/app.ts";
+import {
+  baselinePathFor,
+  captureEnvironment,
+  environmentsMatch,
+  envMismatchNote,
+  LEGACY_HTTP_BASELINE,
+} from "../lib/env.ts";
 import { type BenchArtifact, compareArtifacts, formatReport } from "./compare.ts";
 import { type RunMetrics, summarizeRuns } from "./stats.ts";
 
@@ -18,14 +24,12 @@ const argValue = (name: string): string | undefined => {
   return index >= 0 ? args[index + 1] : undefined;
 };
 
-const baselinePath = resolve(
-  process.cwd(),
-  argValue("--baseline") ?? "benchmarks/results/phase1-baseline.json",
-);
-const outPath = resolve(
-  process.cwd(),
-  argValue("--out") ?? "benchmarks/results/phase1-baseline.json",
-);
+// Baseline per-lingkungan (ADR-0074): default path memuat kunci lingkungan (platform/arch/
+// node-major/cpu) sehingga mesin berbeda tidak saling menimpa baseline.
+const environment = captureEnvironment();
+const defaultBaseline = baselinePathFor(environment, { name: "http" });
+const baselinePath = resolve(process.cwd(), argValue("--baseline") ?? defaultBaseline);
+const outPath = resolve(process.cwd(), argValue("--out") ?? defaultBaseline);
 const compare = args.includes("--compare");
 const strict = args.includes("--strict");
 const tolerancePercent = Number(argValue("--tolerance-pct") ?? "25");
@@ -38,10 +42,21 @@ const connections = 50;
 // tujuan tulisnya adalah baseline itu sendiri).
 let baseline: BenchArtifact | undefined;
 if (compare) {
-  try {
-    baseline = JSON.parse(await readFile(baselinePath, "utf8")) as BenchArtifact;
-  } catch {
-    console.log(`(baseline tidak ditemukan di ${baselinePath} — laporan tanpa perbandingan)`);
+  for (const kandidat of [baselinePath, resolve(process.cwd(), LEGACY_HTTP_BASELINE)]) {
+    try {
+      baseline = JSON.parse(await readFile(kandidat, "utf8")) as BenchArtifact;
+      if (kandidat !== baselinePath) {
+        console.log(
+          `catatan: baseline per-lingkungan belum ada — memakai baseline lama ${relative(process.cwd(), kandidat)}`,
+        );
+      }
+      break;
+    } catch {
+      // coba kandidat berikutnya
+    }
+  }
+  if (baseline === undefined) {
+    console.log(`(baseline tidak ditemukan untuk ${defaultBaseline} — laporan tanpa perbandingan)`);
   }
 }
 
@@ -88,14 +103,6 @@ for (let index = 1; index <= repeats; index += 1) {
 
 const aggregate = summarizeRuns(runs);
 
-const environment = {
-  platform: process.platform,
-  arch: process.arch,
-  node: process.version,
-  cpus: cpus().length,
-  cpuModel: cpus()[0]?.model ?? "unknown",
-};
-
 const payload = {
   generatedAt: new Date().toISOString(),
   scenario: "GET /api/hello — routing statis + middleware logging (tanpa I/O)",
@@ -129,30 +136,24 @@ console.log(
 console.log(`artefak: ${relative(process.cwd(), outPath)}`);
 
 if (compare && baseline !== undefined) {
-  const baselineEnvironment = baseline.environment as
-    | { cpuModel?: unknown; node?: unknown }
-    | undefined;
-  const bedaEnv =
-    baselineEnvironment?.cpuModel !== undefined &&
-    baselineEnvironment.cpuModel !== environment.cpuModel;
-  if (bedaEnv) {
+  // Guard lingkungan (ADR-0074): pembandingan ketat hanya sahih di lingkungan yang sama.
+  const cocok = environmentsMatch(baseline.environment, environment);
+  if (!cocok) {
     console.log(
-      `catatan: lingkungan berbeda (baseline: ${String(baselineEnvironment?.cpuModel)}; sekarang: ${environment.cpuModel}) — bandingkan dengan hati-hati.`,
+      `catatan: lingkungan berbeda (${envMismatchNote(baseline.environment, environment) ?? "tidak diketahui"}) — bandingkan dengan hati-hati.`,
     );
     if (strict) {
-      // Gate lintas mesin tidak bermakna (CI ±3× lebih cepat dari mesin dev — ADR-0045):
-      // --strict hanya sahih di mesin baseline; refus eksplisit lebih jujur daripada gagal
-      // karena perbedaan mesin atau lulus palsu.
       console.error(
-        "--strict tidak bisa dipakai lintas mesin: baseline dari mesin berbeda. Jalankan di mesin baseline atau perbarui baseline (`pnpm bench`).",
+        `--strict tidak bisa dipakai lintas lingkungan: ${envMismatchNote(baseline.environment, environment)}. ` +
+          "Jalankan di lingkungan baseline atau perbarui baseline (`pnpm bench` di mesin ini).",
       );
       process.exitCode = 1;
     }
   }
 
-  const report = compareArtifacts(baseline, payload as BenchArtifact, tolerancePercent);
+  const report = compareArtifacts(baseline, payload as unknown as BenchArtifact, tolerancePercent);
   console.log(`\n${formatReport(report)}`);
-  if (report.breached && strict && !bedaEnv) {
+  if (report.breached && strict && cocok) {
     console.error("REGRESI melebihi toleransi (mode --strict)");
     process.exitCode = 1;
   }

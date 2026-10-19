@@ -1,11 +1,17 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { cpus } from "node:os";
 import { dirname, relative, resolve } from "node:path";
 import type { LoadedPage } from "@ramonyx/core";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
 import { createPageRoutes } from "@ramonyx/ssr";
 import { lazy, type ReactElement, Suspense } from "react";
+import {
+  baselinePathFor,
+  captureEnvironment,
+  environmentsMatch,
+  envMismatchNote,
+  LEGACY_SSR_BASELINE,
+} from "../lib/env.ts";
 import { median, type Spread, spread } from "../stats.ts";
 import { compareSsrArtifacts, formatSsrReport, type SsrArtifact } from "./compare.ts";
 
@@ -22,11 +28,11 @@ const argValue = (name: string): string | undefined => {
   return index >= 0 ? args[index + 1] : undefined;
 };
 
-const baselinePath = resolve(
-  process.cwd(),
-  argValue("--baseline") ?? "benchmarks/results/ssr-baseline.json",
-);
-const outPath = resolve(process.cwd(), argValue("--out") ?? "benchmarks/results/ssr-baseline.json");
+// Baseline per-lingkungan (ADR-0074) — mesin berbeda tidak saling menimpa.
+const environment = captureEnvironment();
+const defaultBaseline = baselinePathFor(environment, { name: "ssr" });
+const baselinePath = resolve(process.cwd(), argValue("--baseline") ?? defaultBaseline);
+const outPath = resolve(process.cwd(), argValue("--out") ?? defaultBaseline);
 const compare = args.includes("--compare");
 const strict = args.includes("--strict");
 const tolerancePercent = Number(argValue("--tolerance-pct") ?? "25");
@@ -41,10 +47,21 @@ if (process.env.NODE_ENV !== "production") {
 
 let baseline: SsrArtifact | undefined;
 if (compare) {
-  try {
-    baseline = JSON.parse(await readFile(baselinePath, "utf8")) as SsrArtifact;
-  } catch {
-    console.log(`(baseline tidak ditemukan di ${baselinePath} — laporan tanpa perbandingan)`);
+  for (const kandidat of [baselinePath, resolve(process.cwd(), LEGACY_SSR_BASELINE)]) {
+    try {
+      baseline = JSON.parse(await readFile(kandidat, "utf8")) as SsrArtifact;
+      if (kandidat !== baselinePath) {
+        console.log(
+          `catatan: baseline per-lingkungan belum ada — memakai baseline lama ${relative(process.cwd(), kandidat)}`,
+        );
+      }
+      break;
+    } catch {
+      // coba kandidat berikutnya
+    }
+  }
+  if (baseline === undefined) {
+    console.log(`(baseline tidak ditemukan untuk ${defaultBaseline} — laporan tanpa perbandingan)`);
   }
 }
 
@@ -335,12 +352,8 @@ const payload = {
   scenario:
     "SSR in-process (createHandler tanpa socket): sinkron vs streaming — kecil(0.6 KB)/sedang(80 KB)/besar(400 KB) + suspense(50 ms); TTFB = byte pertama body",
   environment: {
-    platform: process.platform,
-    arch: process.arch,
-    node: process.version,
+    ...environment,
     nodeEnv: process.env.NODE_ENV ?? "(tidak diset)",
-    cpus: cpus().length,
-    cpuModel: cpus()[0]?.model ?? "unknown",
   },
   tool: "benchmarks/ssr/bench.tsx",
   repeats,
@@ -353,24 +366,33 @@ await writeFile(outPath, `${JSON.stringify(payload, null, 2)}\n`);
 console.log(`\nartefak: ${relative(process.cwd(), outPath)}`);
 
 if (compare && baseline !== undefined) {
-  const baselineEnv = baseline.environment as { cpuModel?: unknown } | undefined;
-  const bedaEnv =
-    baselineEnv?.cpuModel !== undefined && baselineEnv.cpuModel !== payload.environment.cpuModel;
-  if (bedaEnv && strict) {
-    // Gate lintas mesin tidak bermakna (ADR-0048): refus eksplisit, bukan lulus/gagal palsu.
-    console.error(
-      `--strict tidak bisa dipakai lintas mesin: baseline dari '${String(baselineEnv?.cpuModel)}', sekarang '${payload.environment.cpuModel}'. Jalankan di mesin baseline atau perbarui baseline.`,
+  // Guard lingkungan (ADR-0074): pembandingan ketat hanya sahih di lingkungan yang sama.
+  const cocok = environmentsMatch(baseline.environment, environment);
+  if (!cocok) {
+    console.log(
+      `catatan: lingkungan berbeda (${envMismatchNote(baseline.environment, environment) ?? "tidak diketahui"}) — bandingkan dengan hati-hati.`,
     );
-    process.exitCode = 1;
+    if (strict) {
+      console.error(
+        `--strict tidak bisa dipakai lintas lingkungan: ${envMismatchNote(baseline.environment, environment)}. ` +
+          "Jalankan di lingkungan baseline atau perbarui baseline (`pnpm bench:ssr` di mesin ini).",
+      );
+      process.exitCode = 1;
+    }
   }
 
   // Lantai 1 ms: metrik kecil (halaman ringan ~2 ms) masih dapat bergoyang ±1 ms di mesin
   // berisik; regresi nyata (halaman sedang/besar) tetap tertangkap (ADR-0048).
-  const report = compareSsrArtifacts(baseline, payload as SsrArtifact, tolerancePercent, {
-    minAbsoluteDelta: 1,
-  });
+  const report = compareSsrArtifacts(
+    baseline,
+    payload as unknown as SsrArtifact,
+    tolerancePercent,
+    {
+      minAbsoluteDelta: 1,
+    },
+  );
   console.log(`\n${formatSsrReport(report)}`);
-  if (report.breached && strict && !bedaEnv) {
+  if (report.breached && strict && cocok) {
     console.error("REGRESI melebihi toleransi (mode --strict)");
     process.exitCode = 1;
   }

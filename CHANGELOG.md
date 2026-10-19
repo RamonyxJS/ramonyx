@@ -78,6 +78,10 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   (`errorDetails`, otomatis saat bukan produksi; produksi tetap bersih), dan error framework
   memuat **kode stabil** + tautan docs (`RMX-CONFIG-1`, `RMX-ROUTES-1..5`, `RMX-BUILD-1/2`,
   `RMX-EDGE-1`) → `docs/troubleshooting.md`.
+- **Baseline benchmark per-lingkungan** (ADR-0074): baseline disimpan per
+  (bench × platform × arch × node-major × cpu) di `benchmarks/results/baselines/`; guard
+  `--strict` menolak lintas lingkungan dengan catatan field; baseline lama dipertahankan sebagai
+  fallback; CI tetap report-only (jalur self-hosted untuk blocking dicatat).
 - **Typed routes** (ADR-0073): `ramonyx build|dev` menulis modul generate `.ramonyx/routes.ts`
   (`RouteParamsMap` + `routeHref` bertipe, membungkus `fillHref` runtime) — pola/param salah
   tertangkap saat typecheck; komponen `Link` (`@ramonyx/react/link`) memakai navigasi klien +

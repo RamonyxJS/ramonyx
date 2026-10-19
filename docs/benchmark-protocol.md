@@ -5,12 +5,27 @@
 
 ## 1. Prinsip
 
-- Hardware, OS, versi runtime, dan konfigurasi **sama** untuk semua perbandingan.
+- Hardware, OS, versi runtime, dan konfigurasi **sama** untuk semua perbandingan — ditegakkan
+  **baseline per-lingkungan** (ADR-0074): satu berkas baseline per (bench × platform × arch ×
+  node-major × cpu), dan `--strict` menolak saat lingkungan berbeda.
 - Handler melakukan pekerjaan identik dan menghasilkan response identik.
 - Warm-up, lalu beberapa pengulangan independen.
 - Laporkan **distribusi** (p50/p95/p99) + throughput + error rate + CPU + memori — bukan hanya rata-rata.
 - Hasil disimpan sebagai artefak CI; regresi konsisten diselidiki sebelum rilis.
 - Klaim UX (halaman cepat) diukur terpisah dengan Web Vitals di browser (Phase 2+).
+
+## 1b. Baseline per-lingkungan & regenerasi (ADR-0074)
+
+- Baseline disimpan di `benchmarks/results/baselines/<bench>-<env-key>.json` (mis.
+  `http-linux-x64-node24-<cpu>.json`, `ssr-…`). Mesin berbeda **tidak** saling menimpa.
+- Prosedur regenerasi: jalankan di mesin **tenang** → `pnpm bench` / `pnpm bench:ssr`
+  (menulis baseline lingkungan itu) → commit berkasnya. Satu berkas = satu lingkungan.
+- Baseline lama (`phase1-baseline.json`, `ssr-baseline.json`) dipertahankan sebagai fallback
+  pembanding bila baseline lingkungan belum ada (dicatat di output).
+- Gate: `pnpm bench:report` / `pnpm bench:ssr:report` (report-only, CI). `--strict` sahih
+  **hanya** di lingkungan baseline — guard menolak lintas lingkungan (platform/arch/node/cpu).
+- Keputusan CI: **tetap report-only** (GitHub-hosted runner tidak menjamin hardware sama antar-run).
+  Jalur blocking: runner konsisten (self-hosted) → baseline di runner itu → `--strict` di sana.
 
 ## 2. Matriks benchmark
 

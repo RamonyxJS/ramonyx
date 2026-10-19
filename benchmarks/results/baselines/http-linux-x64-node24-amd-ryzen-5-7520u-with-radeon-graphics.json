@@ -1,0 +1,129 @@
+{
+  "generatedAt": "2026-10-19T11:00:00.143Z",
+  "scenario": "GET /api/hello — routing statis + middleware logging (tanpa I/O)",
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v24.22.0",
+    "nodeMajor": 24,
+    "cpus": 8,
+    "cpuModel": "AMD Ryzen 5 7520U with Radeon Graphics"
+  },
+  "tool": "autocannon 8.0.0",
+  "connections": 50,
+  "durationSeconds": 10,
+  "warmupSeconds": 3,
+  "repeats": 5,
+  "result": {
+    "requestsPerSecond": 815,
+    "latency": {
+      "p50": 57,
+      "p90": 73,
+      "p97_5": 91,
+      "p99": 135,
+      "max": 849
+    },
+    "throughputBytesPerSecond": 495590.4,
+    "errors": 0,
+    "non2xx": 0,
+    "spread": {
+      "latency": {
+        "p50": {
+          "min": 57,
+          "max": 70
+        },
+        "p90": {
+          "min": 71,
+          "max": 91
+        },
+        "p97_5": {
+          "min": 83,
+          "max": 110
+        },
+        "p99": {
+          "min": 89,
+          "max": 214
+        },
+        "max": {
+          "min": 831,
+          "max": 1363
+        }
+      },
+      "requestsPerSecond": {
+        "min": 665,
+        "max": 832.5
+      },
+      "throughputBytesPerSecond": {
+        "min": 404352,
+        "max": 506227.2
+      }
+    },
+    "perRun": [
+      {
+        "latency": {
+          "p50": 70,
+          "p90": 91,
+          "p97_5": 110,
+          "p99": 148,
+          "max": 1363
+        },
+        "requestsPerSecond": 665,
+        "throughputBytesPerSecond": 404352,
+        "errors": 0,
+        "non2xx": 0
+      },
+      {
+        "latency": {
+          "p50": 61,
+          "p90": 77,
+          "p97_5": 105,
+          "p99": 135,
+          "max": 1029
+        },
+        "requestsPerSecond": 765,
+        "throughputBytesPerSecond": 465113.6,
+        "errors": 0,
+        "non2xx": 0
+      },
+      {
+        "latency": {
+          "p50": 57,
+          "p90": 72,
+          "p97_5": 91,
+          "p99": 214,
+          "max": 831
+        },
+        "requestsPerSecond": 815,
+        "throughputBytesPerSecond": 495590.4,
+        "errors": 0,
+        "non2xx": 0
+      },
+      {
+        "latency": {
+          "p50": 57,
+          "p90": 71,
+          "p97_5": 83,
+          "p99": 89,
+          "max": 844
+        },
+        "requestsPerSecond": 832.5,
+        "throughputBytesPerSecond": 506227.2,
+        "errors": 0,
+        "non2xx": 0
+      },
+      {
+        "latency": {
+          "p50": 57,
+          "p90": 73,
+          "p97_5": 83,
+          "p99": 117,
+          "max": 849
+        },
+        "requestsPerSecond": 825,
+        "throughputBytesPerSecond": 501721.6,
+        "errors": 0,
+        "non2xx": 0
+      }
+    ]
+  }
+}

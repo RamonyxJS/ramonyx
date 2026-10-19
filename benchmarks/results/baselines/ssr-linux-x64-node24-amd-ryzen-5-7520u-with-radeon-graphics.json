@@ -1,0 +1,133 @@
+{
+  "generatedAt": "2026-10-19T11:00:04.630Z",
+  "scenario": "SSR in-process (createHandler tanpa socket): sinkron vs streaming — kecil(0.6 KB)/sedang(80 KB)/besar(400 KB) + suspense(50 ms); TTFB = byte pertama body",
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v24.22.0",
+    "nodeMajor": 24,
+    "cpus": 8,
+    "cpuModel": "AMD Ryzen 5 7520U with Radeon Graphics",
+    "nodeEnv": "production"
+  },
+  "tool": "benchmarks/ssr/bench.tsx",
+  "repeats": 9,
+  "warmup": 3,
+  "pages": {
+    "small": {
+      "sync": {
+        "totalMs": 2.51
+      },
+      "stream": {
+        "ttfbMs": 1.47,
+        "totalMs": 1.66
+      },
+      "bytes": {
+        "sync": 846,
+        "stream": 846
+      },
+      "parity": true,
+      "spread": {
+        "sync.totalMs": {
+          "min": 1.6875,
+          "max": 5.335700000000088
+        },
+        "stream.ttfbMs": {
+          "min": 1.101378000000068,
+          "max": 7.125318000000107
+        },
+        "stream.totalMs": {
+          "min": 1.1995229999999992,
+          "max": 7.189181000000076
+        }
+      }
+    },
+    "medium": {
+      "sync": {
+        "totalMs": 16.27
+      },
+      "stream": {
+        "ttfbMs": 13.1,
+        "totalMs": 13.28
+      },
+      "bytes": {
+        "sync": 81193,
+        "stream": 81193
+      },
+      "parity": true,
+      "spread": {
+        "sync.totalMs": {
+          "min": 13.644072000000051,
+          "max": 22.23715500000003
+        },
+        "stream.ttfbMs": {
+          "min": 11.447484999999915,
+          "max": 29.14602500000001
+        },
+        "stream.totalMs": {
+          "min": 11.696573999999828,
+          "max": 29.41758600000003
+        }
+      }
+    },
+    "large": {
+      "sync": {
+        "totalMs": 53.46
+      },
+      "stream": {
+        "ttfbMs": 51.57,
+        "totalMs": 52.36
+      },
+      "bytes": {
+        "sync": 415858,
+        "stream": 415858
+      },
+      "parity": true,
+      "spread": {
+        "sync.totalMs": {
+          "min": 52.193013000000064,
+          "max": 59.5329670000001
+        },
+        "stream.ttfbMs": {
+          "min": 47.8105129999999,
+          "max": 68.6912070000003
+        },
+        "stream.totalMs": {
+          "min": 48.34353999999985,
+          "max": 69.959652
+        }
+      }
+    },
+    "suspense": {
+      "sync": {
+        "totalMs": 2.72
+      },
+      "stream": {
+        "ttfbMs": 1.77,
+        "totalMs": 59.38
+      },
+      "bytes": {
+        "sync": 723,
+        "stream": 17243
+      },
+      "note": "suspense: jalur sinkron hanya memuat fallback — konten menyusul lewat retry client",
+      "streamHasContent": true,
+      "syncHasContent": false,
+      "fallbackBeforeContent": true,
+      "spread": {
+        "sync.totalMs": {
+          "min": 2.2475899999999456,
+          "max": 3.217660000000251
+        },
+        "stream.ttfbMs": {
+          "min": 0.9657929999998487,
+          "max": 4.725056000000222
+        },
+        "stream.totalMs": {
+          "min": 58.36724800000002,
+          "max": 61.326502999999775
+        }
+      }
+    }
+  }
+}

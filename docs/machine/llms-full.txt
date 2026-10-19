@@ -857,7 +857,7 @@
     },
     {
       "id": "benchmark-gates",
-      "name": "Benchmark + gate report-only (HTTP, SSR, Web Vitals, startup, security)",
+      "name": "Benchmark + gate report-only (HTTP/SSR/Vitals/startup) dengan baseline per-lingkungan",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
@@ -865,12 +865,13 @@
       "evidence": [
         "benchmarks/http/bench.ts",
         "benchmarks/ssr/bench.tsx",
+        "benchmarks/lib/env.ts",
         "docs/adr/0045-perf-regression-gate.md",
-        "docs/adr/0048-bench-ssr-vitals.md"
+        "docs/adr/0074-bench-env-baseline.md"
       ],
       "limitations": [
-        "Report-only — belum memblokir regresi",
-        "Strict hanya sahih di mesin baseline (guard lintas-mesin)"
+        "Report-only di CI (runner GitHub-hosted bervariasi); --strict sahih hanya di lingkungan baseline (guard ADR-0074)",
+        "Baseline mesin dev noisy (ambient load) — regenerasi di mesin tenang"
       ]
     },
     {
@@ -2364,6 +2365,25 @@
       "features": [
         "typed-routes"
       ]
+    },
+    {
+      "id": "ADR-0074",
+      "file": "0074-bench-env-baseline.md",
+      "title": "Baseline Benchmark Per-Lingkungan + Guard `--strict`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Baseline per-lingkungan (envKey platform/arch/nodeMajor/cpuModel → baselines/<bench>-<key>.json, fallback baseline lama); environmentsMatch memperkuat guard --strict (refus lintas lingkungan dengan catatan field); CI tetap report-only (runner bervariasi) dengan jalur self-hosted untuk blocking.",
+      "related": [
+        "ADR-0045",
+        "ADR-0048"
+      ],
+      "updates": [
+        "ADR-0045"
+      ],
+      "features": [
+        "benchmark-gates"
+      ]
     }
   ]
 }
@@ -3116,7 +3136,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T08:24:24.751Z",
+  "generatedAt": "2026-10-19T11:03:59.919Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3482,7 +3502,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T08:24:25.681Z",
+  "generatedAt": "2026-10-19T11:04:01.083Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3556,8 +3576,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-19T08:22:57.131Z",
-  "commit": "0ab2e82c13f1cd389fff8a5619f718bbc08705d0",
+  "generatedAt": "2026-10-19T11:02:55.388Z",
+  "commit": "7ba4638a178770b981e67b03777c20c09e6029e7",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -3579,9 +3599,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 73,
+  "adrs": 74,
   "tests": {
-    "node": 242,
+    "node": 246,
     "rust": 111,
     "e2eSpecFiles": 7
   }
@@ -4914,12 +4934,27 @@ boleh dengan batasan cakupan tertulis. Kata seperti "unhackable", "zero vulnerab
 
 ## 1. Prinsip
 
-- Hardware, OS, versi runtime, dan konfigurasi **sama** untuk semua perbandingan.
+- Hardware, OS, versi runtime, dan konfigurasi **sama** untuk semua perbandingan — ditegakkan
+  **baseline per-lingkungan** (ADR-0074): satu berkas baseline per (bench × platform × arch ×
+  node-major × cpu), dan `--strict` menolak saat lingkungan berbeda.
 - Handler melakukan pekerjaan identik dan menghasilkan response identik.
 - Warm-up, lalu beberapa pengulangan independen.
 - Laporkan **distribusi** (p50/p95/p99) + throughput + error rate + CPU + memori — bukan hanya rata-rata.
 - Hasil disimpan sebagai artefak CI; regresi konsisten diselidiki sebelum rilis.
 - Klaim UX (halaman cepat) diukur terpisah dengan Web Vitals di browser (Phase 2+).
+
+## 1b. Baseline per-lingkungan & regenerasi (ADR-0074)
+
+- Baseline disimpan di `benchmarks/results/baselines/<bench>-<env-key>.json` (mis.
+  `http-linux-x64-node24-<cpu>.json`, `ssr-…`). Mesin berbeda **tidak** saling menimpa.
+- Prosedur regenerasi: jalankan di mesin **tenang** → `pnpm bench` / `pnpm bench:ssr`
+  (menulis baseline lingkungan itu) → commit berkasnya. Satu berkas = satu lingkungan.
+- Baseline lama (`phase1-baseline.json`, `ssr-baseline.json`) dipertahankan sebagai fallback
+  pembanding bila baseline lingkungan belum ada (dicatat di output).
+- Gate: `pnpm bench:report` / `pnpm bench:ssr:report` (report-only, CI). `--strict` sahih
+  **hanya** di lingkungan baseline — guard menolak lintas lingkungan (platform/arch/node/cpu).
+- Keputusan CI: **tetap report-only** (GitHub-hosted runner tidak menjamin hardware sama antar-run).
+  Jalur blocking: runner konsisten (self-hosted) → baseline di runner itu → `--strict` di sana.
 
 ## 2. Matriks benchmark
 

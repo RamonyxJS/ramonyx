@@ -242,7 +242,7 @@
 
 ### `p2-bench-env-baseline` — Baseline benchmark per-lingkungan + jalur gate blocking
 
-*tema: perf · ukuran: M · status: open · sumber: utang (ADR-0045) + kandidat lama*
+*tema: perf · ukuran: M · status: done · sumber: utang ADR-0045 + kandidat lama — selesai ADR-0074*
 
 - **Apa**: Baseline benchmark per-lingkungan (runner CI) + skrip pembanding; keputusan ADR apakah gate dapat naik dari report-only menjadi blocking di lingkungan dengan baseline cocok.
 - **Kenapa penting untuk bersaing**: Utang yang diakui: gate report-only tidak menahan regresi; CI ±3× lebih cepat dari mesin dev sehingga `--strict` tidak sahih lintas-mesin tanpa baseline terpisah.

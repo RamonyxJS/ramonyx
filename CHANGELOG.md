@@ -2,7 +2,11 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikuti semver.
 
-## [Unreleased]
+## [0.3.0] — 2026-10-19
+
+Rilis fitur: **MCP docs server** (paket ke-15), **pipeline gambar M2** (paket ke-16, `sharp`
+peer opsional) + koreksi bug penyajian aset M1, dan hygiene repo (SECURITY/CONTRIBUTING/template
+issue-PR).
 
 ### Framework (baseline produksi)
 

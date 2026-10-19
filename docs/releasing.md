@@ -4,6 +4,22 @@
   v0.2.0, 17 aset) di atas 0.1.1 (2026-10-18, 14 paket) dan 0.1.0 (2026-10-18, 13 paket).
   Verifikasi registry end-to-end lolos untuk ketiganya. Kebijakan ADR-0039/0049 di bawah berlaku
   untuk rilis berikutnya.
+- **0.3.0: siap rilis (menunggu tag)** — 16 paket (baru: `@ramonyx/mcp-docs-server`,
+  `@ramonyx/plugin-image`) → 17 artefak; bump `Cargo.toml` + 16 paket + template `^0.3.0`
+  (2026-10-19); verifikasi lokal lengkap lolos (lihat bagian di bawah).
+
+## Persiapan 0.3.0 (2026-10-19)
+
+- Bump versi: `Cargo.toml` + 15 paket `packages/*` + `create-ramonyx-app` → **0.3.0**; template
+  `^0.3.0`; CHANGELOG `[0.3.0]` (MCP docs server, pipeline gambar M2, koreksi layout aset,
+  hygiene repo).
+- `pnpm release` → **17 artefak** (16 tarball npm + binary runtime 0.3.0).
+- `pnpm release:verify` → lolos penuh (konsumen bersih + source map + scaffold build/start/SSR +
+  **handshake MCP dari tarball** + binary runtime) — **setelah memperbaiki bug staging**:
+  `stagePackage` tidak menyalin `peerDependencies`/`peerDependenciesMeta` (peer opsional `sharp`
+  hilang dari tarball plugin-image; tertangkap inspeksi tarball).
+- `npm publish --dry-run` ×16 → exit 0 tanpa warning.
+- **Langkah tersisa (pemilik)**: `git tag v0.3.0 && git push origin main --tags`.
 - **Rilis berikutnya**: membawa **paket ke-15** `@ramonyx/mcp-docs-server` (ADR-0078) dan
   **paket ke-16** `@ramonyx/plugin-image` (ADR-0079) → **17 artefak** (16 tarball npm + binary
   runtime); snapshot `docs/` dibundel di tarball MCP dan `pnpm release:verify` menjalankan

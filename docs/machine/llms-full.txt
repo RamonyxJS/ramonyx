@@ -3236,11 +3236,11 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T13:48:11.361Z",
+  "generatedAt": "2026-10-19T13:56:21.349Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
         "createConsoleLogger",
@@ -3263,7 +3263,7 @@
     },
     {
       "name": "@ramonyx/bundler",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
@@ -3313,7 +3313,7 @@
     },
     {
       "name": "@ramonyx/compiler",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/compiler/src/index.ts",
       "values": [
         "HTTP_METHODS",
@@ -3339,7 +3339,7 @@
     },
     {
       "name": "@ramonyx/core",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/core/src/index.ts",
       "values": [
         "HttpError",
@@ -3409,7 +3409,7 @@
     },
     {
       "name": "@ramonyx/devtools",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
         "loadConfigFile",
@@ -3424,7 +3424,7 @@
     },
     {
       "name": "@ramonyx/mcp-docs-server",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/mcp-docs-server/src/index.ts",
       "values": [
         "MCP_PROTOCOL_VERSION",
@@ -3443,7 +3443,7 @@
     },
     {
       "name": "@ramonyx/plugin-image",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/plugin-image/src/index.ts",
       "values": [
         "imageOptimizer"
@@ -3453,7 +3453,7 @@
     },
     {
       "name": "ramonyx",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "HttpError",
@@ -3491,7 +3491,7 @@
     },
     {
       "name": "@ramonyx/react",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/react/src/index.ts",
       "values": [
         "createReactRenderer"
@@ -3505,7 +3505,7 @@
     },
     {
       "name": "@ramonyx/router",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/router/src/index.ts",
       "values": [
         "createRouteTable",
@@ -3520,7 +3520,7 @@
     },
     {
       "name": "@ramonyx/schema",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/schema/src/index.ts",
       "values": [
         "validate"
@@ -3540,7 +3540,7 @@
     },
     {
       "name": "@ramonyx/security",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/security/src/index.ts",
       "values": [
         "DEFAULT_COOKIE_OPTIONS",
@@ -3570,7 +3570,7 @@
     },
     {
       "name": "@ramonyx/server",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/server/src/index.ts",
       "values": [
         "createHandler",
@@ -3594,7 +3594,7 @@
     },
     {
       "name": "@ramonyx/ssr",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/ssr/src/index.ts",
       "values": [
         "PAYLOAD_SCRIPT_ID",
@@ -3621,7 +3621,7 @@
     },
     {
       "name": "@ramonyx/testing",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "packages/testing/src/index.ts",
       "values": [
         "createTestServer",
@@ -3639,7 +3639,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T13:48:12.548Z",
+  "generatedAt": "2026-10-19T13:56:22.702Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3712,9 +3712,9 @@
 ```json
 {
   "schemaVersion": 1,
-  "version": "0.2.0",
-  "generatedAt": "2026-10-19T13:46:59.262Z",
-  "commit": "d3ebb8ec69611287470d89f100a328669adf6e4d",
+  "version": "0.3.0",
+  "generatedAt": "2026-10-19T13:53:37.052Z",
+  "commit": "d12346c01f4ac9acd5b7f7794dbd67a9587b49a7",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -5175,6 +5175,22 @@ aplikasi masing-masing.
   v0.2.0, 17 aset) di atas 0.1.1 (2026-10-18, 14 paket) dan 0.1.0 (2026-10-18, 13 paket).
   Verifikasi registry end-to-end lolos untuk ketiganya. Kebijakan ADR-0039/0049 di bawah berlaku
   untuk rilis berikutnya.
+- **0.3.0: siap rilis (menunggu tag)** — 16 paket (baru: `@ramonyx/mcp-docs-server`,
+  `@ramonyx/plugin-image`) → 17 artefak; bump `Cargo.toml` + 16 paket + template `^0.3.0`
+  (2026-10-19); verifikasi lokal lengkap lolos (lihat bagian di bawah).
+
+## Persiapan 0.3.0 (2026-10-19)
+
+- Bump versi: `Cargo.toml` + 15 paket `packages/*` + `create-ramonyx-app` → **0.3.0**; template
+  `^0.3.0`; CHANGELOG `[0.3.0]` (MCP docs server, pipeline gambar M2, koreksi layout aset,
+  hygiene repo).
+- `pnpm release` → **17 artefak** (16 tarball npm + binary runtime 0.3.0).
+- `pnpm release:verify` → lolos penuh (konsumen bersih + source map + scaffold build/start/SSR +
+  **handshake MCP dari tarball** + binary runtime) — **setelah memperbaiki bug staging**:
+  `stagePackage` tidak menyalin `peerDependencies`/`peerDependenciesMeta` (peer opsional `sharp`
+  hilang dari tarball plugin-image; tertangkap inspeksi tarball).
+- `npm publish --dry-run` ×16 → exit 0 tanpa warning.
+- **Langkah tersisa (pemilik)**: `git tag v0.3.0 && git push origin main --tags`.
 - **Rilis berikutnya**: membawa **paket ke-15** `@ramonyx/mcp-docs-server` (ADR-0078) dan
   **paket ke-16** `@ramonyx/plugin-image` (ADR-0079) → **17 artefak** (16 tarball npm + binary
   runtime); snapshot `docs/` dibundel di tarball MCP dan `pnpm release:verify` menjalankan

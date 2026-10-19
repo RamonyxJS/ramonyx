@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation (machine-readable + MCP)
+    url: https://ramonyxjs.github.io/ramonyx/
+    about: Feature status, ADRs, rules for agents — or run `npx -y @ramonyx/mcp-docs-server` in your MCP client.
+  - name: Security report (private)
+    url: https://github.com/RamonyxJS/ramonyx/security/advisories/new
+    about: Please report vulnerabilities privately, not as public issues.

@@ -98,6 +98,20 @@ function stagePackage(entry, releaseVersion) {
       typeof range === "string" && range.startsWith("workspace:") ? `^${releaseVersion}` : range;
   }
 
+  // Peer (mis. sharp opsional untuk @ramonyx/plugin-image) harus ikut ke tarball — konsumen
+  // butuh deklarasi ini (npm/pnpm memberi peringatan + resolusi peer yang benar).
+  const peerDependencies = {};
+  for (const [name, range] of Object.entries(source.peerDependencies ?? {})) {
+    peerDependencies[name] =
+      typeof range === "string" && range.startsWith("workspace:") ? `^${releaseVersion}` : range;
+  }
+  const peerDependenciesMeta =
+    source.peerDependenciesMeta === undefined
+      ? undefined
+      : Object.fromEntries(
+          Object.entries(source.peerDependenciesMeta).map(([name, meta]) => [name, meta]),
+        );
+
   // Bin (mis. `ramonyx` dari @ramonyx/devtools): target `./src/x.ts` → `./dist/x.js`
   // (tsc mempertahankan shebang) — ADR-0053.
   const binEntries = {};
@@ -126,6 +140,8 @@ function stagePackage(entry, releaseVersion) {
     files: ["dist", ...extraFiles, "README.md", "LICENSE"],
     engines: { node: ">=24" },
     dependencies,
+    ...(Object.keys(peerDependencies).length > 0 ? { peerDependencies } : {}),
+    ...(peerDependenciesMeta !== undefined ? { peerDependenciesMeta } : {}),
     publishConfig: { access: "public" },
     repository: REPOSITORY,
   };

@@ -60,23 +60,31 @@ function e2eSpecCount(): number {
 }
 
 function runNodeTests(): number {
-  const out = execFileSync(
-    process.execPath,
-    [
-      "--import",
-      "./tools/register.mjs",
-      "--test",
-      "--test-timeout=120000",
-      "--test-force-exit",
-      "packages/*/test/**/*.test.ts",
-      "packages/*/test/**/*.test.tsx",
-      "apps/*/test/**/*.test.ts",
-      "apps/*/test/**/*.test.tsx",
-      "tests/**/*.test.ts",
-      "benchmarks/**/*.test.ts",
-    ],
-    { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
-  );
+  let out: string;
+  try {
+    out = execFileSync(
+      process.execPath,
+      [
+        "--import",
+        "./tools/register.mjs",
+        "--test",
+        "--test-timeout=120000",
+        "--test-force-exit",
+        "packages/*/test/**/*.test.ts",
+        "packages/*/test/**/*.test.tsx",
+        "apps/*/test/**/*.test.ts",
+        "apps/*/test/**/*.test.tsx",
+        "tests/**/*.test.ts",
+        "benchmarks/**/*.test.ts",
+      ],
+      { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+    );
+  } catch (error) {
+    // Sertakan ekor output agar test yang gagal terlihat (pesan execFileSync memotong stdout).
+    const stdout = (error as { stdout?: string }).stdout ?? "";
+    const ekor = stdout.length > 4000 ? stdout.slice(-4000) : stdout;
+    throw new Error(`Suite Node tidak hijau — ekor output:\n${ekor}`, { cause: error });
+  }
   const tests = Number(out.match(/^ℹ tests (\d+)$/m)?.[1] ?? Number.NaN);
   const pass = Number(out.match(/^ℹ pass (\d+)$/m)?.[1] ?? Number.NaN);
   const fail = Number(out.match(/^ℹ fail (\d+)$/m)?.[1] ?? Number.NaN);

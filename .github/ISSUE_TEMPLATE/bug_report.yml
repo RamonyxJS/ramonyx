@@ -1,0 +1,47 @@
+name: Bug report
+description: Something in Ramonyx does not work as documented
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. For **security** problems, do not use this form —
+        see [SECURITY.md](https://github.com/RamonyxJS/ramonyx/blob/main/SECURITY.md).
+  - type: input
+    id: package
+    attributes:
+      label: Package & version
+      description: e.g. `@ramonyx/ssr@0.2.0`, `ramonyx@0.2.0`, `ramonyx-runtime`
+      placeholder: "@ramonyx/ssr@0.2.0"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Include the exact command, the observed behavior, and the expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Smallest app/route/code that reproduces it (repo link or inline code). `pnpm create ramonyx-app` output is a good starting point.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / error output
+      description: Paste the full error (framework errors carry stable `RMX-*` codes — see docs/troubleshooting.md).
+      render: shell
+    validations:
+      required: false
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Node version, package manager + version, OS, browser (if relevant)
+      placeholder: "Node 24.22.0, pnpm 12.14.0, Ubuntu 24.04"
+    validations:
+      required: true

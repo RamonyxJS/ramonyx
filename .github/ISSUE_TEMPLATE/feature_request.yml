@@ -1,0 +1,34 @@
+name: Feature request
+description: Propose a capability or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that Ramonyx makes hard or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should the API/behavior look like? Sketches welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you tried, or how other frameworks (Next.js, Remix, SvelteKit, Nuxt, Astro) handle it.
+    validations:
+      required: false
+  - type: checkboxes
+    id: parity
+    attributes:
+      label: Checks
+      options:
+        - label: I checked `docs/machine/features.json` — this is not already implemented/planned
+          required: true
+        - label: I am willing to help implement/test this
+          required: false

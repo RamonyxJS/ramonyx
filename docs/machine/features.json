@@ -490,7 +490,7 @@
     },
     {
       "id": "cli-devtools",
-      "name": "CLI `ramonyx` (dev, build, start, doctor)",
+      "name": "CLI `ramonyx` (dev, build, build --static/--target edge/--watch, start, doctor)",
       "status": "implemented",
       "since": "0.1.1",
       "priority": "p0",
@@ -501,10 +501,11 @@
         "packages/devtools/src/commands.ts",
         "packages/devtools/test/cli.test.ts",
         "docs/adr/0053-devtools-cli.md",
-        "docs/adr/0056-static-generation.md"
+        "docs/adr/0056-static-generation.md",
+        "docs/adr/0070-watch-mode.md"
       ],
       "limitations": [
-        "Tanpa watch mode (rebuild otomatis)"
+        "`start --watch` (restart server) belum"
       ]
     },
     {

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
@@ -319,6 +319,56 @@ console.log("EDGE OK");
   );
   const smoke = runNode("edge.mjs", target);
   assert.match(smoke, /EDGE OK/);
+});
+
+test("build --watch: build ulang saat berkas berubah — ADR-0070", async () => {
+  mkdirSync(workDir, { recursive: true });
+  const target = join(workDir, "app-watch");
+  runCli([target]);
+
+  const child = spawn(
+    process.execPath,
+    ["--import", loader, devtoolsCli, "build", "--watch", "--app", target],
+    { cwd: target, stdio: ["ignore", "pipe", "pipe"] },
+  );
+  let keluaran = "";
+  child.stdout.on("data", (chunk: Buffer) => {
+    keluaran += chunk.toString();
+  });
+  child.stderr.on("data", (chunk: Buffer) => {
+    keluaran += chunk.toString();
+  });
+
+  const tunggu = (predikat: () => boolean, timeoutMs: number): Promise<void> =>
+    new Promise((resolve, reject) => {
+      const mulai = Date.now();
+      const cek = (): void => {
+        if (predikat()) {
+          resolve();
+          return;
+        }
+        if (Date.now() - mulai > timeoutMs) {
+          reject(new Error(`timeout menunggu output watch; terlihat:\n${keluaran}`));
+          return;
+        }
+        setTimeout(cek, 100);
+      };
+      cek();
+    });
+
+  try {
+    await tunggu(() => keluaran.includes("watch: memantau"), 60_000);
+    const buildPertama = (keluaran.match(/client bundle/g) ?? []).length;
+    assert.ok(buildPertama >= 1, "build awal terjadi");
+
+    // Sentuh berkas halaman → build kedua.
+    const page = join(target, "src/routes/page.tsx");
+    writeFileSync(page, `${readFileSync(page, "utf8")}\n// sentuh\n`);
+    await tunggu(() => (keluaran.match(/client bundle/g) ?? []).length > buildPertama, 60_000);
+  } finally {
+    child.kill("SIGTERM");
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
 });
 
 test("help menampilkan penggunaan", () => {

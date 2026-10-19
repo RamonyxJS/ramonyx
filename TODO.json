@@ -388,7 +388,7 @@
       "theme": "dx",
       "priority": "p2",
       "size": "S",
-      "status": "open",
+      "status": "done",
       "what": "Mode watch untuk build: bundel ulang client + restart server produksi saat file berubah, untuk alur kerja non-Vite/produksi-like.",
       "why": "Kandidat lama yang teridentifikasi; melengkapi dev server Vite untuk skenario yang membutuhkan perilaku produksi (mis. menguji build sebelum deploy).",
       "done": [
@@ -398,7 +398,7 @@
       "areas": ["packages/devtools"],
       "adrs": [],
       "competitor": "`vite build --watch`, `nuxt build --watch`, `astro dev`/`astro preview` — semua punya loop rebuild.",
-      "source": "kandidat lama",
+      "source": "kandidat lama — selesai ADR-0070",
       "quickWin": true
     },
     {
@@ -465,14 +465,14 @@
       "theme": "docs",
       "priority": "p2",
       "size": "S",
-      "status": "open",
+      "status": "done",
       "what": "Halaman docs testing: memakai `@ramonyx/testing` (handler in-process), mengetes loader/action, e2e dengan Playwright, pola data.",
       "why": "DX testing adalah faktor retensi; pesaing punya dokumentasi testing yang dalam, sedangkan paket testing kami belum terdokumentasi publik.",
       "done": ["Halaman docs testing dengan contoh yang dijalankan di CI", "README paket testing"],
       "areas": ["docs", "packages/testing"],
       "adrs": [],
       "competitor": "SvelteKit testing docs; Nuxt @nuxt/test-utils; Next.js testing setup.",
-      "source": "gap §3 (testing docs)",
+      "source": "gap §3 (testing docs) — selesai docs/testing.md",
       "quickWin": true
     },
     {

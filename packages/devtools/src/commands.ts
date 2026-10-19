@@ -4,7 +4,7 @@
 // `ramonyx.config.ts`; route di `src/routes`. Semua impor berkas pengguna lewat loader
 // paket (lihat `load.ts`).
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, watch } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { createConsoleLogger, createNodeHost } from "@ramonyx/adapter-runtime";
@@ -44,6 +44,7 @@ Opsi:
   --dev-port <n>    Override port Vite (default 5173)
   --static          (build) Prerender rute statis + getStaticPaths → dist/static
   --target <nama>   (build) Target tambahan: "edge" → dist/edge (serverless/edge)
+  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)
 
 Konvensi:
   src/app.ts        mengekspor createApp(options?) → FetchHandler
@@ -58,6 +59,7 @@ interface Flags {
   readonly devPort?: number;
   readonly static?: boolean;
   readonly target?: string;
+  readonly watch?: boolean;
 }
 
 function readVersion(): string {
@@ -79,6 +81,7 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
   let devPort: number | undefined;
   let isStatic = false;
   let target: string | undefined;
+  let watch = false;
   let help = false;
 
   const numeric = (value: string | undefined, flag: string): number => {
@@ -107,6 +110,9 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
       case "--static":
         isStatic = true;
         break;
+      case "--watch":
+        watch = true;
+        break;
       case "--target":
         target = argv[++index];
         if (target === undefined || target.length === 0) {
@@ -128,7 +134,11 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
     }
   }
 
-  return { command, flags: { appDir, configPath, port, devPort, static: isStatic, target }, help };
+  return {
+    command,
+    flags: { appDir, configPath, port, devPort, static: isStatic, target, watch },
+    help,
+  };
 }
 
 /** Muat plugin dari config (pass-through ADR-0065) + PluginContext (ADR-0067). */
@@ -151,13 +161,8 @@ async function resolvePlugins(
   return loaded;
 }
 
-async function commandBuild(flags: Flags): Promise<number> {
-  const appDir = flags.appDir;
-  // Produksi sejak awal: `--static` merender (React prod) dan Vite memakai mode produksi;
-  // mengubah NODE_ENV setelah modul React dimuat menyebabkan mismatch react/react-dom (ADR-0056).
-  process.env.NODE_ENV ??= "production";
-  const { config } = await loadConfigFile(appDir, flags.configPath);
-  const plugins = await resolvePlugins(appDir, config, "build");
+/** Satu putaran build: klien (+ static bila diminta, + edge bila `--target edge`). */
+async function buildOnce(appDir: string, plugins: LoadedPlugins, flags: Flags): Promise<void> {
   const pages = await loadPageRoutes({ dir: join(appDir, "src/routes") });
   if (pages.length === 0) {
     console.warn("peringatan: tidak ada halaman di src/routes — bundle klien kosong");
@@ -176,7 +181,7 @@ async function commandBuild(flags: Flags): Promise<number> {
     console.log(
       `✓ edge: ${edge.outputFile} (${(edge.bytes / 1024).toFixed(1)} KB) — kontrak fetch handler (ADR-0058)`,
     );
-    return 0;
+    return;
   }
 
   if (flags.static === true) {
@@ -186,9 +191,7 @@ async function commandBuild(flags: Flags): Promise<number> {
     const handler = withMiddleware(
       await createApp({ clientScript, hooks: plugins.hooks }),
       plugins.middleware,
-      {
-        logger: createConsoleLogger(),
-      },
+      { logger: createConsoleLogger() },
     );
 
     // Halaman 404: rute statis ber-metadata status 404, atau catch-all apa pun.
@@ -219,6 +222,83 @@ async function commandBuild(flags: Flags): Promise<number> {
       console.log(`  dilewati: ${daftar}`);
     }
   }
+}
+
+/** Mode watch (ADR-0070): build ulang saat `src/**` berubah (debounce, antrean aman). */
+async function commandBuildWatch(flags: Flags, plugins: LoadedPlugins): Promise<number> {
+  const appDir = flags.appDir;
+  const jalankan = async (): Promise<void> => {
+    const mulai = Date.now();
+    try {
+      await buildOnce(appDir, plugins, flags);
+      console.log(`watch: build selesai dalam ${Date.now() - mulai} ms`);
+    } catch (error) {
+      console.error(
+        `watch: build gagal — ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  };
+
+  await jalankan();
+  console.log("watch: memantau src/** — Ctrl+C untuk keluar");
+
+  let timer: NodeJS.Timeout | undefined;
+  let berjalan = false;
+  let kotor = false;
+
+  const jadwalkan = (): void => {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      void tick();
+    }, 200);
+  };
+
+  const tick = async (): Promise<void> => {
+    if (berjalan) {
+      kotor = true;
+      return;
+    }
+    berjalan = true;
+    await jalankan();
+    berjalan = false;
+    if (kotor) {
+      kotor = false;
+      jadwalkan();
+    }
+  };
+
+  const watcher = watch(join(appDir, "src"), { recursive: true }, () => jadwalkan());
+
+  await new Promise<void>((resolve) => {
+    const berhenti = (): void => {
+      watcher.close();
+      if (timer !== undefined) {
+        clearTimeout(timer);
+      }
+      resolve();
+    };
+    process.once("SIGINT", berhenti);
+    process.once("SIGTERM", berhenti);
+  });
+  console.log("watch: berhenti");
+  return 0;
+}
+
+async function commandBuild(flags: Flags): Promise<number> {
+  const appDir = flags.appDir;
+  // Produksi sejak awal: `--static` merender (React prod) dan Vite memakai mode produksi;
+  // mengubah NODE_ENV setelah modul React dimuat menyebabkan mismatch react/react-dom (ADR-0056).
+  process.env.NODE_ENV ??= "production";
+  const { config } = await loadConfigFile(appDir, flags.configPath);
+  const plugins = await resolvePlugins(appDir, config, "build");
+
+  if (flags.watch === true) {
+    return await commandBuildWatch(flags, plugins);
+  }
+
+  await buildOnce(appDir, plugins, flags);
   return 0;
 }
 

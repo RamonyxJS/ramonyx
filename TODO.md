@@ -311,7 +311,7 @@
 
 ### `p2-watch-mode` — `ramonyx build --watch` (rebuild otomatis)
 
-*tema: dx · ukuran: S · status: open · sumber: kandidat lama*
+*tema: dx · ukuran: S · status: done · sumber: kandidat lama — selesai ADR-0070*
 
 - **Apa**: Mode watch untuk build: bundel ulang client + restart server produksi saat file berubah, untuk alur kerja non-Vite/produksi-like.
 - **Kenapa penting untuk bersaing**: Kandidat lama yang teridentifikasi; melengkapi dev server Vite untuk skenario yang membutuhkan perilaku produksi (mis. menguji build sebelum deploy).
@@ -362,7 +362,7 @@
 
 ### `p2-testing-docs` — Panduan testing aplikasi (paket testing + pola)
 
-*tema: docs · ukuran: S · status: open · sumber: gap §3 (testing docs)*
+*tema: docs · ukuran: S · status: done · sumber: gap §3 (testing docs) — selesai docs/testing.md*
 
 - **Apa**: Halaman docs testing: memakai `@ramonyx/testing` (handler in-process), mengetes loader/action, e2e dengan Playwright, pola data.
 - **Kenapa penting untuk bersaing**: DX testing adalah faktor retensi; pesaing punya dokumentasi testing yang dalam, sedangkan paket testing kami belum terdokumentasi publik.

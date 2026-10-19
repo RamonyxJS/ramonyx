@@ -66,6 +66,10 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   komponen **`Image`** (`@ramonyx/react/assets`, anti-CLS + lazy); `fontPreloadTag()` +
   `PageMetadata.head`; dev menyajikan `src/assets` tanpa hash; peta aset **di-inline** ke artefak
   edge; docs `docs/assets.md`. Resize/format (M2) tetap gate dependency.
+- **Watch mode** (ADR-0070): `ramonyx build --watch` (debounce + antrean aman, error tidak
+  menghentikan watch, SIGINT bersih; mencakup `--static`/`--target edge`).
+- **Docs testing** (`docs/testing.md`): pola unit in-process (`@ramonyx/testing`), contract test,
+  e2e JS + no-JS, dan contoh di repo.
 
 ### Perubahan API (pra-1.0)
 

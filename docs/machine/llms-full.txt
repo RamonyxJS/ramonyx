@@ -498,7 +498,7 @@
     },
     {
       "id": "cli-devtools",
-      "name": "CLI `ramonyx` (dev, build, start, doctor)",
+      "name": "CLI `ramonyx` (dev, build, build --static/--target edge/--watch, start, doctor)",
       "status": "implemented",
       "since": "0.1.1",
       "priority": "p0",
@@ -509,10 +509,11 @@
         "packages/devtools/src/commands.ts",
         "packages/devtools/test/cli.test.ts",
         "docs/adr/0053-devtools-cli.md",
-        "docs/adr/0056-static-generation.md"
+        "docs/adr/0056-static-generation.md",
+        "docs/adr/0070-watch-mode.md"
       ],
       "limitations": [
-        "Tanpa watch mode (rebuild otomatis)"
+        "`start --watch` (restart server) belum"
       ]
     },
     {
@@ -2276,6 +2277,23 @@
         "asset-pipeline",
         "image-optimization"
       ]
+    },
+    {
+      "id": "ADR-0070",
+      "file": "0070-watch-mode.md",
+      "title": "Watch Mode Build (`ramonyx build --watch`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`ramonyx build --watch` memantau src/** (fs.watch recursive, debounce 200ms) dan menjalankan putaran build yang sama (klien/aset; --static prerender; --target edge) dengan antrean aman (dirty flag), error tidak menghentikan watch, SIGINT/SIGTERM bersih; putaran diekstrak ke buildOnce.",
+      "related": [
+        "ADR-0053",
+        "ADR-0056",
+        "ADR-0058"
+      ],
+      "features": [
+        "cli-devtools"
+      ]
     }
   ]
 }
@@ -3028,7 +3046,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T07:05:33.343Z",
+  "generatedAt": "2026-10-19T07:13:35.677Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3379,8 +3397,8 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T07:05:34.526Z",
-  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
+  "generatedAt": "2026-10-19T07:13:36.823Z",
+  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
       "name": "dev",
@@ -3437,6 +3455,11 @@
       "flag": "--target",
       "argument": "nama",
       "description": "(build) Target tambahan: \"edge\" → dist/edge (serverless/edge)"
+    },
+    {
+      "flag": "--watch",
+      "argument": null,
+      "description": "(build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)"
     }
   ]
 }
@@ -3448,8 +3471,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-19T07:04:35.567Z",
-  "commit": "5e0c43a2185ff3695ce02394c9d66d998f692e3f",
+  "generatedAt": "2026-10-19T07:12:27.575Z",
+  "commit": "db816efebc313ba652c7783b603db36dfe587c70",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -3471,9 +3494,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 69,
+  "adrs": 70,
   "tests": {
-    "node": 233,
+    "node": 234,
     "rust": 111,
     "e2eSpecFiles": 7
   }

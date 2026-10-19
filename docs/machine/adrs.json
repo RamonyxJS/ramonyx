@@ -951,6 +951,23 @@
         "asset-pipeline",
         "image-optimization"
       ]
+    },
+    {
+      "id": "ADR-0070",
+      "file": "0070-watch-mode.md",
+      "title": "Watch Mode Build (`ramonyx build --watch`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "`ramonyx build --watch` memantau src/** (fs.watch recursive, debounce 200ms) dan menjalankan putaran build yang sama (klien/aset; --static prerender; --target edge) dengan antrean aman (dirty flag), error tidak menghentikan watch, SIGINT/SIGTERM bersih; putaran diekstrak ke buildOnce.",
+      "related": [
+        "ADR-0053",
+        "ADR-0056",
+        "ADR-0058"
+      ],
+      "features": [
+        "cli-devtools"
+      ]
     }
   ]
 }

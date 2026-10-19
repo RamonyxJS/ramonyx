@@ -2,6 +2,33 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikuti semver.
 
+## [0.4.0] — 2026-10-19
+
+Rilis fitur: **i18n** (routing locale + helper terjemahan), benchmark pipeline gambar
+sebelum-sesudah (kriteria `p2-asset-pipeline`), dan panduan publikasi plugin + kriteria
+stabilisasi kontrak (ADR-0080).
+
+### Framework (baseline produksi)
+
+- **i18n** (ADR-0081): routing locale di `createPageRoutes({ i18n })` — rute per-locale berprefix
+  (`/en/…`), default tanpa prefix + normalisasi **308**, `<html lang>`/`dir`, **`hreflang`**
+  otomatis (+`x-default`), locale di konteks loader/action + prop halaman + payload hydration,
+  cache data loader terisolasi per locale; primitif edge-safe di `@ramonyx/core`
+  (`parseAcceptLanguage`, `negotiateLocale`, `localePath`, `createTranslator` — interpolasi,
+  plural `Intl.PluralRules`, format angka/tanggal); dogfood playground (`id` default + `/en`) +
+  e2e browser; docs `docs/i18n.md`.
+
+### Tooling & docs
+
+- **Benchmark pipeline gambar** (kriteria `p2-asset-pipeline`): `pnpm bench:image` membangun
+  playground tanpa/dengan plugin image dan mengukur LCP/CLS/FCP/TTFB (median 3 load, throttle CDP
+  ala Slow 3G + load dingin) → artefak `benchmarks/results/image-pipeline-vitals.json`; sinyal
+  konsisten: **CLS 0,1 → 0** (dimensi intrinsik), LCP dalam rentang noise (dicatat jujur).
+- **Panduan publikasi plugin + kriteria stabilisasi** (ADR-0080): plugin pihak ketiga mengirim JS
+  terkompilasi, `peerDependencies` ke `@ramonyx/bundler`/`ramonyx`, dependency berat sebagai peer
+  opsional; kontrak dideklarasikan stabil setelah satu siklus rilis tanpa perubahan aditif
+  (TODO `p2-plugin-contract-freeze`).
+
 ## [0.3.0] — 2026-10-19
 
 Rilis fitur: **MCP docs server** (paket ke-15), **pipeline gambar M2** (paket ke-16, `sharp`
@@ -27,26 +54,8 @@ issue-PR).
   `srcSet`, `sources`); resolver kustom cukup mengembalikan `{ src }`.
   `manifest.assets[key].file` kini relatif terhadap root keluaran klien (bukan `assets/...`).
 
-### Framework (baseline produksi)
-
-- **i18n** (ADR-0081): routing locale di `createPageRoutes({ i18n })` — rute per-locale berprefix
-  (`/en/…`), default tanpa prefix + normalisasi **308**, `<html lang>`/`dir`, **`hreflang`**
-  otomatis (+`x-default`), locale di konteks loader/action + prop halaman + payload hydration,
-  cache data loader terisolasi per locale; primitif edge-safe di `@ramonyx/core`
-  (`parseAcceptLanguage`, `negotiateLocale`, `localePath`, `createTranslator` — interpolasi,
-  plural `Intl.PluralRules`, format angka/tanggal); dogfood playground (`id` default + `/en`) +
-  e2e browser; docs `docs/i18n.md`.
-
 ### Tooling & docs
 
-- **Benchmark pipeline gambar** (kriteria `p2-asset-pipeline`): `pnpm bench:image` membangun
-  playground tanpa/dengan plugin image dan mengukur LCP/CLS/FCP/TTFB (median 3 load, throttle CDP
-  ala Slow 3G + load dingin) → artefak `benchmarks/results/image-pipeline-vitals.json`; sinyal
-  konsisten: **CLS 0,1 → 0** (dimensi intrinsik), LCP dalam rentang noise (dicatat jujur).
-- **Panduan publikasi plugin + kriteria stabilisasi** (ADR-0080): plugin pihak ketiga mengirim JS
-  terkompilasi, `peerDependencies` ke `@ramonyx/bundler`/`ramonyx`, dependency berat sebagai peer
-  opsional; kontrak dideklarasikan stabil setelah satu siklus rilis tanpa perubahan aditif
-  (TODO `p2-plugin-contract-freeze`).
 - **MCP docs server** (ADR-0078): paket ke-15 `@ramonyx/mcp-docs-server` (bin `ramonyx-mcp-docs`) —
   server MCP **stdio** tanpa dependency eksternal dengan 5 tools (`search_docs`, `get_page`,
   `get_feature_status`, `get_rules`, `list_adrs`) + resource `ramonyx://machine/*` &

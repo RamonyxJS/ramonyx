@@ -5,6 +5,19 @@
   14 paket, GitHub Release 17 aset), 0.1.1 (2026-10-18, 14 paket), 0.1.0 (2026-10-18, 13 paket) —
   verifikasi registry end-to-end lolos untuk semuanya. Kebijakan ADR-0039/0049 di bawah berlaku
   untuk rilis berikutnya; hasil + acceptance 0.3.0 di bagian bawah.
+- **0.4.0: siap rilis (menunggu tag)** — fitur **i18n** (ADR-0081) + benchmark pipeline gambar +
+  panduan publikasi plugin (ADR-0080); 16 paket → 17 artefak; bump `Cargo.toml` + 16 paket +
+  template `^0.4.0` (2026-10-19); verifikasi lokal lengkap lolos (bagian "Persiapan 0.4.0").
+
+## Persiapan 0.4.0 (2026-10-19)
+
+- Bump versi: `Cargo.toml` + 15 paket `packages/*` + `create-ramonyx-app` → **0.4.0**; template
+  `^0.4.0`; CHANGELOG `[0.4.0]` (i18n; benchmark pipeline gambar; panduan publikasi plugin).
+- `pnpm release` → **17 artefak** (16 tarball npm + binary runtime 0.4.0).
+- `pnpm release:verify` → lolos penuh (konsumen bersih + source map + scaffold build/start/SSR +
+  handshake MCP dari tarball + binary runtime).
+- `npm publish --dry-run` ×16 → exit 0 tanpa warning.
+- **Langkah tersisa (pemilik)**: `git tag v0.4.0 && git push origin main --tags`.
 
 ## Hasil rilis 0.3.0 (2026-10-19)
 

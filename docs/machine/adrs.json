@@ -1146,6 +1146,24 @@
         "plugin-ecosystem",
         "extension-primitives"
       ]
+    },
+    {
+      "id": "ADR-0081",
+      "file": "0081-i18n.md",
+      "title": "i18n — Primitif di Core, Routing Locale di SSR, Tanpa Deteksi Otomatis",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-19)",
+      "date": "2026-10-19",
+      "decision": "Primitif i18n edge-safe di @ramonyx/core (parseAcceptLanguage/negotiateLocale/localePath/createTranslator); routing locale di createPageRoutes({ i18n }) dengan rute per-locale berprefix literal (bukan [locale]), default tanpa prefix + redirect 308, locale di loader/action/prop/hydration payload, <html lang>/dir + hreflang otomatis, cache key memuat locale; deteksi bahasa tidak otomatis (pola middleware + cookie); tanpa ICU MessageFormat.",
+      "related": [
+        "ADR-0066",
+        "ADR-0061",
+        "ADR-0067"
+      ],
+      "features": [
+        "i18n",
+        "routing-route-groups"
+      ]
     }
   ]
 }

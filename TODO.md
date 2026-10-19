@@ -389,7 +389,7 @@
 
 ### `p3-i18n` — i18n routing + helper terjemahan
 
-*tema: routing · ukuran: L · status: open · sumber: gap §3 (i18n)*
+*tema: routing · ukuran: L · status: done · sumber: gap §3 — selesai ADR-0081*
 
 - **Apa**: Routing locale (prefix/domain), negosiasi Accept-Language, helper terjemahan server/client.
 - **Kenapa penting untuk bersaing**: Paritas untuk produk global; tidak mendesak untuk adopsi awal, tetapi menjadi syarat untuk pasar tertentu.

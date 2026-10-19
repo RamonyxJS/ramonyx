@@ -5,7 +5,10 @@ import {
   fillRouteParams,
   formDataToObject,
   HttpError,
+  type I18nRoutingOptions,
   type LoadedPage,
+  localePath,
+  type Middleware,
   NONCE_HEADER,
   type PageActionState,
   type PageMetadata,
@@ -59,6 +62,14 @@ export interface CreatePageRoutesOptions {
    * mengasumsikan `process` ada).
    */
   readonly errorDetails?: boolean;
+  /**
+   * Routing locale (ADR-0081): rute didaftarkan per locale (`/<locale>/...`), locale diteruskan
+   * ke konteks loader/action + prop halaman, `<html lang>`/`dir` diisi, dan `hreflang` alternatif
+   * ditambahkan ke `<head>`. Default locale tanpa prefix kecuali `prefixDefaultLocale: true`
+   * (permintaan ber-prefix default di-redirect 308). Helper: `negotiateLocale`/`localePath`/
+   * `createTranslator` di `@ramonyx/core`.
+   */
+  readonly i18n?: I18nRoutingOptions;
 }
 
 const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
@@ -71,6 +82,31 @@ const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
 const BODY_MARKER = "<!--__RAMONYX_BODY__-->";
 
 const encoder = new TextEncoder();
+
+/** `hreflang` alternatif untuk setiap locale + `x-default` (ADR-0081). */
+function hreflangLinks(request: Request, logicalPath: string, i18n: I18nRoutingOptions): string {
+  const origin = new URL(request.url).origin;
+  const baris = i18n.locales.map(
+    (locale) =>
+      `<link rel="alternate" hreflang="${escapeHtml(locale)}" href="${escapeHtml(origin + localePath(logicalPath, locale, i18n))}" />`,
+  );
+  baris.push(
+    `<link rel="alternate" hreflang="x-default" href="${escapeHtml(origin + localePath(logicalPath, i18n.defaultLocale, i18n))}" />`,
+  );
+  return baris.join("\n");
+}
+
+/** Atribut dokumen (`lang`/`dir`) dari locale aktif. */
+function documentLocaleAttributes(
+  locale: string | undefined,
+  i18n: I18nRoutingOptions | undefined,
+): { readonly lang?: string; readonly dir?: "ltr" | "rtl" } {
+  if (locale === undefined) {
+    return {};
+  }
+  const dir = i18n?.directions?.[locale];
+  return dir === undefined ? { lang: locale } : { lang: locale, dir };
+}
 
 /** Respons yang memakai jalur streaming (untuk `onRenderEnd.streaming` — ADR-0065). */
 const streamedResponses = new WeakSet<Response>();
@@ -147,10 +183,11 @@ function buildPageTree(
   data: unknown,
   params: Record<string, string>,
   action: PageActionState | undefined,
+  locale?: string,
 ): ElementDescriptor {
   let tree: ElementDescriptor = {
     type: page.page.default,
-    props: { data, params, action },
+    props: { data, params, action, ...(locale !== undefined ? { locale } : {}) },
     children: [],
   };
   for (let index = page.layouts.length - 1; index >= 0; index -= 1) {
@@ -359,9 +396,13 @@ async function renderPage(
   cache?: Cache,
   assets?: AssetResolver,
   errorDetails?: boolean,
+  i18n?: I18nRoutingOptions,
+  locale?: string,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
+  const concretePath = fillRouteParams(page.path, params) ?? page.path;
+  const docLocale = documentLocaleAttributes(locale, i18n);
 
   try {
     const loader = page.page.loader;
@@ -378,6 +419,7 @@ async function renderPage(
           env: context.env,
           log,
           assets,
+          locale,
         });
         hooks?.onLoaderEnd?.({
           path: page.path,
@@ -401,8 +443,11 @@ async function renderPage(
       if (!cacheable || cache === undefined || typeof revalidateSeconds !== "number") {
         data = await runLoader();
       } else {
-        const key = `page:${page.path}:${JSON.stringify(params)}`;
-        const concretePath = fillRouteParams(page.path, params) ?? page.path;
+        // Locale ikut ke key cache: halaman yang sama di locale berbeda tidak boleh saling bocor.
+        const key =
+          locale === undefined
+            ? `page:${page.path}:${JSON.stringify(params)}`
+            : `page:${page.path}:${locale}:${JSON.stringify(params)}`;
         const tags = [pathTag(concretePath), routeTag(page.path), ...(page.page.cacheTags ?? [])];
         const entry = await cache.store.get<{ data: unknown }>(key);
 
@@ -431,21 +476,32 @@ async function renderPage(
         : 200;
 
     const title = page.page.metadata?.title ?? "";
-    const head = metadataHead(page.page.metadata, context.request);
+    const headParts = [metadataHead(page.page.metadata, context.request)];
+    if (i18n !== undefined && locale !== undefined) {
+      headParts.push(hreflangLinks(context.request, concretePath, i18n));
+    }
+    const head = headParts.filter((bagian) => bagian.length > 0).join("\n");
     const scripts = hydrationScripts(
       client,
-      { path: page.path, params, data, action: actionState },
+      { path: page.path, params, data, action: actionState, locale },
       context.request.headers.get(NONCE_HEADER) ?? undefined,
     );
     const renderStream = renderer.renderStream?.bind(renderer);
 
     if (streaming && renderStream !== undefined) {
-      const shell = documentRenderer({ title, body: BODY_MARKER, status, scripts, head });
+      const shell = documentRenderer({
+        title,
+        body: BODY_MARKER,
+        status,
+        scripts,
+        head,
+        ...docLocale,
+      });
       const markerIndex = shell.indexOf(BODY_MARKER);
       if (markerIndex !== -1) {
         const prefix = encoder.encode(shell.slice(0, markerIndex));
         const suffix = encoder.encode(shell.slice(markerIndex + BODY_MARKER.length));
-        const body = await renderStream(buildPageTree(page, data, params, actionState));
+        const body = await renderStream(buildPageTree(page, data, params, actionState, locale));
         const streamed = new Response(
           streamDocument(
             body,
@@ -471,8 +527,8 @@ async function renderPage(
       // Dokumen kustom mengabaikan body/penanda → fallback sinkron di bawah (ADR-0047).
     }
 
-    const body = await renderer.render(buildPageTree(page, data, params, actionState));
-    const document = documentRenderer({ title, body, status, scripts, head });
+    const body = await renderer.render(buildPageTree(page, data, params, actionState, locale));
+    const document = documentRenderer({ title, body, status, scripts, head, ...docLocale });
 
     if (document.length > maxDocumentBytes) {
       log.error("Output halaman melebihi batas", {
@@ -485,6 +541,7 @@ async function renderPage(
           title: "500",
           body: fallbackBody({ status: 500, message: "Internal Server Error" }),
           status: 500,
+          ...docLocale,
         }),
         500,
       );
@@ -523,6 +580,7 @@ async function renderPage(
             title: page.page.metadata?.title ?? "",
             body,
             status: publicError.status,
+            ...docLocale,
           }),
           publicError.status,
         );
@@ -539,6 +597,7 @@ async function renderPage(
         title: String(publicError.status),
         body: fallbackBody(publicError),
         status: publicError.status,
+        ...docLocale,
       }),
       publicError.status,
     );
@@ -583,6 +642,8 @@ async function renderPageTimed(
   cache?: Cache,
   assets?: AssetResolver,
   errorDetails?: boolean,
+  i18n?: I18nRoutingOptions,
+  locale?: string,
 ): Promise<Response> {
   const started = hooks?.onRenderEnd !== undefined ? performance.now() : 0;
   const response = await renderPage(
@@ -600,6 +661,8 @@ async function renderPageTimed(
     cache,
     assets,
     errorDetails,
+    i18n,
+    locale,
   );
   hooks?.onRenderEnd?.({
     path: page.path,
@@ -623,6 +686,8 @@ async function runAction(
   cache?: Cache,
   assets?: AssetResolver,
   errorDetails?: boolean,
+  i18n?: I18nRoutingOptions,
+  locale?: string,
 ): Promise<Response> {
   const params = context.params as Record<string, string>;
   const request = context.request;
@@ -663,6 +728,7 @@ async function runAction(
         request,
         env: context.env,
         log: context.log,
+        locale,
         json: <T = unknown>() => request.clone().json() as Promise<T>,
         revalidate: revalidateContext,
       })) ?? {};
@@ -707,6 +773,8 @@ async function runAction(
     cache,
     assets,
     errorDetails,
+    i18n,
+    locale,
   );
 }
 
@@ -731,12 +799,18 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
     options.errorDetails ??
     (typeof process !== "undefined" && process.env.NODE_ENV !== "production");
 
+  const i18n = options.i18n;
   const routes: RouteEntry[] = [];
-  for (const page of options.pages) {
-    const middlewares = page.middlewares ?? [];
+
+  const registerPage = (
+    page: LoadedPage,
+    routePath: string,
+    middlewares: readonly Middleware[],
+    locale: string | undefined,
+  ): void => {
     routes.push({
       method: "GET",
-      path: page.path,
+      path: routePath,
       middlewares,
       definition: route({
         handler: (context) =>
@@ -755,13 +829,15 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
             options.cache,
             options.assets,
             errorDetails,
+            i18n,
+            locale,
           ),
       }),
     });
     if (page.page.action !== undefined) {
       routes.push({
         method: "POST",
-        path: page.path,
+        path: routePath,
         middlewares,
         definition: route({
           handler: (context) =>
@@ -777,10 +853,67 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
               options.cache,
               options.assets,
               errorDetails,
+              i18n,
+              locale,
             ),
         }),
       });
     }
+  };
+
+  /** `/<locale>` + path logis (root → `/<locale>` tanpa slash ganda). */
+  const withLocale = (locale: string, pagePath: string): string =>
+    pagePath === "/" ? `/${locale}` : `/${locale}${pagePath}`;
+
+  /** Redirect 308 mempertahankan query string. */
+  const registerRedirect = (
+    pattern: string,
+    build: (params: Record<string, string>) => string,
+  ): void => {
+    routes.push({
+      method: "GET",
+      path: pattern,
+      definition: route({
+        handler: (context) => {
+          const params = context.params as Record<string, string>;
+          const url = new URL(context.request.url);
+          return new Response(null, {
+            status: 308,
+            headers: { location: `${build(params)}${url.search}` },
+          });
+        },
+      }),
+    });
+  };
+
+  for (const page of options.pages) {
+    const middlewares = page.middlewares ?? [];
+    if (i18n === undefined) {
+      registerPage(page, page.path, middlewares, undefined);
+      continue;
+    }
+    if (i18n.prefixDefaultLocale === true) {
+      for (const locale of i18n.locales) {
+        registerPage(page, withLocale(locale, page.path), middlewares, locale);
+      }
+    } else {
+      registerPage(page, page.path, middlewares, i18n.defaultLocale);
+      for (const locale of i18n.locales.filter((entry) => entry !== i18n.defaultLocale)) {
+        registerPage(page, withLocale(locale, page.path), middlewares, locale);
+      }
+    }
   }
+
+  // Normalisasi prefix default locale: `/<default>/…` ⇄ `/…` (ADR-0081).
+  if (i18n !== undefined) {
+    if (i18n.prefixDefaultLocale === true) {
+      registerRedirect("/", () => `/${i18n.defaultLocale}`);
+      registerRedirect("/[...rest]", (params) => `/${i18n.defaultLocale}/${params.rest ?? ""}`);
+    } else {
+      registerRedirect(`/${i18n.defaultLocale}`, () => "/");
+      registerRedirect(`/${i18n.defaultLocale}/[...rest]`, (params) => `/${params.rest ?? ""}`);
+    }
+  }
+
   return routes;
 }

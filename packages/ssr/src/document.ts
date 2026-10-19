@@ -12,11 +12,20 @@ export function escapeHtml(value: string): string {
 }
 
 /** Dokumen HTML default; aplikasi boleh mengganti lewat opsi `document`. */
-export const defaultDocument: DocumentRenderer = ({ title, body, head = "", scripts = "" }) => {
+export const defaultDocument: DocumentRenderer = ({
+  title,
+  body,
+  head = "",
+  scripts = "",
+  lang,
+  dir,
+}) => {
   const extraHead = head.length > 0 ? `\n${head}` : "";
   const extraScripts = scripts.length > 0 ? `\n${scripts}` : "";
+  const atributLang = ` lang="${escapeHtml(lang ?? "en")}"`;
+  const atributDir = dir !== undefined ? ` dir="${dir}"` : "";
   return `<!doctype html>
-<html lang="en">
+<html${atributLang}${atributDir}>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />

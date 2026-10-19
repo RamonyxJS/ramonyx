@@ -15,6 +15,8 @@ export interface HydrationPayload {
   readonly data: unknown;
   /** Hasil action terakhir (ADR-0057). */
   readonly action?: PageActionState;
+  /** Locale aktif (routing i18n — ADR-0081). */
+  readonly locale?: string;
 }
 
 declare global {
@@ -40,6 +42,7 @@ function buildElement(registry: ClientRegistry, payload: HydrationPayload): Reac
     data: payload.data,
     params: payload.params,
     action: payload.action,
+    ...(payload.locale !== undefined ? { locale: payload.locale } : {}),
   });
   for (let index = entry.layouts.length - 1; index >= 0; index -= 1) {
     const layout = entry.layouts[index];

@@ -481,14 +481,14 @@
       "theme": "routing",
       "priority": "p3",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Routing locale (prefix/domain), negosiasi Accept-Language, helper terjemahan server/client.",
       "why": "Paritas untuk produk global; tidak mendesak untuk adopsi awal, tetapi menjadi syarat untuk pasar tertentu.",
       "done": ["Routing locale + negosiasi + test", "Helper terjemahan + docs + contoh"],
       "areas": ["packages/router", "packages/compiler", "packages/core"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js i18n routing; Nuxt i18n module; SvelteKit paraglide; Astro i18n routing.",
-      "source": "gap §3 (i18n)"
+      "source": "gap §3 — selesai ADR-0081"
     },
     {
       "id": "p3-devtools-ui",

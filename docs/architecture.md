@@ -27,14 +27,14 @@ Layer 3, dan runtime Rust/V8 sendiri juga sudah ada (Phase 4 selesai — eksperi
 
 | Package | Tanggung jawab | Target fase | Status |
 | --- | --- | --- | --- |
-| `packages/core` | Request lifecycle, context, middleware, error handling | Phase 1 | selesai |
+| `packages/core` | Request lifecycle, context, middleware, error handling + primitif bersama (assets, revalidate/cache, i18n) | Phase 1 | selesai |
 | `packages/router` | Matching route (statis, parameter, 404/405) | Phase 1 | selesai |
 | `packages/server` | Wiring HTTP → middleware → router, serve (+ limits/rate limit) | Phase 1 | selesai |
 | `packages/adapter-runtime` | Kontrak runtime + adapter Node + adapter in-memory (test) | Phase 1 | selesai |
 | `packages/schema` | Integrasi Standard Schema (ADR-0004) + pemetaan error | Phase 1 | selesai |
 | `packages/testing` | `createTestServer`, fixture app, helper | Phase 1 | selesai |
 | `packages/react` | Adapter UI React (ADR-0003): SSR (sinkron + stream) + hydration + navigasi client | Phase 2 | selesai |
-| `packages/ssr` | Render halaman → HTML (+ streaming Node, ADR-0047) | Phase 2 | selesai |
+| `packages/ssr` | Render halaman → HTML (+ streaming Node ADR-0047, routing locale i18n ADR-0081) | Phase 2 | selesai |
 | `packages/client` | Tidak dibuat terpisah — hydration + navigasi client ada di `@ramonyx/react/client` (ADR-0007/0008) | — | digabung |
 | `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`, `generateClientEntry`), transformasi + loader `register` | Phase 2 | selesai (batas server/client ditegakkan build — ADR-0063) |
 | `packages/bundler` | Pembungkus Vite (ADR-0005): build client + dev server (ADR-0009) | Phase 2 | selesai |

@@ -760,17 +760,28 @@
     },
     {
       "id": "i18n",
-      "name": "Internasionalisasi routing + konten",
-      "status": "planned",
+      "name": "Internasionalisasi: routing locale (prefix) + helper terjemahan",
+      "status": "implemented",
       "since": null,
       "priority": "p3",
-      "packages": [],
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/router/src/match.ts"
+        "packages/core/src/i18n.ts",
+        "packages/ssr/src/pages.ts",
+        "packages/core/test/i18n.test.ts",
+        "packages/ssr/test/i18n.test.ts",
+        "apps/playground/e2e/i18n.spec.ts",
+        "docs/i18n.md",
+        "docs/adr/0081-i18n.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (menyusul rilis berikutnya)",
+        "Tanpa ICU MessageFormat (interpolasi + plural Intl saja)",
+        "Tanpa deteksi/redirect otomatis — pola middleware + cookie (docs/i18n.md)",
+        "Rute didaftarkan per locale (linear); lokalisasi per-rute belum didukung"
       ]
     },
     {
@@ -2493,6 +2504,24 @@
         "plugin-ecosystem",
         "extension-primitives"
       ]
+    },
+    {
+      "id": "ADR-0081",
+      "file": "0081-i18n.md",
+      "title": "i18n — Primitif di Core, Routing Locale di SSR, Tanpa Deteksi Otomatis",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-19)",
+      "date": "2026-10-19",
+      "decision": "Primitif i18n edge-safe di @ramonyx/core (parseAcceptLanguage/negotiateLocale/localePath/createTranslator); routing locale di createPageRoutes({ i18n }) dengan rute per-locale berprefix literal (bukan [locale]), default tanpa prefix + redirect 308, locale di loader/action/prop/hydration payload, <html lang>/dir + hreflang otomatis, cache key memuat locale; deteksi bahasa tidak otomatis (pola middleware + cookie); tanpa ICU MessageFormat.",
+      "related": [
+        "ADR-0066",
+        "ADR-0061",
+        "ADR-0067"
+      ],
+      "features": [
+        "i18n",
+        "routing-route-groups"
+      ]
     }
   ]
 }
@@ -3255,7 +3284,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T14:55:02.403Z",
+  "generatedAt": "2026-10-19T15:23:41.567Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3423,7 +3452,8 @@
         "StoreSetOptions"
       ],
       "reexports": [
-        "./assets.ts"
+        "./assets.ts",
+        "./i18n.ts"
       ]
     },
     {
@@ -3479,19 +3509,27 @@
         "cacheControl",
         "createCache",
         "createMemoryStore",
+        "createTranslator",
         "defineConfig",
         "formDataToObject",
+        "localePath",
         "mergeHooks",
+        "negotiateLocale",
+        "parseAcceptLanguage",
         "resolveConfig",
         "route"
       ],
       "types": [
         "AppHooks",
         "Cache",
+        "CreateTranslatorOptions",
         "EnvReader",
         "FetchHandler",
+        "I18nRoutingOptions",
         "KeyValueStore",
+        "LanguageRange",
         "Logger",
+        "Messages",
         "Middleware",
         "MiddlewareContext",
         "PageAction",
@@ -3504,7 +3542,8 @@
         "RevalidateOptions",
         "RouteDefinition",
         "RouteEntry",
-        "RouteHandlerContext"
+        "RouteHandlerContext",
+        "Translator"
       ],
       "reexports": []
     },
@@ -3658,7 +3697,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T14:55:03.599Z",
+  "generatedAt": "2026-10-19T15:23:42.783Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3732,8 +3771,8 @@
 {
   "schemaVersion": 1,
   "version": "0.3.0",
-  "generatedAt": "2026-10-19T14:53:47.657Z",
-  "commit": "5d08cd5d1592e36b8510236bd08d4aa9ef9d04d1",
+  "generatedAt": "2026-10-19T15:22:28.117Z",
+  "commit": "8cf6e00dff157d7aa43671cbfbec9812a6d38e75",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -3757,11 +3796,11 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 80,
+  "adrs": 81,
   "tests": {
-    "node": 277,
+    "node": 289,
     "rust": 116,
-    "e2eSpecFiles": 8
+    "e2eSpecFiles": 9
   }
 }
 ```
@@ -3940,14 +3979,14 @@ Layer 3, dan runtime Rust/V8 sendiri juga sudah ada (Phase 4 selesai — eksperi
 
 | Package | Tanggung jawab | Target fase | Status |
 | --- | --- | --- | --- |
-| `packages/core` | Request lifecycle, context, middleware, error handling | Phase 1 | selesai |
+| `packages/core` | Request lifecycle, context, middleware, error handling + primitif bersama (assets, revalidate/cache, i18n) | Phase 1 | selesai |
 | `packages/router` | Matching route (statis, parameter, 404/405) | Phase 1 | selesai |
 | `packages/server` | Wiring HTTP → middleware → router, serve (+ limits/rate limit) | Phase 1 | selesai |
 | `packages/adapter-runtime` | Kontrak runtime + adapter Node + adapter in-memory (test) | Phase 1 | selesai |
 | `packages/schema` | Integrasi Standard Schema (ADR-0004) + pemetaan error | Phase 1 | selesai |
 | `packages/testing` | `createTestServer`, fixture app, helper | Phase 1 | selesai |
 | `packages/react` | Adapter UI React (ADR-0003): SSR (sinkron + stream) + hydration + navigasi client | Phase 2 | selesai |
-| `packages/ssr` | Render halaman → HTML (+ streaming Node, ADR-0047) | Phase 2 | selesai |
+| `packages/ssr` | Render halaman → HTML (+ streaming Node ADR-0047, routing locale i18n ADR-0081) | Phase 2 | selesai |
 | `packages/client` | Tidak dibuat terpisah — hydration + navigasi client ada di `@ramonyx/react/client` (ADR-0007/0008) | — | digabung |
 | `packages/compiler` | Manifest route (`createRouteManifest`, `loadPageRoutes`, `generateClientEntry`), transformasi + loader `register` | Phase 2 | selesai (batas server/client ditegakkan build — ADR-0063) |
 | `packages/bundler` | Pembungkus Vite (ADR-0005): build client + dev server (ADR-0009) | Phase 2 | selesai |
@@ -5504,8 +5543,8 @@ eksperimental (Phase 4 selesai, ADR-0001).
 
 ## Jebakan yang paling mudah kena
 
-- **Blueprint §4/§5 sebagian sudah diimplementasikan; sisanya (mis. server actions, code
-  splitting) masih rancangan — jangan diasumsikan ada.** Yang nyata:
+- **Blueprint §4/§5 sebagian besar sudah diimplementasikan** (server actions ADR-0057, i18n
+  ADR-0081, dst.); yang **masih rancangan**: code splitting per-rute — jangan diasumsikan ada. Yang nyata:
   `packages/*` (termasuk `@ramonyx/devtools` — CLI `ramonyx`), `apps/playground`, `apps/docs`,
   `apps/create-app`, `benchmarks/*`. File routing (API + halaman), SSR React (sinkron + streaming),
   hydration, bundler, dev server/HMR, dan CLI devtools v1 sudah ada — cek kode, jangan asumsikan.

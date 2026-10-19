@@ -27,6 +27,16 @@ issue-PR).
   `srcSet`, `sources`); resolver kustom cukup mengembalikan `{ src }`.
   `manifest.assets[key].file` kini relatif terhadap root keluaran klien (bukan `assets/...`).
 
+### Framework (baseline produksi)
+
+- **i18n** (ADR-0081): routing locale di `createPageRoutes({ i18n })` — rute per-locale berprefix
+  (`/en/…`), default tanpa prefix + normalisasi **308**, `<html lang>`/`dir`, **`hreflang`**
+  otomatis (+`x-default`), locale di konteks loader/action + prop halaman + payload hydration,
+  cache data loader terisolasi per locale; primitif edge-safe di `@ramonyx/core`
+  (`parseAcceptLanguage`, `negotiateLocale`, `localePath`, `createTranslator` — interpolasi,
+  plural `Intl.PluralRules`, format angka/tanggal); dogfood playground (`id` default + `/en`) +
+  e2e browser; docs `docs/i18n.md`.
+
 ### Tooling & docs
 
 - **Benchmark pipeline gambar** (kriteria `p2-asset-pipeline`): `pnpm bench:image` membangun

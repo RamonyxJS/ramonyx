@@ -31,6 +31,11 @@ export interface PageLoaderContext<P = unknown, Q = unknown> {
   readonly env: EnvReader;
   readonly log: Logger;
   /**
+   * Locale aktif dari routing i18n (`createPageRoutes({ i18n })`, ADR-0081) — `undefined`
+   * bila aplikasi tidak memakai i18n.
+   */
+  readonly locale?: string;
+  /**
    * Resolver aset (ADR-0069) — ada bila aplikasi memasang `createPageRoutes({ assets })`
    * (mis. dari `createAssetResolver()` di bundler). `undefined` di setup tanpa aset.
    */
@@ -49,6 +54,8 @@ export interface PageActionContext<P = Record<string, string>> {
   readonly request: Request;
   readonly env: EnvReader;
   readonly log: Logger;
+  /** Locale aktif (routing i18n — ADR-0081); `undefined` tanpa i18n. */
+  readonly locale?: string;
   /** Body JSON (bila `content-type: application/json`) — untuk pemanggilan programatik. */
   json<T = unknown>(): Promise<T>;
   /**

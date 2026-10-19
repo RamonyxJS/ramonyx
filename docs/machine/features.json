@@ -752,17 +752,28 @@
     },
     {
       "id": "i18n",
-      "name": "Internasionalisasi routing + konten",
-      "status": "planned",
+      "name": "Internasionalisasi: routing locale (prefix) + helper terjemahan",
+      "status": "implemented",
       "since": null,
       "priority": "p3",
-      "packages": [],
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/router/src/match.ts"
+        "packages/core/src/i18n.ts",
+        "packages/ssr/src/pages.ts",
+        "packages/core/test/i18n.test.ts",
+        "packages/ssr/test/i18n.test.ts",
+        "apps/playground/e2e/i18n.spec.ts",
+        "docs/i18n.md",
+        "docs/adr/0081-i18n.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (menyusul rilis berikutnya)",
+        "Tanpa ICU MessageFormat (interpolasi + plural Intl saja)",
+        "Tanpa deteksi/redirect otomatis — pola middleware + cookie (docs/i18n.md)",
+        "Rute didaftarkan per locale (linear); lokalisasi per-rute belum didukung"
       ]
     },
     {

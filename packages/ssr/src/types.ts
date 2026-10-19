@@ -22,6 +22,10 @@ export interface DocumentOptions {
   /** HTML mentah yang ditempatkan sebelum `</body>` (mis. script hydration). */
   readonly scripts?: string;
   readonly status: number;
+  /** Atribut `<html lang>` — diisi locale aktif saat i18n dipakai (ADR-0081). */
+  readonly lang?: string;
+  /** Atribut `<html dir>` — diisi bila locale punya arah (mis. `rtl`). */
+  readonly dir?: "ltr" | "rtl";
 }
 
 export type DocumentRenderer = (options: DocumentOptions) => string;

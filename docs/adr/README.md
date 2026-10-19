@@ -87,3 +87,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0078](0078-mcp-docs-server.md) | MCP docs server (stdio) — tools agen tanpa hosting | Accepted |
 | [0079](0079-image-pipeline-m2.md) | Pipeline gambar M2 — plugin `assets`, varian build-time, koreksi layout aset | Accepted |
 | [0080](0080-plugin-stabilization.md) | Stabilisasi kontrak plugin + publikasi plugin pihak ketiga | Accepted |
+| [0081](0081-i18n.md) | i18n — primitif di core, routing locale di SSR, tanpa deteksi otomatis | Accepted |

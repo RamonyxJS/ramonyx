@@ -70,8 +70,8 @@ eksperimental (Phase 4 selesai, ADR-0001).
 
 ## Jebakan yang paling mudah kena
 
-- **Blueprint §4/§5 sebagian sudah diimplementasikan; sisanya (mis. server actions, code
-  splitting) masih rancangan — jangan diasumsikan ada.** Yang nyata:
+- **Blueprint §4/§5 sebagian besar sudah diimplementasikan** (server actions ADR-0057, i18n
+  ADR-0081, dst.); yang **masih rancangan**: code splitting per-rute — jangan diasumsikan ada. Yang nyata:
   `packages/*` (termasuk `@ramonyx/devtools` — CLI `ramonyx`), `apps/playground`, `apps/docs`,
   `apps/create-app`, `benchmarks/*`. File routing (API + halaman), SSR React (sinkron + streaming),
   hydration, bundler, dev server/HMR, dan CLI devtools v1 sudah ada — cek kode, jangan asumsikan.

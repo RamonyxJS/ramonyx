@@ -9,6 +9,8 @@ export interface PageProps<
   readonly params: Params;
   /** Hasil action terakhir (POST) — tersedia setelah mutasi form (ADR-0057). */
   readonly action?: PageActionState;
+  /** Locale aktif dari routing i18n (ADR-0081); `undefined` tanpa i18n. */
+  readonly locale?: string;
 }
 
 export interface LayoutProps {

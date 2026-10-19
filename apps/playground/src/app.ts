@@ -73,6 +73,8 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
       cache: options.cache,
       hooks,
       assets,
+      // Routing locale (ADR-0081): default `id` tanpa prefix, `en` berprefix `/en/...`.
+      i18n: { locales: ["id", "en"], defaultLocale: "id" },
     });
 
     return createHandler({

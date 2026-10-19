@@ -17,6 +17,7 @@ export type {
   RequestStartEvent,
 } from "./hooks.ts";
 export { mergeHooks } from "./hooks.ts";
+export * from "./i18n.ts";
 export { silentLogger } from "./logger.ts";
 export {
   formDataToObject,

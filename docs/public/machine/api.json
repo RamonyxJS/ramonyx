@@ -1,12 +1,17 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T17:08:28.810Z",
+  "generatedAt": "2026-10-19T17:14:15.615Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
       "version": "0.4.0",
       "source": "packages/adapter-runtime/src/index.ts",
-      "values": ["createConsoleLogger", "createMemoryHost", "createNodeHost", "serveStatic"],
+      "values": [
+        "createConsoleLogger",
+        "createMemoryHost",
+        "createNodeHost",
+        "serveStatic"
+      ],
       "types": [
         "FetchHandler",
         "MemoryHost",
@@ -162,14 +167,24 @@
         "StoreEntry",
         "StoreSetOptions"
       ],
-      "reexports": ["./assets.ts", "./i18n.ts"]
+      "reexports": [
+        "./assets.ts",
+        "./i18n.ts"
+      ]
     },
     {
       "name": "@ramonyx/devtools",
       "version": "0.4.0",
       "source": "packages/devtools/src/index.ts",
-      "values": ["loadConfigFile", "loadCreateApp", "runCli"],
-      "types": ["CreateApp", "CreateAppOptions"],
+      "values": [
+        "loadConfigFile",
+        "loadCreateApp",
+        "runCli"
+      ],
+      "types": [
+        "CreateApp",
+        "CreateAppOptions"
+      ],
       "reexports": []
     },
     {
@@ -183,14 +198,21 @@
         "resolveDocsRoot",
         "runStdioServer"
       ],
-      "types": ["DocEntry", "DocHit", "DocsIndex", "MachineName"],
+      "types": [
+        "DocEntry",
+        "DocHit",
+        "DocsIndex",
+        "MachineName"
+      ],
       "reexports": []
     },
     {
       "name": "@ramonyx/plugin-image",
       "version": "0.4.0",
       "source": "packages/plugin-image/src/index.ts",
-      "values": ["imageOptimizer"],
+      "values": [
+        "imageOptimizer"
+      ],
       "types": [],
       "reexports": []
     },
@@ -245,23 +267,38 @@
       "name": "@ramonyx/react",
       "version": "0.4.0",
       "source": "packages/react/src/index.ts",
-      "values": ["createReactRenderer"],
-      "types": ["ErrorPageProps", "LayoutProps", "PageProps"],
+      "values": [
+        "createReactRenderer"
+      ],
+      "types": [
+        "ErrorPageProps",
+        "LayoutProps",
+        "PageProps"
+      ],
       "reexports": []
     },
     {
       "name": "@ramonyx/router",
       "version": "0.4.0",
       "source": "packages/router/src/index.ts",
-      "values": ["createRouteTable", "fillHref", "matchRoute"],
-      "types": ["RouteMatch", "RouteTable"],
+      "values": [
+        "createRouteTable",
+        "fillHref",
+        "matchRoute"
+      ],
+      "types": [
+        "RouteMatch",
+        "RouteTable"
+      ],
       "reexports": []
     },
     {
       "name": "@ramonyx/schema",
       "version": "0.4.0",
       "source": "packages/schema/src/index.ts",
-      "values": ["validate"],
+      "values": [
+        "validate"
+      ],
       "types": [
         "InferInput",
         "InferOutput",
@@ -360,7 +397,10 @@
       "name": "@ramonyx/testing",
       "version": "0.4.0",
       "source": "packages/testing/src/index.ts",
-      "values": ["createTestServer", "createTestServerFromHandler"],
+      "values": [
+        "createTestServer",
+        "createTestServerFromHandler"
+      ],
       "types": [],
       "reexports": []
     }

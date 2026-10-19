@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
-    "./assets": "./src/assets.ts"
+    "./assets": "./src/assets.ts",
+    "./link": "./src/link.ts"
   },
   "dependencies": {
     "@ramonyx/core": "workspace:*",

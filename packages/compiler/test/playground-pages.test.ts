@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { loadPageRoutes } from "../src/index.ts";
+import { generateRouteTypes, loadPageRoutes } from "../src/index.ts";
 
 // Integrasi dengan app nyata: modul halaman di apps/playground mengimpor "ramonyx"
 // dan @ramonyx/react, jadi test ini ikut membuktikan resolusi workspace + JSX loader
@@ -34,4 +34,17 @@ test("memindai halaman playground", async () => {
     true,
     "route group tetap ada di direktori fisik",
   );
+});
+
+test("generateRouteTypes: pola rute → params bertipe (ADR-0073)", async () => {
+  const dir = fileURLToPath(new URL("../../../apps/playground/src/routes", import.meta.url));
+  const pages = await loadPageRoutes({ dir });
+  const output = generateRouteTypes(pages);
+
+  assert.ok(output.includes('import { fillHref } from "@ramonyx/router";'), "runtime fillHref");
+  assert.ok(output.includes("export type RouteParamsMap = {"), "peta params");
+  assert.ok(output.includes('"/users/[id]": { id: string };'), "param dinamis bertipe");
+  assert.ok(output.includes('"/[...notFound]": { notFound: string };'), "catch-all bertipe");
+  assert.ok(output.includes('"/": undefined;'), "rute tanpa param = undefined");
+  assert.ok(output.includes("export function routeHref<P extends RoutePath>("), "wrapper bertipe");
 });

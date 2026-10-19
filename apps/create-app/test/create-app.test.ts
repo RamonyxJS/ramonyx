@@ -252,6 +252,13 @@ test("app hasil scaffold: build --static (SSG + 404 HTML + aset)", async () => {
   const notFound = readFileSync(join(target, "dist/static/404.html"), "utf8");
   assert.ok(notFound.includes("404 — Tidak ditemukan"), "404.html HTML (bukan JSON)");
 
+  // Typed routes (ADR-0073): CLI menulis .ramonyx/routes.d.ts saat build/dev.
+  const routeTypes = readFileSync(join(target, ".ramonyx/routes.ts"), "utf8");
+  assert.ok(routeTypes.includes("export type RouteParamsMap = {"), "peta params");
+  assert.ok(routeTypes.includes('"/[...slug]": { slug: string };'), "catch-all bertipe");
+  assert.ok(routeTypes.includes('"/": undefined;'), "rute tanpa param");
+  assert.ok(routeTypes.includes("export function routeHref"), "wrapper bertipe");
+
   const aset = readdirSync(join(target, "dist/static/assets"));
   assert.ok(
     aset.some((file) => /^client-.*\.js$/.test(file)),

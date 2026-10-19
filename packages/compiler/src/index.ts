@@ -6,6 +6,6 @@ export { nativeImporter } from "./import.ts";
 export type { ApiRouteFile, CreateRouteManifestOptions, HttpMethod } from "./manifest.ts";
 export { createRouteManifest, HTTP_METHODS, listApiRoutes } from "./manifest.ts";
 export type { LoadPageRoutesOptions } from "./pages.ts";
-export { loadPageRoutes } from "./pages.ts";
+export { generateRouteTypes, loadPageRoutes } from "./pages.ts";
 export type { GenerateServerEntryOptions } from "./server-entry.ts";
 export { generateServerEntry } from "./server-entry.ts";

@@ -5,6 +5,7 @@
 // paket (lihat `load.ts`).
 
 import { existsSync, readFileSync, watch } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import { createConsoleLogger, createNodeHost } from "@ramonyx/adapter-runtime";
@@ -18,7 +19,7 @@ import {
   type RamonyxPlugin,
   readAssetManifest,
 } from "@ramonyx/bundler";
-import { loadPageRoutes } from "@ramonyx/compiler";
+import { generateRouteTypes, loadPageRoutes } from "@ramonyx/compiler";
 import { withMiddleware } from "@ramonyx/server";
 import type { RamonyxConfig } from "ramonyx";
 
@@ -162,8 +163,19 @@ async function resolvePlugins(
 }
 
 /** Satu putaran build: klien (+ static bila diminta, + edge bila `--target edge`). */
+/** Tulis `.ramonyx/routes.d.ts` (typed routes — ADR-0073). */
+async function writeRouteTypes(
+  appDir: string,
+  pages: Awaited<ReturnType<typeof loadPageRoutes>>,
+): Promise<void> {
+  const dir = join(appDir, ".ramonyx");
+  await mkdir(dir, { recursive: true });
+  await writeFile(join(dir, "routes.ts"), generateRouteTypes(pages));
+}
+
 async function buildOnce(appDir: string, plugins: LoadedPlugins, flags: Flags): Promise<void> {
   const pages = await loadPageRoutes({ dir: join(appDir, "src/routes") });
+  await writeRouteTypes(appDir, pages);
   if (pages.length === 0) {
     console.warn("peringatan: tidak ada halaman di src/routes — bundle klien kosong");
   }
@@ -330,6 +342,11 @@ async function commandStart(flags: Flags): Promise<number> {
 async function commandDev(flags: Flags): Promise<number> {
   const { config } = await loadConfigFile(flags.appDir, flags.configPath);
   const plugins = await resolvePlugins(flags.appDir, config, "dev");
+  // Typed routes juga diperbarui di dev (tanpa restart — ADR-0073).
+  await writeRouteTypes(
+    flags.appDir,
+    await loadPageRoutes({ dir: join(flags.appDir, "src/routes") }),
+  );
   const port = flags.port ?? config.server.port;
   const target = `http://${config.server.host}:${port}`;
   const dev = await createDevServer({

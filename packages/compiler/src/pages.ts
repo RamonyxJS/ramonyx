@@ -106,6 +106,50 @@ async function loadPageModule(
 }
 
 /**
+ * Hasilkan modul `.ramonyx/routes.ts` (typed routes — ADR-0073): peta `RouteParamsMap` dari
+ * pola rute + `routeHref` bertipe yang membungkus `fillHref` runtime.
+ *
+ * Modul nyata (bukan `.d.ts` + augmentasi): TS 7 tidak merge augmentasi modul paket di proyek
+ * yang sama (duplicate identifier) — modul generate memberi jaminan tipe yang sama tanpa itu.
+ */
+export function generateRouteTypes(pages: readonly LoadedPage[]): string {
+  const entries: string[] = [];
+  for (const page of pages) {
+    const names: string[] = [];
+    for (const match of page.path.matchAll(/\[(?:\.\.\.)?([^\]]+)\]/g)) {
+      if (match[1] !== undefined) {
+        names.push(match[1]);
+      }
+    }
+    if (names.length === 0) {
+      entries.push(`    ${JSON.stringify(page.path)}: undefined;`);
+    } else {
+      const fields = names.map((name) => `${name}: string`).join("; ");
+      entries.push(`    ${JSON.stringify(page.path)}: { ${fields} };`);
+    }
+  }
+  return [
+    "// File ini digenerate otomatis oleh @ramonyx/compiler (typed routes — ADR-0073).",
+    "// Jangan diedit manual; jalankan `ramonyx build`/`ramonyx dev` untuk memperbarui.",
+    'import { fillHref } from "@ramonyx/router";',
+    "",
+    "export type RouteParamsMap = {",
+    ...entries,
+    "};",
+    "",
+    "export type RoutePath = keyof RouteParamsMap;",
+    "",
+    "export function routeHref<P extends RoutePath>(",
+    "  path: P,",
+    "  ...args: RouteParamsMap[P] extends undefined ? [] : [params: RouteParamsMap[P]]",
+    "): string {",
+    "  return fillHref(path, args[0] as Record<string, string> | undefined);",
+    "}",
+    "",
+  ].join("\n");
+}
+
+/**
  * Memindai halaman di `src/routes` (di luar `api/`).
  *
  * Konvensi: `page.tsx`/`page.ts` menentukan path (kolom `[param]` = parameter);

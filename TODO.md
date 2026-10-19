@@ -114,7 +114,7 @@
 
 ### `p1-typed-routes` — Typed routes (codegen tipe dari manifest)
 
-*tema: dx · ukuran: M · status: open · sumber: gap §3 (typed routes)*
+*tema: dx · ukuran: M · status: done · sumber: gap §3 (typed routes) — selesai ADR-0073*
 
 - **Apa**: Generate tipe rute dari manifest (literal path + params bertipe) sehingga `href` dan `params` salah tertangkap saat typecheck, bukan runtime.
 - **Kenapa penting untuk bersaing**: Inferensi TypeScript adalah alasan utama memilih framework TypeScript-first; Next/Nuxt/SvelteKit sudah memberi tipe rute ter-generate, dan tanpa itu Ramonyx tertinggal di DX inti.

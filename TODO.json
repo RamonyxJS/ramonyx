@@ -111,7 +111,7 @@
       "theme": "dx",
       "priority": "p1",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Generate tipe rute dari manifest (literal path + params bertipe) sehingga `href` dan `params` salah tertangkap saat typecheck, bukan runtime.",
       "why": "Inferensi TypeScript adalah alasan utama memilih framework TypeScript-first; Next/Nuxt/SvelteKit sudah memberi tipe rute ter-generate, dan tanpa itu Ramonyx tertinggal di DX inti.",
       "done": [
@@ -123,7 +123,7 @@
       "areas": ["packages/compiler", "packages/react", "packages/router"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js typedRoutes; Nuxt typedPages; SvelteKit $types.",
-      "source": "gap §3 (typed routes)"
+      "source": "gap §3 (typed routes) — selesai ADR-0073"
     },
     {
       "id": "p1-metadata-seo",

@@ -525,19 +525,28 @@
     },
     {
       "id": "typed-routes",
-      "name": "Typed routes (codegen tipe dari manifest rute)",
-      "status": "planned",
+      "name": "Typed routes (modul generate .ramonyx/routes.ts: RouteParamsMap + routeHref + Link)",
+      "status": "implemented",
       "since": null,
       "priority": "p2",
       "packages": [
-        "@ramonyx/compiler"
+        "@ramonyx/router",
+        "@ramonyx/compiler",
+        "@ramonyx/devtools",
+        "@ramonyx/react"
       ],
       "evidence": [
-        "docs/PLAN-docs-consolidation.md",
-        "packages/compiler/src/manifest.ts"
+        "packages/router/src/routes.ts",
+        "packages/compiler/src/pages.ts",
+        "packages/react/src/link.ts",
+        "packages/router/test/typed-routes.test.ts",
+        "docs/typed-routes.md",
+        "docs/adr/0073-typed-routes.md"
       ],
       "limitations": [
-        "Belum ada implementasi"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Impor via path relatif ke .ramonyx/routes.ts (belum ada alias)",
+        "href Link tetap string (URL konkret rute dinamis)"
       ]
     },
     {

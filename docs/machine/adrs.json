@@ -1001,6 +1001,23 @@
       "features": [
         "error-messages-id"
       ]
+    },
+    {
+      "id": "ADR-0073",
+      "file": "0073-typed-routes.md",
+      "title": "Typed Routes — Codegen `RouteParamsMap` + `routeHref` + `Link`",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "CLI (build/dev) menulis modul generate .ramonyx/routes.ts (RouteParamsMap + routeHref bertipe membungkus fillHref runtime); komponen Link merender <a> dengan navigasi klien/prefetch yang ada; pivot dari augmentasi declare module karena TS 7 tidak merge untuk modul paket (diuji).",
+      "related": [
+        "ADR-0008",
+        "ADR-0060",
+        "ADR-0053"
+      ],
+      "features": [
+        "typed-routes"
+      ]
     }
   ]
 }

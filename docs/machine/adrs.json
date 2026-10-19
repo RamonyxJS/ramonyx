@@ -1037,6 +1037,24 @@
       "features": [
         "benchmark-gates"
       ]
+    },
+    {
+      "id": "ADR-0075",
+      "file": "0075-plugin-pentest-v1.md",
+      "title": "Pentest Isolasi Plugin v1 — Plugin Leaf-Only + Publikasi Asesmen",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Pentest v1 (5 skenario adversarial, test CI): fs symlink/env/kill switch/kuota CPU ditolak sesuai desain; temuan F1 (plugin bisa spawn plugin — amplifikasi 8^n) diperbaiki menjadi leaf-only via op_plugin_mode + gate bootstrap; residual dicatat jujur (env OS-level diwariskan, Landlock net TCP-saja, worker-dalam-plugin belum diuji) di docs/security/plugin-isolation-assessment.md.",
+      "related": [
+        "ADR-0040",
+        "ADR-0051",
+        "ADR-0043"
+      ],
+      "features": [
+        "runtime-plugin-process",
+        "runtime-plugin-sandbox"
+      ]
     }
   ]
 }

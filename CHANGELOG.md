@@ -82,6 +82,10 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   (bench × platform × arch × node-major × cpu) di `benchmarks/results/baselines/`; guard
   `--strict` menolak lintas lingkungan dengan catatan field; baseline lama dipertahankan sebagai
   fallback; CI tetap report-only (jalur self-hosted untuk blocking dicatat).
+- **Pentest isolasi plugin v1** (ADR-0075): 5 skenario adversarial di CI (fs symlink, env bocor,
+  kill switch, kuota CPU, permukaan API) — temuan F1 (plugin bisa spawn plugin → amplifikasi 8ⁿ)
+  **diperbaiki: plugin leaf-only**; asesmen + residual jujur di
+  `docs/security/plugin-isolation-assessment.md`.
 - **Typed routes** (ADR-0073): `ramonyx build|dev` menulis modul generate `.ramonyx/routes.ts`
   (`RouteParamsMap` + `routeHref` bertipe, membungkus `fillHref` runtime) — pola/param salah
   tertangkap saat typecheck; komponen `Link` (`@ramonyx/react/link`) memakai navigasi klien +

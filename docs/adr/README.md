@@ -80,3 +80,5 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0071](0071-observability.md) | Observability: trace-id + log terstruktur + metrik (`@ramonyx/server`) | Accepted |
 | [0072](0072-error-dx.md) | DX error: overlay dev (stack+sumber), kode error stabil + tautan troubleshooting | Accepted |
 | [0073](0073-typed-routes.md) | Typed routes: codegen `RouteParamsMap` + `routeHref` + komponen `Link` | Accepted |
+| [0074](0074-bench-env-baseline.md) | Baseline benchmark per-lingkungan + guard `--strict` lintas lingkungan | Accepted |
+| [0075](0075-plugin-pentest-v1.md) | Pentest isolasi plugin v1: plugin leaf-only (temuan diperbaiki) + asesmen dipublikasikan | Accepted |

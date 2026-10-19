@@ -383,6 +383,11 @@ impl ProcessBridge {
         }
     }
 
+    /// `true` bila proses berjalan sebagai plugin (`--plugin`).
+    pub fn is_enabled(&self) -> bool {
+        self.stdin.is_some()
+    }
+
     /// Bridge mati (mode normal).
     pub fn disabled() -> Self {
         Self { stdin: None }
@@ -1086,6 +1091,16 @@ pub async fn op_parent_heartbeat(state: Rc<RefCell<OpState>>) -> Result<(), JsEr
 #[op2(fast)]
 pub fn op_process_exit(#[smi] code: u16) -> Result<(), JsErrorBox> {
     std::process::exit(i32::from(code));
+}
+
+/// `true` bila proses ini berjalan sebagai **plugin** (`--plugin`, ipc_stdio aktif).
+/// Dipakai bootstrap JS untuk menegakkan aturan leaf-only (ADR-0075): plugin tidak boleh
+/// menjalankan plugin lain (amplifikasi proses berlapis).
+#[op2(fast)]
+#[smi]
+pub fn op_plugin_mode(state: &OpState) -> u32 {
+    let bridge = state.borrow::<ProcessBridge>();
+    u32::from(bridge.is_enabled())
 }
 
 /// Kirim pesan ke induk — worker (thread) atau plugin (proses), API `ramonyx.parent` yang sama.

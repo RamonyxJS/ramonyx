@@ -162,7 +162,14 @@ globalThis.ramonyx = {
     },
   },
   // Plugin: proses terpisah (isolasi level OS — crash plugin tidak menjatuhkan induk).
+  // Leaf-only (ADR-0075): plugin TIDAK boleh menjalankan plugin lain — mencegah amplifikasi
+  // proses berlapis (8^n); ditegakkan di sini dengan pesan jelas.
   spawn: async (entry, options) => {
+    if (Deno.core.ops.op_plugin_mode() === 1) {
+      throw new Error(
+        "plugin tidak dapat menjalankan plugin lain (leaf-only — ADR-0075); jalankan dari proses induk",
+      );
+    }
     const id = await Deno.core.ops.op_plugin_spawn(String(entry), options ?? {});
     return {
       id,
@@ -411,6 +418,7 @@ extension!(
         worker::op_worker_send,
         worker::op_worker_receive,
         worker::op_worker_terminate,
+        plugin::op_plugin_mode,
         plugin::op_plugin_spawn,
         plugin::op_plugin_send,
         plugin::op_plugin_receive,

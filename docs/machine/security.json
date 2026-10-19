@@ -203,18 +203,23 @@
     },
     {
       "id": "sec-plugin-process-isolation",
-      "control": "Isolasi plugin level proses (`ramonyx.spawn`), protokol JSON, permission irisan, kill + supervisi",
+      "control": "Isolasi plugin level proses (`ramonyx.spawn`), protokol JSON, permission irisan, kill + supervisi; plugin **leaf-only** (tidak dapat spawn plugin — ADR-0075)",
       "status": "implemented",
       "evidence": [
         "runtime/crates/js-engine/src/plugin.rs",
-        "runtime/crates/js-engine/tests/plugin_process.rs"
+        "runtime/crates/js-engine/tests/plugin_process.rs",
+        "runtime/crates/js-engine/tests/plugin_pentest.rs"
       ],
-      "gaps": [],
+      "gaps": [
+        "Env proses diwariskan OS-level (API JS dijaga; env_clear selektif kandidat)",
+        "Worker-dalam-plugin belum diuji adversarial"
+      ],
       "adrs": [
         "ADR-0040",
         "ADR-0043",
         "ADR-0044",
-        "ADR-0050"
+        "ADR-0050",
+        "ADR-0075"
       ]
     },
     {
@@ -278,14 +283,19 @@
     {
       "id": "sec-pentest-plugin-escape",
       "control": "Pentest/penilaian escape isolasi plugin (worker + proses + Landlock)",
-      "status": "missing",
+      "status": "implemented",
       "evidence": [
-        "docs/adr/0051-plugin-sandbox-landlock.md"
+        "runtime/crates/js-engine/tests/plugin_pentest.rs",
+        "docs/security/plugin-isolation-assessment.md",
+        "docs/adr/0075-plugin-pentest-v1.md"
       ],
       "gaps": [
-        "Belum dinilai secara formal — ada di TODO"
+        "v1: 5 skenario (fs symlink/env/kill/CPU/permukaan API); temuan F1 diperbaiki (leaf-only)",
+        "Belum audit eksternal/pihak ketiga",
+        "Landlock net TCP-saja & worker-dalam-plugin belum diuji adversarial"
       ],
       "adrs": [
+        "ADR-0075",
         "ADR-0051"
       ]
     },

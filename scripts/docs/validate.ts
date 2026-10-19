@@ -182,6 +182,15 @@ for (const adr of adrsIndex.adrs) {
   }
 }
 
+// Indeks manusia (docs/adr/README.md) harus memuat setiap ADR — drift di sini pernah lolos
+// validator (hanya adrs.json yang dicek) sampai ditemukan saat menambah ADR-0075.
+const adrReadme = readText("docs/adr/README.md");
+for (const meta of adrFiles) {
+  if (!adrReadme.includes(meta.file)) {
+    fail("adr", `${meta.file} tidak ada di indeks docs/adr/README.md`);
+  }
+}
+
 // ---------- 4. stats.json konsisten statis ----------
 const stats = readJson("docs/machine/stats.json") as {
   version: string;

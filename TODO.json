@@ -330,7 +330,7 @@
       "theme": "security",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Penilaian sistematis skenario escape (fs, net, CPU/memori, komunikasi antar-plugin) terhadap worker + proses + Landlock, dengan laporan hasil dan celah.",
       "why": "Sandbox kernel adalah klaim keamanan terkuat kami; tanpa penilaian formal klaim itu rapuh dan tidak boleh dipakai di materi publik.",
       "done": [
@@ -341,7 +341,7 @@
       "areas": ["runtime/crates/js-engine", "docs/security"],
       "adrs": ["ADR-0051 (lanjutan)"],
       "competitor": "Tidak ada pembanding langsung — menjadi diferensiasi hanya jika terbukti dan didokumentasikan.",
-      "source": "utang (audit)"
+      "source": "utang (audit) — selesai ADR-0075 (temuan F1 diperbaiki: leaf-only)"
     },
     {
       "id": "p2-asset-pipeline",

@@ -270,7 +270,7 @@
 
 ### `p2-pentest-plugin` — Pentest/penilaian escape isolasi plugin
 
-*tema: security · ukuran: M · status: open · sumber: utang (audit)*
+*tema: security · ukuran: M · status: done · sumber: utang (audit) — selesai ADR-0075 (temuan F1 diperbaiki: leaf-only)*
 
 - **Apa**: Penilaian sistematis skenario escape (fs, net, CPU/memori, komunikasi antar-plugin) terhadap worker + proses + Landlock, dengan laporan hasil dan celah.
 - **Kenapa penting untuk bersaing**: Sandbox kernel adalah klaim keamanan terkuat kami; tanpa penilaian formal klaim itu rapuh dan tidak boleh dipakai di materi publik.

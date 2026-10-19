@@ -981,10 +981,14 @@
       "evidence": [
         "runtime/crates/js-engine/src/plugin.rs",
         "runtime/crates/js-engine/tests/plugin_process.rs",
-        "docs/adr/0040-plugin-process-isolation.md"
+        "runtime/crates/js-engine/tests/plugin_pentest.rs",
+        "docs/adr/0040-plugin-process-isolation.md",
+        "docs/adr/0075-plugin-pentest-v1.md"
       ],
       "limitations": [
-        "Landlock net deny hanya TCP (bukan UDP/DNS)"
+        "Landlock net deny hanya TCP (bukan UDP/DNS)",
+        "Env proses diwariskan OS-level (API JS dijaga permission; env_clear selektif kandidat)",
+        "Leaf-only: plugin tidak dapat spawn plugin (ADR-0075)"
       ]
     },
     {
@@ -1010,10 +1014,14 @@
       "packages": [],
       "evidence": [
         "runtime/crates/js-engine/src/sandbox.rs",
-        "docs/adr/0051-plugin-sandbox-landlock.md"
+        "runtime/crates/js-engine/tests/plugin_process.rs",
+        "runtime/crates/js-engine/tests/plugin_pentest.rs",
+        "docs/adr/0051-plugin-sandbox-landlock.md",
+        "docs/adr/0075-plugin-pentest-v1.md"
       ],
       "limitations": [
-        "Belum ada pentest escape (dicatat di TODO)"
+        "Landlock net deny hanya TCP",
+        "Pentest v1 selesai (5 skenario); audit eksternal belum"
       ]
     },
     {

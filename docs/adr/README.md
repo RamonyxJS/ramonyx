@@ -83,3 +83,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0074](0074-bench-env-baseline.md) | Baseline benchmark per-lingkungan + guard `--strict` lintas lingkungan | Accepted |
 | [0075](0075-plugin-pentest-v1.md) | Pentest isolasi plugin v1: plugin leaf-only (temuan diperbaiki) + asesmen dipublikasikan | Accepted |
 | [0076](0076-server-entry-cli-migration.md) | Konvensi `src/server.ts` + migrasi playground/docs ke CLI | Accepted |
+| [0077](0077-devtools-panel.md) | Panel devtools (dev-only): rute, timing, hydration, bundel | Accepted |

@@ -86,6 +86,10 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   kill switch, kuota CPU, permukaan API) — temuan F1 (plugin bisa spawn plugin → amplifikasi 8ⁿ)
   **diperbaiki: plugin leaf-only**; asesmen + residual jujur di
   `docs/security/plugin-isolation-assessment.md`.
+- **Panel devtools dev-only** (ADR-0077): `ramonyx dev` mencetak URL panel
+  (`/__ramonyx/devtools`) — rute halaman + berkas, timing request/loader/render dari `AppHooks`,
+  status payload hydration, dan ukuran bundel/aset; kolektor menumpang `@ramonyx/bundler`
+  (tanpa paket npm baru), tidak pernah aktif di produksi; batasan korelasi didokumentasikan.
 - **Konvensi `src/server.ts` + migrasi CLI** (ADR-0076): `ramonyx dev|start` memakai entry kustom
   opsional `src/server.ts` (`createHandler(options)`; CLI tetap host + plugin); `app.streaming`
   masuk config tervalidasi; playground & situs docs kini berjalan lewat CLI (entry lama dihapus,

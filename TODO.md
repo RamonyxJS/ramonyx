@@ -389,7 +389,7 @@
 
 ### `p3-devtools-ui` — Panel devtools (rute, timing loader, hydration)
 
-*tema: dx · ukuran: L · status: open · sumber: gap §3 (DX)*
+*tema: dx · ukuran: L · status: done · sumber: kandidat lama — selesai ADR-0077*
 
 - **Apa**: Panel di dev server: daftar rute + manifest, timing loader/render per request, status hydration, ukuran bundle.
 - **Kenapa penting untuk bersaing**: Devtools meningkatkan retensi dan kecepatan debugging; pesaing besar memilikinya, tetapi ini bukan blocker adopsi.

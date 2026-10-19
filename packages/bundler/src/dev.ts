@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import type { ServerResponse } from "node:http";
 import { extname, join, relative } from "node:path";
 import { Readable } from "node:stream";
@@ -11,6 +11,8 @@ import {
   RouteManifestError,
 } from "@ramonyx/compiler";
 import { type Connect, createServer, type Plugin, type PluginOption } from "vite";
+import { createDevtoolsCollector, type DevtoolsCollector, devtoolsPanelHtml } from "./devtools.ts";
+import { readAssetManifest } from "./manifest.ts";
 import { serverOnlyPlugin } from "./server-only.ts";
 
 export interface DevServerOptions {
@@ -27,6 +29,8 @@ export interface DevServer {
   /** Importer untuk compiler: modul mengikuti module graph Vite (invalidasi saat file berubah). */
   readonly importer: ModuleImporter;
   readonly target: string;
+  /** Kolektor panel devtools (ADR-0077) — pasang `hooks`/`middleware`-nya ke handler aplikasi. */
+  readonly devtools: DevtoolsCollector;
   close(): Promise<void>;
 }
 
@@ -180,6 +184,34 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
   const entryFile = join(entryDir, ENTRY_FILE);
   const routesDir = join(appDir, "src", "routes");
 
+  const devtools = createDevtoolsCollector();
+  const clientDir = join(appDir, "dist", "client");
+
+  /** Ukuran bundel/aset dari manifest build (bila sudah pernah dibangun). */
+  const refreshAssets = async (): Promise<void> => {
+    const manifest = await readAssetManifest(clientDir);
+    if (manifest === null) {
+      devtools.setAssets([]);
+      return;
+    }
+    const names = new Set<string>([manifest.client, ...manifest.files]);
+    const entries: { name: string; bytes: number }[] = [];
+    for (const name of names) {
+      try {
+        const info = await stat(join(clientDir, name));
+        entries.push({ name, bytes: info.size });
+      } catch {
+        // berkas hilang (mis. dibersihkan) — lewati
+      }
+    }
+    if (manifest.assets !== undefined) {
+      for (const entry of Object.values(manifest.assets)) {
+        entries.push({ name: entry.file, bytes: entry.bytes });
+      }
+    }
+    devtools.setAssets(entries);
+  };
+
   const vite = await createServer({
     configFile: false,
     root: appDir,
@@ -191,6 +223,31 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
       ...(options.plugins ?? []),
       serverOnlyPlugin(),
       assetsDevPlugin(appDir),
+      {
+        name: "ramonyx-devtools",
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            const path = (req.url ?? "").split("?")[0] ?? "";
+            if (path === "/__ramonyx/devtools") {
+              res.setHeader("content-type", "text/html; charset=utf-8");
+              res.setHeader("cache-control", "no-store");
+              res.end(devtoolsPanelHtml());
+              return;
+            }
+            if (path === "/__ramonyx/data") {
+              void refreshAssets()
+                .catch(() => undefined)
+                .then(() => {
+                  res.setHeader("content-type", "application/json; charset=utf-8");
+                  res.setHeader("cache-control", "no-store");
+                  res.end(JSON.stringify(devtools.snapshot()));
+                });
+              return;
+            }
+            next();
+          });
+        },
+      },
       {
         name: "ramonyx-ssr-proxy",
         configureServer(server) {
@@ -221,6 +278,12 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
 
   const regenerateEntry = async (): Promise<void> => {
     const pages = await loadPageRoutes({ dir: routesDir, importer });
+    devtools.setRoutes(
+      pages.map((page) => ({
+        path: page.path,
+        ...(page.pageFile !== undefined ? { file: relative(appDir, page.pageFile) } : {}),
+      })),
+    );
     await mkdir(entryDir, { recursive: true });
     await writeFile(entryFile, generateClientEntry(pages, { from: entryDir }));
   };
@@ -246,6 +309,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     url: `http://localhost:${port}`,
     importer,
     target: options.target,
+    devtools,
     close: () => vite.close(),
   };
 }

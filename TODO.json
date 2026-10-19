@@ -496,14 +496,14 @@
       "theme": "dx",
       "priority": "p3",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Panel di dev server: daftar rute + manifest, timing loader/render per request, status hydration, ukuran bundle.",
       "why": "Devtools meningkatkan retensi dan kecepatan debugging; pesaing besar memilikinya, tetapi ini bukan blocker adopsi.",
       "done": ["Panel dev + data timing nyata + docs"],
       "areas": ["packages/devtools", "packages/bundler"],
       "adrs": ["ADR baru"],
       "competitor": "Nuxt DevTools; Next.js devtools MCP; Vite inspector.",
-      "source": "gap §3 (DX)"
+      "source": "kandidat lama — selesai ADR-0077"
     },
     {
       "id": "p3-docs-domain",

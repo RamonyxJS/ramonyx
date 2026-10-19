@@ -435,7 +435,7 @@
     },
     {
       "id": "dev-server-hmr",
-      "name": "Dev server: Vite (HMR) front → SSR backend, tanpa build",
+      "name": "Dev server + HMR (Vite → SSR) + panel devtools (rute, timing, hydration, bundel)",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
@@ -444,11 +444,17 @@
       ],
       "evidence": [
         "packages/bundler/src/dev.ts",
-        "packages/devtools/src/commands.ts",
+        "packages/bundler/src/devtools.ts",
+        "packages/bundler/test/devtools.test.ts",
+        "apps/create-app/test/create-app.test.ts",
+        "docs/devtools.md",
         "docs/adr/0009-dev-server.md",
-        "docs/adr/0076-server-entry-cli-migration.md"
+        "docs/adr/0077-devtools-panel.md"
       ],
-      "limitations": []
+      "limitations": [
+        "Panel dev-only; korelasi hook→request aproksimasi (request terbuka terakhir dengan path sama)",
+        "Daftar rute halaman saja (rute API tidak discan)"
+      ]
     },
     {
       "id": "client-bundle",
@@ -2432,6 +2438,26 @@
         "cli-devtools",
         "dev-server-hmr"
       ]
+    },
+    {
+      "id": "ADR-0077",
+      "file": "0077-devtools-panel.md",
+      "title": "Panel Devtools (dev-only) — Rute, Timing, Hydration, Bundel",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Kolektor devtools di @ramonyx/bundler (hooks+middleware, dibuat hanya createDevServer) + dua endpoint dev server /__ramonyx/devtools (panel HTML) dan /__ramonyx/data (JSON rute/aset/request); timing dari AppHooks, hydration dari pemeriksaan HTML respons; wiring CLI dev dengan mergeHooks; tanpa paket npm baru.",
+      "related": [
+        "ADR-0065",
+        "ADR-0067",
+        "ADR-0076",
+        "ADR-0071"
+      ],
+      "features": [
+        "dev-server-hmr",
+        "cli-devtools",
+        "observability-logger"
+      ]
     }
   ]
 }
@@ -3194,7 +3220,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T11:37:13.402Z",
+  "generatedAt": "2026-10-19T11:49:00.633Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3560,7 +3586,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T11:37:14.624Z",
+  "generatedAt": "2026-10-19T11:49:01.956Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3634,8 +3660,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-19T11:36:06.651Z",
-  "commit": "daec7c8080a833dbae6e19c1ca8948ea8b08e0ab",
+  "generatedAt": "2026-10-19T11:47:50.607Z",
+  "commit": "5caa63449bf05f79eeeb5f243a68e6069f24a18e",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -3657,9 +3683,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 76,
+  "adrs": 77,
   "tests": {
-    "node": 248,
+    "node": 254,
     "rust": 116,
     "e2eSpecFiles": 7
   }

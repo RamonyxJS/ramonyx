@@ -427,7 +427,7 @@
     },
     {
       "id": "dev-server-hmr",
-      "name": "Dev server: Vite (HMR) front → SSR backend, tanpa build",
+      "name": "Dev server + HMR (Vite → SSR) + panel devtools (rute, timing, hydration, bundel)",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
@@ -436,11 +436,17 @@
       ],
       "evidence": [
         "packages/bundler/src/dev.ts",
-        "packages/devtools/src/commands.ts",
+        "packages/bundler/src/devtools.ts",
+        "packages/bundler/test/devtools.test.ts",
+        "apps/create-app/test/create-app.test.ts",
+        "docs/devtools.md",
         "docs/adr/0009-dev-server.md",
-        "docs/adr/0076-server-entry-cli-migration.md"
+        "docs/adr/0077-devtools-panel.md"
       ],
-      "limitations": []
+      "limitations": [
+        "Panel dev-only; korelasi hook→request aproksimasi (request terbuka terakhir dengan path sama)",
+        "Daftar rute halaman saja (rute API tidak discan)"
+      ]
     },
     {
       "id": "client-bundle",

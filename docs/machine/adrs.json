@@ -1073,6 +1073,26 @@
         "cli-devtools",
         "dev-server-hmr"
       ]
+    },
+    {
+      "id": "ADR-0077",
+      "file": "0077-devtools-panel.md",
+      "title": "Panel Devtools (dev-only) — Rute, Timing, Hydration, Bundel",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Kolektor devtools di @ramonyx/bundler (hooks+middleware, dibuat hanya createDevServer) + dua endpoint dev server /__ramonyx/devtools (panel HTML) dan /__ramonyx/data (JSON rute/aset/request); timing dari AppHooks, hydration dari pemeriksaan HTML respons; wiring CLI dev dengan mergeHooks; tanpa paket npm baru.",
+      "related": [
+        "ADR-0065",
+        "ADR-0067",
+        "ADR-0076",
+        "ADR-0071"
+      ],
+      "features": [
+        "dev-server-hmr",
+        "cli-devtools",
+        "observability-logger"
+      ]
     }
   ]
 }

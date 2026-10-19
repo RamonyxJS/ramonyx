@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createServer } from "node:net";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -439,6 +440,95 @@ export async function createHandler(options: ServerEntryOptions = {}): Promise<F
     const response = await fetch(`${url}/`);
     assert.equal(response.status, 200, "halaman dilayani lewat entry kustom");
     assert.equal(response.headers.get("x-server-entry"), "1", "CLI memakai src/server.ts");
+  } finally {
+    child.kill("SIGTERM");
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
+});
+
+/** Port TCP bebas (untuk SSR dev tanpa tabrakan). */
+async function portBebas(): Promise<number> {
+  const probe = createServer();
+  await new Promise<void>((resolve) => probe.listen(0, "127.0.0.1", resolve));
+  const address = probe.address();
+  const port = typeof address === "object" && address !== null ? address.port : 0;
+  await new Promise<void>((resolve) => probe.close(() => resolve()));
+  return port;
+}
+
+test("devtools dev: panel + data (rute/timing) tersedia di dev server — ADR-0077", async () => {
+  mkdirSync(workDir, { recursive: true });
+  const target = join(workDir, "app-devtools");
+  runCli([target]);
+
+  const portSsr = await portBebas();
+  const child = spawn(
+    process.execPath,
+    [
+      "--import",
+      loader,
+      devtoolsCli,
+      "dev",
+      "--app",
+      target,
+      "--port",
+      String(portSsr),
+      "--dev-port",
+      "0",
+    ],
+    { cwd: target, stdio: ["ignore", "pipe", "pipe"] },
+  );
+  let keluaran = "";
+  child.stdout.on("data", (chunk: Buffer) => {
+    keluaran += chunk.toString();
+  });
+  child.stderr.on("data", (chunk: Buffer) => {
+    keluaran += chunk.toString();
+  });
+
+  const tunggu = async (predikat: () => boolean, timeoutMs: number): Promise<void> => {
+    const mulai = Date.now();
+    while (!predikat()) {
+      if (Date.now() - mulai > timeoutMs) {
+        throw new Error(`timeout menunggu output CLI dev; terlihat:\n${keluaran}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  };
+
+  try {
+    await tunggu(() => /dev: (http:\/\/localhost:\d+)/.test(keluaran), 60_000);
+    const devUrl = /dev: (http:\/\/localhost:\d+)/.exec(keluaran)?.[1];
+    assert.ok(devUrl !== undefined, "URL dev server terbaca");
+
+    // Panel HTML (dev-only).
+    const panel = await fetch(`${devUrl}/__ramonyx/devtools`);
+    assert.equal(panel.status, 200);
+    assert.match(await panel.text(), /Ramonyx Devtools/);
+
+    // Rute template terdaftar (dari loadPageRoutes di dev server).
+    const pertama = (await (await fetch(`${devUrl}/__ramonyx/data`)).json()) as {
+      routes: { path: string; file?: string }[];
+    };
+    const paths = pertama.routes.map((route) => route.path).sort();
+    assert.deepEqual(paths, ["/", "/[...slug]"], "rute template terdaftar di panel");
+    assert.ok(
+      pertama.routes.every((route) => typeof route.file === "string"),
+      "berkas rute ditampilkan",
+    );
+
+    // Request halaman lewat proxy → SSR → kolektor (hooks + middleware) mencatat timing.
+    const halaman = await fetch(`${devUrl}/`);
+    assert.equal(halaman.status, 200, "halaman SSR lewat proxy dev");
+
+    const data = (await (await fetch(`${devUrl}/__ramonyx/data`)).json()) as {
+      requests: { path: string; status?: number; hydration?: string; ms?: number }[];
+    };
+    const beranda = data.requests.find((request) => request.path === "/");
+    assert.ok(beranda !== undefined, "request beranda tercatat di kolektor");
+    assert.equal(beranda.status, 200);
+    assert.equal(typeof beranda.ms, "number");
+    assert.equal(beranda.hydration, "payload", "payload hydration terdeteksi di HTML");
   } finally {
     child.kill("SIGTERM");
     await new Promise((resolve) => setTimeout(resolve, 300));

@@ -21,7 +21,7 @@ import {
 } from "@ramonyx/bundler";
 import { generateRouteTypes, loadPageRoutes } from "@ramonyx/compiler";
 import { withMiddleware } from "@ramonyx/server";
-import type { FetchHandler, RamonyxConfig } from "ramonyx";
+import { type FetchHandler, mergeHooks, type RamonyxConfig } from "ramonyx";
 
 import { type CreateAppOptions, loadConfigFile, loadCreateApp, loadServerEntry } from "./load.ts";
 
@@ -372,20 +372,24 @@ async function commandDev(flags: Flags): Promise<number> {
     plugins: plugins.vite,
   });
   const host = createNodeHost();
+  // Devtools (ADR-0077): kolektor panel dev-only — hook timing digabung, middleware paling luar
+  // agar semua request (termasuk yang di-short-circuit plugin) tercatat.
+  const hooks = mergeHooks(plugins.hooks, dev.devtools.hooks);
   const app = withMiddleware(
     await resolveAppHandler(flags.appDir, {
       clientScript: "/.ramonyx/client-entry.ts",
       clientModules: ["/@vite/client"],
       importer: dev.importer,
       reloadManifests: true,
-      hooks: plugins.hooks,
+      hooks,
       streaming: config.app.streaming === true,
     }),
-    plugins.middleware,
+    [dev.devtools.middleware, ...plugins.middleware],
     { env: host.env, logger: createConsoleLogger() },
   );
   await host.serve(app, { port, host: config.server.host });
   console.log(`dev: ${dev.url} (Vite + HMR) → SSR ${target}`);
+  console.log(`devtools: ${dev.url}/__ramonyx/devtools (panel dev-only — rute, timing, hydration)`);
   return 0;
 }
 

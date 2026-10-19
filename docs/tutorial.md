@@ -18,6 +18,8 @@ pnpm dev        # Vite :5173 (HMR) → SSR :3000
 ```
 
 Buka http://localhost:5173 — halaman SSR dengan counter yang ter-hydrate dan form action.
+Panel devtools (rute, timing loader/render, hydration, ukuran bundel) tersedia di URL yang
+dicetak CLI (`devtools: …/__ramonyx/devtools`) — lihat `devtools.md`.
 
 Struktur:
 

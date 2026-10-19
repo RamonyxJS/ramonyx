@@ -70,9 +70,14 @@ cd demo-app && pnpm install && pnpm build && pnpm start
   **Publikasi npm** keduanya **success**; **14 paket @ 0.2.0 terbit** (`npm publish` ×14,
   dist-tag `latest`, **provenance** — terverifikasi di registry: `dist.attestations` ada) +
   **GitHub Release v0.2.0 (17 aset)**.
-- Catatan operasional: `npm view` untuk sebagian paket sempat menampilkan `0.1.1` (CDN metadata
-  lag ±beberapa menit) — log workflow menunjukkan 14× `+ <paket>@0.2.0`; tunggu/bersihkan cache
-  metadata pnpm saat menguji segera setelah publish.
+- **Acceptance registry end-to-end (2026-10-19)**: `pnpm dlx create-ramonyx-app@0.2.0 demo-app`
+  → `pnpm install` → `ramonyx build` (bundel klien ber-hash) → `ramonyx start` (produksi) →
+  halaman SSR 200 + payload hydration + `GET /api/halo/dunia` → `{"halo":"dunia"}` 200 ✓.
+- Catatan operasional (propagasi): `npm view` sebagian paket sempat menampilkan `0.1.1` dan
+  **tarball `@ramonyx/ssr@0.2.0` sempat 404 di edge** (±20 menit) — `npm install` sudah berhasil
+  sebelum `curl`/`pnpm` (edge berbeda); log workflow menunjukkan 14× `+ <paket>@0.2.0` dengan
+  provenance. Sebelum menguji segera setelah publish: bersihkan cache metadata pnpm dan retry
+  bila edge belum konsisten.
 - Dokumentasi pasca-terbit: klaim "belum dirilis" di `docs/machine/features.json` dihapus
   (25 fitur → `since: 0.2.0`); README + status rilis diperbarui.
 

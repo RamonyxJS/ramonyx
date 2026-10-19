@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T22:11:20.997Z",
+  "generatedAt": "2026-10-19T05:58:04.893Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -34,6 +34,8 @@
         "buildClient",
         "buildEdge",
         "createDevServer",
+        "definePlugin",
+        "loadPlugins",
         "prerenderRoutes",
         "readAssetManifest",
         "readClientScript"
@@ -46,9 +48,12 @@
         "BuildEdgeResult",
         "DevServer",
         "DevServerOptions",
+        "LoadedPlugins",
+        "PluginContext",
         "PrerenderOptions",
         "PrerenderResult",
-        "PrerenderRouteInfo"
+        "PrerenderRouteInfo",
+        "RamonyxPlugin"
       ],
       "reexports": []
     },
@@ -95,30 +100,42 @@
         "PageModule",
         "REMOTE_ADDRESS_HEADER",
         "cacheControl",
+        "createMemoryStore",
         "defineConfig",
         "fillRouteParams",
         "formDataToObject",
         "hasDynamicSegment",
+        "mergeHooks",
         "resolveConfig",
         "route",
         "silentLogger"
       ],
       "types": [
         "AppConfig",
+        "AppHooks",
         "CacheControlOptions",
         "EnvReader",
         "FetchHandler",
         "HttpErrorOptions",
+        "InvalidateEvent",
+        "KeyValueStore",
+        "LoaderEndEvent",
         "Logger",
+        "MemoryStoreOptions",
         "Middleware",
         "MiddlewareContext",
         "RamonyxConfig",
         "RamonyxConfigInput",
+        "RenderEndEvent",
+        "RequestEndEvent",
+        "RequestStartEvent",
         "RouteDefinition",
         "RouteEntry",
         "RouteHandler",
         "RouteHandlerContext",
-        "ServerConfig"
+        "ServerConfig",
+        "StoreEntry",
+        "StoreSetOptions"
       ],
       "reexports": []
     },

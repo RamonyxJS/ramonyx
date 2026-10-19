@@ -1,4 +1,5 @@
 import {
+  type AppHooks,
   formDataToObject,
   HttpError,
   type LoadedPage,
@@ -34,6 +35,8 @@ export interface CreatePageRoutesOptions {
    * memutus aliran (status tidak bisa diubah lagi — halaman error hanya berlaku sebelum).
    */
   readonly streaming?: boolean;
+  /** Hook aplikasi (ADR-0065) — `onLoaderEnd`/`onRenderEnd`; zero-cost bila tidak diisi. */
+  readonly hooks?: AppHooks;
 }
 
 const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
@@ -46,6 +49,9 @@ const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
 const BODY_MARKER = "<!--__RAMONYX_BODY__-->";
 
 const encoder = new TextEncoder();
+
+/** Respons yang memakai jalur streaming (untuk `onRenderEnd.streaming` — ADR-0065). */
+const streamedResponses = new WeakSet<Response>();
 
 /** Menggabungkan prefix + aliran body + suffix, sekaligus menegakkan `maxDocumentBytes`. */
 function streamDocument(
@@ -282,22 +288,31 @@ async function renderPage(
   actionState?: PageActionState,
   statusOverride?: number,
   extraHeaders?: Readonly<Record<string, string>>,
+  hooks?: AppHooks,
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
 
   try {
     const loader = page.page.loader;
-    const data =
-      loader === undefined
-        ? undefined
-        : await loader({
-            params,
-            query: context.query,
-            request: context.request,
-            env: context.env,
-            log,
-          });
+    let data: unknown;
+    if (loader === undefined) {
+      data = undefined;
+    } else {
+      const loaderStarted = hooks?.onLoaderEnd !== undefined ? performance.now() : 0;
+      data = await loader({
+        params,
+        query: context.query,
+        request: context.request,
+        env: context.env,
+        log,
+      });
+      hooks?.onLoaderEnd?.({
+        path: page.path,
+        durationMs: performance.now() - loaderStarted,
+        cached: false,
+      });
+    }
 
     const configuredStatus = statusOverride ?? page.page.metadata?.status;
     const status =
@@ -324,7 +339,7 @@ async function renderPage(
         const prefix = encoder.encode(shell.slice(0, markerIndex));
         const suffix = encoder.encode(shell.slice(markerIndex + BODY_MARKER.length));
         const body = await renderStream(buildPageTree(page, data, params, actionState));
-        return new Response(
+        const streamed = new Response(
           streamDocument(
             body,
             prefix,
@@ -343,6 +358,8 @@ async function renderPage(
           ),
           { status, headers: { "content-type": "text/html; charset=utf-8", ...extraHeaders } },
         );
+        streamedResponses.add(streamed);
+        return streamed;
       }
       // Dokumen kustom mengabaikan body/penanda → fallback sinkron di bawah (ADR-0047).
     }
@@ -433,6 +450,43 @@ function issuesToErrors(issues: readonly ValidationIssue[]): Record<string, stri
   return errors;
 }
 
+/** Render + hook `onRenderEnd` (ADR-0065); dipakai jalur GET maupun render ulang action. */
+async function renderPageTimed(
+  page: LoadedPage,
+  context: RouteHandlerContext,
+  renderer: Renderer,
+  documentRenderer: DocumentRenderer,
+  client: ClientOptions | undefined,
+  maxDocumentBytes: number,
+  streaming: boolean,
+  actionState: PageActionState | undefined,
+  statusOverride: number | undefined,
+  extraHeaders: Readonly<Record<string, string>> | undefined,
+  hooks: AppHooks | undefined,
+): Promise<Response> {
+  const started = hooks?.onRenderEnd !== undefined ? performance.now() : 0;
+  const response = await renderPage(
+    page,
+    context,
+    renderer,
+    documentRenderer,
+    client,
+    maxDocumentBytes,
+    streaming,
+    actionState,
+    statusOverride,
+    extraHeaders,
+    hooks,
+  );
+  hooks?.onRenderEnd?.({
+    path: page.path,
+    durationMs: performance.now() - started,
+    status: response.status,
+    streaming: streamedResponses.has(response),
+  });
+  return response;
+}
+
 /** POST ke halaman ber-`action`: validasi schema → action → render ulang (PRG 303 bila redirect). */
 async function runAction(
   page: LoadedPage,
@@ -442,6 +496,7 @@ async function runAction(
   client: ClientOptions | undefined,
   maxDocumentBytes: number,
   streaming: boolean,
+  hooks?: AppHooks,
 ): Promise<Response> {
   const params = context.params as Record<string, string>;
   const request = context.request;
@@ -497,7 +552,7 @@ async function runAction(
       ? context
       : { ...context, request: requestWithCookies(request, setCookies) };
 
-  return renderPage(
+  return renderPageTimed(
     page,
     renderContext,
     renderer,
@@ -508,6 +563,7 @@ async function runAction(
     actionState,
     status,
     extraHeaders,
+    hooks,
   );
 }
 
@@ -537,7 +593,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
       middlewares,
       definition: route({
         handler: (context) =>
-          renderPage(
+          renderPageTimed(
             page,
             context,
             options.renderer,
@@ -545,6 +601,10 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
             options.client,
             maxDocumentBytes,
             streaming,
+            undefined,
+            undefined,
+            undefined,
+            options.hooks,
           ),
       }),
     });
@@ -563,6 +623,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
               options.client,
               maxDocumentBytes,
               streaming,
+              options.hooks,
             ),
         }),
       });

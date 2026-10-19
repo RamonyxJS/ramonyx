@@ -9,14 +9,14 @@
 
 | Prioritas | Jumlah | Item |
 | --- | --- | --- |
-| P0 — blocker adopsi | 4 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` |
+| P0 — blocker adopsi | 5 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` |
 | P1 — paritas | 8 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` |
 | P2 — diferensiasi & utang | 12 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` |
 | P3 — nice-to-have | 3 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` |
 
 **Quick wins** (dampak besar, usaha kecil): `p0-http-production-basics` · `p1-prefetch` · `p1-docs-tutorial` · `p2-watch-mode` · `p2-context7` · `p2-testing-docs`
 
-**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server`
+**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives`
 
 ## P0 — blocker adopsi
 
@@ -78,6 +78,22 @@
 - **Area kode**: `packages/adapter-runtime`, `packages/bundler`, `packages/core`
 - **ADR**: ADR baru
 - **Pembanding**: Next.js/SvelteKit/Astro/Nuxt: aset ber-hash + cache immutable dan kompresi di produksi secara default.
+
+### `f0-extension-primitives` — Kontrak ekstensi bersama (Fase 0 rencana pasca-TODO)
+
+*tema: quality · ukuran: M · status: done · sumber: rencana komprehensif Fase 0*
+
+- **Apa**: Config pass-through, AppHooks (zero-cost), KeyValueStore + contract test, kontrak plugin experimental (vite/middleware/hooks) — fondasi anti-rewrite untuk item L berikutnya.
+- **Kenapa penting untuk bersaing**: Tanpa primitif bersama, setiap fitur berikutnya (revalidate/plugin/asset/observability/devtools) mengubah core dan menulis mekanisme sendiri.
+- **Selesai bila**:
+  - [ ] resolveConfig mempertahankan key tak dikenal (root/app/server) + test
+  - [ ] AppHooks terpasang di createHandler & createPageRoutes (zero-cost) + test
+  - [ ] KeyValueStore + createMemoryStore + contract test (TTL/tag/increment)
+  - [ ] Kontrak plugin (definePlugin/loadPlugins) + tipe di @ramonyx/bundler
+  - [ ] ADR-0065 + kebijakan aditif di rules.json
+- **Area kode**: `packages/core`, `packages/server`, `packages/ssr`, `packages/bundler`
+- **ADR**: ADR-0065
+- **Pembanding**: Framework besar punya lapisan ekstensi serupa (Nuxt hooks+nitro storage, Astro integrations, SvelteKit hooks) — dibuat sebelum fitur yang membutuhkannya.
 
 ## P1 — paritas
 

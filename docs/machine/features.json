@@ -293,7 +293,7 @@
     },
     {
       "id": "config",
-      "name": "Konfigurasi aplikasi (createApp/createHandler: port, host, strictValidation, limits)",
+      "name": "Konfigurasi aplikasi (createApp/createHandler + pass-through key tak dikenal)",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
@@ -302,7 +302,8 @@
       ],
       "evidence": [
         "packages/core/src/config.ts",
-        "packages/core/test/config.test.ts"
+        "packages/core/test/config.test.ts",
+        "docs/adr/0065-extension-contracts.md"
       ],
       "limitations": []
     },
@@ -1195,6 +1196,29 @@
       "limitations": [
         "Belum dirilis di npm (setelah 0.1.1)",
         "Lint statis (Biome) untuk konvensi belum"
+      ]
+    },
+    {
+      "id": "extension-primitives",
+      "name": "Primitif ekstensi (AppHooks, KeyValueStore + contract test, kontrak plugin experimental)",
+      "status": "experimental",
+      "since": null,
+      "priority": "p1",
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/bundler"
+      ],
+      "evidence": [
+        "packages/core/src/hooks.ts",
+        "packages/core/src/store.ts",
+        "packages/bundler/src/plugin.ts",
+        "tests/contracts/store.test.ts",
+        "docs/adr/0065-extension-contracts.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Kontrak plugin experimental sampai >=2 plugin nyata",
+        "Store eksternal (redis) belum ada implementasinya"
       ]
     }
   ]

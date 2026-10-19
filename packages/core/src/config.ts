@@ -10,11 +10,19 @@ export interface ServerConfig {
 export interface RamonyxConfigInput {
   readonly app?: AppConfig;
   readonly server?: ServerConfig;
+  /** Key lain dipertahankan apa adanya (pass-through) — fitur/plugin membaca & memvalidasi sendiri. */
+  readonly [key: string]: unknown;
 }
 
 export interface RamonyxConfig {
-  readonly app: { readonly strictValidation: boolean };
-  readonly server: { readonly port: number; readonly host: string };
+  readonly app: { readonly strictValidation: boolean; readonly [key: string]: unknown };
+  readonly server: {
+    readonly port: number;
+    readonly host: string;
+    readonly [key: string]: unknown;
+  };
+  /** Key tak dikenal dipertahankan (pass-through) — kontrak ekstensi ADR-0065. */
+  readonly [key: string]: unknown;
 }
 
 /** Identitas tipe untuk `ramonyx.config.ts`; nilai dikembalikan apa adanya. */
@@ -22,7 +30,13 @@ export function defineConfig(config: RamonyxConfigInput): RamonyxConfigInput {
   return config;
 }
 
-/** Menerapkan default dan memvalidasi config; melempar Error dengan pesan jelas bila tidak valid. */
+/**
+ * Menerapkan default dan memvalidasi config; melempar Error dengan pesan jelas bila tidak valid.
+ *
+ * **Pass-through** (ADR-0065): key yang tidak dikenal (di root, `app`, atau `server`) dibawa apa
+ * adanya ke hasil — sehingga fitur/plugin dapat menambahkan konfigurasi tanpa mengubah core.
+ * Hanya `app.strictValidation`, `server.port`, dan `server.host` yang divalidasi di sini.
+ */
 export function resolveConfig(input: RamonyxConfigInput = {}): RamonyxConfig {
   const strictValidation = input.app?.strictValidation ?? true;
   if (typeof strictValidation !== "boolean") {
@@ -44,7 +58,8 @@ export function resolveConfig(input: RamonyxConfigInput = {}): RamonyxConfig {
   }
 
   return {
-    app: { strictValidation },
-    server: { port, host },
+    ...input,
+    app: { ...input.app, strictValidation },
+    server: { ...input.server, port, host },
   };
 }

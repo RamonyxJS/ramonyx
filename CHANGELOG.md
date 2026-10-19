@@ -42,6 +42,12 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   body string/bytes/URLSearchParams/ReadableStream didukung.
 - **Tutorial end-to-end** (`docs/tutorial.md`): scaffold → loader → API → action → deploy
   (Node/statis/edge), semua perintah terverifikasi test repo.
+- **Kontrak ekstensi bersama** (ADR-0065): `resolveConfig` **pass-through** (key tak dikenal
+  dipertahankan — plugin/fitur membaca config sendiri); **`AppHooks`** (onRequest/onLoader/
+  onRender/onInvalidate, zero-cost) di `createHandler`/`createPageRoutes`; **`KeyValueStore`**
+  + `createMemoryStore` + contract test; **kontrak plugin** (`definePlugin`/`loadPlugins`,
+  passthrough Vite + middleware + hooks, experimental) di `@ramonyx/bundler`.
+  Catatan: hasil `resolveConfig` kini memuat key tambahan (perilaku pass-through).
 
 ### Perubahan API (pra-1.0)
 

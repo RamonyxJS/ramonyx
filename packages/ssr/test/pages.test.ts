@@ -715,3 +715,62 @@ test("halaman tanpa action: POST → 405 Method Not Allowed", async () => {
   assert.equal(response.status, 405);
   assert.equal(response.headers.get("allow"), "GET");
 });
+
+test("hooks: onLoaderEnd & onRenderEnd (termasuk flag streaming) — ADR-0065", async () => {
+  const loaders: { path: string; durationMs: number; cached: boolean }[] = [];
+  const renders: { path: string; status: number; streaming: boolean }[] = [];
+  const hooks = {
+    onLoaderEnd: (event: { path: string; durationMs: number; cached: boolean }) =>
+      loaders.push(event),
+    onRenderEnd: (event: { path: string; status: number; streaming: boolean }) =>
+      renders.push(event),
+  };
+
+  const page = basePage("/uji", {
+    default: Page,
+    loader: async () => ({ angka: 1 }),
+  });
+
+  // Sinkron: streaming false.
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer(), hooks }),
+  });
+  await handler(new Request("http://test.local/uji"));
+  assert.equal(loaders.length, 1);
+  assert.equal(loaders[0]?.path, "/uji");
+  assert.equal(loaders[0]?.cached, false);
+  assert.ok((loaders[0]?.durationMs ?? -1) >= 0);
+  assert.deepEqual(
+    renders.map((event) => ({
+      path: event.path,
+      status: event.status,
+      streaming: event.streaming,
+    })),
+    [{ path: "/uji", status: 200, streaming: false }],
+  );
+
+  // Streaming: flag true (respons memakai jalur aliran).
+  const streamingRenderer: Renderer = {
+    ...fakeRenderer(),
+    renderStream: async (element) => {
+      const bytes = new TextEncoder().encode(describeElement(element));
+      return new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(bytes);
+          controller.close();
+        },
+      });
+    },
+  };
+  const streamHandler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: streamingRenderer,
+      streaming: true,
+      hooks,
+    }),
+  });
+  await streamHandler(new Request("http://test.local/uji"));
+  assert.equal(renders.length, 2);
+  assert.equal(renders[1]?.streaming, true, "onRenderEnd menandai jalur streaming");
+});

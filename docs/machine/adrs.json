@@ -863,6 +863,24 @@
       "features": [
         "ssrf-guard"
       ]
+    },
+    {
+      "id": "ADR-0065",
+      "file": "0065-extension-contracts.md",
+      "title": "Kontrak Ekstensi Bersama — Config Pass-Through, `AppHooks`, `KeyValueStore`, Plugin",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Empat primitif lintas-fitur: resolveConfig pass-through (key tak dikenal dipertahankan), AppHooks (zero-cost, createHandler/createPageRoutes), KeyValueStore + contract test (memory default), dan kontrak plugin di @ramonyx/bundler (vite/middleware/hooks, experimental); perubahan kontrak publik aditif + freeze window 0.2.0.",
+      "related": [
+        "ADR-0053",
+        "ADR-0058",
+        "ADR-0016"
+      ],
+      "features": [
+        "extension-primitives",
+        "config"
+      ]
     }
   ]
 }

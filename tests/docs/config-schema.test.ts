@@ -36,12 +36,17 @@ test("config.schema.json menolak input yang resolveConfig tolak", () => {
   }
 });
 
-test("config.schema.json menolak properti tak dikenal (resolveConfig mengabaikannya)", () => {
-  // Skema lebih ketat dari runtime: runtime mengabaikan kunci tak dikenal (kompatibel),
-  // skema menolaknya agar permukaan config terdokumentasi terkendali.
+test("config.schema.json mendokumentasikan permukaan tervalidasi (runtime pass-through — ADR-0065)", () => {
+  // Skema lebih ketat dari runtime: runtime MEMPERTAHANKAN kunci tak dikenal (pass-through
+  // untuk ekstensi/plugin), sedangkan skema mendokumentasikan permukaan config yang divalidasi.
   assert.ok(validateAgainstSchema({ extra: true }, schema).length > 0);
   assert.deepEqual(resolveConfig({} as never), {
     app: { strictValidation: true },
     server: { port: 3000, host: "localhost" },
   });
+  // Pass-through: key tak dikenal dibawa apa adanya (bukan dibuang).
+  const denganPlugin = resolveConfig({ pluginKu: { aktif: true } } as never) as unknown as {
+    pluginKu: unknown;
+  };
+  assert.deepEqual(denganPlugin.pluginKu, { aktif: true });
 });

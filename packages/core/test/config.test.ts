@@ -35,3 +35,25 @@ test("defineConfig mengembalikan input apa adanya (identitas tipe)", () => {
   const input = { server: { port: 4000 } };
   assert.equal(defineConfig(input), input);
 });
+
+test("pass-through: key tak dikenal dipertahankan (root, app, server) — ADR-0065", () => {
+  const resolved = resolveConfig({
+    plugins: [{ name: "uji" }],
+    app: { strictValidation: false, fiturBaru: { aktif: true } },
+    server: { port: 4000, catatan: "khusus" },
+  } as never);
+
+  assert.deepEqual(resolved.plugins, [{ name: "uji" }], "key root dibawa apa adanya");
+  assert.equal(resolved.app.strictValidation, false, "nilai dikenal tetap diterapkan");
+  assert.deepEqual(resolved.app.fiturBaru, { aktif: true }, "key app tak dikenal dipertahankan");
+  assert.equal(resolved.server.port, 4000);
+  assert.equal(resolved.server.catatan, "khusus", "key server tak dikenal dipertahankan");
+});
+
+test("pass-through tidak melonggarkan validasi nilai yang dikenal", () => {
+  assert.throws(() => resolveConfig({ server: { port: 70000 } } as never), /server\.port/);
+  assert.throws(
+    () => resolveConfig({ app: { strictValidation: "ya" } } as never),
+    /strictValidation/,
+  );
+});

@@ -71,3 +71,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0062](0062-auth-session.md) | Primitif sesi & cookie (HMAC, Web Crypto) + action men-set cookie | Accepted |
 | [0063](0063-server-client-boundary.md) | Batas server/client: konvensi `*.server.ts` + stub poison-pill + penegakan build | Accepted |
 | [0064](0064-ip-pinning.md) | IP-pinning `guardedFetch` (resolve sekali + patok alamat, menutup DNS-rebinding) | Accepted |
+| [0065](0065-extension-contracts.md) | Kontrak ekstensi bersama: config pass-through, `AppHooks`, `KeyValueStore`, kontrak plugin | Accepted |

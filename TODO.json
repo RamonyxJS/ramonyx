@@ -522,6 +522,28 @@
       "adrs": [],
       "competitor": "Semua docs resmi framework besar berada di domain sendiri.",
       "source": "kandidat lama"
+    },
+    {
+      "id": "f0-extension-primitives",
+      "title": "Kontrak ekstensi bersama (Fase 0 rencana pasca-TODO)",
+      "theme": "quality",
+      "priority": "p0",
+      "size": "M",
+      "status": "done",
+      "what": "Config pass-through, AppHooks (zero-cost), KeyValueStore + contract test, kontrak plugin experimental (vite/middleware/hooks) — fondasi anti-rewrite untuk item L berikutnya.",
+      "why": "Tanpa primitif bersama, setiap fitur berikutnya (revalidate/plugin/asset/observability/devtools) mengubah core dan menulis mekanisme sendiri.",
+      "done": [
+        "resolveConfig mempertahankan key tak dikenal (root/app/server) + test",
+        "AppHooks terpasang di createHandler & createPageRoutes (zero-cost) + test",
+        "KeyValueStore + createMemoryStore + contract test (TTL/tag/increment)",
+        "Kontrak plugin (definePlugin/loadPlugins) + tipe di @ramonyx/bundler",
+        "ADR-0065 + kebijakan aditif di rules.json"
+      ],
+      "areas": ["packages/core", "packages/server", "packages/ssr", "packages/bundler"],
+      "adrs": ["ADR-0065"],
+      "competitor": "Framework besar punya lapisan ekstensi serupa (Nuxt hooks+nitro storage, Astro integrations, SvelteKit hooks) — dibuat sebelum fitur yang membutuhkannya.",
+      "source": "rencana komprehensif Fase 0",
+      "strategic": true
     }
   ]
 }

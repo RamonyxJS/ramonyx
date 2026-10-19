@@ -226,6 +226,18 @@
       "adrs": [
         "ADR-0058"
       ]
+    },
+    {
+      "id": "additive-contracts",
+      "rule": "Perubahan kontrak publik (payload hydration, opsi createHandler/createPageRoutes, PageModule, manifest aset, config) harus ADITIF — hanya menambah field opsional; perubahan nama/bentuk butuh ADR + jalur deprecasi.",
+      "rationale": "Mencegah rewrite berulang dan breaking change diam-diam; freeze window 0.2.0 menetapkan titik beku kontrak (ADR-0065).",
+      "scope": "framework",
+      "good": "// menambah field opsional\nreadonly hooks?: AppHooks;",
+      "bad": "// mengganti nama field tanpa deprecasi\nreadonly actions?: ... // dulu: action",
+      "enforcement": "Review + ADR + test; fitur baru wajib memakai primitif yang ada (hooks/store/config pass-through) alih-alih mekanisme baru",
+      "adrs": [
+        "ADR-0065"
+      ]
     }
   ]
 }

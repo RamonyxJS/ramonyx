@@ -1,4 +1,5 @@
 import {
+  type AppHooks,
   type EnvReader,
   type FetchHandler,
   HttpError,
@@ -18,6 +19,8 @@ export interface CreateHandlerOptions {
   readonly middleware?: readonly Middleware[];
   readonly env?: EnvReader;
   readonly logger?: Logger;
+  /** Hook aplikasi (ADR-0065) — zero-cost bila tidak diisi. */
+  readonly hooks?: AppHooks;
   /** false melonggarkan validasi output (input tetap ketat). Default true. */
   readonly strictValidation?: boolean;
   /** Batas ukuran body request (byte). Default 1 MiB; lebih besar → 413. */
@@ -322,9 +325,10 @@ export function createHandler(options: CreateHandlerOptions): FetchHandler {
   const maxBodyBytes = options.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const maxConcurrent = options.maxConcurrent ?? DEFAULT_MAX_CONCURRENT;
+  const hooks = options.hooks;
   let inFlight = 0;
 
-  return async function handle(request) {
+  const run = async (request: Request): Promise<Response> => {
     if (inFlight >= maxConcurrent) {
       logger.warn("Load shedding: concurrency limit", {
         path: safePath(request),
@@ -364,5 +368,23 @@ export function createHandler(options: CreateHandlerOptions): FetchHandler {
       clearTimeout(timer);
       inFlight -= 1;
     }
+  };
+
+  if (hooks?.onRequestStart === undefined && hooks?.onRequestEnd === undefined) {
+    return run;
+  }
+
+  return async (request: Request): Promise<Response> => {
+    const started = performance.now();
+    const path = safePath(request);
+    hooks.onRequestStart?.({ request, path });
+    const response = await run(request);
+    hooks.onRequestEnd?.({
+      request,
+      path,
+      status: response.status,
+      durationMs: performance.now() - started,
+    });
+    return response;
   };
 }

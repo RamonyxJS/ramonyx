@@ -9,6 +9,8 @@ export type { DevServer, DevServerOptions } from "./dev.ts";
 export { createDevServer } from "./dev.ts";
 export type { BuildEdgeOptions, BuildEdgeResult } from "./edge.ts";
 export { buildEdge } from "./edge.ts";
+export type { LoadedPlugins, PluginContext, RamonyxPlugin } from "./plugin.ts";
+export { definePlugin, loadPlugins } from "./plugin.ts";
 export type {
   PrerenderOptions,
   PrerenderResult,

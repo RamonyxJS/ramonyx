@@ -351,3 +351,38 @@ test("middleware per-rute berjalan SEBELUM body di-parse (penggantian request am
   assert.equal(response.status, 200, "middleware mengganti request + body tetap terbaca");
   assert.deepEqual(await response.json(), { pesan: "halo", xUji: "1" });
 });
+
+test("hooks: onRequestStart/onRequestEnd terukur untuk sukses maupun 404 — ADR-0065", async () => {
+  const starts: string[] = [];
+  const ends: { path: string; status: number; durationMs: number }[] = [];
+  const handler = createHandler({
+    hooks: {
+      onRequestStart: (event) => starts.push(event.path),
+      onRequestEnd: (event) => ends.push(event),
+    },
+    routes: [
+      {
+        method: "GET",
+        path: "/ok",
+        definition: route({ handler: ({ json }) => json({ ok: true }) }),
+      },
+    ],
+  });
+
+  const ok = await handler(new Request("http://uji/ok"));
+  assert.equal(ok.status, 200);
+  const missing = await handler(new Request("http://uji/tidak-ada"));
+  assert.equal(missing.status, 404);
+
+  assert.deepEqual(starts, ["/ok", "/tidak-ada"]);
+  assert.deepEqual(
+    ends.map((event) => ({ path: event.path, status: event.status })),
+    [
+      { path: "/ok", status: 200 },
+      { path: "/tidak-ada", status: 404 },
+    ],
+  );
+  for (const event of ends) {
+    assert.ok(event.durationMs >= 0, "durasi terukur");
+  }
+});

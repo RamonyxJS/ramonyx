@@ -114,7 +114,7 @@
       "id": "middleware-per-folder",
       "name": "Middleware per-folder (middleware.ts, root→terdalam, otomatis via manifest)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [
         "@ramonyx/compiler",
@@ -127,9 +127,7 @@
         "apps/playground/src/routes/users/middleware.ts",
         "docs/adr/0061-middleware-per-folder.md"
       ],
-      "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)"
-      ]
+      "limitations": []
     },
     {
       "id": "ssr-sync",
@@ -187,7 +185,7 @@
       "id": "soft-navigation",
       "name": "Soft navigation (fetch HTML → swap → re-hydrate; title + scroll direset)",
       "status": "implemented",
-      "since": "0.1.0",
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [
         "@ramonyx/react"
@@ -199,9 +197,7 @@
         "docs/adr/0008-client-navigation.md",
         "docs/adr/0060-prefetch.md"
       ],
-      "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)"
-      ]
+      "limitations": []
     },
     {
       "id": "data-loaders",
@@ -227,7 +223,7 @@
       "id": "mutations-server-actions",
       "name": "Server actions (mutasi form per halaman: FormData, actionSchema, PRG, progressive enhancement)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p0",
       "packages": [
         "@ramonyx/core",
@@ -242,7 +238,6 @@
         "docs/adr/0057-server-actions.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Revalidasi antar-halaman menyusul (p1-revalidate)",
         "Tanpa pending state klien/optimistic UI"
       ]
@@ -266,7 +261,7 @@
       "id": "head-metadata",
       "name": "Metadata halaman (title, description, canonical, OG/Twitter, robots) + injeksi <head>",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [
         "@ramonyx/core",
@@ -279,7 +274,6 @@
         "docs/adr/0059-metadata-seo.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Origin kanonik dari request (di belakang proxy: pastikan header benar)"
       ]
     },
@@ -545,7 +539,7 @@
       "id": "typed-routes",
       "name": "Typed routes (modul generate .ramonyx/routes.ts: RouteParamsMap + routeHref + Link)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/router",
@@ -562,7 +556,6 @@
         "docs/adr/0073-typed-routes.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Impor via path relatif ke .ramonyx/routes.ts (belum ada alias)",
         "href Link tetap string (URL konkret rute dinamis)"
       ]
@@ -571,7 +564,7 @@
       "id": "error-messages-id",
       "name": "Pesan error: kode stabil (RMX-…) + tautan troubleshooting + overlay dev (stack/sumber)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p3",
       "packages": [
         "@ramonyx/core",
@@ -586,7 +579,6 @@
         "docs/adr/0072-error-dx.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Kode hanya untuk error framework (HttpError aplikasi bebas)",
         "Overlay berupa halaman error ber-detail (bukan panel JS)"
       ]
@@ -595,7 +587,7 @@
       "id": "static-export",
       "name": "Ekspor statis situs docs (dogfood SSG)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/bundler"
@@ -606,15 +598,13 @@
         "docs/adr/0056-static-generation.md",
         "docs/adr/0052-docs-hosting-pages.md"
       ],
-      "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)"
-      ]
+      "limitations": []
     },
     {
       "id": "ssg-first-class",
       "name": "Static generation (SSG): prerenderRoutes + `ramonyx build --static`",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p0",
       "packages": [
         "@ramonyx/bundler",
@@ -627,7 +617,6 @@
         "docs/adr/0056-static-generation.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Revalidasi/ISR belum (p1-revalidate)"
       ]
     },
@@ -635,7 +624,7 @@
       "id": "http-cache-helpers",
       "name": "Helper cache HTTP (cacheControl: maxAge/sMaxAge/SWR/immutable/private)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/core"
@@ -646,7 +635,6 @@
         "docs/adr/0055-http-production-basics.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Revalidate/ISR per rute menyusul (p1-revalidate)"
       ]
     },
@@ -654,7 +642,7 @@
       "id": "asset-fingerprinting",
       "name": "Fingerprinting aset (client-<hash>.js) + manifest + cache immutable",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p0",
       "packages": [
         "@ramonyx/bundler"
@@ -665,9 +653,7 @@
         "apps/create-app/template/src/routes/middleware.ts",
         "docs/adr/0055-http-production-basics.md"
       ],
-      "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)"
-      ]
+      "limitations": []
     },
     {
       "id": "adapter-node",
@@ -705,7 +691,7 @@
       "id": "adapter-serverless-edge",
       "name": "Adapter edge/serverless (--target edge, kontrak fetch handler, binding env, smoke workerd)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p0",
       "packages": [
         "@ramonyx/bundler",
@@ -723,7 +709,6 @@
         "docs/adr/0068-edge-env-and-smoke.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Preset Vercel/Deno Deploy belum",
         "Deploy ke akun platform tetap langkah pengguna (tanpa kredensial di CI)"
       ]
@@ -732,7 +717,7 @@
       "id": "compression-etag",
       "name": "Kompresi (brotli/gzip) di server standalone + vary + flush streaming",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p0",
       "packages": [
         "@ramonyx/adapter-runtime"
@@ -743,7 +728,6 @@
         "docs/adr/0055-http-production-basics.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Range request belum",
         "Aset pra-kompresi (.br/.gz) belum"
       ]
@@ -752,7 +736,7 @@
       "id": "image-optimization",
       "name": "Aset: komponen Image (anti-CLS, lazy) — tanpa resize/format modern (M1)",
       "status": "partial",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p3",
       "packages": [
         "@ramonyx/react",
@@ -765,7 +749,6 @@
         "docs/adr/0069-asset-pipeline-m1.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Tanpa resize/format modern (M2 gate: plugin + audit dependency + build-time)",
         "srcSet manual (tanpa varian otomatis)"
       ]
@@ -789,7 +772,7 @@
       "id": "auth-session",
       "name": "Primitif autentikasi: cookie bertanda tangan + session (HMAC, edge-safe)",
       "status": "partial",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [
         "@ramonyx/security"
@@ -803,7 +786,6 @@
         "docs/adr/0062-auth-session.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Ditandatangani, bukan dienkripsi",
         "Tanpa rotasi secret otomatis / store bawaan / UI login"
       ]
@@ -812,7 +794,7 @@
       "id": "forms",
       "name": "Form handling (action + FormData + actionSchema + progressive enhancement)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/ssr"
@@ -824,7 +806,6 @@
         "docs/adr/0057-server-actions.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Upload file besar belum dioptimasi (multipart di-buffer FormData)"
       ]
     },
@@ -832,7 +813,7 @@
       "id": "observability-logger",
       "name": "Observability: trace-id + request logging terstruktur + metrik dasar (hook)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/server"
@@ -845,7 +826,6 @@
         "docs/adr/0071-observability.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "In-memory per proses (tanpa agregasi multi-instance)",
         "Tanpa tracing OTel native/histogram"
       ]
@@ -854,7 +834,7 @@
       "id": "observability-metrics",
       "name": "Metrik operasi runtime (timings, fase startup) — runtime Rust",
       "status": "partial",
-      "since": null,
+      "since": "0.1.0",
       "priority": "p2",
       "packages": [],
       "evidence": [
@@ -1122,7 +1102,7 @@
       "id": "machine-docs",
       "name": "Lapisan dokumentasi machine-readable (docs/machine: features/adrs/rules/security/glossary/stats)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [],
       "evidence": [
@@ -1130,15 +1110,13 @@
         "scripts/docs/validate.ts",
         "docs/adr/0054-machine-readable-docs.md"
       ],
-      "limitations": [
-        "Belum dirilis di versi npm (setelah 0.1.1)"
-      ]
+      "limitations": []
     },
     {
       "id": "llms-txt",
       "name": "llms.txt + llms-full.txt (digenerate, diterbitkan di situs)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [],
       "evidence": [
@@ -1154,7 +1132,7 @@
       "id": "agent-skill",
       "name": "Skill agen untuk penulis aplikasi (.agents/skills/ramonyx)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p2",
       "packages": [],
       "evidence": [
@@ -1184,7 +1162,7 @@
       "id": "static-assets",
       "name": "Middleware aset statis (serveStatic: ETag/304, immutable, guard traversal)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p0",
       "packages": [
         "@ramonyx/adapter-runtime"
@@ -1194,15 +1172,13 @@
         "packages/adapter-runtime/test/static.test.ts",
         "docs/adr/0055-http-production-basics.md"
       ],
-      "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)"
-      ]
+      "limitations": []
     },
     {
       "id": "seo-helpers",
       "name": "Helper SEO (sitemap.xml + robots.txt dari manifest rute)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [
         "@ramonyx/ssr"
@@ -1213,15 +1189,13 @@
         "apps/docs/export.ts",
         "docs/adr/0059-metadata-seo.md"
       ],
-      "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)"
-      ]
+      "limitations": []
     },
     {
       "id": "routing-route-groups",
       "name": "Route group `(grup)` — organisasi folder tanpa segmen URL",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/compiler"
@@ -1232,15 +1206,13 @@
         "packages/compiler/test/playground-pages.test.ts",
         "docs/adr/0061-middleware-per-folder.md"
       ],
-      "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)"
-      ]
+      "limitations": []
     },
     {
       "id": "boundary-enforcement",
       "name": "Penegakan batas server/client (`*.server.ts` stub + tolak node:* di bundle klien)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [
         "@ramonyx/bundler"
@@ -1252,7 +1224,6 @@
         "docs/adr/0063-server-client-boundary.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Lint statis (Biome) untuk konvensi belum"
       ]
     },
@@ -1260,7 +1231,7 @@
       "id": "extension-primitives",
       "name": "Primitif ekstensi (AppHooks, KeyValueStore + contract test, kontrak plugin experimental)",
       "status": "experimental",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [
         "@ramonyx/core",
@@ -1274,7 +1245,6 @@
         "docs/adr/0065-extension-contracts.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Kontrak plugin experimental sampai >=2 plugin nyata",
         "Store eksternal (redis) belum ada implementasinya"
       ]
@@ -1283,7 +1253,7 @@
       "id": "revalidate",
       "name": "Revalidasi data (ISR-lite): cache loader + SWR + invalidasi path/tag",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p1",
       "packages": [
         "@ramonyx/core",
@@ -1298,7 +1268,6 @@
         "docs/adr/0066-revalidate.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "In-memory per proses (store eksternal belum ada implementasinya)",
         "Query string/cookie melewati cache (disengaja)",
         "Tanpa purge CDN"
@@ -1308,7 +1277,7 @@
       "id": "plugin-ecosystem",
       "name": "Plugin (vite passthrough + middleware pre-routing + hooks) dari ramonyx.config.ts",
       "status": "partial",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/bundler",
@@ -1325,7 +1294,6 @@
         "docs/adr/0067-plugin-ecosystem.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Kontrak experimental (stabil setelah >=2 plugin nyata)",
         "Tanpa registry/ramonyx add",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
@@ -1335,7 +1303,7 @@
       "id": "asset-pipeline",
       "name": "Pipeline aset (src/assets/** → hash + manifest + resolver + preload font)",
       "status": "implemented",
-      "since": null,
+      "since": "0.2.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/bundler",
@@ -1351,7 +1319,6 @@
         "docs/adr/0069-asset-pipeline-m1.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (setelah 0.1.1)",
         "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",
         "Tanpa kompresi otomatis"
       ]
@@ -3220,7 +3187,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T12:07:39.672Z",
+  "generatedAt": "2026-10-19T12:23:26.511Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3586,7 +3553,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T12:07:40.913Z",
+  "generatedAt": "2026-10-19T12:23:27.772Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3745,9 +3712,9 @@ Framework full-stack TypeScript (Node ≥ 24) + runtime Rust/V8 **eksperimental*
 SSR React (+ streaming), hydration + soft navigation, middleware security, validasi schema di
 tepi kepercayaan, dan benchmark/gate reproducible.
 
-> **Status: alpha 0.1.1 — terbit di npm** (2026-10-18, 14 paket `@ramonyx/*` + `ramonyx` +
+> **Status: alpha 0.2.0 — terbit di npm** (2026-10-19, 14 paket `@ramonyx/*` + `ramonyx` +
 > `create-ramonyx-app`, **dengan provenance**) — lihat
-> [Rilis v0.1.1](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.1.1).
+> [Rilis v0.2.0](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.2.0).
 > Framework Node adalah baseline produksi; runtime Rust/V8 eksperimental. Aplikasi baru:
 > `pnpm create ramonyx-app aplikasi-saya` → `pnpm dev|build|start` (CLI `ramonyx`).
 > Verifikasi registry end-to-end: scaffold → install → build → start → SSR + API.
@@ -5115,11 +5082,10 @@ aplikasi masing-masing.
 
 # Panduan Rilis — Checklist Pra-Publikasi
 
-- Status: **TERBIT** — **0.1.1** (2026-10-18, 14 paket termasuk `@ramonyx/devtools`, **dengan
-  provenance**; GitHub Release v0.1.1) di atas 0.1.0 (2026-10-18, 13 paket). Verifikasi registry
-  end-to-end lolos untuk keduanya. Kebijakan ADR-0039/0049 di bawah berlaku untuk rilis berikutnya.
-- **0.2.0: siap rilis (menunggu tag)** — bump `Cargo.toml` + 14 paket + template `^0.2.0`
-  (2026-10-19); verifikasi lokal lengkap lolos (lihat bagian di bawah).
+- Status: **TERBIT** — **0.2.0** (2026-10-19, 14 paket, **dengan provenance**; GitHub Release
+  v0.2.0, 17 aset) di atas 0.1.1 (2026-10-18, 14 paket) dan 0.1.0 (2026-10-18, 13 paket).
+  Verifikasi registry end-to-end lolos untuk ketiganya. Kebijakan ADR-0039/0049 di bawah berlaku
+  untuk rilis berikutnya.
 - Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
   binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
   `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).
@@ -5179,6 +5145,18 @@ cd demo-app && pnpm install && pnpm build && pnpm start
   untuk rilis berikutnya — rilis baru cukup: bump versi di `Cargo.toml` → commit → tag `vX.Y.Z`.
 - Catatan higiene: jangan pernah menempelkan nilai token sebagai **nama** `gh secret set`
   (nama secret terlihat di pengaturan repo — token harus dianggap terekspos dan dirotasi).
+
+## Hasil rilis 0.2.0 (2026-10-19)
+
+- Tag `v0.2.0` → workflow `release.yml`: job **Build artefak rilis + verifikasi** dan
+  **Publikasi npm** keduanya **success**; **14 paket @ 0.2.0 terbit** (`npm publish` ×14,
+  dist-tag `latest`, **provenance** — terverifikasi di registry: `dist.attestations` ada) +
+  **GitHub Release v0.2.0 (17 aset)**.
+- Catatan operasional: `npm view` untuk sebagian paket sempat menampilkan `0.1.1` (CDN metadata
+  lag ±beberapa menit) — log workflow menunjukkan 14× `+ <paket>@0.2.0`; tunggu/bersihkan cache
+  metadata pnpm saat menguji segera setelah publish.
+- Dokumentasi pasca-terbit: klaim "belum dirilis" di `docs/machine/features.json` dihapus
+  (25 fitur → `since: 0.2.0`); README + status rilis diperbarui.
 
 ## Persiapan 0.2.0 (2026-10-19)
 

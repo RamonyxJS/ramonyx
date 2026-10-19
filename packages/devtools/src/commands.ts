@@ -270,7 +270,6 @@ async function commandBuildWatch(flags: Flags, plugins: LoadedPlugins): Promise<
   };
 
   await jalankan();
-  console.log("watch: memantau src/** — Ctrl+C untuk keluar");
 
   let timer: NodeJS.Timeout | undefined;
   let berjalan = false;
@@ -300,6 +299,9 @@ async function commandBuildWatch(flags: Flags, plugins: LoadedPlugins): Promise<
   };
 
   const watcher = watch(join(appDir, "src"), { recursive: true }, () => jadwalkan());
+  // Cetak setelah watcher benar-benar terdaftar: klien (mis. test CI) yang menulis berkas
+  // begitu melihat baris ini tidak boleh kalah balapan dengan registrasi `fs.watch`.
+  console.log("watch: memantau src/** — Ctrl+C untuk keluar");
 
   await new Promise<void>((resolve) => {
     const berhenti = (): void => {

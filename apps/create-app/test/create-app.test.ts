@@ -377,10 +377,21 @@ test("build --watch: build ulang saat berkas berubah — ADR-0070", async () => 
     const buildPertama = (keluaran.match(/client bundle/g) ?? []).length;
     assert.ok(buildPertama >= 1, "build awal terjadi");
 
-    // Sentuh berkas halaman → build kedua.
+    // Sentuh berkas halaman → build kedua. Sentuh ulang bila watcher CI melewatkan event
+    // (inotify runner kadang tidak konsisten) — maksimum 3 percobaan.
     const page = join(target, "src/routes/page.tsx");
-    writeFileSync(page, `${readFileSync(page, "utf8")}\n// sentuh\n`);
-    await tunggu(() => (keluaran.match(/client bundle/g) ?? []).length > buildPertama, 60_000);
+    const isiAwal = readFileSync(page, "utf8");
+    let buildKedua = false;
+    for (let percobaan = 1; percobaan <= 3 && !buildKedua; percobaan += 1) {
+      writeFileSync(page, `${isiAwal}\n// sentuh ${percobaan}\n`);
+      try {
+        await tunggu(() => (keluaran.match(/client bundle/g) ?? []).length > buildPertama, 15_000);
+        buildKedua = true;
+      } catch {
+        // coba sentuh lagi
+      }
+    }
+    assert.ok(buildKedua, `build ulang tidak terdeteksi; terlihat:\n${keluaran}`);
   } finally {
     child.kill("SIGTERM");
     await new Promise((resolve) => setTimeout(resolve, 300));

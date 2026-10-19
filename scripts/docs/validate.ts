@@ -251,7 +251,8 @@ if (stats.commit !== head) {
         "scripts",
         "benchmarks",
       ],
-      { cwd: ROOT, encoding: "utf8" },
+      // stderr dibuang: shallow clone CI tidak punya commit lama (report-only — jangan berisik).
+      { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
     ).trim();
   } catch {
     relevant = "(tidak dapat membandingkan riwayat)";

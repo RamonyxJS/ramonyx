@@ -2,9 +2,15 @@ import { fileURLToPath } from "node:url";
 import { serveStatic } from "@ramonyx/adapter-runtime";
 import { createRouteManifest, loadPageRoutes, type ModuleImporter } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
-import { createHandler } from "@ramonyx/server";
+import {
+  createHandler,
+  createMetrics,
+  createMetricsRoute,
+  requestLogging,
+  traceId,
+} from "@ramonyx/server";
 import { createPageRoutes } from "@ramonyx/ssr";
-import type { AppHooks, EnvReader, FetchHandler, Logger, Middleware } from "ramonyx";
+import { type AppHooks, type EnvReader, type FetchHandler, type Logger, mergeHooks } from "ramonyx";
 
 // Middleware pre-routing (global): aset statis (Node-only) + logging request.
 // Middleware aplikasi ada di `src/routes/middleware.ts` (per-folder, otomatis — ADR-0061).
@@ -16,17 +22,8 @@ const staticAssets = serveStatic({
   headers: { "x-content-type-options": "nosniff" },
 });
 
-const requestLogger: Middleware = async (context, next) => {
-  const started = performance.now();
-  const response = await next();
-  context.log.info("request", {
-    method: context.request.method,
-    path: new URL(context.request.url).pathname,
-    status: response.status,
-    ms: Math.round(performance.now() - started),
-  });
-  return response;
-};
+// Observability (ADR-0071): trace-id + log terstruktur dari paket server.
+const observabilityMiddleware = [traceId(), requestLogging()];
 
 export interface CreateAppOptions {
   readonly env?: EnvReader;
@@ -61,22 +58,25 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
       createRouteManifest({ dir, importer: options.importer }),
       loadPageRoutes({ dir, importer: options.importer }),
     ]);
+    // Metrik dasar (ADR-0071) — digabung dengan hook aplikasi/plugin.
+    const metrics = createMetrics();
+    const hooks = mergeHooks(options.hooks, metrics.hooks);
     const pageRoutes = createPageRoutes({
       pages,
       renderer: createReactRenderer(),
       client,
       streaming: options.streaming,
       cache: options.cache,
-      hooks: options.hooks,
+      hooks,
     });
 
     return createHandler({
-      routes: [...apiRoutes, ...pageRoutes],
-      middleware: [staticAssets, requestLogger],
+      routes: [...apiRoutes, createMetricsRoute(metrics), ...pageRoutes],
+      middleware: [...observabilityMiddleware, staticAssets],
       env: options.env,
       logger: options.logger,
       strictValidation: options.strictValidation,
-      hooks: options.hooks,
+      hooks,
     });
   };
 

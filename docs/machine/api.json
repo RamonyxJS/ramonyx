@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T07:13:35.677Z",
+  "generatedAt": "2026-10-19T07:54:00.864Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -184,6 +184,7 @@
         "createMemoryStore",
         "defineConfig",
         "formDataToObject",
+        "mergeHooks",
         "resolveConfig",
         "route"
       ],
@@ -294,13 +295,21 @@
       "source": "packages/server/src/index.ts",
       "values": [
         "createHandler",
+        "createMetrics",
+        "createMetricsRoute",
         "parseQuery",
+        "requestLogging",
+        "traceId",
         "withMiddleware"
       ],
       "types": [
         "CreateHandlerOptions",
+        "Metrics",
+        "MetricsSnapshot",
         "QueryRecord",
-        "QueryValue"
+        "QueryValue",
+        "RequestLoggingOptions",
+        "TraceIdOptions"
       ],
       "reexports": []
     },

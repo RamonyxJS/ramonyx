@@ -70,6 +70,10 @@ test("playground halaman SSR (layout, loader, error boundary)", async () => {
     const home = await server.fetch("/");
     assert.equal(home.status, 200);
     assert.match(home.headers.get("content-type") ?? "", /text\/html/);
+    assert.ok(
+      (home.headers.get("x-request-id") ?? "").length > 0,
+      "trace-id ada di respons (ADR-0071)",
+    );
     const homeHtml = await home.text();
     assert.ok(homeHtml.includes("<title>Beranda — Ramonyx Playground</title>"));
     assert.ok(homeHtml.includes("Halo dari loader SSR"));
@@ -117,6 +121,17 @@ test("playground halaman SSR (layout, loader, error boundary)", async () => {
       8,
       "logger global mencatat setiap request (6 lama + homeTanpaArea + tentang)",
     );
+
+    // Observability (ADR-0071): snapshot metrik lewat route JSON.
+    const metrics = await server.fetch("/metrics");
+    assert.equal(metrics.status, 200);
+    const snapshot = (await metrics.json()) as {
+      requests: { total: number; byStatusClass: Record<string, number> };
+      renders: { count: number };
+    };
+    assert.ok(snapshot.requests.total >= 6, "metrik menghitung request");
+    assert.ok((snapshot.requests.byStatusClass["2xx"] ?? 0) >= 1);
+    assert.ok(snapshot.renders.count >= 1, "metrik render terisi dari hook");
   } finally {
     await server.close();
   }

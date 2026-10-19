@@ -797,24 +797,29 @@
     },
     {
       "id": "observability-logger",
-      "name": "Logger terstruktur + op metrics (timings per fase)",
+      "name": "Observability: trace-id + request logging terstruktur + metrik dasar (hook)",
       "status": "implemented",
-      "since": "0.1.0",
+      "since": null,
       "priority": "p2",
       "packages": [
-        "@ramonyx/core"
+        "@ramonyx/server"
       ],
       "evidence": [
-        "packages/core/src/logger.ts",
-        "docs/adr/0037-r4-profiling-startup.md"
+        "packages/server/src/observability.ts",
+        "packages/server/test/observability.test.ts",
+        "apps/playground/src/app.ts",
+        "docs/observability.md",
+        "docs/adr/0071-observability.md"
       ],
       "limitations": [
-        "Tanpa tracing terdistribusi / endpoint metrics"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "In-memory per proses (tanpa agregasi multi-instance)",
+        "Tanpa tracing OTel native/histogram"
       ]
     },
     {
       "id": "observability-metrics",
-      "name": "Metrik operasi runtime (timings, fase startup)",
+      "name": "Metrik operasi runtime (timings, fase startup) — runtime Rust",
       "status": "partial",
       "since": null,
       "priority": "p2",
@@ -824,7 +829,7 @@
         "docs/adr/0037-r4-profiling-startup.md"
       ],
       "limitations": [
-        "Hanya di runtime eksperimental; belum dipakai produksi Node"
+        "Hanya di runtime eksperimental; versi Node kini punya createMetrics (ADR-0071)"
       ]
     },
     {

@@ -70,6 +70,10 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   menghentikan watch, SIGINT bersih; mencakup `--static`/`--target edge`).
 - **Docs testing** (`docs/testing.md`): pola unit in-process (`@ramonyx/testing`), contract test,
   e2e JS + no-JS, dan contoh di repo.
+- **Observability** (ADR-0071): `traceId()` (propagasi/generate, request + respons),
+  `requestLogging()` (durasi/status/traceId lewat logger aplikasi), `createMetrics()` (hook
+  request/loader/render/invalidasi) + `createMetricsRoute()` (`GET /metrics`) — di
+  `@ramonyx/server`, edge-safe; dogfood playground; docs `docs/observability.md`.
 
 ### Perubahan API (pra-1.0)
 

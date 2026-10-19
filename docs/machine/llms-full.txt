@@ -805,24 +805,29 @@
     },
     {
       "id": "observability-logger",
-      "name": "Logger terstruktur + op metrics (timings per fase)",
+      "name": "Observability: trace-id + request logging terstruktur + metrik dasar (hook)",
       "status": "implemented",
-      "since": "0.1.0",
+      "since": null,
       "priority": "p2",
       "packages": [
-        "@ramonyx/core"
+        "@ramonyx/server"
       ],
       "evidence": [
-        "packages/core/src/logger.ts",
-        "docs/adr/0037-r4-profiling-startup.md"
+        "packages/server/src/observability.ts",
+        "packages/server/test/observability.test.ts",
+        "apps/playground/src/app.ts",
+        "docs/observability.md",
+        "docs/adr/0071-observability.md"
       ],
       "limitations": [
-        "Tanpa tracing terdistribusi / endpoint metrics"
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "In-memory per proses (tanpa agregasi multi-instance)",
+        "Tanpa tracing OTel native/histogram"
       ]
     },
     {
       "id": "observability-metrics",
-      "name": "Metrik operasi runtime (timings, fase startup)",
+      "name": "Metrik operasi runtime (timings, fase startup) — runtime Rust",
       "status": "partial",
       "since": null,
       "priority": "p2",
@@ -832,7 +837,7 @@
         "docs/adr/0037-r4-profiling-startup.md"
       ],
       "limitations": [
-        "Hanya di runtime eksperimental; belum dipakai produksi Node"
+        "Hanya di runtime eksperimental; versi Node kini punya createMetrics (ADR-0071)"
       ]
     },
     {
@@ -2294,6 +2299,23 @@
       "features": [
         "cli-devtools"
       ]
+    },
+    {
+      "id": "ADR-0071",
+      "file": "0071-observability.md",
+      "title": "Observability — Trace-Id, Log Terstruktur, Metrik (di `@ramonyx/server`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "traceId (propagasi/generate, request+respons), requestLogging (durasi/status/traceId lewat context.log), createMetrics (hook onRequestEnd/onLoaderEnd/onRenderEnd/onInvalidate) + createMetricsRoute(GET /metrics) — di @ramonyx/server (bukan paket baru), edge-safe; OTel manual tanpa dependency.",
+      "related": [
+        "ADR-0065",
+        "ADR-0067"
+      ],
+      "features": [
+        "observability-logger",
+        "observability-metrics"
+      ]
     }
   ]
 }
@@ -3046,7 +3068,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T07:13:35.677Z",
+  "generatedAt": "2026-10-19T07:54:00.864Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3230,6 +3252,7 @@
         "createMemoryStore",
         "defineConfig",
         "formDataToObject",
+        "mergeHooks",
         "resolveConfig",
         "route"
       ],
@@ -3340,13 +3363,21 @@
       "source": "packages/server/src/index.ts",
       "values": [
         "createHandler",
+        "createMetrics",
+        "createMetricsRoute",
         "parseQuery",
+        "requestLogging",
+        "traceId",
         "withMiddleware"
       ],
       "types": [
         "CreateHandlerOptions",
+        "Metrics",
+        "MetricsSnapshot",
         "QueryRecord",
-        "QueryValue"
+        "QueryValue",
+        "RequestLoggingOptions",
+        "TraceIdOptions"
       ],
       "reexports": []
     },
@@ -3397,7 +3428,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T07:13:36.823Z",
+  "generatedAt": "2026-10-19T07:54:01.914Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3471,8 +3502,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-19T07:12:27.575Z",
-  "commit": "db816efebc313ba652c7783b603db36dfe587c70",
+  "generatedAt": "2026-10-19T07:52:39.756Z",
+  "commit": "7878da382f53efe972f94e501536bafe318ff883",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -3494,9 +3525,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 70,
+  "adrs": 71,
   "tests": {
-    "node": 234,
+    "node": 237,
     "rust": 111,
     "e2eSpecFiles": 7
   }

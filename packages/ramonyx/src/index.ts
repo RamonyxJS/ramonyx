@@ -26,6 +26,7 @@ export {
   defineConfig,
   formDataToObject,
   HttpError,
+  mergeHooks,
   resolveConfig,
   route,
 } from "@ramonyx/core";

@@ -272,7 +272,7 @@
       "theme": "quality",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Paket/middleware observability: log request terstruktur, trace-id yang diteruskan ke handler, hook metrik (durasi, status) siap diekspor ke OTel.",
       "why": "Produksi tanpa visibilitas = debugging buta; kompetitor menyediakan integrasi observability (instrumentation, devtools) sebagai jalur resmi.",
       "done": [
@@ -283,7 +283,7 @@
       "areas": ["packages/server", "packages/core"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js instrumentation + OTel; Nuxt devtools/OTel; SvelteKit hooks + adapter-node logs.",
-      "source": "gap §3 (observability)"
+      "source": "gap §3 (observability) — selesai ADR-0071 (di @ramonyx/server)"
     },
     {
       "id": "p2-bench-env-baseline",

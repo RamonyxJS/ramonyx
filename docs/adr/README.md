@@ -77,3 +77,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0068](0068-edge-env-and-smoke.md) | Binding env platform edge (`envFromRequest`) + smoke di runtime nyata (workerd) | Accepted |
 | [0069](0069-asset-pipeline-m1.md) | Pipeline aset M1: manifest + resolver + `Image` (tanpa dependency, tanpa loader) | Accepted |
 | [0070](0070-watch-mode.md) | Watch mode build (`ramonyx build --watch`, debounce + antrean aman) | Accepted |
+| [0071](0071-observability.md) | Observability: trace-id + log terstruktur + metrik (`@ramonyx/server`) | Accepted |

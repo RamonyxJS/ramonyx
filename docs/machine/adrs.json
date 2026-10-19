@@ -968,6 +968,23 @@
       "features": [
         "cli-devtools"
       ]
+    },
+    {
+      "id": "ADR-0071",
+      "file": "0071-observability.md",
+      "title": "Observability — Trace-Id, Log Terstruktur, Metrik (di `@ramonyx/server`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "traceId (propagasi/generate, request+respons), requestLogging (durasi/status/traceId lewat context.log), createMetrics (hook onRequestEnd/onLoaderEnd/onRenderEnd/onInvalidate) + createMetricsRoute(GET /metrics) — di @ramonyx/server (bukan paket baru), edge-safe; OTel manual tanpa dependency.",
+      "related": [
+        "ADR-0065",
+        "ADR-0067"
+      ],
+      "features": [
+        "observability-logger",
+        "observability-metrics"
+      ]
     }
   ]
 }

@@ -228,7 +228,7 @@
 
 ### `p2-observability` — Observability: request logging + trace-id + metrik
 
-*tema: quality · ukuran: M · status: open · sumber: gap §3 (observability)*
+*tema: quality · ukuran: M · status: done · sumber: gap §3 (observability) — selesai ADR-0071 (di @ramonyx/server)*
 
 - **Apa**: Paket/middleware observability: log request terstruktur, trace-id yang diteruskan ke handler, hook metrik (durasi, status) siap diekspor ke OTel.
 - **Kenapa penting untuk bersaing**: Produksi tanpa visibilitas = debugging buta; kompetitor menyediakan integrasi observability (instrumentation, devtools) sebagai jalur resmi.

@@ -49,7 +49,7 @@
       "theme": "deploy",
       "priority": "p0",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Adapter yang menghasilkan entry fetch-handler (Request→Response) untuk platform serverless/edge populer + perintah build per-target.",
       "why": "Kebebasan deploy adalah alasan utama memilih framework; saat ini hanya Node standalone, sementara pesaing dapat deploy ke platform populer dengan satu perintah/adapter.",
       "done": [
@@ -60,7 +60,7 @@
       "areas": ["packages/adapter-runtime", "packages/devtools", "packages/bundler"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js (Vercel/self-host); SvelteKit adapters (node/cloudflare/vercel); Nuxt Nitro presets; Astro adapters.",
-      "source": "gap §3 (adapters)",
+      "source": "gap §3 (adapters) — selesai ADR-0058 + ADR-0068 (workerd smoke CI + env binding)",
       "strategic": true
     },
     {

@@ -74,6 +74,8 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: E2E (browser)
         run: pnpm test:e2e
+      - name: Edge smoke (workerd — runtime platform nyata)
+        run: pnpm test:edge
       - name: Security benchmark (abuse-case + soak)
         run: pnpm bench:security
       - name: Performance report (report-only, non-blocking)

@@ -74,3 +74,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0065](0065-extension-contracts.md) | Kontrak ekstensi bersama: config pass-through, `AppHooks`, `KeyValueStore`, kontrak plugin | Accepted |
 | [0066](0066-revalidate.md) | Revalidasi data (ISR-lite): cache loader + SWR + invalidasi path/tag dari action | Accepted |
 | [0067](0067-plugin-ecosystem.md) | Plugin: passthrough Vite + middleware pre-routing (`withMiddleware`) + hooks dari config | Accepted |
+| [0068](0068-edge-env-and-smoke.md) | Binding env platform edge (`envFromRequest`) + smoke di runtime nyata (workerd) | Accepted |

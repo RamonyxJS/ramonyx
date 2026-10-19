@@ -19,6 +19,11 @@ export interface CreateHandlerOptions {
   readonly middleware?: readonly Middleware[];
   readonly env?: EnvReader;
   readonly logger?: Logger;
+  /**
+   * Env per request (mis. binding platform edge — ADR-0068). Bila ada, hasilnya dipakai untuk
+   * request itu (fallback ke `env` bila mengembalikan `undefined`).
+   */
+  readonly envFromRequest?: (request: Request) => EnvReader | undefined;
   /** Hook aplikasi (ADR-0065) — zero-cost bila tidak diisi. */
   readonly hooks?: AppHooks;
   /** false melonggarkan validasi output (input tetap ketat). Default true. */
@@ -351,6 +356,8 @@ export function createHandler(options: CreateHandlerOptions): FetchHandler {
   let inFlight = 0;
 
   const run = async (request: Request): Promise<Response> => {
+    // Env per request (binding platform) — ADR-0068; fallback ke env statis.
+    const requestEnv = options.envFromRequest?.(request) ?? env;
     if (inFlight >= maxConcurrent) {
       logger.warn("Load shedding: concurrency limit", {
         path: safePath(request),
@@ -366,13 +373,13 @@ export function createHandler(options: CreateHandlerOptions): FetchHandler {
     inFlight += 1;
     const controller = new AbortController();
     const wrapped = new Request(request, { signal: controller.signal });
-    const middlewareContext: MiddlewareContext = { request: wrapped, env, log: logger };
+    const middlewareContext: MiddlewareContext = { request: wrapped, env: requestEnv, log: logger };
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       return await Promise.race([
         runMiddleware(middleware, middlewareContext, (request) =>
-          dispatch(table, request, env, logger, strictValidation, maxBodyBytes),
+          dispatch(table, request, requestEnv, logger, strictValidation, maxBodyBytes),
         ),
         new Promise<never>((_resolve, reject) => {
           controller.signal.addEventListener("abort", () => reject(new TimeoutError()), {

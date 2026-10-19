@@ -669,27 +669,29 @@
     },
     {
       "id": "adapter-serverless-edge",
-      "name": "Target build edge/serverless (`--target edge`, kontrak fetch handler)",
-      "status": "partial",
+      "name": "Adapter edge/serverless (--target edge, kontrak fetch handler, binding env, smoke workerd)",
+      "status": "implemented",
       "since": null,
       "priority": "p0",
       "packages": [
         "@ramonyx/bundler",
         "@ramonyx/compiler",
-        "@ramonyx/devtools"
+        "@ramonyx/devtools",
+        "@ramonyx/server"
       ],
       "evidence": [
         "packages/bundler/src/edge.ts",
         "packages/compiler/src/server-entry.ts",
+        "scripts/edge-smoke.ts",
         "apps/create-app/test/create-app.test.ts",
         "docs/deploy-edge.md",
-        "docs/adr/0058-edge-target.md"
+        "docs/adr/0058-edge-target.md",
+        "docs/adr/0068-edge-env-and-smoke.md"
       ],
       "limitations": [
         "Belum dirilis di npm (setelah 0.1.1)",
-        "Deploy platform nyata belum diuji CI (TODO p2-edge-platform-smoke)",
-        "Binding env platform belum diteruskan (TODO p2-edge-env-bindings)",
-        "Preset Vercel/Deno Deploy belum"
+        "Preset Vercel/Deno Deploy belum",
+        "Deploy ke akun platform tetap langkah pengguna (tanpa kredensial di CI)"
       ]
     },
     {

@@ -253,6 +253,18 @@ test("app hasil scaffold: build --target edge + artefak berjalan sebagai fetch h
   const target = join(workDir, "app-edge");
   runCli([target]);
 
+  // Rute env untuk membuktikan binding platform diteruskan (ADR-0068).
+  writeFileSync(
+    join(target, "src/routes/api/env.ts"),
+    `import { route } from "ramonyx";
+
+export const GET = route({
+  handler: ({ env, json }) =>
+    json({ rahasia: env.get("RAHASIA") ?? null, kv: env.getRaw?.("KV") ?? null }),
+});
+`,
+  );
+
   const output = runDevtools(target, ["build", "--target", "edge"]);
   assert.match(output, /edge: .*index\.js/, "artefak edge dilaporkan");
   assert.ok(existsSync(join(target, "dist/edge/index.js")), "dist/edge/index.js ada");
@@ -277,6 +289,16 @@ form.set("nama", "Edge");
 const aksi = await handler(new Request("http://edge.local/", { method: "POST", body: form }));
 if (aksi.status !== 200) throw new Error("status action: " + aksi.status);
 if (!(await aksi.text()).includes("Halo, Edge!")) throw new Error("action tidak jalan");
+
+// Binding platform (ADR-0068): env diteruskan per request — get + getRaw.
+const envRes = await handler(new Request("http://edge.local/api/env"), {
+  RAHASIA: "dari-binding",
+  KV: { namespace: "produk" },
+});
+if (envRes.status !== 200) throw new Error("status env: " + envRes.status);
+const envData = await envRes.json();
+if (envData.rahasia !== "dari-binding") throw new Error("env.get salah: " + JSON.stringify(envData));
+if (envData.kv?.namespace !== "produk") throw new Error("env.getRaw salah: " + JSON.stringify(envData));
 
 const hilang = await handler(new Request("http://edge.local/tidak-ada"));
 if (hilang.status !== 404) throw new Error("status 404: " + hilang.status);

@@ -415,3 +415,41 @@ test("withMiddleware: membungkus handler apa pun (pre-routing) — ADR-0067", as
   // Tanpa middleware → handler asli (identitas).
   assert.equal(withMiddleware(base, []), base);
 });
+
+test("envFromRequest: env per request (binding platform edge) — ADR-0068", async () => {
+  const handler = createHandler({
+    env: { get: () => "statis" },
+    envFromRequest: (request) => {
+      const nilai = request.headers.get("x-env");
+      if (nilai === null) {
+        return undefined; // fallback ke env statis
+      }
+      return {
+        get: (name) => (name === "RAHASIA" ? nilai : undefined),
+        getRaw: (name) => (name === "KV" ? { namespace: nilai } : undefined),
+      };
+    },
+    routes: [
+      {
+        method: "GET",
+        path: "/env",
+        definition: route({
+          handler: ({ env, json }) =>
+            json({ rahasia: env.get("RAHASIA") ?? null, raw: env.getRaw?.("KV") ?? null }),
+        }),
+      },
+    ],
+  });
+
+  const statis = await handler(new Request("http://uji/env"));
+  assert.deepEqual(await statis.json(), { rahasia: "statis", raw: null }, "fallback env statis");
+
+  const dinamis = await handler(
+    new Request("http://uji/env", { headers: { "x-env": "dari-binding" } }),
+  );
+  assert.deepEqual(
+    await dinamis.json(),
+    { rahasia: "dari-binding", raw: { namespace: "dari-binding" } },
+    "env per request dipakai (get + getRaw)",
+  );
+});

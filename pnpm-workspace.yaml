@@ -3,8 +3,10 @@ packages:
   - "apps/*"
 
 # esbuild (dipakai tsx) butuh postinstall untuk memverifikasi binary platform.
+# workerd (smoke platform edge, ADR-0068) butuh postinstall untuk menyiapkan binary.
 allowBuilds:
   esbuild: true
+  workerd: true
 
 # Supply chain: versi rilis baru baru boleh dipakai setelah 24 jam (menahan rilis terkompromi).
 # Kebijakan lengkap: docs/security/dependency-policy.md

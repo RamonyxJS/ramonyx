@@ -6,7 +6,7 @@
 
 import { existsSync } from "node:fs";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { generateServerEntry, listApiRoutes, loadPageRoutes } from "@ramonyx/compiler";
 import { build, type PluginOption } from "vite";
 import { readClientScript } from "./build.ts";
@@ -42,9 +42,10 @@ const NODE_IMPORT = /["'](node:[a-z0-9_/-]+)["']/g;
  * impor `node:*` yang lolos = error (runtime edge tidak menyediakannya).
  */
 export async function buildEdge(options: BuildEdgeOptions): Promise<BuildEdgeResult> {
-  const appDir = options.appDir;
+  // Path absolut: entry Vite diresolusi relatif terhadap `root`, path relatif akan tergandakan.
+  const appDir = resolve(options.appDir);
   const routesDir = join(appDir, "src/routes");
-  const outDir = join(appDir, options.outDir ?? "dist/edge");
+  const outDir = resolve(appDir, options.outDir ?? "dist/edge");
   const entryDir = join(appDir, ".ramonyx");
   const entryFile = join(entryDir, "edge-entry.ts");
 

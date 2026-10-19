@@ -56,6 +56,10 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
 - **Plugin** (ADR-0067): `definePlugin`/`loadPlugins` dimuat dari `ramonyx.config.ts` oleh CLI —
   plugin Vite (passthrough ke build/dev/edge), middleware pre-routing (`withMiddleware`), dan
   hooks; contoh `kunjungan` di playground + panduan `docs/plugins.md`. Status **experimental**.
+- **Edge tuntas** (ADR-0068): binding env platform diteruskan per request
+  (`createHandler({ envFromRequest })`, `EnvReader.getRaw`, `WeakMap` di entry edge);
+  smoke **workerd** (runtime Cloudflare) sebagai langkah CI blocking (`pnpm test:edge`) —
+  SSR/API/action/env/middleware/404 diuji di runtime nyata; `buildEdge` menormalkan path absolut.
 
 ### Perubahan API (pra-1.0)
 

@@ -5,6 +5,11 @@ export type FetchHandler = (request: Request) => Promise<Response>;
 
 export interface EnvReader {
   get(name: string): string | undefined;
+  /**
+   * Binding apa adanya (KV/objek platform) — opsional; diisi host yang mendukung
+   * (mis. edge/serverless — ADR-0068). Di Node, gunakan `get`.
+   */
+  getRaw?(name: string): unknown;
 }
 
 export interface Logger {

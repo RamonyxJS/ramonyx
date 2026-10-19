@@ -52,7 +52,7 @@
 
 ### `p0-serverless-adapters` — Adapter serverless/edge (Cloudflare Workers, Vercel, Deno Deploy)
 
-*tema: deploy · ukuran: L · status: open · sumber: gap §3 (adapters)*
+*tema: deploy · ukuran: L · status: done · sumber: gap §3 (adapters) — selesai ADR-0058 + ADR-0068 (workerd smoke CI + env binding)*
 
 - **Apa**: Adapter yang menghasilkan entry fetch-handler (Request→Response) untuk platform serverless/edge populer + perintah build per-target.
 - **Kenapa penting untuk bersaing**: Kebebasan deploy adalah alasan utama memilih framework; saat ini hanya Node standalone, sementara pesaing dapat deploy ke platform populer dengan satu perintah/adapter.

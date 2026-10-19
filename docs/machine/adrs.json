@@ -917,6 +917,22 @@
         "plugin-ecosystem",
         "extension-primitives"
       ]
+    },
+    {
+      "id": "ADR-0068",
+      "file": "0068-edge-env-and-smoke.md",
+      "title": "Binding Env Platform Edge + Smoke Test di Runtime Nyata (workerd)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Env binding platform diteruskan per request (EnvReader.getRaw + createHandler.envFromRequest + WeakMap di entry edge); artefak diuji di workerd (runtime Cloudflare) sebagai langkah CI blocking via pnpm test:edge; buildEdge menormalkan path absolut.",
+      "related": [
+        "ADR-0058",
+        "ADR-0067"
+      ],
+      "features": [
+        "adapter-serverless-edge"
+      ]
     }
   ]
 }

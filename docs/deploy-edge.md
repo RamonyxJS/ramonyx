@@ -45,8 +45,9 @@ Aset statis (`/assets/client-<hash>.js`) disajikan platform lewat `[assets]` —
   runtime.
 - **`process.env.NODE_ENV` di-define** sebagai `"production"` (runtime edge tidak punya
   `process`).
-- **Belum diteruskan**: binding `env` platform ke handler (menyusul — item TODO
-  `p2-edge-env-bindings`); SSR streaming berjalan (Web Streams) tetapi dukungan `waitUntil`/
-  cache API platform belum dibungkus.
-- **Status uji**: artefak diuji sebagai fetch handler di CI (SSR + API + action + 404);
-  deploy ke platform nyata belum diuji otomatis (dicatat di TODO `p2-edge-platform-smoke`).
+- **Binding platform**: `env` (secret/var/KV) diteruskan per request — `env.get("SECRET")`
+  (string) dan `env.getRaw("KV")` (objek apa adanya) di loader/action/middleware (ADR-0068).
+- **Status uji**: artefak diuji di **workerd** (runtime yang sama dengan Cloudflare Workers)
+  sebagai langkah CI blocking (`pnpm test:edge`): SSR, API, action, binding env, middleware,
+  dan 404. Deploy ke akun platform tetap langkah pengguna (tidak ada kredensial di CI).
+- **Belum dibungkus**: `waitUntil`/cache API platform; preset Vercel/Deno Deploy.

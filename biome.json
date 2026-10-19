@@ -10,7 +10,8 @@
       "!**/test-results",
       "!**/playwright-report",
       "!benchmarks/results",
-      "!docs/machine",
+      "!docs/public/machine",
+      "!docs/internal/machine",
       "!TODO.md"
     ]
   },

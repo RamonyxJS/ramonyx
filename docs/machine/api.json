@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T12:32:39.217Z",
+  "generatedAt": "2026-10-19T12:57:52.533Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -175,6 +175,25 @@
       "types": [
         "CreateApp",
         "CreateAppOptions"
+      ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/mcp-docs-server",
+      "version": "0.2.0",
+      "source": "packages/mcp-docs-server/src/index.ts",
+      "values": [
+        "MCP_PROTOCOL_VERSION",
+        "createDocsIndex",
+        "createMcpServer",
+        "resolveDocsRoot",
+        "runStdioServer"
+      ],
+      "types": [
+        "DocEntry",
+        "DocHit",
+        "DocsIndex",
+        "MachineName"
       ],
       "reexports": []
     },

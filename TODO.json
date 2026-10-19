@@ -407,7 +407,7 @@
       "theme": "docs",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Server MCP cakupan minimal (stdio, tanpa hosting): tools search docs, get page, get feature status, get rules — membaca machine layer + docs.",
       "why": "Riset §2: Svelte/Nuxt/Astro menjalankan docs MCP; kami menundanya karena infrastruktur, tetapi versi stdio lokal menghapus biaya hosting dan menambah kanal agen yang nyata.",
       "done": [
@@ -418,7 +418,7 @@
       "areas": ["packages (baru)", "docs/machine"],
       "adrs": ["ADR baru"],
       "competitor": "Svelte mcp.svelte.dev; Nuxt nuxt.com/mcp; Astro mcp.docs.astro.build; Next.js runtime MCP (bukan docs).",
-      "source": "riset §2",
+      "source": "riset §2 — selesai ADR-0078",
       "strategic": true
     },
     {

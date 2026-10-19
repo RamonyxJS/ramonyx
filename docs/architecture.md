@@ -39,6 +39,7 @@ Layer 3, dan runtime Rust/V8 sendiri juga sudah ada (Phase 4 selesai — eksperi
 | `packages/bundler` | Pembungkus Vite (ADR-0005): build client + dev server (ADR-0009) | Phase 2 | selesai |
 | `packages/security` | Header keamanan + CSP nonce + CSRF + rate limit + SSRF guard | Phase 3 | selesai (ADR-0013–0017) |
 | `packages/devtools` | CLI `ramonyx` (dev/build/start/doctor), dev server, diagnostics | Phase 2–3 | **v1 selesai** (ADR-0053) |
+| `packages/mcp-docs-server` | MCP docs server (stdio): tools agen di atas machine layer + docs (ADR-0078) | Phase 5+ | selesai (paket ke-15) |
 | `apps/playground` | App demo/uji end-to-end (SSR streaming + security) | Phase 1 | selesai |
 | `apps/docs` | Dokumentasi publik (SSG ekspor + hosting) | Phase 2 | selesai (ADR-0052) |
 | `apps/create-app` | CLI scaffolding (konvensi CLI devtools) | Phase 2–3 | selesai (ADR-0041/0053) |

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "erasable-syntax",
+      "rule": "Tulis TypeScript yang erasable: dilarang enum/namespace.",
+      "rationale": "Node type stripping tanpa transpile.",
+      "scope": "framework",
+      "good": "export type Status = \"ok\";",
+      "bad": "enum Status { Ok }",
+      "enforcement": "tsconfig erasableSyntaxOnly"
+    }
+  ]
+}

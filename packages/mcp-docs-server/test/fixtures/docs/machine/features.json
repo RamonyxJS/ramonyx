@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "features": [
+    {
+      "id": "revalidate",
+      "name": "Revalidasi data (ISR-lite)",
+      "status": "implemented",
+      "since": "0.2.0",
+      "evidence": ["packages/core/src/revalidate.ts"],
+      "limitations": ["In-memory per proses"]
+    },
+    {
+      "id": "i18n",
+      "name": "Internasionalisasi rute",
+      "status": "planned",
+      "since": null,
+      "evidence": [],
+      "limitations": ["Belum dikerjakan"]
+    }
+  ]
+}

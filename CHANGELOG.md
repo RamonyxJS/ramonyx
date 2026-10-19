@@ -2,6 +2,17 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikuti semver.
 
+## [Unreleased]
+
+### Tooling & docs
+
+- **MCP docs server** (ADR-0078): paket ke-15 `@ramonyx/mcp-docs-server` (bin `ramonyx-mcp-docs`) —
+  server MCP **stdio** tanpa dependency eksternal dengan 5 tools (`search_docs`, `get_page`,
+  `get_feature_status`, `get_rules`, `list_adrs`) + resource `ramonyx://machine/*` &
+  `ramonyx://docs/<slug>`; snapshot `docs/` dibundel saat rilis (berfungsi via `npx` tanpa clone);
+  pemasangan Claude Code/Cursor/OpenCode di `docs/mcp.md`; protokol-level + spawn test, verifikasi
+  tarball menjalankan handshake bin.
+
 ## [0.2.0] — 2026-10-19
 
 Pengerjaan TODO backlog lengkap (ADR-0055–0077): dasar HTTP produksi (kompresi/aset/static/

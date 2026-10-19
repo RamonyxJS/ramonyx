@@ -33,11 +33,15 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm docs:validate` / `pnpm docs:generate` / `pnpm docs:stats` — dokumentasi machine-readable
   (`docs/machine/`, ADR-0054): validasi blocking (skema, bukti, indeks ADR, kesegaran, link),
   regenerate artefak turunan (api/cli/llms/TODO.md), dan regenerate `stats.json` dari suite.
+- MCP docs server (`@ramonyx/mcp-docs-server`, ADR-0078): bin `ramonyx-mcp-docs` (stdio) —
+  di repo: `node --import ./tools/register.mjs packages/mcp-docs-server/src/cli.ts --docs .`;
+  tools: search_docs/get_page/get_feature_status/get_rules/list_adrs; pemasangan `docs/mcp.md`.
 - CLI devtools (`@ramonyx/devtools`, ADR-0053): di repo jalankan lewat loader —
   `node --import ./tools/register.mjs packages/devtools/src/cli.ts <dev|build|start|doctor> --app <dir>`;
   aplikasi (template) memakai `ramonyx dev|build|start` dengan konvensi `src/app.ts` `createApp()`.
 - `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
-  di `dist/`; **15 artefak** — 14 paket npm termasuk `create-ramonyx-app` + binary runtime); `pnpm release:verify` — verifikasi
+  di `dist/`; **16 artefak** — 15 paket npm (termasuk `create-ramonyx-app` + `@ramonyx/mcp-docs-server`)
+  + binary runtime); `pnpm release:verify` — verifikasi
   instalasi di proyek konsumen bersih (Node polos), termasuk scaffold `create-ramonyx-app`.
   Publikasi: `docs/releasing.md` (checklist pemilik; workflow publish dari tarball terverifikasi —
   ADR-0049).

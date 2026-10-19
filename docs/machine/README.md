@@ -13,6 +13,9 @@ tetap ada; lapisan ini adalah **sumber kebenaran fakta** yang divalidasi otomati
 5. `adrs.json` — indeks keputusan arsitektur (ringkasan satu kalimat + relasi).
 6. `security.json` — kontrol keamanan + celah yang diakui. `glossary.json` — istilah.
 7. `api.json` / `cli.json` / `config.schema.json` — referensi API/CLI/config.
+8. **MCP server** (`@ramonyx/mcp-docs-server`, ADR-0078) — tools agen di atas berkas-berkas ini:
+   `search_docs` · `get_page` · `get_feature_status` · `get_rules` · `list_adrs`; pemasangan di
+   `docs/mcp.md`.
 
 Semua berkas juga diterbitkan bersama situs docs: `https://ramonyxjs.github.io/ramonyx/machine/`.
 

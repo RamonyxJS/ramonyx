@@ -130,6 +130,52 @@ async function startAndFetch(appDir, startScript) {
   }
 }
 
+/**
+ * Handshake MCP (ADR-0078): spawn bin `ramonyx-mcp-docs`, kirim initialize + tools/list,
+ * baca 2 baris JSON-RPC dari stdout, lalu matikan proses.
+ */
+function mcpHandshake(binPath) {
+  return new Promise((resolveHandshake, rejectHandshake) => {
+    const child = spawn(process.execPath, [binPath], { stdio: ["pipe", "pipe", "pipe"] });
+    let buffer = "";
+    let stderr = "";
+    const pesan = [];
+    const batas = setTimeout(() => {
+      child.kill("SIGTERM");
+      rejectHandshake(new Error(`timeout handshake MCP; stderr: ${stderr}`));
+    }, 30_000);
+    child.stdout.on("data", (chunk) => {
+      buffer += chunk.toString("utf8");
+      let index = buffer.indexOf("\n");
+      while (index >= 0) {
+        const line = buffer.slice(0, index).trim();
+        buffer = buffer.slice(index + 1);
+        if (line.length > 0) {
+          pesan.push(JSON.parse(line));
+        }
+        index = buffer.indexOf("\n");
+      }
+      if (pesan.length >= 2) {
+        clearTimeout(batas);
+        child.stdin.end();
+        child.kill("SIGTERM");
+        resolveHandshake(pesan);
+      }
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString("utf8");
+    });
+    child.on("error", (error) => {
+      clearTimeout(batas);
+      rejectHandshake(error);
+    });
+    child.stdin.write(
+      `${JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "verify-release", version: "1" } } })}\n`,
+    );
+    child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" })}\n`);
+  });
+}
+
 async function main() {
   const releaseVersion = version();
   const files = tarballs();
@@ -311,6 +357,32 @@ console.log("SMOKE OK halo,dunia paket", process.versions.node);
     }
     await startAndFetch(target, scripts.start);
     console.log("  ✓ create-ramonyx-app: build + start + SSR halaman (Node polos, dari tarball)");
+  }
+
+  // MCP docs server (ADR-0078): snapshot docs dibundel + bin menjawab handshake/tools dari tarball.
+  const mcpDir = join(workDir, "node_modules", "@ramonyx", "mcp-docs-server");
+  if (existsSync(mcpDir)) {
+    if (!existsSync(join(mcpDir, "docs", "machine", "stats.json"))) {
+      fail("snapshot docs tidak ikut di tarball @ramonyx/mcp-docs-server");
+    }
+    if (!existsSync(join(workDir, "node_modules", ".bin", "ramonyx-mcp-docs"))) {
+      fail("bin ramonyx-mcp-docs tidak terpasang dari tarball");
+    }
+    // Shim `.bin/*` adalah skrip shell — jalankan target JS-nya langsung dengan Node.
+    const binPath = join(mcpDir, "dist", "cli.js");
+    if (!existsSync(binPath)) {
+      fail("dist/cli.js @ramonyx/mcp-docs-server tidak ada di tarball");
+    }
+    const pesan = await mcpHandshake(binPath);
+    const serverInfo = pesan[0]?.result?.serverInfo;
+    if (serverInfo?.name !== "ramonyx-docs") {
+      fail(`handshake MCP gagal: ${JSON.stringify(pesan[0])}`);
+    }
+    const jumlahTools = Array.isArray(pesan[1]?.result?.tools) ? pesan[1].result.tools.length : 0;
+    if (jumlahTools < 3) {
+      fail(`tools MCP < 3 dari tarball (${jumlahTools})`);
+    }
+    console.log(`  ✓ mcp: handshake + ${jumlahTools} tools + snapshot docs (dari tarball)`);
   }
 
   // Binary runtime dari tarball rilis

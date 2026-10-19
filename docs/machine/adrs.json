@@ -1093,6 +1093,22 @@
         "cli-devtools",
         "observability-logger"
       ]
+    },
+    {
+      "id": "ADR-0078",
+      "file": "0078-mcp-docs-server.md",
+      "title": "MCP Docs Server (stdio) — Tools Agen Tanpa Hosting",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-19)",
+      "date": "2026-10-19",
+      "decision": "Paket ke-15 @ramonyx/mcp-docs-server (bin ramonyx-mcp-docs): MCP stdio JSON-RPC tanpa dependency eksternal (subset terdokumentasi), 5 tools (search_docs/get_page/get_feature_status/get_rules/list_adrs) + resource ramonyx://machine|docs, snapshot docs dibundel saat rilis, pembacaan via indeks in-memory (tanpa traversal).",
+      "related": [
+        "ADR-0054",
+        "ADR-0016"
+      ],
+      "features": [
+        "mcp-docs-server"
+      ]
     }
   ]
 }

@@ -107,6 +107,14 @@ function stagePackage(entry, releaseVersion) {
       .replace(/\.ts$/, ".js");
   }
 
+  // Snapshot docs untuk @ramonyx/mcp-docs-server (ADR-0078): server berfungsi tanpa clone repo,
+  // versi docs = versi paket.
+  const extraFiles = [];
+  if (source.name === "@ramonyx/mcp-docs-server") {
+    cpSync(join(root, "docs"), join(staging, "docs"), { recursive: true });
+    extraFiles.push("docs");
+  }
+
   const staged = {
     name: source.name,
     version: releaseVersion,
@@ -115,7 +123,7 @@ function stagePackage(entry, releaseVersion) {
     type: source.type ?? "module",
     ...(Object.keys(binEntries).length > 0 ? { bin: binEntries } : {}),
     exports: exportsMap,
-    files: ["dist", "README.md", "LICENSE"],
+    files: ["dist", ...extraFiles, "README.md", "LICENSE"],
     engines: { node: ">=24" },
     dependencies,
     publishConfig: { access: "public" },

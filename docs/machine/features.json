@@ -1138,16 +1138,25 @@
     {
       "id": "mcp-docs-server",
       "name": "MCP docs server (tools untuk agen)",
-      "status": "planned",
+      "status": "implemented",
       "since": null,
-      "priority": "p3",
-      "packages": [],
+      "priority": "p2",
+      "packages": [
+        "@ramonyx/mcp-docs-server"
+      ],
       "evidence": [
-        "docs/adr/0054-machine-readable-docs.md",
-        "docs/machine/llms.txt"
+        "packages/mcp-docs-server/src/index.ts",
+        "packages/mcp-docs-server/src/docs.ts",
+        "packages/mcp-docs-server/src/cli.ts",
+        "packages/mcp-docs-server/test/server.test.ts",
+        "packages/mcp-docs-server/test/stdio.test.ts",
+        "docs/mcp.md",
+        "docs/adr/0078-mcp-docs-server.md"
       ],
       "limitations": [
-        "Ditunda — butuh hosting/index/pemeliharaan (riset §2 rencana konsolidasi)"
+        "Belum dirilis di npm (paket ke-15 — rilis berikutnya)",
+        "Subset protokol: stdio saja (tanpa HTTP/prompts/sampling/batching)",
+        "Snapshot docs = versi paket (docs repo terbaru butuh --docs dari clone)"
       ]
     },
     {

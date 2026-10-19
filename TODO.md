@@ -323,7 +323,7 @@
 
 ### `p2-mcp-docs-server` — MCP docs server (tools untuk agen)
 
-*tema: docs · ukuran: M · status: open · sumber: riset §2*
+*tema: docs · ukuran: M · status: done · sumber: riset §2 — selesai ADR-0078*
 
 - **Apa**: Server MCP cakupan minimal (stdio, tanpa hosting): tools search docs, get page, get feature status, get rules — membaca machine layer + docs.
 - **Kenapa penting untuk bersaing**: Riset §2: Svelte/Nuxt/Astro menjalankan docs MCP; kami menundanya karena infrastruktur, tetapi versi stdio lokal menghapus biaya hosting dan menambah kanal agen yang nyata.

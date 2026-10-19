@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "adrs": [
+    {
+      "id": "ADR-0001",
+      "file": "0001-contoh.md",
+      "title": "Contoh keputusan",
+      "status": "accepted",
+      "decision": "Keputusan contoh untuk uji protokol.",
+      "related": [],
+      "features": ["revalidate"]
+    }
+  ]
+}

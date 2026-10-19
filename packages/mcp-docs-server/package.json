@@ -1,0 +1,17 @@
+{
+  "name": "@ramonyx/mcp-docs-server",
+  "version": "0.2.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "MCP docs server (stdio) — tools agen untuk membaca docs/machine + docs/** Ramonyx.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "ramonyx-mcp-docs": "./src/cli.ts"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

@@ -4,7 +4,7 @@ import { createRouteManifest, loadPageRoutes, type ModuleImporter } from "@ramon
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
 import { createPageRoutes } from "@ramonyx/ssr";
-import type { EnvReader, FetchHandler, Logger, Middleware } from "ramonyx";
+import type { AppHooks, EnvReader, FetchHandler, Logger, Middleware } from "ramonyx";
 
 // Middleware pre-routing (global): aset statis (Node-only) + logging request.
 // Middleware aplikasi ada di `src/routes/middleware.ts` (per-folder, otomatis — ADR-0061).
@@ -44,6 +44,8 @@ export interface CreateAppOptions {
   readonly streaming?: boolean;
   /** Cache data loader (ADR-0066) — halaman ber-`revalidate` memakainya. */
   readonly cache?: import("ramonyx").Cache;
+  /** Hook aplikasi (plugin/CLI — ADR-0065/0067). */
+  readonly hooks?: AppHooks;
 }
 
 /** Route API + halaman SSR dari `src/routes` → handler siap dilayani host apa pun. */
@@ -65,6 +67,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
       client,
       streaming: options.streaming,
       cache: options.cache,
+      hooks: options.hooks,
     });
 
     return createHandler({
@@ -73,6 +76,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
       env: options.env,
       logger: options.logger,
       strictValidation: options.strictValidation,
+      hooks: options.hooks,
     });
   };
 

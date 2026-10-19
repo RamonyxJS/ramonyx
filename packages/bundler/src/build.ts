@@ -2,7 +2,7 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { generateClientEntry } from "@ramonyx/compiler";
 import type { LoadedPage } from "@ramonyx/core";
-import { build } from "vite";
+import { build, type PluginOption } from "vite";
 import { serverOnlyPlugin } from "./server-only.ts";
 
 /** Nama berkas manifest aset di direktori keluaran klien (ADR-0055). */
@@ -21,6 +21,8 @@ export interface BuildClientOptions {
   /** Prefix URL publik aset (untuk `scriptPath` hasil); default "/assets". */
   readonly assetsUrlPrefix?: string;
   readonly minify?: boolean;
+  /** Plugin Vite tambahan (dari plugin Ramonyx — ADR-0067). */
+  readonly plugins?: readonly PluginOption[];
 }
 
 export interface BuildClientResult {
@@ -118,7 +120,7 @@ export async function buildClient(options: BuildClientOptions): Promise<BuildCli
     root: options.appDir,
     logLevel: "warn",
     esbuild: { jsx: "automatic" },
-    plugins: [serverOnlyPlugin()],
+    plugins: [...(options.plugins ?? []), serverOnlyPlugin()],
     build: {
       outDir,
       emptyOutDir: true,

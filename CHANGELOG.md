@@ -53,6 +53,9 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
   stale-while-revalidate dengan refresh latar belakang (dedupe); **cache data loader, bukan HTML**
   (nonce CSP); GET tanpa query/cookie saja; `context.revalidate` di action + hook `onInvalidate`;
   docs `docs/caching.md`; dogfood playground & template.
+- **Plugin** (ADR-0067): `definePlugin`/`loadPlugins` dimuat dari `ramonyx.config.ts` oleh CLI —
+  plugin Vite (passthrough ke build/dev/edge), middleware pre-routing (`withMiddleware`), dan
+  hooks; contoh `kunjungan` di playground + panduan `docs/plugins.md`. Status **experimental**.
 
 ### Perubahan API (pra-1.0)
 

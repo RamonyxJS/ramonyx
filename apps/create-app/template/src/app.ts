@@ -4,7 +4,7 @@ import { createRouteManifest, loadPageRoutes, type ModuleImporter } from "@ramon
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
 import { createPageRoutes, createSeoRoutes } from "@ramonyx/ssr";
-import type { FetchHandler } from "ramonyx";
+import type { AppHooks, FetchHandler } from "ramonyx";
 
 // Aset statis hanya untuk host Node (edge: platform menyajikan aset; `middleware.ts` tetap
 // edge-safe agar `ramonyx build --target edge` bisa membundelnya — ADR-0058).
@@ -30,6 +30,8 @@ export interface CreateAppOptions {
   readonly streaming?: boolean;
   /** Cache data loader (ADR-0066) — halaman ber-`revalidate` memakainya. */
   readonly cache?: import("ramonyx").Cache;
+  /** Hook aplikasi (plugin/CLI — ADR-0065/0067). */
+  readonly hooks?: AppHooks;
 }
 
 /**
@@ -64,10 +66,12 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
           client,
           streaming: options.streaming,
           cache: options.cache,
+          hooks: options.hooks,
         }),
       ],
       middleware: [staticAssets],
       strictValidation: options.strictValidation,
+      hooks: options.hooks,
     });
   };
 

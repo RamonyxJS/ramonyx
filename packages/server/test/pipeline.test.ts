@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { HttpError, type Logger, type Middleware, type RouteEntry, route } from "@ramonyx/core";
 import { z } from "zod";
-import { createHandler, parseQuery } from "../src/index.ts";
+import { createHandler, parseQuery, withMiddleware } from "../src/index.ts";
 
 function capturingLogger(): {
   logger: Logger;
@@ -385,4 +385,33 @@ test("hooks: onRequestStart/onRequestEnd terukur untuk sukses maupun 404 — ADR
   for (const event of ends) {
     assert.ok(event.durationMs >= 0, "durasi terukur");
   }
+});
+
+test("withMiddleware: membungkus handler apa pun (pre-routing) — ADR-0067", async () => {
+  const base = async (request: Request): Promise<Response> =>
+    Response.json({ path: new URL(request.url).pathname, xUji: request.headers.get("x-uji") });
+
+  const wrapped = withMiddleware(base, [
+    async (context, next) => {
+      const headers = new Headers(context.request.headers);
+      headers.set("x-uji", "1");
+      return next(new Request(context.request, { headers, signal: context.request.signal }));
+    },
+    async (context, next) => {
+      if (new URL(context.request.url).pathname === "/blokir") {
+        return new Response("diblokir", { status: 403 });
+      }
+      return next();
+    },
+  ]);
+
+  const ok = await wrapped(new Request("http://uji/halo"));
+  assert.equal(ok.status, 200);
+  assert.deepEqual(await ok.json(), { path: "/halo", xUji: "1" });
+
+  const blocked = await wrapped(new Request("http://uji/blokir"));
+  assert.equal(blocked.status, 403, "middleware dapat short-circuit");
+
+  // Tanpa middleware → handler asli (identitas).
+  assert.equal(withMiddleware(base, []), base);
 });

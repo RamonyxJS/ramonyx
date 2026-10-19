@@ -315,6 +315,28 @@ async function dispatchRoute(
   return validateOutput(definition, response, logger, url.pathname, strictValidation);
 }
 
+/**
+ * Bungkus handler dengan middleware global **di luar** handler (untuk plugin/CLI — ADR-0067):
+ * middleware berjalan berurutan sebelum handler; `next(requestBaru)` dapat mengganti request.
+ * Berbeda dari `createHandler({ middleware })` yang berjalan di dalam handler, wrapper ini
+ * bekerja untuk handler apa pun (termasuk hasil `createApp()` aplikasi).
+ */
+export function withMiddleware(
+  handler: FetchHandler,
+  middleware: readonly Middleware[],
+  context: { readonly env?: EnvReader; readonly logger?: Logger } = {},
+): FetchHandler {
+  if (middleware.length === 0) {
+    return handler;
+  }
+  const env = context.env ?? defaultEnv;
+  const logger = context.logger ?? silentLogger;
+  return (request) =>
+    runMiddleware(middleware, { request, env, log: logger }, (finalRequest) =>
+      handler(finalRequest),
+    );
+}
+
 /** Membangun `FetchHandler` dari manifest route + middleware. */
 export function createHandler(options: CreateHandlerOptions): FetchHandler {
   const table = createRouteTable(options.routes);

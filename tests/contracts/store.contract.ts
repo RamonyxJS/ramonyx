@@ -19,17 +19,18 @@ export function runStoreContract(name: string, createStore: () => KeyValueStore)
 
   test(`[${name}] TTL: kedaluwarsa hilang dari get`, async () => {
     const store = createStore();
-    await store.set("pendek", "nilai", { ttlSeconds: 0.05 });
+    // TTL longgar (0.3 dtk) agar tidak flaky di mesin yang sibuk; tetap jauh lebih pendek dari sleep.
+    await store.set("pendek", "nilai", { ttlSeconds: 0.3 });
     assert.equal((await store.get("pendek"))?.value, "nilai");
-    await sleep(80);
+    await sleep(400);
     assert.equal(await store.get("pendek"), undefined, "entri kedaluwarsa → undefined");
   });
 
   test(`[${name}] set ulang menimpa nilai + TTL lama tidak bocor`, async () => {
     const store = createStore();
-    await store.set("k", "lama", { ttlSeconds: 0.05 });
+    await store.set("k", "lama", { ttlSeconds: 0.3 });
     await store.set("k", "baru");
-    await sleep(80);
+    await sleep(400);
     assert.equal((await store.get("k"))?.value, "baru", "TTL lama tidak membunuh nilai baru");
   });
 

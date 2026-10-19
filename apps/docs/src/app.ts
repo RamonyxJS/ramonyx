@@ -6,7 +6,7 @@ import { createRouteManifest, loadPageRoutes } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
 import { createPageRoutes } from "@ramonyx/ssr";
-import type { FetchHandler } from "ramonyx";
+import type { AppHooks, FetchHandler } from "ramonyx";
 
 import { setCatalog } from "./catalog.ts";
 import { loadCatalog } from "./docs.ts";
@@ -29,6 +29,8 @@ const staticAssets = serveStatic({
 export interface CreateAppOptions {
   /** Prefix URL saat di-host di subpath (mis. `/ramonyx` di GitHub Pages) — ADR-0052. */
   readonly basePath?: string;
+  /** Hook aplikasi (plugin/CLI — ADR-0065/0067). */
+  readonly hooks?: AppHooks;
 }
 
 export async function createApp(options: CreateAppOptions = {}): Promise<FetchHandler> {
@@ -55,8 +57,10 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
         renderer: createReactRenderer(),
         document: createDocument(basePath),
         client: { script: clientScript },
+        hooks: options.hooks,
       }),
     ],
     middleware: [staticAssets],
+    hooks: options.hooks,
   });
 }

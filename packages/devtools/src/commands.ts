@@ -7,15 +7,20 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { createNodeHost } from "@ramonyx/adapter-runtime";
+import { createConsoleLogger, createNodeHost } from "@ramonyx/adapter-runtime";
 import {
   buildClient,
   buildEdge,
   createDevServer,
+  type LoadedPlugins,
+  loadPlugins,
   prerenderRoutes,
+  type RamonyxPlugin,
   readAssetManifest,
 } from "@ramonyx/bundler";
 import { loadPageRoutes } from "@ramonyx/compiler";
+import { withMiddleware } from "@ramonyx/server";
+import type { RamonyxConfig } from "ramonyx";
 
 import { loadConfigFile, loadCreateApp } from "./load.ts";
 
@@ -126,16 +131,38 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
   return { command, flags: { appDir, configPath, port, devPort, static: isStatic, target }, help };
 }
 
+/** Muat plugin dari config (pass-through ADR-0065) + PluginContext (ADR-0067). */
+async function resolvePlugins(
+  appDir: string,
+  config: RamonyxConfig,
+  mode: "dev" | "build" | "start",
+): Promise<LoadedPlugins> {
+  const plugins = Array.isArray(config.plugins) ? (config.plugins as RamonyxPlugin[]) : [];
+  if (plugins.length === 0) {
+    return { vite: [], middleware: [], hooks: undefined };
+  }
+  const loaded = await loadPlugins(plugins, {
+    appDir,
+    config,
+    logger: createConsoleLogger(),
+    mode,
+  });
+  console.log(`✓ plugin: ${plugins.map((plugin) => plugin.name).join(", ")}`);
+  return loaded;
+}
+
 async function commandBuild(flags: Flags): Promise<number> {
   const appDir = flags.appDir;
   // Produksi sejak awal: `--static` merender (React prod) dan Vite memakai mode produksi;
   // mengubah NODE_ENV setelah modul React dimuat menyebabkan mismatch react/react-dom (ADR-0056).
   process.env.NODE_ENV ??= "production";
+  const { config } = await loadConfigFile(appDir, flags.configPath);
+  const plugins = await resolvePlugins(appDir, config, "build");
   const pages = await loadPageRoutes({ dir: join(appDir, "src/routes") });
   if (pages.length === 0) {
     console.warn("peringatan: tidak ada halaman di src/routes — bundle klien kosong");
   }
-  const result = await buildClient({ appDir, pages });
+  const result = await buildClient({ appDir, pages, plugins: plugins.vite });
   console.log(`✓ client bundle: ${result.scriptPath} (${result.outDir})`);
 
   if (flags.target !== undefined) {
@@ -145,7 +172,7 @@ async function commandBuild(flags: Flags): Promise<number> {
     if (flags.static === true) {
       throw new Error("--target edge dan --static tidak dapat digabung (artefak berbeda)");
     }
-    const edge = await buildEdge({ appDir });
+    const edge = await buildEdge({ appDir, plugins: plugins.vite });
     console.log(
       `✓ edge: ${edge.outputFile} (${(edge.bytes / 1024).toFixed(1)} KB) — kontrak fetch handler (ADR-0058)`,
     );
@@ -156,7 +183,13 @@ async function commandBuild(flags: Flags): Promise<number> {
     const createApp = await loadCreateApp(appDir);
     const manifest = await readAssetManifest(join(appDir, "dist/client"));
     const clientScript = manifest === null ? "/assets/client.js" : `/assets/${manifest.client}`;
-    const handler = await createApp({ clientScript });
+    const handler = withMiddleware(
+      await createApp({ clientScript, hooks: plugins.hooks }),
+      plugins.middleware,
+      {
+        logger: createConsoleLogger(),
+      },
+    );
 
     // Halaman 404: rute statis ber-metadata status 404, atau catch-all apa pun.
     const notFoundPage = pages.find((page) => page.page.metadata?.status === 404);
@@ -195,10 +228,15 @@ async function commandStart(flags: Flags): Promise<number> {
   const { config } = await loadConfigFile(flags.appDir, flags.configPath);
   const createApp = await loadCreateApp(flags.appDir);
   const host = createNodeHost();
+  const plugins = await resolvePlugins(flags.appDir, config, "start");
   // Nama berkas ber-hash dari manifest build (ADR-0055); fallback aman bila belum dibangun.
   const manifest = await readAssetManifest(join(flags.appDir, "dist/client"));
   const clientScript = manifest === null ? "/assets/client.js" : `/assets/${manifest.client}`;
-  const app = await createApp({ clientScript });
+  const app = withMiddleware(
+    await createApp({ clientScript, hooks: plugins.hooks }),
+    plugins.middleware,
+    { env: host.env, logger: createConsoleLogger() },
+  );
   const server = await host.serve(app, {
     port: flags.port ?? config.server.port,
     host: config.server.host,
@@ -211,21 +249,28 @@ async function commandStart(flags: Flags): Promise<number> {
 
 async function commandDev(flags: Flags): Promise<number> {
   const { config } = await loadConfigFile(flags.appDir, flags.configPath);
+  const plugins = await resolvePlugins(flags.appDir, config, "dev");
   const port = flags.port ?? config.server.port;
   const target = `http://${config.server.host}:${port}`;
   const dev = await createDevServer({
     appDir: flags.appDir,
     target,
     port: flags.devPort ?? 5173,
+    plugins: plugins.vite,
   });
   const createApp = await loadCreateApp(flags.appDir);
   const host = createNodeHost();
-  const app = await createApp({
-    clientScript: "/.ramonyx/client-entry.ts",
-    clientModules: ["/@vite/client"],
-    importer: dev.importer,
-    reloadManifests: true,
-  });
+  const app = withMiddleware(
+    await createApp({
+      clientScript: "/.ramonyx/client-entry.ts",
+      clientModules: ["/@vite/client"],
+      importer: dev.importer,
+      reloadManifests: true,
+      hooks: plugins.hooks,
+    }),
+    plugins.middleware,
+    { env: host.env, logger: createConsoleLogger() },
+  );
   await host.serve(app, { port, host: config.server.host });
   console.log(`dev: ${dev.url} (Vite + HMR) → SSR ${target}`);
   return 0;

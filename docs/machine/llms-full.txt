@@ -1254,6 +1254,33 @@
         "Query string/cookie melewati cache (disengaja)",
         "Tanpa purge CDN"
       ]
+    },
+    {
+      "id": "plugin-ecosystem",
+      "name": "Plugin (vite passthrough + middleware pre-routing + hooks) dari ramonyx.config.ts",
+      "status": "partial",
+      "since": null,
+      "priority": "p2",
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/devtools",
+        "@ramonyx/server"
+      ],
+      "evidence": [
+        "packages/bundler/src/plugin.ts",
+        "packages/devtools/src/commands.ts",
+        "packages/server/src/handler.ts",
+        "apps/playground/src/plugins/kunjungan.ts",
+        "apps/create-app/test/create-app.test.ts",
+        "docs/plugins.md",
+        "docs/adr/0067-plugin-ecosystem.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Kontrak experimental (stabil setelah >=2 plugin nyata)",
+        "Tanpa registry/ramonyx add",
+        "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
+      ]
     }
   ]
 }
@@ -2163,6 +2190,24 @@
         "revalidate",
         "data-loaders"
       ]
+    },
+    {
+      "id": "ADR-0067",
+      "file": "0067-plugin-ecosystem.md",
+      "title": "Plugin Ecosystem — Passthrough Vite, Middleware, Hook",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Plugin dimuat dari config (pass-through): vite diteruskan ke buildClient/buildEdge/createDevServer, middleware lewat withMiddleware (pre-routing, tanpa mengubah createApp aplikasi), hooks lewat konvensi createApp({hooks}); contoh kunjungan di playground + test CLI vite passthrough; kontrak experimental sampai >=2 plugin nyata.",
+      "related": [
+        "ADR-0065",
+        "ADR-0058",
+        "ADR-0063"
+      ],
+      "features": [
+        "plugin-ecosystem",
+        "extension-primitives"
+      ]
     }
   ]
 }
@@ -2915,7 +2960,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T06:10:08.582Z",
+  "generatedAt": "2026-10-19T06:21:29.718Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3196,7 +3241,8 @@
       "source": "packages/server/src/index.ts",
       "values": [
         "createHandler",
-        "parseQuery"
+        "parseQuery",
+        "withMiddleware"
       ],
       "types": [
         "CreateHandlerOptions",
@@ -3252,7 +3298,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T06:10:09.448Z",
+  "generatedAt": "2026-10-19T06:21:31.454Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3321,8 +3367,8 @@
 {
   "schemaVersion": 1,
   "version": "0.1.1",
-  "generatedAt": "2026-10-19T06:09:15.311Z",
-  "commit": "6bee940a8ec1e657372802c51c9b8100de789d07",
+  "generatedAt": "2026-10-19T06:20:26.399Z",
+  "commit": "35e1173982abc9444ba13857490c00a5aeef36b1",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -3344,9 +3390,9 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 66,
+  "adrs": 67,
   "tests": {
-    "node": 223,
+    "node": 226,
     "rust": 111,
     "e2eSpecFiles": 7
   }

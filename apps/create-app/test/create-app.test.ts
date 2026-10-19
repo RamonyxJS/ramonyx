@@ -292,3 +292,50 @@ test("help menampilkan penggunaan", () => {
   assert.match(output, /create-ramonyx-app/);
   assert.match(output, /Penggunaan/);
 });
+
+test("plugin dari config dimuat CLI (vite passthrough + nama dilaporkan) — ADR-0067", async () => {
+  mkdirSync(workDir, { recursive: true });
+  const target = join(workDir, "app-plugin");
+  runCli([target]);
+
+  // Plugin contoh: banner di bundle klien lewat hook Vite generateBundle.
+  mkdirSync(join(target, "src/plugins"), { recursive: true });
+  writeFileSync(
+    join(target, "src/plugins/uji.ts"),
+    `import { definePlugin } from "@ramonyx/bundler";
+
+export function uji() {
+  return definePlugin({
+    name: "uji",
+    vite: () => ({
+      name: "uji-banner",
+      generateBundle(_options, bundle) {
+        for (const file of Object.values(bundle)) {
+          if (file.type === "chunk") file.code = "/*UJI-PLUGIN*/\\n" + file.code;
+        }
+      },
+    }),
+  });
+}
+`,
+  );
+  writeFileSync(
+    join(target, "ramonyx.config.ts"),
+    `import { defineConfig } from "ramonyx";
+import { uji } from "./src/plugins/uji.ts";
+
+export default defineConfig({
+  plugins: [uji()],
+});
+`,
+  );
+
+  const output = runDevtools(target, ["build"]);
+  assert.match(output, /plugin: uji/, "CLI melaporkan plugin yang dimuat");
+
+  const manifest = JSON.parse(
+    readFileSync(join(target, "dist/client/ramonyx.assets.json"), "utf8"),
+  ) as { client: string };
+  const bundle = readFileSync(join(target, "dist/client", manifest.client), "utf8");
+  assert.ok(bundle.includes("UJI-PLUGIN"), "plugin Vite diteruskan ke build klien");
+});

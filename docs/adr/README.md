@@ -73,3 +73,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0064](0064-ip-pinning.md) | IP-pinning `guardedFetch` (resolve sekali + patok alamat, menutup DNS-rebinding) | Accepted |
 | [0065](0065-extension-contracts.md) | Kontrak ekstensi bersama: config pass-through, `AppHooks`, `KeyValueStore`, kontrak plugin | Accepted |
 | [0066](0066-revalidate.md) | Revalidasi data (ISR-lite): cache loader + SWR + invalidasi path/tag dari action | Accepted |
+| [0067](0067-plugin-ecosystem.md) | Plugin: passthrough Vite + middleware pre-routing (`withMiddleware`) + hooks dari config | Accepted |

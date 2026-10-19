@@ -214,7 +214,7 @@
 
 ### `p2-plugin-ecosystem` — Ekosistem plugin/module tingkat framework
 
-*tema: ecosystem · ukuran: L · status: open · sumber: gap §3 (ekosistem)*
+*tema: ecosystem · ukuran: L · status: in-progress · sumber: gap §3 (ekosistem) — M1-M3 selesai (ADR-0067); sisa: kontrak stabil setelah >=2 plugin nyata*
 
 - **Apa**: Kontrak plugin untuk build + dev + server hooks (pembungkus Vite plugin + hook Ramonyx) + contoh plugin + panduan publikasi.
 - **Kenapa penting untuk bersaing**: Ekosistem adalah moat framework besar (Nuxt modules, Astro integrations); tanpa kontrak, setiap kebutuhan pengguna dirakit sendiri dan tidak ada yang bisa dibagikan.

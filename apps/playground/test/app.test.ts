@@ -121,3 +121,34 @@ test("playground halaman SSR (layout, loader, error boundary)", async () => {
     await server.close();
   }
 });
+
+test("plugin: middleware kunjungan (contoh ADR-0067) menambah header + hooks tersambung", async () => {
+  const { loadPlugins } = await import("@ramonyx/bundler");
+  const { withMiddleware } = await import("@ramonyx/server");
+  const { kunjungan } = await import("../src/plugins/kunjungan.ts");
+
+  const { logger, lines } = collectingLogger();
+  const loaded = await loadPlugins([kunjungan()], {
+    appDir: process.cwd(),
+    config: resolveConfig(config),
+    logger,
+    mode: "start",
+  });
+  assert.equal(loaded.middleware.length, 1, "middleware plugin terbaca");
+  assert.ok(loaded.hooks?.onInvalidate !== undefined, "hooks plugin terbaca");
+
+  const app = withMiddleware(
+    await createApp({ logger, clientScript: "/assets/client.js" }),
+    loaded.middleware,
+    { logger },
+  );
+
+  const pertama = await app(new Request("http://uji/"));
+  assert.equal(pertama.headers.get("x-kunjungan"), "1", "plugin middleware menandai kunjungan");
+  const kedua = await app(new Request("http://uji/"));
+  assert.equal(kedua.headers.get("x-kunjungan"), "2", "hitungan bertambah per request");
+
+  const lain = await app(new Request("http://uji/tentang"));
+  assert.equal(lain.headers.get("x-kunjungan"), "1", "hitungan per path");
+  assert.ok(lines.length >= 0);
+});

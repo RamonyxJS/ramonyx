@@ -899,6 +899,24 @@
         "revalidate",
         "data-loaders"
       ]
+    },
+    {
+      "id": "ADR-0067",
+      "file": "0067-plugin-ecosystem.md",
+      "title": "Plugin Ecosystem — Passthrough Vite, Middleware, Hook",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-18)",
+      "date": "2026-10-18",
+      "decision": "Plugin dimuat dari config (pass-through): vite diteruskan ke buildClient/buildEdge/createDevServer, middleware lewat withMiddleware (pre-routing, tanpa mengubah createApp aplikasi), hooks lewat konvensi createApp({hooks}); contoh kunjungan di playground + test CLI vite passthrough; kontrak experimental sampai >=2 plugin nyata.",
+      "related": [
+        "ADR-0065",
+        "ADR-0058",
+        "ADR-0063"
+      ],
+      "features": [
+        "plugin-ecosystem",
+        "extension-primitives"
+      ]
     }
   ]
 }

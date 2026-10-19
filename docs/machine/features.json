@@ -1246,6 +1246,33 @@
         "Query string/cookie melewati cache (disengaja)",
         "Tanpa purge CDN"
       ]
+    },
+    {
+      "id": "plugin-ecosystem",
+      "name": "Plugin (vite passthrough + middleware pre-routing + hooks) dari ramonyx.config.ts",
+      "status": "partial",
+      "since": null,
+      "priority": "p2",
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/devtools",
+        "@ramonyx/server"
+      ],
+      "evidence": [
+        "packages/bundler/src/plugin.ts",
+        "packages/devtools/src/commands.ts",
+        "packages/server/src/handler.ts",
+        "apps/playground/src/plugins/kunjungan.ts",
+        "apps/create-app/test/create-app.test.ts",
+        "docs/plugins.md",
+        "docs/adr/0067-plugin-ecosystem.md"
+      ],
+      "limitations": [
+        "Belum dirilis di npm (setelah 0.1.1)",
+        "Kontrak experimental (stabil setelah >=2 plugin nyata)",
+        "Tanpa registry/ramonyx add",
+        "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
+      ]
     }
   ]
 }

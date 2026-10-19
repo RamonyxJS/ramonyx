@@ -1,7 +1,8 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createConsoleLogger, createNodeHost } from "@ramonyx/adapter-runtime";
-import { readClientScript } from "@ramonyx/bundler";
+import { loadPlugins, type RamonyxPlugin, readClientScript } from "@ramonyx/bundler";
+import { withMiddleware } from "@ramonyx/server";
 import { createCache, resolveConfig } from "ramonyx";
 import config from "../ramonyx.config.ts";
 import { createApp } from "./app.ts";
@@ -9,14 +10,28 @@ import { createApp } from "./app.ts";
 const resolved = resolveConfig(config);
 const appDir = fileURLToPath(new URL("..", import.meta.url));
 const host = createNodeHost();
-const app = await createApp({
-  env: host.env,
-  logger: createConsoleLogger(),
-  strictValidation: resolved.app.strictValidation,
-  clientScript: await readClientScript(join(appDir, "dist/client")),
-  streaming: true,
-  cache: createCache(),
+const logger = createConsoleLogger();
+
+// Plugin dari config (ADR-0067) — CLI melakukan hal yang sama untuk `ramonyx start`.
+const plugins = await loadPlugins(config.plugins as RamonyxPlugin[] | undefined, {
+  appDir,
+  config: resolved,
+  logger,
+  mode: "start",
 });
+const app = withMiddleware(
+  await createApp({
+    env: host.env,
+    logger,
+    strictValidation: resolved.app.strictValidation,
+    clientScript: await readClientScript(join(appDir, "dist/client")),
+    streaming: true,
+    cache: createCache(),
+    hooks: plugins.hooks,
+  }),
+  plugins.middleware,
+  { env: host.env, logger },
+);
 
 const server = await host.serve(app, {
   port: resolved.server.port,

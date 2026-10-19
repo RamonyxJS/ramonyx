@@ -17,6 +17,7 @@ import { pathToFileURL } from "node:url";
 
 import type { ModuleImporter } from "@ramonyx/compiler";
 import {
+  type AppHooks,
   type FetchHandler,
   type RamonyxConfig,
   type RamonyxConfigInput,
@@ -31,6 +32,11 @@ export interface CreateAppOptions {
   readonly reloadManifests?: boolean;
   readonly strictValidation?: boolean;
   readonly streaming?: boolean;
+  /**
+   * Hook aplikasi dari plugin (ADR-0067) — `createApp` aplikasi disarankan meneruskannya ke
+   * `createHandler`/`createPageRoutes` (template & aplikasi repo sudah).
+   */
+  readonly hooks?: AppHooks;
 }
 
 export type CreateApp = (options?: CreateAppOptions) => Promise<FetchHandler>;

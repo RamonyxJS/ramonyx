@@ -252,7 +252,7 @@
       "theme": "ecosystem",
       "priority": "p2",
       "size": "L",
-      "status": "open",
+      "status": "in-progress",
       "what": "Kontrak plugin untuk build + dev + server hooks (pembungkus Vite plugin + hook Ramonyx) + contoh plugin + panduan publikasi.",
       "why": "Ekosistem adalah moat framework besar (Nuxt modules, Astro integrations); tanpa kontrak, setiap kebutuhan pengguna dirakit sendiri dan tidak ada yang bisa dibagikan.",
       "done": [
@@ -263,7 +263,7 @@
       "areas": ["packages/bundler", "packages/core", "packages/devtools"],
       "adrs": ["ADR baru"],
       "competitor": "Nuxt modules; Astro integrations; SvelteKit Vite plugins; Next.js plugins (terbatas).",
-      "source": "gap §3 (ekosistem)",
+      "source": "gap §3 (ekosistem) — M1-M3 selesai (ADR-0067); sisa: kontrak stabil setelah >=2 plugin nyata",
       "strategic": true
     },
     {

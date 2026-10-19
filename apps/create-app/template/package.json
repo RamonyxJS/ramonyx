@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ramonyx/adapter-runtime": "^0.1.0",
+    "@ramonyx/bundler": "^0.1.0",
     "@ramonyx/compiler": "^0.1.0",
     "@ramonyx/devtools": "^0.1.0",
     "@ramonyx/react": "^0.1.0",

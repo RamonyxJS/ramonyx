@@ -9,7 +9,7 @@ import {
   type ModuleImporter,
   RouteManifestError,
 } from "@ramonyx/compiler";
-import { type Connect, createServer } from "vite";
+import { type Connect, createServer, type PluginOption } from "vite";
 import { serverOnlyPlugin } from "./server-only.ts";
 
 export interface DevServerOptions {
@@ -17,6 +17,8 @@ export interface DevServerOptions {
   /** URL server SSR yang diproksikan (mis. "http://localhost:3000"). */
   readonly target: string;
   readonly port?: number;
+  /** Plugin Vite tambahan (dari plugin Ramonyx — ADR-0067). */
+  readonly plugins?: readonly PluginOption[];
 }
 
 export interface DevServer {
@@ -125,6 +127,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     esbuild: { jsx: "automatic" },
     server: { port: options.port ?? 5173 },
     plugins: [
+      ...(options.plugins ?? []),
       serverOnlyPlugin(),
       {
         name: "ramonyx-ssr-proxy",

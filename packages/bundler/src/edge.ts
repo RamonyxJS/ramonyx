@@ -8,7 +8,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { generateServerEntry, listApiRoutes, loadPageRoutes } from "@ramonyx/compiler";
-import { build } from "vite";
+import { build, type PluginOption } from "vite";
 import { readClientScript } from "./build.ts";
 
 export interface BuildEdgeOptions {
@@ -20,6 +20,8 @@ export interface BuildEdgeOptions {
   /** Aktifkan SSR streaming di artefak; default true (renderer React mendukung). */
   readonly streaming?: boolean;
   readonly minify?: boolean;
+  /** Plugin Vite tambahan (harus edge-safe — ADR-0067). */
+  readonly plugins?: readonly PluginOption[];
 }
 
 export interface BuildEdgeResult {
@@ -74,6 +76,7 @@ export async function buildEdge(options: BuildEdgeOptions): Promise<BuildEdgeRes
     root: appDir,
     logLevel: "warn",
     esbuild: { jsx: "automatic" },
+    plugins: [...(options.plugins ?? [])],
     // `*.server.ts` tetap nyata di edge (server) — plugin stub hanya untuk bundle klien.
     // Runtime edge tidak punya `process` — define agar React memakai build produksi.
     define: { "process.env.NODE_ENV": JSON.stringify("production") },

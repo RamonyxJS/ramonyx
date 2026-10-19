@@ -8,8 +8,8 @@
 - **TERBIT — 0.4.0** (2026-10-19): fitur **i18n** (ADR-0081) + benchmark pipeline gambar +
   panduan publikasi plugin (ADR-0080); 16 paket → 17 artefak; GitHub Release v0.4.0 (19 aset);
   hasil + acceptance di bagian "Hasil rilis 0.4.0".
-- **0.4.1: siap rilis (menunggu tag)** — remediasi snapshot MCP (`docs/public` saja) + situs publik
-  berbasis kebijakan konten (ADR-0082); 17 artefak; `release:verify` memeriksa kebocoran docs.
+- **TERBIT — 0.4.1** (2026-10-20): remediasi snapshot MCP (`docs/public` saja) + situs publik
+  berbasis kebijakan konten (ADR-0082); 17 artefak; hasil + verifikasi di "Hasil rilis 0.4.1".
 
 ## Persiapan 0.4.0 (2026-10-19)
 
@@ -21,6 +21,18 @@
 - `npm publish --dry-run` ×16 → exit 0 tanpa warning.
 - **Langkah tersisa (pemilik)**: `git tag v0.4.0 && git push origin main --tags` — **selesai**
   (lihat "Hasil rilis 0.4.0").
+
+## Hasil rilis 0.4.1 (2026-10-20)
+
+- Tag `v0.4.1` → workflow success: **16 paket @ 0.4.1** (provenance) + **GitHub Release 19 aset**.
+- **Snapshot MCP:** tarball registry `@ramonyx/mcp-docs-server@0.4.1` memuat **38 entri `docs/`
+  publik** — tanpa `PRD`, `IMPLEMENTATION_STATUS`, roadmap, `BLUEPRINT`, atau asesmen keamanan
+  (`npm pack` + `tar -tzf` diverifikasi).
+- **Deprecation:** `@ramonyx/mcp-docs-server@0.3.0` dan `@0.4.0` di-`npm deprecate` dengan pesan
+  upgrade ke 0.4.1+ (tarball lama tetap dapat diunduh — dicatat sebagai residual).
+- **Situs publik:** GitHub Pages kini hanya memuat `docs/public/` (landing + `/docs`, 8 ADR publik);
+  URL internal lama (`/dokumen/security/threat-model`, `/dokumen/PRD`, …) → 404.
+- Gate CI baru berjalan: `pnpm test:docs` (e2e kebijakan + a11y) dan `pnpm docs:no-leak`.
 
 ## Persiapan 0.4.1 — remediasi snapshot MCP (2026-10-20)
 

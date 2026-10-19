@@ -1,4 +1,5 @@
 import type { StandardSchema } from "@ramonyx/schema";
+import type { ResolvedImage } from "./assets.ts";
 
 /** Handler yang menerima `Request` standar web dan mengembalikan `Response`. */
 export type FetchHandler = (request: Request) => Promise<Response>;
@@ -7,6 +8,11 @@ export type FetchHandler = (request: Request) => Promise<Response>;
 export interface AssetResolver {
   /** URL publik aset (mis. `/assets/img/logo-abc123.png`) atau `undefined`. */
   url(path: string): string | undefined;
+  /**
+   * Data gambar siap pakai (src/srcSet/sources/dimensi) — ADR-0079. Dipakai komponen `Image`:
+   * `<Image {...assets.image("img/hero.png")} alt="…" sizes="…" />`.
+   */
+  image(path: string): ResolvedImage | undefined;
 }
 
 export interface EnvReader {

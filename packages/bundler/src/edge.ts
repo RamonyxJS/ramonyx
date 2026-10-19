@@ -10,7 +10,7 @@ import { join, resolve } from "node:path";
 import { generateServerEntry, listApiRoutes, loadPageRoutes } from "@ramonyx/compiler";
 import { errorHint } from "@ramonyx/core";
 import { build, type PluginOption } from "vite";
-import { assetUrl } from "./assets.ts";
+import { assetInfoMap } from "./assets.ts";
 import { readClientScript } from "./build.ts";
 import { readAssetManifest } from "./manifest.ts";
 
@@ -62,15 +62,9 @@ export async function buildEdge(options: BuildEdgeOptions): Promise<BuildEdgeRes
   const clientDir = join(appDir, "dist/client");
   const clientScript = options.clientScript ?? (await readClientScript(clientDir));
 
-  // Peta aset di-inline (artefak edge tanpa fs — ADR-0069).
+  // Peta aset di-inline (artefak edge tanpa fs — ADR-0069): URL + dimensi + varian (ADR-0079).
   const manifest = await readAssetManifest(clientDir);
-  const assets: Record<string, string> = {};
-  for (const path of Object.keys(manifest?.assets ?? {})) {
-    const url = assetUrl(manifest, path);
-    if (url !== undefined) {
-      assets[path] = url;
-    }
-  }
+  const assets = assetInfoMap(manifest);
 
   await mkdir(entryDir, { recursive: true });
   await writeFile(

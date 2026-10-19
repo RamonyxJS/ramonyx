@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "version": "0.2.0",
-  "generatedAt": "2026-10-19T13:00:51.662Z",
-  "commit": "e5e96c261786f2caa84dca2a1640c535604ef988",
+  "generatedAt": "2026-10-19T13:46:59.262Z",
+  "commit": "d3ebb8ec69611287470d89f100a328669adf6e4d",
   "node": "v24.22.0",
   "packages": {
-    "workspace": 14,
-    "npm": 15,
+    "workspace": 15,
+    "npm": 16,
     "names": [
       "@ramonyx/adapter-runtime",
       "@ramonyx/bundler",
@@ -14,6 +14,7 @@
       "@ramonyx/core",
       "@ramonyx/devtools",
       "@ramonyx/mcp-docs-server",
+      "@ramonyx/plugin-image",
       "ramonyx",
       "@ramonyx/react",
       "@ramonyx/router",
@@ -25,10 +26,10 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 78,
+  "adrs": 79,
   "tests": {
-    "node": 267,
+    "node": 277,
     "rust": 116,
-    "e2eSpecFiles": 7
+    "e2eSpecFiles": 8
   }
 }

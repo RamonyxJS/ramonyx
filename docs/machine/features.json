@@ -727,22 +727,27 @@
     {
       "id": "image-optimization",
       "name": "Aset: komponen Image (anti-CLS, lazy) — tanpa resize/format modern (M1)",
-      "status": "partial",
-      "since": "0.2.0",
+      "status": "implemented",
+      "since": null,
       "priority": "p3",
       "packages": [
-        "@ramonyx/react",
-        "@ramonyx/bundler"
+        "@ramonyx/plugin-image",
+        "@ramonyx/bundler",
+        "@ramonyx/react"
       ],
       "evidence": [
+        "packages/plugin-image/src/index.ts",
+        "packages/plugin-image/test/image.test.ts",
+        "packages/bundler/src/assets.ts",
         "packages/react/src/assets.ts",
-        "packages/react/test/image.test.ts",
+        "apps/playground/e2e/image.spec.ts",
         "docs/assets.md",
-        "docs/adr/0069-asset-pipeline-m1.md"
+        "docs/adr/0079-image-pipeline-m2.md"
       ],
       "limitations": [
-        "Tanpa resize/format modern (M2 gate: plugin + audit dependency + build-time)",
-        "srcSet manual (tanpa varian otomatis)"
+        "Belum dirilis di npm (paket ke-16 — rilis berikutnya)",
+        "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
+        "avif opt-in (jauh lebih lambat saat build); tanpa placeholder blur"
       ]
     },
     {
@@ -1295,7 +1300,7 @@
         "docs/adr/0067-plugin-ecosystem.md"
       ],
       "limitations": [
-        "Kontrak experimental (stabil setelah >=2 plugin nyata)",
+        "Kontrak experimental — hook `assets` ditambahkan (ADR-0079); 2 plugin nyata (kunjungan, image)",
         "Tanpa registry/ramonyx add",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
       ]
@@ -1321,7 +1326,7 @@
       ],
       "limitations": [
         "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",
-        "Tanpa kompresi otomatis"
+        "Varian gambar hanya di build (dev menyajikan berkas asli)"
       ]
     }
   ]

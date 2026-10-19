@@ -4,9 +4,10 @@
   v0.2.0, 17 aset) di atas 0.1.1 (2026-10-18, 14 paket) dan 0.1.0 (2026-10-18, 13 paket).
   Verifikasi registry end-to-end lolos untuk ketiganya. Kebijakan ADR-0039/0049 di bawah berlaku
   untuk rilis berikutnya.
-- **Rilis berikutnya**: membawa **paket ke-15** `@ramonyx/mcp-docs-server` (ADR-0078) →
-  **16 artefak** (15 tarball npm + binary runtime); snapshot `docs/` dibundel di tarball-nya dan
-  `pnpm release:verify` menjalankan handshake MCP dari tarball.
+- **Rilis berikutnya**: membawa **paket ke-15** `@ramonyx/mcp-docs-server` (ADR-0078) dan
+  **paket ke-16** `@ramonyx/plugin-image` (ADR-0079) → **17 artefak** (16 tarball npm + binary
+  runtime); snapshot `docs/` dibundel di tarball MCP dan `pnpm release:verify` menjalankan
+  handshake MCP dari tarball.
 - Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
   binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
   `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).

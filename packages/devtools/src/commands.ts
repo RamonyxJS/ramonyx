@@ -163,7 +163,7 @@ async function resolvePlugins(
 ): Promise<LoadedPlugins> {
   const plugins = Array.isArray(config.plugins) ? (config.plugins as RamonyxPlugin[]) : [];
   if (plugins.length === 0) {
-    return { vite: [], middleware: [], hooks: undefined };
+    return { vite: [], middleware: [], hooks: undefined, assets: [] };
   }
   const loaded = await loadPlugins(plugins, {
     appDir,
@@ -192,7 +192,12 @@ async function buildOnce(appDir: string, plugins: LoadedPlugins, flags: Flags): 
   if (pages.length === 0) {
     console.warn("peringatan: tidak ada halaman di src/routes — bundle klien kosong");
   }
-  const result = await buildClient({ appDir, pages, plugins: plugins.vite });
+  const result = await buildClient({
+    appDir,
+    pages,
+    plugins: plugins.vite,
+    assetProcessors: plugins.assets,
+  });
   console.log(`✓ client bundle: ${result.scriptPath} (${result.outDir})`);
 
   if (flags.target !== undefined) {

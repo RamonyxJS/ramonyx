@@ -3,7 +3,7 @@
 // (kontrak `fetch(request) → Response`).
 
 import { relative, sep } from "node:path";
-import type { LoadedPage } from "@ramonyx/core";
+import type { AssetInfo, LoadedPage } from "@ramonyx/core";
 import type { ApiRouteFile } from "./manifest.ts";
 
 export interface GenerateServerEntryOptions {
@@ -18,10 +18,10 @@ export interface GenerateServerEntryOptions {
   /** Aktifkan SSR streaming (renderer React mendukung `renderStream`). */
   readonly streaming?: boolean;
   /**
-   * Peta aset (path relatif → URL publik) di-inline ke entry — artefak edge tidak punya
-   * filesystem untuk membaca manifest (ADR-0069).
+   * Peta aset (path relatif → `AssetInfo`: URL + dimensi + varian) di-inline ke entry —
+   * artefak edge tidak punya filesystem untuk membaca manifest (ADR-0069/0079).
    */
-  readonly assets?: Readonly<Record<string, string>>;
+  readonly assets?: Readonly<Record<string, AssetInfo>>;
 }
 
 function toImportSpecifier(from: string, file: string): string {
@@ -96,6 +96,7 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
 
   return [
     "// File ini digenerate otomatis oleh @ramonyx/compiler — jangan diedit manual.",
+    'import { createAssetResolverFromMap } from "@ramonyx/core";',
     'import { createHandler } from "@ramonyx/server";',
     'import { createReactRenderer } from "@ramonyx/react";',
     'import { createPageRoutes } from "@ramonyx/ssr";',
@@ -125,7 +126,7 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
       : `const assetMap = ${JSON.stringify(options.assets)};`,
     options.assets === undefined || Object.keys(options.assets).length === 0
       ? null
-      : 'const assets = { url: (path) => assetMap[String(path).replace(/^\\.?\\//, "")] };',
+      : "const assets = createAssetResolverFromMap(assetMap);",
     "",
     "const handler = createHandler({",
     "  routes: [",

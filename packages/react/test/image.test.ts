@@ -33,3 +33,37 @@ test("Image: elemen img dengan default aman; src kosong → null", () => {
   assert.equal(eagerProps.fetchpriority, "high");
   assert.equal(eagerProps.srcSet, "/a@2x.png 2x");
 });
+
+test("Image: sources → <picture> dengan <source> per format + sizes diteruskan", () => {
+  const element = Image({
+    src: "/assets/hero-aa11.png",
+    alt: "Hero",
+    width: 800,
+    height: 600,
+    srcSet: "/assets/hero-320-bb22.webp 320w",
+    sources: [
+      { type: "image/avif", srcSet: "/assets/hero-320-dd44.avif 320w" },
+      { type: "image/webp", srcSet: "/assets/hero-320-bb22.webp 320w" },
+    ],
+    sizes: "(max-width: 768px) 100vw, 50vw",
+  });
+  assert.ok(element !== null);
+  assert.equal(element.type, "picture");
+
+  const children = (element.props as { children: ReactElement[] }).children;
+  assert.equal(children.length, 3, "2 <source> + <img>");
+  const avif = propsOf(children[0] ?? null);
+  assert.equal(children[0]?.type, "source");
+  assert.equal(avif.type, "image/avif");
+  assert.equal(avif.srcSet, "/assets/hero-320-dd44.avif 320w");
+  assert.equal(avif.sizes, "(max-width: 768px) 100vw, 50vw", "sizes diteruskan ke source");
+  assert.equal(propsOf(children[1] ?? null).type, "image/webp");
+
+  const img = children[2];
+  assert.equal(img?.type, "img");
+  const imgProps = propsOf(img ?? null);
+  assert.equal(imgProps.src, "/assets/hero-aa11.png");
+  assert.equal(imgProps.srcSet, "/assets/hero-320-bb22.webp 320w");
+  assert.equal(imgProps.sizes, "(max-width: 768px) 100vw, 50vw");
+  assert.equal(imgProps.width, 800);
+});

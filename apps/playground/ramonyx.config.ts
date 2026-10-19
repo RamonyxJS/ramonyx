@@ -1,3 +1,4 @@
+import { imageOptimizer } from "@ramonyx/plugin-image";
 import { defineConfig } from "ramonyx";
 import { kunjungan } from "./src/plugins/kunjungan.ts";
 
@@ -10,6 +11,8 @@ export default defineConfig({
   server: {
     port: 3000,
   },
-  // Plugin contoh (ADR-0067): dimuat `ramonyx dev|build|start`; custom entry memakai loadPlugins.
-  plugins: [kunjungan()],
+  // Plugin (ADR-0067): dimuat `ramonyx dev|build|start`.
+  // - kunjungan: contoh middleware/hook (ADR-0067)
+  // - image: varian gambar build-time (ADR-0079) — sharp peer opsional (devDependency repo)
+  plugins: [kunjungan(), imageOptimizer({ widths: [320, 640], formats: ["webp"] })],
 });

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { generateClientEntry } from "@ramonyx/compiler";
 import { errorHint, type LoadedPage } from "@ramonyx/core";
 import { build, type PluginOption } from "vite";
-import { collectAssets, DEFAULT_ASSETS_DIR } from "./assets.ts";
+import { type AssetProcessor, collectAssets, DEFAULT_ASSETS_DIR } from "./assets.ts";
 import {
   type AssetManifest,
   CLIENT_MANIFEST_FILE,
@@ -31,6 +31,8 @@ export interface BuildClientOptions {
   readonly minify?: boolean;
   /** Plugin Vite tambahan (dari plugin Ramonyx — ADR-0067). */
   readonly plugins?: readonly PluginOption[];
+  /** Prosesor aset (hook `assets` plugin — ADR-0079). */
+  readonly assetProcessors?: readonly AssetProcessor[];
   /**
    * Direktori aset (relatif appDir) yang dipindai & disalin ber-hash ke `assets/**` +
    * dicatat di manifest (ADR-0069). Default `src/assets` bila ada; `false` mematikan.
@@ -165,7 +167,9 @@ export async function buildClient(options: BuildClientOptions): Promise<BuildCli
       : join(options.appDir, options.assetsDir ?? DEFAULT_ASSETS_DIR);
   let assets: Awaited<ReturnType<typeof collectAssets>>["assets"] = {};
   if (assetsDir !== null && existsSync(assetsDir)) {
-    const collected = await collectAssets(assetsDir, outDir);
+    const collected = await collectAssets(assetsDir, outDir, {
+      processors: options.assetProcessors,
+    });
     assets = collected.assets;
   }
 

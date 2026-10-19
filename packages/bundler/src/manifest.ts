@@ -7,10 +7,26 @@ import { join } from "node:path";
 /** Nama berkas manifest aset di direktori keluaran klien (ADR-0055). */
 export const CLIENT_MANIFEST_FILE = "ramonyx.assets.json";
 
+/** Varian satu aset (hasil prosesor plugin — ADR-0079). */
+export interface AssetVariantEntry {
+  /** Path relatif terhadap direktori keluaran klien, mis. `assets/img/hero-640-ab12.webp`. */
+  readonly file: string;
+  readonly bytes: number;
+  readonly width: number;
+  readonly height?: number;
+  /** Format: `webp`, `avif`, atau ekstensi asli. */
+  readonly format: string;
+}
+
 export interface AssetEntry {
   /** Path relatif terhadap direktori keluaran klien, mis. `assets/img/logo-abc123.png`. */
   readonly file: string;
   readonly bytes: number;
+  /** Dimensi intrinsik (dari prosesor — ADR-0079); dipakai `Image` anti-CLS. */
+  readonly width?: number;
+  readonly height?: number;
+  /** Varian resize/format (ADR-0079). */
+  readonly variants?: readonly AssetVariantEntry[];
 }
 
 export type AssetMap = Readonly<Record<string, AssetEntry>>;

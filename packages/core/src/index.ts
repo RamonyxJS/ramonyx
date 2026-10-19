@@ -1,3 +1,4 @@
+export * from "./assets.ts";
 export type { CacheControlOptions } from "./cache.ts";
 export { cacheControl } from "./cache.ts";
 export type { AppConfig, RamonyxConfig, RamonyxConfigInput, ServerConfig } from "./config.ts";

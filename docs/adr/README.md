@@ -85,3 +85,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0076](0076-server-entry-cli-migration.md) | Konvensi `src/server.ts` + migrasi playground/docs ke CLI | Accepted |
 | [0077](0077-devtools-panel.md) | Panel devtools (dev-only): rute, timing, hydration, bundel | Accepted |
 | [0078](0078-mcp-docs-server.md) | MCP docs server (stdio) — tools agen tanpa hosting | Accepted |
+| [0079](0079-image-pipeline-m2.md) | Pipeline gambar M2 — plugin `assets`, varian build-time, koreksi layout aset | Accepted |

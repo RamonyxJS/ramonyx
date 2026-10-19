@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { serveStatic } from "@ramonyx/adapter-runtime";
+import { createAssetResolver } from "@ramonyx/bundler";
 import { createRouteManifest, loadPageRoutes, type ModuleImporter } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import {
@@ -61,6 +62,9 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
     // Metrik dasar (ADR-0071) — digabung dengan hook aplikasi/plugin.
     const metrics = createMetrics();
     const hooks = mergeHooks(options.hooks, metrics.hooks);
+    // Resolver aset (ADR-0069/0079): produksi memakai manifest ber-hash + varian gambar;
+    // dev memakai fallback path (Vite menyajikan `src/assets/**` apa adanya).
+    const assets = await createAssetResolver(clientDir, { fallbackToPath: true });
     const pageRoutes = createPageRoutes({
       pages,
       renderer: createReactRenderer(),
@@ -68,6 +72,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
       streaming: options.streaming,
       cache: options.cache,
       hooks,
+      assets,
     });
 
     return createHandler({

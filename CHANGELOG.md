@@ -4,6 +4,25 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+### Framework (baseline produksi)
+
+- **Pipeline gambar M2** (ADR-0079): plugin **`@ramonyx/plugin-image`** (paket ke-16) — varian
+  resize + WebP/AVIF saat build, `sharp` sebagai **peer opsional** (tidak diinstal otomatis),
+  cache content-hash di `.ramonyx/image-cache`; hook kontrak plugin **`assets`** (prosesor per
+  berkas); manifest diperluas (`width`/`height` + `variants`); resolver **`assets.image()`**
+  (src/srcSet/sources/dimensi) dan `Image` merender **`<picture><source>`**; peta aset edge
+  di-inline sebagai `AssetInfo` dengan resolver bersama `createAssetResolverFromMap`; dogfood
+  playground + e2e browser (varian WebP benar-benar dimuat).
+- **Koreksi layout aset (bug M1)**: berkas aset kini ditulis di **root keluaran klien**
+  (`dist/client/**`) sehingga URL `<prefix>/<file>` benar-benar disajikan — layout lama
+  (`dist/client/assets/**`) 404 dan tertangkap test HTTP aset baru di create-app.
+
+### Perubahan API (pra-1.0)
+
+- **`AssetResolver.image(path)` wajib** (ADR-0079) — `ResolvedImage` (`src`, `width`, `height`,
+  `srcSet`, `sources`); resolver kustom cukup mengembalikan `{ src }`.
+  `manifest.assets[key].file` kini relatif terhadap root keluaran klien (bukan `assets/...`).
+
 ### Tooling & docs
 
 - **MCP docs server** (ADR-0078): paket ke-15 `@ramonyx/mcp-docs-server` (bin `ramonyx-mcp-docs`) —

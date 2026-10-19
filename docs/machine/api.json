@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T13:02:15.016Z",
+  "generatedAt": "2026-10-19T13:48:11.361Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -32,6 +32,7 @@
       "values": [
         "CLIENT_MANIFEST_FILE",
         "DEFAULT_ASSETS_DIR",
+        "assetInfoMap",
         "assetUrl",
         "assetsDirExists",
         "buildClient",
@@ -51,11 +52,16 @@
         "AssetEntry",
         "AssetManifest",
         "AssetMap",
+        "AssetProcessor",
+        "AssetProcessorInput",
+        "AssetProcessorOutput",
+        "AssetProcessorResult",
         "AssetUrlOptions",
         "BuildClientOptions",
         "BuildClientResult",
         "BuildEdgeOptions",
         "BuildEdgeResult",
+        "CollectAssetsOptions",
         "CollectAssetsResult",
         "CreateAssetResolverOptions",
         "DevServer",
@@ -161,7 +167,9 @@
         "StoreEntry",
         "StoreSetOptions"
       ],
-      "reexports": []
+      "reexports": [
+        "./assets.ts"
+      ]
     },
     {
       "name": "@ramonyx/devtools",
@@ -195,6 +203,16 @@
         "DocsIndex",
         "MachineName"
       ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/plugin-image",
+      "version": "0.2.0",
+      "source": "packages/plugin-image/src/index.ts",
+      "values": [
+        "imageOptimizer"
+      ],
+      "types": [],
       "reexports": []
     },
     {

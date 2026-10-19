@@ -838,7 +838,11 @@ test("assets: resolver diteruskan ke konteks loader (ADR-0069)", async () => {
     routes: createPageRoutes({
       pages: [page],
       renderer: fakeRenderer(),
-      assets: { url: (path) => (path === "logo.svg" ? "/assets/logo-abc.svg" : undefined) },
+      assets: {
+        url: (path) => (path === "logo.svg" ? "/assets/logo-abc.svg" : undefined),
+        image: (path) =>
+          path === "logo.svg" ? { src: "/assets/logo-abc.svg", width: 32, height: 32 } : undefined,
+      },
     }),
   });
 

@@ -76,6 +76,29 @@ export async function createHandler(options: ServerEntryOptions = {}): Promise<F
 `ramonyx dev|start` otomatis memakai `src/server.ts` bila ada (jika tidak: `src/app.ts`).
 Helper `loadPlugins` + `withMiddleware` tetap tersedia untuk skenario programatik lain.
 
+### Hook `assets` (build-time — ADR-0079)
+
+Plugin dapat memproses `src/assets/**` saat `ramonyx build` (mis. varian gambar):
+
+```ts
+import { definePlugin } from "@ramonyx/bundler";
+
+export const contoh = definePlugin({
+  name: "contoh-aset",
+  async assets(context, asset) {
+    if (!asset.path.endsWith(".png")) return undefined;
+    return {
+      meta: { width: 800, height: 600 },                       // dimensi intrinsik → manifest
+      outputs: [{ path: "img/varian-400.webp", data: bytes, width: 400, format: "webp" }],
+    };
+  },
+});
+```
+
+Berkas turunan diberi hash konten otomatis dan dicatat di `ramonyx.assets.json` (`variants`),
+sehingga `assets.image(...)` + komponen `Image` merender `srcset`/`<picture>`. Contoh nyata:
+`@ramonyx/plugin-image` (sharp peer opsional).
+
 ## Aturan
 
 - **`middleware` harus edge-safe** (tanpa `node:*`) bila artefak `--target edge` dipakai —

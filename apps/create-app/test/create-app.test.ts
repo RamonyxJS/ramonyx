@@ -203,7 +203,7 @@ test("app hasil scaffold: build klien + aset disajikan", async () => {
   ) as { assets?: Record<string, { file: string }> };
   const logo = asetManifest.assets?.["logo.svg"];
   assert.ok(logo !== undefined, "manifest memuat aset logo.svg");
-  assert.match(logo.file, /^assets\/logo-[0-9a-f]{10}\.svg$/);
+  assert.match(logo.file, /^logo-[0-9a-f]{10}\.svg$/);
   assert.ok(existsSync(join(target, "dist/client", logo.file)), "aset tersalin ke dist/client");
 
   // Source map produksi: ada dan memuat sumber asli (sourcesContent) — ADR-0046.
@@ -219,6 +219,7 @@ test("app hasil scaffold: build klien + aset disajikan", async () => {
     join(target, "assets.mjs"),
     `import { createApp } from "./src/app.ts";
 const app = await createApp({ clientScript: "/assets/${manifest.client}" });
+const asetLogo = { file: ${JSON.stringify(logo.file)} };
 const aset = await app(new Request("http://uji/assets/${manifest.client}"));
 if (aset.status !== 200) throw new Error("status aset: " + aset.status);
 if (aset.headers.get("content-type") !== "text/javascript; charset=utf-8") {
@@ -229,6 +230,13 @@ if (aset.headers.get("cache-control") !== "public, max-age=31536000, immutable")
 }
 const traversal = await app(new Request("http://uji/assets/..%2F..%2Fpackage.json"));
 if (traversal.status !== 404) throw new Error("traversal aset: " + traversal.status);
+// Aset hasil pipeline (ADR-0069): URL dari manifest harus benar-benar disajikan (regresi M1 —
+// layout lama dist/client/assets/** tidak dapat dijangkau URL /assets/**).
+const logoResponse = await app(new Request("http://uji/assets/" + asetLogo.file));
+if (logoResponse.status !== 200) throw new Error("status logo: " + logoResponse.status);
+if (logoResponse.headers.get("content-type") !== "image/svg+xml") {
+  throw new Error("content-type logo: " + logoResponse.headers.get("content-type"));
+}
 console.log("ASSETS OK");
 `,
   );

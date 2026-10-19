@@ -1,9 +1,15 @@
 export type {
+  AssetProcessor,
+  AssetProcessorInput,
+  AssetProcessorOutput,
+  AssetProcessorResult,
   AssetUrlOptions,
+  CollectAssetsOptions,
   CollectAssetsResult,
   CreateAssetResolverOptions,
 } from "./assets.ts";
 export {
+  assetInfoMap,
   assetsDirExists,
   assetUrl,
   collectAssets,

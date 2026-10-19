@@ -735,22 +735,27 @@
     {
       "id": "image-optimization",
       "name": "Aset: komponen Image (anti-CLS, lazy) — tanpa resize/format modern (M1)",
-      "status": "partial",
-      "since": "0.2.0",
+      "status": "implemented",
+      "since": null,
       "priority": "p3",
       "packages": [
-        "@ramonyx/react",
-        "@ramonyx/bundler"
+        "@ramonyx/plugin-image",
+        "@ramonyx/bundler",
+        "@ramonyx/react"
       ],
       "evidence": [
+        "packages/plugin-image/src/index.ts",
+        "packages/plugin-image/test/image.test.ts",
+        "packages/bundler/src/assets.ts",
         "packages/react/src/assets.ts",
-        "packages/react/test/image.test.ts",
+        "apps/playground/e2e/image.spec.ts",
         "docs/assets.md",
-        "docs/adr/0069-asset-pipeline-m1.md"
+        "docs/adr/0079-image-pipeline-m2.md"
       ],
       "limitations": [
-        "Tanpa resize/format modern (M2 gate: plugin + audit dependency + build-time)",
-        "srcSet manual (tanpa varian otomatis)"
+        "Belum dirilis di npm (paket ke-16 — rilis berikutnya)",
+        "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
+        "avif opt-in (jauh lebih lambat saat build); tanpa placeholder blur"
       ]
     },
     {
@@ -1303,7 +1308,7 @@
         "docs/adr/0067-plugin-ecosystem.md"
       ],
       "limitations": [
-        "Kontrak experimental (stabil setelah >=2 plugin nyata)",
+        "Kontrak experimental — hook `assets` ditambahkan (ADR-0079); 2 plugin nyata (kunjungan, image)",
         "Tanpa registry/ramonyx add",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
       ]
@@ -1329,7 +1334,7 @@
       ],
       "limitations": [
         "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",
-        "Tanpa kompresi otomatis"
+        "Varian gambar hanya di build (dev menyajikan berkas asli)"
       ]
     }
   ]
@@ -2450,6 +2455,25 @@
       "features": [
         "mcp-docs-server"
       ]
+    },
+    {
+      "id": "ADR-0079",
+      "file": "0079-image-pipeline-m2.md",
+      "title": "Pipeline Gambar M2 — Plugin `assets`, Varian Build-time, Koreksi Layout Aset",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-19)",
+      "date": "2026-10-19",
+      "decision": "Hook `assets` di kontrak plugin (prosesor per berkas build-time); paket ke-16 @ramonyx/plugin-image (resize + WebP/AVIF, sharp peer opsional, cache content-hash); manifest + width/height/variants; AssetResolver.image (wajib, pra-1.0) + Image <picture><source>; resolver bersama createAssetResolverFromMap (Node + edge inline AssetInfo); koreksi bug M1: aset di root keluaran klien (URL <prefix>/<file> 1:1) dengan test HTTP regresi.",
+      "related": [
+        "ADR-0069",
+        "ADR-0067",
+        "ADR-0046"
+      ],
+      "features": [
+        "image-optimization",
+        "asset-pipeline",
+        "plugin-ecosystem"
+      ]
     }
   ]
 }
@@ -3212,7 +3236,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T13:02:15.016Z",
+  "generatedAt": "2026-10-19T13:48:11.361Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3244,6 +3268,7 @@
       "values": [
         "CLIENT_MANIFEST_FILE",
         "DEFAULT_ASSETS_DIR",
+        "assetInfoMap",
         "assetUrl",
         "assetsDirExists",
         "buildClient",
@@ -3263,11 +3288,16 @@
         "AssetEntry",
         "AssetManifest",
         "AssetMap",
+        "AssetProcessor",
+        "AssetProcessorInput",
+        "AssetProcessorOutput",
+        "AssetProcessorResult",
         "AssetUrlOptions",
         "BuildClientOptions",
         "BuildClientResult",
         "BuildEdgeOptions",
         "BuildEdgeResult",
+        "CollectAssetsOptions",
         "CollectAssetsResult",
         "CreateAssetResolverOptions",
         "DevServer",
@@ -3373,7 +3403,9 @@
         "StoreEntry",
         "StoreSetOptions"
       ],
-      "reexports": []
+      "reexports": [
+        "./assets.ts"
+      ]
     },
     {
       "name": "@ramonyx/devtools",
@@ -3407,6 +3439,16 @@
         "DocsIndex",
         "MachineName"
       ],
+      "reexports": []
+    },
+    {
+      "name": "@ramonyx/plugin-image",
+      "version": "0.2.0",
+      "source": "packages/plugin-image/src/index.ts",
+      "values": [
+        "imageOptimizer"
+      ],
+      "types": [],
       "reexports": []
     },
     {
@@ -3597,7 +3639,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T13:02:17.222Z",
+  "generatedAt": "2026-10-19T13:48:12.548Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3671,12 +3713,12 @@
 {
   "schemaVersion": 1,
   "version": "0.2.0",
-  "generatedAt": "2026-10-19T13:00:51.662Z",
-  "commit": "e5e96c261786f2caa84dca2a1640c535604ef988",
+  "generatedAt": "2026-10-19T13:46:59.262Z",
+  "commit": "d3ebb8ec69611287470d89f100a328669adf6e4d",
   "node": "v24.22.0",
   "packages": {
-    "workspace": 14,
-    "npm": 15,
+    "workspace": 15,
+    "npm": 16,
     "names": [
       "@ramonyx/adapter-runtime",
       "@ramonyx/bundler",
@@ -3684,6 +3726,7 @@
       "@ramonyx/core",
       "@ramonyx/devtools",
       "@ramonyx/mcp-docs-server",
+      "@ramonyx/plugin-image",
       "ramonyx",
       "@ramonyx/react",
       "@ramonyx/router",
@@ -3695,11 +3738,11 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 78,
+  "adrs": 79,
   "tests": {
-    "node": 267,
+    "node": 277,
     "rust": 116,
-    "e2eSpecFiles": 7
+    "e2eSpecFiles": 8
   }
 }
 ```
@@ -5132,9 +5175,10 @@ aplikasi masing-masing.
   v0.2.0, 17 aset) di atas 0.1.1 (2026-10-18, 14 paket) dan 0.1.0 (2026-10-18, 13 paket).
   Verifikasi registry end-to-end lolos untuk ketiganya. Kebijakan ADR-0039/0049 di bawah berlaku
   untuk rilis berikutnya.
-- **Rilis berikutnya**: membawa **paket ke-15** `@ramonyx/mcp-docs-server` (ADR-0078) →
-  **16 artefak** (15 tarball npm + binary runtime); snapshot `docs/` dibundel di tarball-nya dan
-  `pnpm release:verify` menjalankan handshake MCP dari tarball.
+- **Rilis berikutnya**: membawa **paket ke-15** `@ramonyx/mcp-docs-server` (ADR-0078) dan
+  **paket ke-16** `@ramonyx/plugin-image` (ADR-0079) → **17 artefak** (16 tarball npm + binary
+  runtime); snapshot `docs/` dibundel di tarball MCP dan `pnpm release:verify` menjalankan
+  handshake MCP dari tarball.
 - Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
   binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
   `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).
@@ -5341,6 +5385,9 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
 - `pnpm docs:validate` / `pnpm docs:generate` / `pnpm docs:stats` — dokumentasi machine-readable
   (`docs/machine/`, ADR-0054): validasi blocking (skema, bukti, indeks ADR, kesegaran, link),
   regenerate artefak turunan (api/cli/llms/TODO.md), dan regenerate `stats.json` dari suite.
+- Plugin gambar (`@ramonyx/plugin-image`, ADR-0079): varian resize + WebP/AVIF saat build
+  (`sharp` peer opsional, cache `.ramonyx/image-cache`); hook kontrak plugin `assets`;
+  `assets.image()` + `Image` → `<picture>`; dipakai playground (dogfood + e2e).
 - MCP docs server (`@ramonyx/mcp-docs-server`, ADR-0078): bin `ramonyx-mcp-docs` (stdio) —
   di repo: `node --import ./tools/register.mjs packages/mcp-docs-server/src/cli.ts --docs .`;
   tools: search_docs/get_page/get_feature_status/get_rules/list_adrs; pemasangan `docs/mcp.md`.
@@ -5348,8 +5395,8 @@ tetapi terpisah. **Phase 1 (framework MVP inti) sudah berjalan**; runtime Rust/V
   `node --import ./tools/register.mjs packages/devtools/src/cli.ts <dev|build|start|doctor> --app <dir>`;
   aplikasi (template) memakai `ramonyx dev|build|start` dengan konvensi `src/app.ts` `createApp()`.
 - `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
-  di `dist/`; **16 artefak** — 15 paket npm (termasuk `create-ramonyx-app` + `@ramonyx/mcp-docs-server`)
-  + binary runtime); `pnpm release:verify` — verifikasi
+  di `dist/`; **17 artefak** — 16 paket npm (termasuk `create-ramonyx-app`, `@ramonyx/mcp-docs-server`,
+  `@ramonyx/plugin-image`) + binary runtime); `pnpm release:verify` — verifikasi
   instalasi di proyek konsumen bersih (Node polos), termasuk scaffold `create-ramonyx-app`.
   Publikasi: `docs/releasing.md` (checklist pemilik; workflow publish dari tarball terverifikasi —
   ADR-0049).

@@ -1109,6 +1109,25 @@
       "features": [
         "mcp-docs-server"
       ]
+    },
+    {
+      "id": "ADR-0079",
+      "file": "0079-image-pipeline-m2.md",
+      "title": "Pipeline Gambar M2 — Plugin `assets`, Varian Build-time, Koreksi Layout Aset",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-19)",
+      "date": "2026-10-19",
+      "decision": "Hook `assets` di kontrak plugin (prosesor per berkas build-time); paket ke-16 @ramonyx/plugin-image (resize + WebP/AVIF, sharp peer opsional, cache content-hash); manifest + width/height/variants; AssetResolver.image (wajib, pra-1.0) + Image <picture><source>; resolver bersama createAssetResolverFromMap (Node + edge inline AssetInfo); koreksi bug M1: aset di root keluaran klien (URL <prefix>/<file> 1:1) dengan test HTTP regresi.",
+      "related": [
+        "ADR-0069",
+        "ADR-0067",
+        "ADR-0046"
+      ],
+      "features": [
+        "image-optimization",
+        "asset-pipeline",
+        "plugin-ecosystem"
+      ]
     }
   ]
 }

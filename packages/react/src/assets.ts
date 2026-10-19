@@ -6,6 +6,12 @@
 
 import { type CSSProperties, createElement, type ReactElement } from "react";
 
+export interface ImageSource {
+  /** MIME sumber (mis. `image/avif`, `image/webp`) — untuk `<source type>`. */
+  readonly type: string;
+  readonly srcSet: string;
+}
+
 export interface ImageProps {
   /** URL aset hasil resolver (`assets.url("img/foto.png")`); `undefined` → tidak dirender. */
   readonly src: string | undefined;
@@ -15,6 +21,11 @@ export interface ImageProps {
   readonly height?: number;
   /** `srcset` (mis. varian @2x yang disediakan aplikasi). */
   readonly srcSet?: string;
+  /**
+   * Sumber per format (ADR-0079) — dari `assets.image("img/foto.png")`; bila ada, dirender
+   * sebagai `<picture><source …/><img …/></picture>`.
+   */
+  readonly sources?: readonly ImageSource[];
   readonly sizes?: string;
   readonly loading?: "lazy" | "eager";
   readonly fetchPriority?: "high" | "low" | "auto";
@@ -29,6 +40,7 @@ export function Image({
   width,
   height,
   srcSet,
+  sources,
   sizes,
   loading = "lazy",
   fetchPriority,
@@ -38,7 +50,7 @@ export function Image({
   if (src === undefined || src.length === 0) {
     return null;
   }
-  return createElement("img", {
+  const img = createElement("img", {
     src,
     alt,
     width,
@@ -51,4 +63,20 @@ export function Image({
     ...(className !== undefined ? { className } : {}),
     ...(style !== undefined ? { style } : {}),
   });
+  if (sources === undefined || sources.length === 0) {
+    return img;
+  }
+  return createElement(
+    "picture",
+    null,
+    ...sources.map((source) =>
+      createElement("source", {
+        key: source.type,
+        type: source.type,
+        srcSet: source.srcSet,
+        ...(sizes !== undefined ? { sizes } : {}),
+      }),
+    ),
+    img,
+  );
 }

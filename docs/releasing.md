@@ -3,6 +3,8 @@
 - Status: **TERBIT** — **0.1.1** (2026-10-18, 14 paket termasuk `@ramonyx/devtools`, **dengan
   provenance**; GitHub Release v0.1.1) di atas 0.1.0 (2026-10-18, 13 paket). Verifikasi registry
   end-to-end lolos untuk keduanya. Kebijakan ADR-0039/0049 di bawah berlaku untuk rilis berikutnya.
+- **0.2.0: siap rilis (menunggu tag)** — bump `Cargo.toml` + 14 paket + template `^0.2.0`
+  (2026-10-19); verifikasi lokal lengkap lolos (lihat bagian di bawah).
 - Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
   binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
   `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).
@@ -62,6 +64,22 @@ cd demo-app && pnpm install && pnpm build && pnpm start
   untuk rilis berikutnya — rilis baru cukup: bump versi di `Cargo.toml` → commit → tag `vX.Y.Z`.
 - Catatan higiene: jangan pernah menempelkan nilai token sebagai **nama** `gh secret set`
   (nama secret terlihat di pengaturan repo — token harus dianggap terekspos dan dirotasi).
+
+## Persiapan 0.2.0 (2026-10-19)
+
+- Bump versi: `Cargo.toml` (sumber) + 13 paket `packages/*` + `create-ramonyx-app` → **0.2.0**;
+  template scaffolder `^0.1.0` → **`^0.2.0`** (penting: caret 0.x mengunci minor — tanpa ini
+  scaffold baru tetap memasang 0.1.x); CHANGELOG `[0.2.0] — 2026-10-19` (ADR-0055–0077).
+- `pnpm release` → **15 artefak** (14 tarball npm + binary runtime 0.2.0) + SHA256SUMS/manifest.
+- `pnpm release:verify` → lolos penuh (konsumen bersih + source map + scaffold
+  `create-ramonyx-app` build/start/SSR dari tarball + binary runtime) — **setelah memperbaiki bug
+  verifikasi**: cek berkas klien kini lewat manifest `ramonyx.assets.json` (aset ber-hash sejak
+  ADR-0055; cek lama `client.js` gagal — tepatnya baru terekspos di persiapan ini).
+- `npm publish --dry-run` ×14 → exit 0 tanpa warning.
+- **Langkah tersisa (pemilik)**: `git tag v0.2.0 && git push origin main --tags` → workflow
+  `release.yml` memverifikasi artefak lalu publish 14 paket (dist-tag `latest`, provenance) +
+  GitHub Release. Setelah itu: verifikasi registry end-to-end + rapikan klaim "belum dirilis"
+  di dokumentasi machine.
 
 ## Hasil rilis 0.1.1 (2026-10-18)
 

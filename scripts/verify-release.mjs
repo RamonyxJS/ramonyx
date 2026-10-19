@@ -297,8 +297,17 @@ console.log("SMOKE OK halo,dunia paket", process.versions.node);
     const buildPlan = resolveScript(target, scripts.build);
     if (buildPlan.args.length === 0) fail("skrip build kosong");
     run(buildPlan.command, buildPlan.args, { cwd: target, env: buildPlan.env });
-    if (!existsSync(join(target, "dist", "client", "client.js"))) {
-      fail("build klien app scaffold tidak menghasilkan dist/client/client.js");
+    // Aset klien ber-hash sejak ADR-0055 — sumber kebenaran nama berkas adalah manifest.
+    const clientManifestPath = join(target, "dist", "client", "ramonyx.assets.json");
+    if (!existsSync(clientManifestPath)) {
+      fail("build klien app scaffold tidak menghasilkan dist/client/ramonyx.assets.json");
+    }
+    const clientManifest = JSON.parse(readFileSync(clientManifestPath, "utf8"));
+    if (
+      typeof clientManifest.client !== "string" ||
+      !existsSync(join(target, "dist", "client", clientManifest.client))
+    ) {
+      fail(`manifest klien tanpa berkas: ${clientManifest.client}`);
     }
     await startAndFetch(target, scripts.start);
     console.log("  ✓ create-ramonyx-app: build + start + SSR halaman (Node polos, dari tarball)");

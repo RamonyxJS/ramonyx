@@ -2,9 +2,12 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikuti semver.
 
-## [Unreleased]
+## [0.2.0] — 2026-10-19
 
-Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server actions, target edge.
+Pengerjaan TODO backlog lengkap (ADR-0055–0077): dasar HTTP produksi (kompresi/aset/static/
+actions/edge), metadata & SEO, prefetch, middleware per-folder, sesi & cookie, batas server/client,
+kontrak ekstensi (config/hooks/store/plugin), revalidate, aset M1, watch, observability, DX error,
+typed routes, bench per-lingkungan, pentest plugin, migrasi CLI, dan panel devtools dev-only.
 
 ### Framework (baseline produksi)
 
@@ -104,6 +107,12 @@ Pengerjaan TODO backlog (ADR-0055–0058): dasar HTTP produksi, SSG, server acti
 
 - **`@ramonyx/security`**: `guardedFetch`/`SsrfError` pindah ke subpath **`@ramonyx/security/ssrf`**
   (Node-only); index kini edge-safe (headers/CSP/CSRF/rate-limit saja).
+
+### Tooling & proses
+
+- **Verifikasi rilis** (`scripts/verify-release.mjs`) memeriksa berkas klien app scaffold lewat
+  **manifest** `ramonyx.assets.json` — bug ditemukan saat persiapan 0.2.0 (cek lama masih
+  mengharapkan `client.js` tanpa hash, padahal aset ber-hash sejak ADR-0055).
 
 ## [0.1.1] — 2026-10-18
 

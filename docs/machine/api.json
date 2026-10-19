@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T11:49:00.633Z",
+  "generatedAt": "2026-10-19T12:01:52.252Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
         "createConsoleLogger",
@@ -27,7 +27,7 @@
     },
     {
       "name": "@ramonyx/bundler",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
@@ -71,7 +71,7 @@
     },
     {
       "name": "@ramonyx/compiler",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/compiler/src/index.ts",
       "values": [
         "HTTP_METHODS",
@@ -97,7 +97,7 @@
     },
     {
       "name": "@ramonyx/core",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/core/src/index.ts",
       "values": [
         "HttpError",
@@ -165,7 +165,7 @@
     },
     {
       "name": "@ramonyx/devtools",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
         "loadConfigFile",
@@ -180,7 +180,7 @@
     },
     {
       "name": "ramonyx",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "HttpError",
@@ -218,7 +218,7 @@
     },
     {
       "name": "@ramonyx/react",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/react/src/index.ts",
       "values": [
         "createReactRenderer"
@@ -232,7 +232,7 @@
     },
     {
       "name": "@ramonyx/router",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/router/src/index.ts",
       "values": [
         "createRouteTable",
@@ -247,7 +247,7 @@
     },
     {
       "name": "@ramonyx/schema",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/schema/src/index.ts",
       "values": [
         "validate"
@@ -267,7 +267,7 @@
     },
     {
       "name": "@ramonyx/security",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/security/src/index.ts",
       "values": [
         "DEFAULT_COOKIE_OPTIONS",
@@ -297,7 +297,7 @@
     },
     {
       "name": "@ramonyx/server",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/server/src/index.ts",
       "values": [
         "createHandler",
@@ -321,7 +321,7 @@
     },
     {
       "name": "@ramonyx/ssr",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/ssr/src/index.ts",
       "values": [
         "PAYLOAD_SCRIPT_ID",
@@ -348,7 +348,7 @@
     },
     {
       "name": "@ramonyx/testing",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/testing/src/index.ts",
       "values": [
         "createTestServer",

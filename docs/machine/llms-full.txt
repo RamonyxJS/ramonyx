@@ -3220,11 +3220,11 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T11:49:00.633Z",
+  "generatedAt": "2026-10-19T12:01:52.252Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
         "createConsoleLogger",
@@ -3247,7 +3247,7 @@
     },
     {
       "name": "@ramonyx/bundler",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
@@ -3291,7 +3291,7 @@
     },
     {
       "name": "@ramonyx/compiler",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/compiler/src/index.ts",
       "values": [
         "HTTP_METHODS",
@@ -3317,7 +3317,7 @@
     },
     {
       "name": "@ramonyx/core",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/core/src/index.ts",
       "values": [
         "HttpError",
@@ -3385,7 +3385,7 @@
     },
     {
       "name": "@ramonyx/devtools",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
         "loadConfigFile",
@@ -3400,7 +3400,7 @@
     },
     {
       "name": "ramonyx",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "HttpError",
@@ -3438,7 +3438,7 @@
     },
     {
       "name": "@ramonyx/react",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/react/src/index.ts",
       "values": [
         "createReactRenderer"
@@ -3452,7 +3452,7 @@
     },
     {
       "name": "@ramonyx/router",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/router/src/index.ts",
       "values": [
         "createRouteTable",
@@ -3467,7 +3467,7 @@
     },
     {
       "name": "@ramonyx/schema",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/schema/src/index.ts",
       "values": [
         "validate"
@@ -3487,7 +3487,7 @@
     },
     {
       "name": "@ramonyx/security",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/security/src/index.ts",
       "values": [
         "DEFAULT_COOKIE_OPTIONS",
@@ -3517,7 +3517,7 @@
     },
     {
       "name": "@ramonyx/server",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/server/src/index.ts",
       "values": [
         "createHandler",
@@ -3541,7 +3541,7 @@
     },
     {
       "name": "@ramonyx/ssr",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/ssr/src/index.ts",
       "values": [
         "PAYLOAD_SCRIPT_ID",
@@ -3568,7 +3568,7 @@
     },
     {
       "name": "@ramonyx/testing",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "packages/testing/src/index.ts",
       "values": [
         "createTestServer",
@@ -3586,7 +3586,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T11:49:01.956Z",
+  "generatedAt": "2026-10-19T12:01:53.500Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3659,9 +3659,9 @@
 ```json
 {
   "schemaVersion": 1,
-  "version": "0.1.1",
-  "generatedAt": "2026-10-19T11:47:50.607Z",
-  "commit": "5caa63449bf05f79eeeb5f243a68e6069f24a18e",
+  "version": "0.2.0",
+  "generatedAt": "2026-10-19T12:00:30.230Z",
+  "commit": "d1a243fb19116abba86bd36ee2c16ddca812d8f7",
   "node": "v24.22.0",
   "packages": {
     "workspace": 13,
@@ -5118,6 +5118,8 @@ aplikasi masing-masing.
 - Status: **TERBIT** — **0.1.1** (2026-10-18, 14 paket termasuk `@ramonyx/devtools`, **dengan
   provenance**; GitHub Release v0.1.1) di atas 0.1.0 (2026-10-18, 13 paket). Verifikasi registry
   end-to-end lolos untuk keduanya. Kebijakan ADR-0039/0049 di bawah berlaku untuk rilis berikutnya.
+- **0.2.0: siap rilis (menunggu tag)** — bump `Cargo.toml` + 14 paket + template `^0.2.0`
+  (2026-10-19); verifikasi lokal lengkap lolos (lihat bagian di bawah).
 - Verifikasi lokal terakhir (2026-10-18): `pnpm release` → **14 artefak** (13 tarball npm +
   binary runtime) → `npm publish --dry-run` ×13 (exit 0, tanpa warning) →
   `pnpm release:verify` (konsumen bersih + source map + scaffold `create-ramonyx-app` + runtime).
@@ -5177,6 +5179,22 @@ cd demo-app && pnpm install && pnpm build && pnpm start
   untuk rilis berikutnya — rilis baru cukup: bump versi di `Cargo.toml` → commit → tag `vX.Y.Z`.
 - Catatan higiene: jangan pernah menempelkan nilai token sebagai **nama** `gh secret set`
   (nama secret terlihat di pengaturan repo — token harus dianggap terekspos dan dirotasi).
+
+## Persiapan 0.2.0 (2026-10-19)
+
+- Bump versi: `Cargo.toml` (sumber) + 13 paket `packages/*` + `create-ramonyx-app` → **0.2.0**;
+  template scaffolder `^0.1.0` → **`^0.2.0`** (penting: caret 0.x mengunci minor — tanpa ini
+  scaffold baru tetap memasang 0.1.x); CHANGELOG `[0.2.0] — 2026-10-19` (ADR-0055–0077).
+- `pnpm release` → **15 artefak** (14 tarball npm + binary runtime 0.2.0) + SHA256SUMS/manifest.
+- `pnpm release:verify` → lolos penuh (konsumen bersih + source map + scaffold
+  `create-ramonyx-app` build/start/SSR dari tarball + binary runtime) — **setelah memperbaiki bug
+  verifikasi**: cek berkas klien kini lewat manifest `ramonyx.assets.json` (aset ber-hash sejak
+  ADR-0055; cek lama `client.js` gagal — tepatnya baru terekspos di persiapan ini).
+- `npm publish --dry-run` ×14 → exit 0 tanpa warning.
+- **Langkah tersisa (pemilik)**: `git tag v0.2.0 && git push origin main --tags` → workflow
+  `release.yml` memverifikasi artefak lalu publish 14 paket (dist-tag `latest`, provenance) +
+  GitHub Release. Setelah itu: verifikasi registry end-to-end + rapikan klaim "belum dirilis"
+  di dokumentasi machine.
 
 ## Hasil rilis 0.1.1 (2026-10-18)
 

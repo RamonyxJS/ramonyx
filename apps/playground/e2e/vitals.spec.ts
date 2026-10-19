@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { expect, test } from "@playwright/test";
+import { type CDPSession, expect, test } from "@playwright/test";
 import { median } from "../../../benchmarks/stats.ts";
 import {
   compareVitals,
@@ -58,10 +58,31 @@ test("baseline Web Vitals beranda (artefak + perbandingan report-only, protokol 
     }).observe({ type: "navigation", buffered: true });
   });
 
+  // `VITALS_THROTTLE=slow` (dipakai benchmarks/vitals/image-pipeline.mjs): perlambat jaringan +
+  // CPU via CDP **dan** kosongkan cache per load (aset build `immutable` — tanpa ini load ke-2+
+  // selalu dari cache sehingga CLS gambar selalu 0).
+  let cdp: CDPSession | undefined;
+  if (process.env.VITALS_THROTTLE === "slow") {
+    cdp = await page.context().newCDPSession(page);
+    await cdp.send("Network.enable");
+    await cdp.send("Network.emulateNetworkConditions", {
+      // Profil ala "Slow 3G": RTT tinggi + bandwidth rendah → aset (gambar) termuat setelah
+      // first paint, sehingga CLS/anti-CLS terukur (localhost tanpa throttle selalu CLS 0).
+      offline: false,
+      latency: 400,
+      downloadThroughput: 50 * 1024,
+      uploadThroughput: 20 * 1024,
+    });
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  }
+
   // 1 load pemanasan (server JIT + cache) dibuang, lalu median dari 3 load — TTFB/LCP satu
   // load terlalu berisik untuk dijadikan pembanding (ADR-0048).
   const loads: Vitals[] = [];
   for (let index = 0; index < 4; index += 1) {
+    if (cdp !== undefined) {
+      await cdp.send("Network.clearBrowserCache");
+    }
     await page.goto("/");
     await page.waitForLoadState("load");
     await page.waitForTimeout(1200);
@@ -99,9 +120,15 @@ test("baseline Web Vitals beranda (artefak + perbandingan report-only, protokol 
 
   // Baseline ter-commit hanya diperbarui saat diminta / belum ada; run biasa menulis ke test-results/
   // agar tidak menimbulkan churn git setiap e2e dijalankan.
+  // `VITALS_OUT` (dipakai benchmarks/vitals/image-pipeline.mjs) menulis artefak ke path eksplisit
+  // tanpa menyentuh baseline.
   const baselinePath = "benchmarks/results/phase2-web-vitals.json";
-  const updateBaseline = process.env.UPDATE_BASELINE_VITALS === "1" || !existsSync(baselinePath);
-  const targetPath = updateBaseline ? baselinePath : "test-results/web-vitals-latest.json";
+  const vitalsOut = process.env.VITALS_OUT;
+  const updateBaseline =
+    vitalsOut === undefined &&
+    (process.env.UPDATE_BASELINE_VITALS === "1" || !existsSync(baselinePath));
+  const targetPath =
+    vitalsOut ?? (updateBaseline ? baselinePath : "test-results/web-vitals-latest.json");
 
   await mkdir("benchmarks/results", { recursive: true });
   await mkdir("test-results", { recursive: true });
@@ -109,6 +136,11 @@ test("baseline Web Vitals beranda (artefak + perbandingan report-only, protokol 
 
   if (updateBaseline) {
     console.log(`[vitals] baseline diperbarui: ${targetPath}`);
+    return;
+  }
+
+  if (vitalsOut !== undefined) {
+    console.log(`[vitals] artefak ditulis: ${targetPath}`);
     return;
   }
 

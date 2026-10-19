@@ -13,6 +13,13 @@ export default defineConfig({
   },
   // Plugin (ADR-0067): dimuat `ramonyx dev|build|start`.
   // - kunjungan: contoh middleware/hook (ADR-0067)
-  // - image: varian gambar build-time (ADR-0079) — sharp peer opsional (devDependency repo)
-  plugins: [kunjungan(), imageOptimizer({ widths: [320, 640], formats: ["webp"] })],
+  // - image: varian gambar build-time (ADR-0079) — sharp peer opsional (devDependency repo).
+  //   `RAMONYX_IMAGE_PLUGIN=off` mematikan plugin: pembanding "sebelum" untuk artefak
+  //   benchmark LCP/CLS (`benchmarks/vitals/image-pipeline.mjs`).
+  plugins: [
+    kunjungan(),
+    ...(process.env.RAMONYX_IMAGE_PLUGIN === "off"
+      ? []
+      : [imageOptimizer({ widths: [320, 640], formats: ["webp"] })]),
+  ],
 });

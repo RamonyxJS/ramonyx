@@ -741,6 +741,7 @@
         "packages/bundler/src/assets.ts",
         "packages/react/src/assets.ts",
         "apps/playground/e2e/image.spec.ts",
+        "benchmarks/results/image-pipeline-vitals.json",
         "docs/assets.md",
         "docs/adr/0079-image-pipeline-m2.md"
       ],
@@ -1290,16 +1291,16 @@
       ],
       "evidence": [
         "packages/bundler/src/plugin.ts",
-        "packages/devtools/src/commands.ts",
-        "packages/server/src/handler.ts",
+        "packages/plugin-image/src/index.ts",
         "apps/playground/src/plugins/kunjungan.ts",
-        "apps/create-app/test/create-app.test.ts",
         "docs/plugins.md",
-        "docs/adr/0067-plugin-ecosystem.md"
+        "docs/adr/0067-plugin-ecosystem.md",
+        "docs/adr/0079-image-pipeline-m2.md",
+        "docs/adr/0080-plugin-stabilization.md"
       ],
       "limitations": [
-        "Kontrak experimental — hook `assets` ditambahkan (ADR-0079); 2 plugin nyata (kunjungan, image)",
-        "Tanpa registry/ramonyx add",
+        "Kontrak stabil dideklarasikan setelah satu siklus rilis tanpa perubahan aditif (ADR-0080; TODO p2-plugin-contract-freeze)",
+        "Tanpa registry/`ramonyx add` (instalasi manual)",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
       ]
     },
@@ -1316,11 +1317,13 @@
       ],
       "evidence": [
         "packages/bundler/src/assets.ts",
-        "packages/bundler/src/manifest.ts",
+        "packages/react/src/assets.ts",
         "packages/bundler/test/assets.test.ts",
-        "apps/create-app/template/src/assets/logo.svg",
+        "benchmarks/vitals/image-pipeline.mjs",
+        "benchmarks/results/image-pipeline-vitals.json",
         "docs/assets.md",
-        "docs/adr/0069-asset-pipeline-m1.md"
+        "docs/adr/0069-asset-pipeline-m1.md",
+        "docs/adr/0079-image-pipeline-m2.md"
       ],
       "limitations": [
         "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",

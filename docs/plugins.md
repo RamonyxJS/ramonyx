@@ -5,8 +5,8 @@ global), dan **runtime** (hook aplikasi). Keputusan desain: ADR-0067; kontrak da
 
 > Status: **experimental** — stabil untuk dipakai, tetapi kontrak masih dapat bertambah (aditif).
 > **Dua plugin nyata sudah ada** (`kunjungan` di playground + `@ramonyx/image`), dan hook `assets`
-> baru ditambahkan (ADR-0079); kontrak dibekukan setelah satu siklus rilis tanpa perubahan.
-> Laporkan kebutuhan kontrak lewat issue.
+> baru ditambahkan (ADR-0079); **kriteria stabilisasi + panduan publikasi: ADR-0080**
+> (stabil setelah satu siklus rilis tanpa perubahan aditif). Laporkan kebutuhan kontrak lewat issue.
 
 ## Menulis plugin
 
@@ -111,13 +111,40 @@ sehingga `assets.image(...)` + komponen `Image` merender `srcset`/`<picture>`. C
 - Middleware plugin berjalan **sebelum** middleware aplikasi (pre-routing) — cocok untuk logging,
   penanda, atau pemblokiran awal.
 
-## Publikasi
+## Mempublikasikan plugin
 
-1. Nama paket: `ramonyx-plugin-<nama>` (konvensi; tidak dipaksakan mesin).
-2. Struktur minimal: `package.json` (exports ESM, `peerDependencies: ramonyx`, `@ramonyx/bundler`
-   untuk tipe) + satu file yang mengekspor fungsi pabrik plugin.
-3. Versi mengikuti semver; tandai dukungan versi Ramonyx di README (`ramonyx >=0.2`).
-4. Kontrak masih experimental: tambahan kontrak diumumkan di CHANGELOG + ADR.
+Referensi nyata: **`@ramonyx/plugin-image`** (paket ke-16, ADR-0079) — struktur, staging rilis, dan
+test-nya bisa dijadikan contoh.
+
+1. **Nama & bentuk**: konvensi komunitas `ramonyx-plugin-<nama>` (atau `@scope/ramonyx-plugin-*`);
+   plugin resmi memakai `@ramonyx/plugin-<nama>`. ESM-only, `engines.node >= 24`.
+2. **Kirim JS terkompilasi, bukan `.ts`**: plugin pihak ketiga hidup di `node_modules` — Node
+   **tidak** type-strip berkas di sana (paket repo ini source-first hanya karena dijalankan dari
+   workspace). Build dengan `tsc`/esbuild ke `dist/`:
+
+   ```json
+   {
+     "name": "ramonyx-plugin-contoh",
+     "type": "module",
+     "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+     "peerDependencies": { "@ramonyx/bundler": "^0.3.0", "ramonyx": "^0.3.0" },
+     "engines": { "node": ">=24" }
+   }
+   ```
+
+   Pakai **`peerDependencies`** (bukan `dependencies`) agar tipe/kontrak mengikuti versi aplikasi.
+   Dependency berat (mis. encoder gambar) ditandai **peer opsional** (`peerDependenciesMeta`) dan
+   dimuat dinamis dengan pesan error yang memandu — pola `sharp` di `@ramonyx/plugin-image`.
+3. **Kontrak yang dipakai**: `definePlugin({ name, vite?, middleware?, hooks?, assets? })` dari
+   `@ramonyx/bundler`; tipe `RamonyxPlugin`/`PluginContext` mengikuti versi peer.
+4. **Uji sebelum publikasi**: pasang di aplikasi uji (atau playground repo) dan jalankan
+   `ramonyx build` (hook `assets`), `ramonyx dev`/`start` (middleware/hooks); sertakan test minimal
+   yang memanggil hook langsung (contoh: `packages/plugin-image/test/image.test.ts`).
+5. **Versi & kompatibilitas**: semver; sebutkan rentang Ramonyx yang didukung di README plugin.
+   Perubahan kontrak (aditif) diumumkan lewat CHANGELOG + ADR repo.
+6. **Stabilisasi kontrak** (ADR-0080): kontrak dideklarasikan **stabil** setelah **satu siklus
+   rilis tanpa perubahan aditif** (rilis berikutnya, bila tidak ada perubahan). Setelah stabil,
+   perubahan breaking mengikuti semver + catatan migrasi.
 
 ## Contoh di repo
 
@@ -127,6 +154,8 @@ sehingga `assets.image(...)` + komponen `Image` merender `srcset`/`<picture>`. C
 
 ## Batasan (jujur)
 
-- Tanpa registry/otomatisasi instalasi (belum ada `ramonyx add`).
+- Tanpa registry/otomatisasi instalasi (belum ada `ramonyx add`) — instalasi manual lewat
+  package manager.
+- Plugin pihak ketiga harus mengirim JS terkompilasi (bukan `.ts`) — lihat panduan publikasi.
 - Tanpa hook untuk loader/route individual (hanya pre-routing + hook aplikasi).
 - Urutan antar-plugin mengikuti urutan di config (tidak ada prioritas eksplisit).

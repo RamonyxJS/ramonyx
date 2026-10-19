@@ -749,6 +749,7 @@
         "packages/bundler/src/assets.ts",
         "packages/react/src/assets.ts",
         "apps/playground/e2e/image.spec.ts",
+        "benchmarks/results/image-pipeline-vitals.json",
         "docs/assets.md",
         "docs/adr/0079-image-pipeline-m2.md"
       ],
@@ -1298,16 +1299,16 @@
       ],
       "evidence": [
         "packages/bundler/src/plugin.ts",
-        "packages/devtools/src/commands.ts",
-        "packages/server/src/handler.ts",
+        "packages/plugin-image/src/index.ts",
         "apps/playground/src/plugins/kunjungan.ts",
-        "apps/create-app/test/create-app.test.ts",
         "docs/plugins.md",
-        "docs/adr/0067-plugin-ecosystem.md"
+        "docs/adr/0067-plugin-ecosystem.md",
+        "docs/adr/0079-image-pipeline-m2.md",
+        "docs/adr/0080-plugin-stabilization.md"
       ],
       "limitations": [
-        "Kontrak experimental — hook `assets` ditambahkan (ADR-0079); 2 plugin nyata (kunjungan, image)",
-        "Tanpa registry/ramonyx add",
+        "Kontrak stabil dideklarasikan setelah satu siklus rilis tanpa perubahan aditif (ADR-0080; TODO p2-plugin-contract-freeze)",
+        "Tanpa registry/`ramonyx add` (instalasi manual)",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
       ]
     },
@@ -1324,11 +1325,13 @@
       ],
       "evidence": [
         "packages/bundler/src/assets.ts",
-        "packages/bundler/src/manifest.ts",
+        "packages/react/src/assets.ts",
         "packages/bundler/test/assets.test.ts",
-        "apps/create-app/template/src/assets/logo.svg",
+        "benchmarks/vitals/image-pipeline.mjs",
+        "benchmarks/results/image-pipeline-vitals.json",
         "docs/assets.md",
-        "docs/adr/0069-asset-pipeline-m1.md"
+        "docs/adr/0069-asset-pipeline-m1.md",
+        "docs/adr/0079-image-pipeline-m2.md"
       ],
       "limitations": [
         "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",
@@ -2472,6 +2475,24 @@
         "asset-pipeline",
         "plugin-ecosystem"
       ]
+    },
+    {
+      "id": "ADR-0080",
+      "file": "0080-plugin-stabilization.md",
+      "title": "Stabilisasi Kontrak Plugin + Publikasi Plugin Pihak Ketiga",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-19)",
+      "date": "2026-10-19",
+      "decision": "Kontrak plugin dideklarasikan stabil setelah satu siklus rilis tanpa perubahan aditif (rilis berikutnya bila tidak ada perubahan; jika ada, siklus dihitung ulang); panduan publikasi plugin pihak ketiga: kirim JS terkompilasi (bukan .ts), peerDependencies ke @ramonyx/bundler/ramonyx, dependency berat sebagai peer opsional + impor dinamis, konvensi nama ramonyx-plugin-*, referensi @ramonyx/plugin-image.",
+      "related": [
+        "ADR-0065",
+        "ADR-0067",
+        "ADR-0079"
+      ],
+      "features": [
+        "plugin-ecosystem",
+        "extension-primitives"
+      ]
     }
   ]
 }
@@ -3234,7 +3255,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T14:36:30.237Z",
+  "generatedAt": "2026-10-19T14:55:02.403Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3637,7 +3658,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T14:36:31.441Z",
+  "generatedAt": "2026-10-19T14:55:03.599Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3711,8 +3732,8 @@
 {
   "schemaVersion": 1,
   "version": "0.3.0",
-  "generatedAt": "2026-10-19T13:53:37.052Z",
-  "commit": "d12346c01f4ac9acd5b7f7794dbd67a9587b49a7",
+  "generatedAt": "2026-10-19T14:53:47.657Z",
+  "commit": "5d08cd5d1592e36b8510236bd08d4aa9ef9d04d1",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -3736,7 +3757,7 @@
       "create-ramonyx-app"
     ]
   },
-  "adrs": 79,
+  "adrs": 80,
   "tests": {
     "node": 277,
     "rust": 116,

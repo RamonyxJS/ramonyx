@@ -11,7 +11,7 @@
 | --- | --- | --- |
 | P0 — blocker adopsi | 5 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` |
 | P1 — paritas | 8 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` |
-| P2 — diferensiasi & utang | 12 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` |
+| P2 — diferensiasi & utang | 13 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` |
 | P3 — nice-to-have | 3 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` |
 
 **Quick wins** (dampak besar, usaha kecil): `p0-http-production-basics` · `p1-prefetch` · `p1-docs-tutorial` · `p2-watch-mode` · `p2-context7` · `p2-testing-docs`
@@ -214,7 +214,7 @@
 
 ### `p2-plugin-ecosystem` — Ekosistem plugin/module tingkat framework
 
-*tema: ecosystem · ukuran: L · status: in-progress · sumber: gap §3 (ekosistem) — M1-M3 selesai (ADR-0067); sisa: kontrak stabil setelah >=2 plugin nyata*
+*tema: ecosystem · ukuran: L · status: done · sumber: riset §2 — selesai ADR-0065/0067/0080 (2 plugin nyata + panduan publikasi; deklarasi stabil: TODO p2-plugin-contract-freeze)*
 
 - **Apa**: Kontrak plugin untuk build + dev + server hooks (pembungkus Vite plugin + hook Ramonyx) + contoh plugin + panduan publikasi.
 - **Kenapa penting untuk bersaing**: Ekosistem adalah moat framework besar (Nuxt modules, Astro integrations); tanpa kontrak, setiap kebutuhan pengguna dirakit sendiri dan tidak ada yang bisa dibagikan.
@@ -284,7 +284,7 @@
 
 ### `p2-asset-pipeline` — Pipeline aset: komponen Image + font self-host
 
-*tema: rendering · ukuran: L · status: in-progress · sumber: gap §3 (assets) — M1 selesai (ADR-0069); M2 resize gate dependency*
+*tema: rendering · ukuran: L · status: done · sumber: kandidat lama — selesai ADR-0069/0079 (M1+M2; artefak LCP/CLS: benchmarks/results/image-pipeline-vitals.json)*
 
 - **Apa**: Komponen `<Image>` (resize/format modern, width/height otomatis) + helper font (self-host + preload + fallback metrik) + impor aset dari komponen.
 - **Kenapa penting untuk bersaing**: Gambar dan font adalah penyebab utama CLS/LCP buruk; Next/Nuxt/Astro semuanya menyediakan pipeline bawaan, dan tanpa itu pengguna harus merakit sendiri.
@@ -371,6 +371,19 @@
   - [ ] README paket testing
 - **Area kode**: `docs`, `packages/testing`
 - **Pembanding**: SvelteKit testing docs; Nuxt @nuxt/test-utils; Next.js testing setup.
+
+### `p2-plugin-contract-freeze` — Deklarasikan kontrak plugin stabil (setelah satu siklus rilis)
+
+*tema: ecosystem · ukuran: S · status: open · sumber: turunan ADR-0080*
+
+- **Apa**: Bila kontrak plugin tidak berubah aditif sejak 0.3.0, deklarasikan stabil di rilis berikutnya: update docs/plugins.md (hapus catatan experimental), features.json plugin-ecosystem → implemented, dan catat di CHANGELOG.
+- **Kenapa penting untuk bersaing**: ADR-0080 menetapkan kriteria stabilisasi satu siklus rilis; deklarasi adalah langkah administratif terakhir agar plugin pihak ketiga punya jaminan semver.
+- **Selesai bila**:
+  - [ ] Verifikasi tidak ada perubahan kontrak aditif sejak 0.3.0
+  - [ ] Deklarasi stabil di docs/plugins.md + features.json + CHANGELOG (rilis berikutnya)
+- **Area kode**: `docs`, `packages/bundler`
+- **ADR**: ADR-0080
+- **Pembanding**: Nuxt modules (versi modul + kompatibilitas Nuxt); SvelteKit/Vite plugin ecosystem (peer deps standar)
 
 ## P3 — nice-to-have
 

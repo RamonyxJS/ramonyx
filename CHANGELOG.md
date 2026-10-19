@@ -29,6 +29,14 @@ issue-PR).
 
 ### Tooling & docs
 
+- **Benchmark pipeline gambar** (kriteria `p2-asset-pipeline`): `pnpm bench:image` membangun
+  playground tanpa/dengan plugin image dan mengukur LCP/CLS/FCP/TTFB (median 3 load, throttle CDP
+  ala Slow 3G + load dingin) → artefak `benchmarks/results/image-pipeline-vitals.json`; sinyal
+  konsisten: **CLS 0,1 → 0** (dimensi intrinsik), LCP dalam rentang noise (dicatat jujur).
+- **Panduan publikasi plugin + kriteria stabilisasi** (ADR-0080): plugin pihak ketiga mengirim JS
+  terkompilasi, `peerDependencies` ke `@ramonyx/bundler`/`ramonyx`, dependency berat sebagai peer
+  opsional; kontrak dideklarasikan stabil setelah satu siklus rilis tanpa perubahan aditif
+  (TODO `p2-plugin-contract-freeze`).
 - **MCP docs server** (ADR-0078): paket ke-15 `@ramonyx/mcp-docs-server` (bin `ramonyx-mcp-docs`) —
   server MCP **stdio** tanpa dependency eksternal dengan 5 tools (`search_docs`, `get_page`,
   `get_feature_status`, `get_rules`, `list_adrs`) + resource `ramonyx://machine/*` &

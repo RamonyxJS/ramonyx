@@ -1,0 +1,69 @@
+{
+  "generatedAt": "2026-10-19T14:52:08.135Z",
+  "scenario": "GET / playground (build produksi, Chromium) — sebelum: tanpa plugin image; sesudah: @ramonyx/plugin-image (WebP 320/640 + lebar intrinsik → <picture> + width/height)",
+  "method": "median 3 load (1 load pemanasan dibuang) via apps/playground/e2e/vitals.spec.ts (PerformanceObserver: LCP/CLS/FCP/TTFB) dengan throttle CDP ala Slow 3G (400 ms latency, 50 KB/s, CPU 4×) agar aset termuat setelah first paint (CLS terukur); mesin dev — report-only, bukan klaim publik (protokol §8)",
+  "runs": 3,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "before": {
+    "lcp": 560,
+    "cls": 0.0803375244140625,
+    "fcp": 560,
+    "ttfb": 13.100000001490116
+  },
+  "after": {
+    "lcp": 576,
+    "cls": 0,
+    "fcp": 576,
+    "ttfb": 14.699999995529652
+  },
+  "deltaPct": {
+    "lcp": 2.9,
+    "cls": -100,
+    "fcp": 2.9,
+    "ttfb": 12.2
+  },
+  "beforePerRun": [
+    {
+      "lcp": 552,
+      "cls": 0.0803375244140625,
+      "fcp": 552,
+      "ttfb": 16.899999998509884
+    },
+    {
+      "lcp": 560,
+      "cls": 0.0803375244140625,
+      "fcp": 560,
+      "ttfb": 12.899999998509884
+    },
+    {
+      "lcp": 584,
+      "cls": 0.0803375244140625,
+      "fcp": 584,
+      "ttfb": 13.100000001490116
+    }
+  ],
+  "afterPerRun": [
+    {
+      "lcp": 596,
+      "cls": 0,
+      "fcp": 596,
+      "ttfb": 15.399999998509884
+    },
+    {
+      "lcp": 564,
+      "cls": 0,
+      "fcp": 564,
+      "ttfb": 14.699999995529652
+    },
+    {
+      "lcp": 576,
+      "cls": 0,
+      "fcp": 576,
+      "ttfb": 13.399999998509884
+    }
+  ],
+  "note": "Sebelum: <Image> tanpa metadata dimensi (tidak ada width/height dari manifest) dan tanpa varian → potensi layout shift; sesudah: srcset WebP + dimensi intrinsik (anti-CLS). Ukuran berkas asli kecil (PNG 4,9 KB) sehingga selisih LCP wajar kecil di mesin dev."
+}

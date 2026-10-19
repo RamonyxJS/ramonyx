@@ -1128,6 +1128,24 @@
         "asset-pipeline",
         "plugin-ecosystem"
       ]
+    },
+    {
+      "id": "ADR-0080",
+      "file": "0080-plugin-stabilization.md",
+      "title": "Stabilisasi Kontrak Plugin + Publikasi Plugin Pihak Ketiga",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-19)",
+      "date": "2026-10-19",
+      "decision": "Kontrak plugin dideklarasikan stabil setelah satu siklus rilis tanpa perubahan aditif (rilis berikutnya bila tidak ada perubahan; jika ada, siklus dihitung ulang); panduan publikasi plugin pihak ketiga: kirim JS terkompilasi (bukan .ts), peerDependencies ke @ramonyx/bundler/ramonyx, dependency berat sebagai peer opsional + impor dinamis, konvensi nama ramonyx-plugin-*, referensi @ramonyx/plugin-image.",
+      "related": [
+        "ADR-0065",
+        "ADR-0067",
+        "ADR-0079"
+      ],
+      "features": [
+        "plugin-ecosystem",
+        "extension-primitives"
+      ]
     }
   ]
 }

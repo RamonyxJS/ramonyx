@@ -252,7 +252,7 @@
       "theme": "ecosystem",
       "priority": "p2",
       "size": "L",
-      "status": "in-progress",
+      "status": "done",
       "what": "Kontrak plugin untuk build + dev + server hooks (pembungkus Vite plugin + hook Ramonyx) + contoh plugin + panduan publikasi.",
       "why": "Ekosistem adalah moat framework besar (Nuxt modules, Astro integrations); tanpa kontrak, setiap kebutuhan pengguna dirakit sendiri dan tidak ada yang bisa dibagikan.",
       "done": [
@@ -263,7 +263,7 @@
       "areas": ["packages/bundler", "packages/core", "packages/devtools"],
       "adrs": ["ADR baru"],
       "competitor": "Nuxt modules; Astro integrations; SvelteKit Vite plugins; Next.js plugins (terbatas).",
-      "source": "gap §3 (ekosistem) — M1-M3 selesai (ADR-0067); sisa: kontrak stabil setelah >=2 plugin nyata",
+      "source": "riset §2 — selesai ADR-0065/0067/0080 (2 plugin nyata + panduan publikasi; deklarasi stabil: TODO p2-plugin-contract-freeze)",
       "strategic": true
     },
     {
@@ -349,7 +349,7 @@
       "theme": "rendering",
       "priority": "p2",
       "size": "L",
-      "status": "in-progress",
+      "status": "done",
       "what": "Komponen `<Image>` (resize/format modern, width/height otomatis) + helper font (self-host + preload + fallback metrik) + impor aset dari komponen.",
       "why": "Gambar dan font adalah penyebab utama CLS/LCP buruk; Next/Nuxt/Astro semuanya menyediakan pipeline bawaan, dan tanpa itu pengguna harus merakit sendiri.",
       "done": [
@@ -360,7 +360,7 @@
       "areas": ["packages/bundler", "packages/react", "packages/devtools"],
       "adrs": ["ADR baru"],
       "competitor": "next/image + next/font; @nuxt/image + @nuxt/fonts; Astro `<Image>` + fontsource.",
-      "source": "gap §3 (assets) — M1 selesai (ADR-0069); M2 resize gate dependency",
+      "source": "kandidat lama — selesai ADR-0069/0079 (M1+M2; artefak LCP/CLS: benchmarks/results/image-pipeline-vitals.json)",
       "strategic": true
     },
     {
@@ -544,6 +544,24 @@
       "competitor": "Framework besar punya lapisan ekstensi serupa (Nuxt hooks+nitro storage, Astro integrations, SvelteKit hooks) — dibuat sebelum fitur yang membutuhkannya.",
       "source": "rencana komprehensif Fase 0",
       "strategic": true
+    },
+    {
+      "id": "p2-plugin-contract-freeze",
+      "title": "Deklarasikan kontrak plugin stabil (setelah satu siklus rilis)",
+      "theme": "ecosystem",
+      "priority": "p2",
+      "size": "S",
+      "status": "open",
+      "what": "Bila kontrak plugin tidak berubah aditif sejak 0.3.0, deklarasikan stabil di rilis berikutnya: update docs/plugins.md (hapus catatan experimental), features.json plugin-ecosystem → implemented, dan catat di CHANGELOG.",
+      "why": "ADR-0080 menetapkan kriteria stabilisasi satu siklus rilis; deklarasi adalah langkah administratif terakhir agar plugin pihak ketiga punya jaminan semver.",
+      "done": [
+        "Verifikasi tidak ada perubahan kontrak aditif sejak 0.3.0",
+        "Deklarasi stabil di docs/plugins.md + features.json + CHANGELOG (rilis berikutnya)"
+      ],
+      "areas": ["docs", "packages/bundler"],
+      "adrs": ["ADR-0080"],
+      "source": "turunan ADR-0080",
+      "competitor": "Nuxt modules (versi modul + kompatibilitas Nuxt); SvelteKit/Vite plugin ecosystem (peer deps standar)"
     }
   ]
 }

@@ -60,7 +60,9 @@ test("revalidate: stale-while-revalidate — sajikan lama, refresh di belakang",
   let panggilan = 0;
   const page = basePage("/swr", {
     default: Page,
-    revalidate: 0.05,
+    // Jendela lebar (1 dtk fresh / 2 dtk stale) — margin 0,8 dtk agar tahan jitter scheduler
+    // di mesin sibuk (flaky: TTL 50 ms → margin 20 ms; 0,5 dtk → margin 0,4 dtk masih bisa lewat).
+    revalidate: 1,
     loader: async () => {
       panggilan += 1;
       return { nomor: panggilan };
@@ -71,19 +73,23 @@ test("revalidate: stale-while-revalidate — sajikan lama, refresh di belakang",
   });
 
   await handler(new Request("http://test.local/swr"));
-  await sleep(80); // paruh pertama (fresh 50ms) lewat → jendela stale (sisa 50ms)
+  await sleep(1200); // fresh (1 dtk) lewat → jendela stale (margin 0,8 dtk)
 
   const stale = await handler(new Request("http://test.local/swr"));
   assert.match(await stale.text(), /"nomor":1/, "nilai lama langsung disajikan (stale)");
 
-  // Refresh berjalan di belakang — tunggu selesai (tidak memblokir respons di atas).
-  for (let i = 0; i < 50 && panggilan < 2; i += 1) {
+  // Refresh berjalan di belakang — tunggu *hasil tulis* cache, bukan hanya loader dipanggil
+  // (race: `panggilan` bertambah sebelum `store.set` refresh selesai → pembacaan bisa masih lama).
+  let segarText = "";
+  for (let i = 0; i < 100; i += 1) {
+    segarText = await (await handler(new Request("http://test.local/swr"))).text();
+    if (segarText.includes('"nomor":2')) {
+      break;
+    }
     await sleep(10);
   }
   assert.equal(panggilan, 2, "refresh latar belakang menjalankan loader");
-
-  const segar = await handler(new Request("http://test.local/swr"));
-  assert.match(await segar.text(), /"nomor":2/, "data ter-refresh dipakai");
+  assert.match(segarText, /"nomor":2/, "data ter-refresh dipakai");
 });
 
 test("revalidate: query atau cookie → tidak di-cache (keamanan sesi)", async () => {

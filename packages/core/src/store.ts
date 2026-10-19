@@ -145,12 +145,13 @@ export function createMemoryStore(options: MemoryStoreOptions = {}): KeyValueSto
       key: string,
       incrementOptions: { readonly windowSeconds: number },
     ): Promise<number> {
-      const now = Date.now();
+      // Jendela memakai **waktu monotonik** (`performance.now`): rate limit tidak boleh
+      // terpengaruh penyesuaian jam sistem (flaky di WSL2/mesin sibuk — ditemukan test kontrak).
+      const now = performance.now();
       const windowMs = Math.max(1, incrementOptions.windowSeconds) * 1000;
       const entry = entries.get(key);
       const counter =
         entry !== undefined &&
-        alive(entry, now) &&
         entry.counter !== undefined &&
         now - entry.counter.windowStart < windowMs
           ? entry.counter
@@ -159,7 +160,8 @@ export function createMemoryStore(options: MemoryStoreOptions = {}): KeyValueSto
       entries.delete(key);
       entries.set(key, {
         value: counter.count,
-        expiresAt: counter.windowStart + windowMs,
+        // TTL entri (get/sweep) tetap wall-clock; jendela penghitung monotonik.
+        expiresAt: Date.now() + windowMs,
         tags: [],
         counter,
       });

@@ -4,9 +4,24 @@
   v0.2.0, 17 aset) di atas 0.1.1 (2026-10-18, 14 paket) dan 0.1.0 (2026-10-18, 13 paket).
   Verifikasi registry end-to-end lolos untuk ketiganya. Kebijakan ADR-0039/0049 di bawah berlaku
   untuk rilis berikutnya.
-- **0.3.0: siap rilis (menunggu tag)** — 16 paket (baru: `@ramonyx/mcp-docs-server`,
-  `@ramonyx/plugin-image`) → 17 artefak; bump `Cargo.toml` + 16 paket + template `^0.3.0`
-  (2026-10-19); verifikasi lokal lengkap lolos (lihat bagian di bawah).
+- **TERBIT — 0.3.0** (2026-10-19): **16 paket** (baru: `@ramonyx/mcp-docs-server`,
+  `@ramonyx/plugin-image`) + GitHub Release v0.3.0 (19 aset); hasil + acceptance di bagian bawah.
+
+## Hasil rilis 0.3.0 (2026-10-19)
+
+- Tag `v0.3.0` → workflow: build+verifikasi dan **publish 16 paket @ 0.3.0** (provenance) +
+  **GitHub Release v0.3.0 (19 aset)**. Propagasi registry ±15 menit (pola sama dengan 0.2.0).
+- **Acceptance registry end-to-end**: `create-ramonyx-app@0.3.0` → install → `ramonyx build` →
+  `ramonyx start` → home 200 + payload hydration + API 200 ✓; **aset hasil pipeline disajikan
+  200** (`image/svg+xml`) — memverifikasi perbaikan bug M1 dari registry.
+- **MCP dari registry**: `npx -y @ramonyx/mcp-docs-server@0.3.0` → handshake `ramonyx-docs` +
+  5 tools ✓.
+- **Peer metadata di registry**: `@ramonyx/plugin-image@0.3.0` memuat `sharp` opsional
+  (memverifikasi perbaikan staging `peerDependencies`).
+- Flake test yang selama ini muncul di `pnpm docs:stats` (mesin sibuk) diperbaiki:
+  jendela penghitung `createMemoryStore.increment` kini memakai **waktu monotonik**
+  (`performance.now`) — rate limit tidak boleh terpengaruh penyesuaian jam sistem; test SWR
+  revalidate memakai margin jendela lebih lebar (500 ms/1 dtk).
 
 ## Persiapan 0.3.0 (2026-10-19)
 

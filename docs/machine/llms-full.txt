@@ -736,7 +736,7 @@
       "id": "image-optimization",
       "name": "Aset: komponen Image (anti-CLS, lazy) — tanpa resize/format modern (M1)",
       "status": "implemented",
-      "since": null,
+      "since": "0.3.0",
       "priority": "p3",
       "packages": [
         "@ramonyx/plugin-image",
@@ -753,7 +753,6 @@
         "docs/adr/0079-image-pipeline-m2.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (paket ke-16 — rilis berikutnya)",
         "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
         "avif opt-in (jauh lebih lambat saat build); tanpa placeholder blur"
       ]
@@ -1152,7 +1151,7 @@
       "id": "mcp-docs-server",
       "name": "MCP docs server (tools untuk agen)",
       "status": "implemented",
-      "since": null,
+      "since": "0.3.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/mcp-docs-server"
@@ -1167,7 +1166,6 @@
         "docs/adr/0078-mcp-docs-server.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (paket ke-15 — rilis berikutnya)",
         "Subset protokol: stdio saja (tanpa HTTP/prompts/sampling/batching)",
         "Snapshot docs = versi paket (docs repo terbaru butuh --docs dari clone)"
       ]
@@ -3236,7 +3234,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T13:56:21.349Z",
+  "generatedAt": "2026-10-19T14:16:49.180Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -3639,7 +3637,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T13:56:22.702Z",
+  "generatedAt": "2026-10-19T14:16:50.351Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3800,9 +3798,9 @@ Framework full-stack TypeScript (Node ≥ 24) + runtime Rust/V8 **eksperimental*
 SSR React (+ streaming), hydration + soft navigation, middleware security, validasi schema di
 tepi kepercayaan, dan benchmark/gate reproducible.
 
-> **Status: alpha 0.2.0 — terbit di npm** (2026-10-19, 14 paket `@ramonyx/*` + `ramonyx` +
+> **Status: alpha 0.3.0 — terbit di npm** (2026-10-19, 16 paket `@ramonyx/*` + `ramonyx` +
 > `create-ramonyx-app`, **dengan provenance**) — lihat
-> [Rilis v0.2.0](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.2.0).
+> [Rilis v0.3.0](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.3.0).
 > Framework Node adalah baseline produksi; runtime Rust/V8 eksperimental. Aplikasi baru:
 > `pnpm create ramonyx-app aplikasi-saya` → `pnpm dev|build|start` (CLI `ramonyx`).
 > Verifikasi registry end-to-end: scaffold → install → build → start → SSR + API.
@@ -5175,9 +5173,24 @@ aplikasi masing-masing.
   v0.2.0, 17 aset) di atas 0.1.1 (2026-10-18, 14 paket) dan 0.1.0 (2026-10-18, 13 paket).
   Verifikasi registry end-to-end lolos untuk ketiganya. Kebijakan ADR-0039/0049 di bawah berlaku
   untuk rilis berikutnya.
-- **0.3.0: siap rilis (menunggu tag)** — 16 paket (baru: `@ramonyx/mcp-docs-server`,
-  `@ramonyx/plugin-image`) → 17 artefak; bump `Cargo.toml` + 16 paket + template `^0.3.0`
-  (2026-10-19); verifikasi lokal lengkap lolos (lihat bagian di bawah).
+- **TERBIT — 0.3.0** (2026-10-19): **16 paket** (baru: `@ramonyx/mcp-docs-server`,
+  `@ramonyx/plugin-image`) + GitHub Release v0.3.0 (19 aset); hasil + acceptance di bagian bawah.
+
+## Hasil rilis 0.3.0 (2026-10-19)
+
+- Tag `v0.3.0` → workflow: build+verifikasi dan **publish 16 paket @ 0.3.0** (provenance) +
+  **GitHub Release v0.3.0 (19 aset)**. Propagasi registry ±15 menit (pola sama dengan 0.2.0).
+- **Acceptance registry end-to-end**: `create-ramonyx-app@0.3.0` → install → `ramonyx build` →
+  `ramonyx start` → home 200 + payload hydration + API 200 ✓; **aset hasil pipeline disajikan
+  200** (`image/svg+xml`) — memverifikasi perbaikan bug M1 dari registry.
+- **MCP dari registry**: `npx -y @ramonyx/mcp-docs-server@0.3.0` → handshake `ramonyx-docs` +
+  5 tools ✓.
+- **Peer metadata di registry**: `@ramonyx/plugin-image@0.3.0` memuat `sharp` opsional
+  (memverifikasi perbaikan staging `peerDependencies`).
+- Flake test yang selama ini muncul di `pnpm docs:stats` (mesin sibuk) diperbaiki:
+  jendela penghitung `createMemoryStore.increment` kini memakai **waktu monotonik**
+  (`performance.now`) — rate limit tidak boleh terpengaruh penyesuaian jam sistem; test SWR
+  revalidate memakai margin jendela lebih lebar (500 ms/1 dtk).
 
 ## Persiapan 0.3.0 (2026-10-19)
 

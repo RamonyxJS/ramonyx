@@ -728,7 +728,7 @@
       "id": "image-optimization",
       "name": "Aset: komponen Image (anti-CLS, lazy) — tanpa resize/format modern (M1)",
       "status": "implemented",
-      "since": null,
+      "since": "0.3.0",
       "priority": "p3",
       "packages": [
         "@ramonyx/plugin-image",
@@ -745,7 +745,6 @@
         "docs/adr/0079-image-pipeline-m2.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (paket ke-16 — rilis berikutnya)",
         "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
         "avif opt-in (jauh lebih lambat saat build); tanpa placeholder blur"
       ]
@@ -1144,7 +1143,7 @@
       "id": "mcp-docs-server",
       "name": "MCP docs server (tools untuk agen)",
       "status": "implemented",
-      "since": null,
+      "since": "0.3.0",
       "priority": "p2",
       "packages": [
         "@ramonyx/mcp-docs-server"
@@ -1159,7 +1158,6 @@
         "docs/adr/0078-mcp-docs-server.md"
       ],
       "limitations": [
-        "Belum dirilis di npm (paket ke-15 — rilis berikutnya)",
         "Subset protokol: stdio saja (tanpa HTTP/prompts/sampling/batching)",
         "Snapshot docs = versi paket (docs repo terbaru butuh --docs dari clone)"
       ]

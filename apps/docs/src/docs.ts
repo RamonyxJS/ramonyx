@@ -25,7 +25,7 @@ export interface LoadedDoc {
 
 function collect(directory: string, found: string[] = []): string[] {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    if (entry.name === "machine" || entry.name.startsWith(".")) {
+    if (entry.name === "machine" || entry.name === "engineering" || entry.name.startsWith(".")) {
       continue;
     }
     const path = join(directory, entry.name);
@@ -56,6 +56,11 @@ export function listDocs(): DocEntry[] {
 /** Baca dokumen publik berdasarkan slug; `null` bila tidak ada atau keluar dari docs/public. */
 export function readDoc(slug: string): LoadedDoc | null {
   if (slug.length === 0 || slug.includes("\0")) {
+    return null;
+  }
+  // Catatan rekayasa & machine layer bukan dokumentasi pengguna (ADR-0082 amandemen).
+  const akar = slug.split("/")[0] ?? "";
+  if (akar === "machine" || akar === "engineering") {
     return null;
   }
   const candidate = resolve(docsDir, `${slug}.md`);

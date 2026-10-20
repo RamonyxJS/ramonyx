@@ -2,6 +2,16 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikuti semver.
 
+## [Unreleased]
+
+### Dokumentasi
+
+- **ADR/engineering notes keluar dari dokumentasi pengguna** (amandemen ADR-0082): ringkasan ADR +
+  `frontend-stack` dipindah ke `docs/public/engineering/` (publik di repo, aman) dan **dikecualikan
+  dari katalog situs, pencarian, dan `llms.txt`**; sidebar "Decisions" dihapus; landing menampilkan
+  jumlah halaman dokumentasi. Selaras praktik Next.js/Astro/Svelte/Django (keputusan desain di luar
+  user docs; Backstage adalah pengecualian).
+
 ## [0.4.1] — 2026-10-20
 
 Rilis remediasi: snapshot dokumentasi paket MCP hanya `docs/public/` (kebocoran dokumen internal di

@@ -39,21 +39,6 @@ export const NAV: readonly NavSection[] = [
     items: [{ slug: "api/core-contract", label: "API Reference" }],
   },
   {
-    title: "Decisions",
-    items: [
-      { slug: "decisions/frontend-stack", label: "Frontend stack" },
-      { slug: "adr/README", label: "ADR index" },
-      { slug: "adr/0007-hydration", label: "ADR 0007 · Hydration" },
-      { slug: "adr/0047-ssr-streaming", label: "ADR 0047 · Streaming" },
-      { slug: "adr/0057-server-actions", label: "ADR 0057 · Actions" },
-      { slug: "adr/0058-edge-target", label: "ADR 0058 · Edge" },
-      { slug: "adr/0066-revalidate", label: "ADR 0066 · Revalidation" },
-      { slug: "adr/0069-assets", label: "ADR 0069 · Assets" },
-      { slug: "adr/0078-mcp-docs-server", label: "ADR 0078 · MCP" },
-      { slug: "adr/0081-i18n", label: "ADR 0081 · i18n" },
-    ],
-  },
-  {
     title: "For agents",
     items: [{ slug: "for-agents", label: "For Agents" }],
   },

@@ -8,7 +8,7 @@ Agents get a machine-readable view of Ramonyx that is generated from **public** 
   one file.
 - `machine/features.json` — feature status, packages, evidence, and honest limitations.
 - `machine/rules.json` — rules for writing apps with good/bad examples.
-- `machine/adrs.json` — public architecture decisions (one-line decisions + relations).
+- `machine/adrs.json` — public decision summaries (one-line decisions + relations).
 - `machine/stats.json` — the single source of truth for numbers (version, packages, tests).
 - `machine/api.json`, `machine/cli.json`, `machine/config.schema.json` — extracted API/CLI/config
   references.

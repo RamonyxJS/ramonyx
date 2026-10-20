@@ -65,3 +65,12 @@ Dokumen internal dan publik bercampur di `docs/**`. Tiga kebocoran ditemukan saa
 - Repo tetap publik sehingga `docs/internal/` terbaca di GitHub; kebijakan ini melindungi situs,
   llms, dan npm — bukan kerahasiaan repo (dipindah ke repo privat hanya bila diminta pemilik).
 - Rilis MCP 0.4.1 wajib; 0.3.0/0.4.0 di-deprecate dengan pesan upgrade.
+
+## Amandemen (2026-10-20)
+
+Setelah audit praktik framework (Next.js/Astro/Svelte/Django/Vue/Ember; Diátaxis), **catatan ADR
+dan engineering tidak dirender sebagai dokumentasi pengguna**: berkas dipindah ke
+`docs/public/engineering/` (publik di repo, aman dirilis, tetapi **dikecualikan dari katalog situs,
+pencarian, dan `llms.txt`**), sidebar "Decisions" dihapus, dan `machine/adrs.json` tetap tersedia
+untuk agen. Alasan: dokumentasi pengguna = tutorial/how-to/reference (Diátaxis); ADR = artefak
+desain untuk kontributor. Backstage adalah pengecualian yang sah, bukan norma.

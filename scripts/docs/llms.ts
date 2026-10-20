@@ -26,7 +26,7 @@ function read(relativePath: string): string {
 
 function collectDocs(dir: string, found: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === "machine" || entry.name.startsWith(".")) {
+    if (entry.name === "machine" || entry.name === "engineering" || entry.name.startsWith(".")) {
       continue;
     }
     const path = join(dir, entry.name);

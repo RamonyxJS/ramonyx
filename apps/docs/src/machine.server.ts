@@ -9,6 +9,7 @@ export interface PublicStats {
   readonly version: string;
   readonly packages: { readonly npm: number; readonly names: readonly string[] };
   readonly adrs: number;
+  readonly docs: number;
   readonly tests: { readonly node: number; readonly rust: number; readonly e2eSpecFiles: number };
 }
 

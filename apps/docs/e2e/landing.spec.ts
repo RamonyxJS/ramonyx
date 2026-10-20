@@ -6,6 +6,7 @@ test("landing: hero, bukti dari machine layer, tema, pencarian Cmd+K", async ({ 
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Full-stack TypeScript");
   await expect(page.getByText("published on npm")).toBeVisible();
   await expect(page.getByText("npm packages")).toBeVisible();
+  await expect(page.getByText("documentation pages")).toBeVisible();
 
   // Tema: toggle mengubah atribut <html> dan tersimpan.
   const toggle = page.getByRole("button", { name: /Switch to (dark|light) theme/ });

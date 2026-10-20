@@ -10,6 +10,9 @@ test("policy: ADR internal 404, pencarian internal kosong, machine internal tida
   expect(adr?.status()).toBe(404);
   await expect(page.getByText("Page not found")).toBeVisible();
 
+  // Catatan rekayasa (ADR) bukan dokumentasi pengguna — nomor publik pun tidak dirender.
+  expect((await page.goto("/docs/adr/0007-hydration"))?.status()).toBe(404);
+
   // Dokumen internal lain juga 404.
   for (const path of ["/docs/security/threat-model", "/docs/PRD", "/docs/IMPLEMENTATION_STATUS"]) {
     const response = await page.goto(path);

@@ -37,6 +37,9 @@ export default function RootLayout({ children }: LayoutProps) {
             <a href="docs/api/core-contract">API</a>
             <a href="machine/features.json">features.json</a>
             <a href="machine/llms.txt">llms.txt</a>
+            <a href="https://github.com/RamonyxJS/ramonyx/tree/main/docs/public/engineering">
+              Engineering notes
+            </a>
             <a href="https://github.com/RamonyxJS/ramonyx">GitHub</a>
             <a href="https://www.npmjs.com/package/ramonyx">npm</a>
             <a href="https://github.com/RamonyxJS/ramonyx/blob/main/SECURITY.md">Security</a>

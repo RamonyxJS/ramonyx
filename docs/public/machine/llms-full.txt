@@ -15,9 +15,18 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/compiler", "@ramonyx/ssr"],
-      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts"],
-      "limitations": ["Route groups `(grup)` belum ada", "Middleware per-folder belum ada"]
+      "packages": [
+        "@ramonyx/compiler",
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/compiler/src/pages.ts",
+        "packages/compiler/test/pages.test.ts"
+      ],
+      "limitations": [
+        "Route groups `(grup)` belum ada",
+        "Middleware per-folder belum ada"
+      ]
     },
     {
       "id": "routing-api-methods",
@@ -25,8 +34,14 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/compiler", "@ramonyx/server"],
-      "evidence": ["packages/compiler/src/manifest.ts", "packages/compiler/test/manifest.test.ts"],
+      "packages": [
+        "@ramonyx/compiler",
+        "@ramonyx/server"
+      ],
+      "evidence": [
+        "packages/compiler/src/manifest.ts",
+        "packages/compiler/test/manifest.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -35,7 +50,9 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/router"],
+      "packages": [
+        "@ramonyx/router"
+      ],
       "evidence": [
         "packages/router/src/match.ts",
         "packages/router/test/match.test.ts",
@@ -49,8 +66,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/compiler"],
-      "evidence": ["packages/compiler/src/pages.ts", "packages/compiler/test/pages.test.ts"],
+      "packages": [
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/compiler/src/pages.ts",
+        "packages/compiler/test/pages.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -59,7 +81,10 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/compiler", "@ramonyx/ssr"],
+      "packages": [
+        "@ramonyx/compiler",
+        "@ramonyx/ssr"
+      ],
       "evidence": [
         "packages/compiler/src/pages.ts",
         "packages/compiler/test/pages.test.ts",
@@ -73,9 +98,16 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/server"],
-      "evidence": ["packages/server/src/handler.ts", "packages/server/test/pipeline.test.ts"],
-      "limitations": ["Tanpa matcher per-path (semua request)"]
+      "packages": [
+        "@ramonyx/server"
+      ],
+      "evidence": [
+        "packages/server/src/handler.ts",
+        "packages/server/test/pipeline.test.ts"
+      ],
+      "limitations": [
+        "Tanpa matcher per-path (semua request)"
+      ]
     },
     {
       "id": "middleware-per-folder",
@@ -83,7 +115,10 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
-      "packages": ["@ramonyx/compiler", "@ramonyx/server"],
+      "packages": [
+        "@ramonyx/compiler",
+        "@ramonyx/server"
+      ],
       "evidence": [
         "packages/compiler/src/pages.ts",
         "packages/server/src/handler.ts",
@@ -98,7 +133,10 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/ssr", "@ramonyx/react"],
+      "packages": [
+        "@ramonyx/ssr",
+        "@ramonyx/react"
+      ],
       "evidence": [
         "packages/ssr/src/pages.ts",
         "packages/ssr/src/document.ts",
@@ -112,8 +150,14 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/ssr", "@ramonyx/react"],
-      "evidence": ["packages/ssr/src/pages.ts", "docs/public/adr/0047-ssr-streaming.md"],
+      "packages": [
+        "@ramonyx/ssr",
+        "@ramonyx/react"
+      ],
+      "evidence": [
+        "packages/ssr/src/pages.ts",
+        "docs/public/engineering/adr/0047-ssr-streaming.md"
+      ],
       "limitations": [
         "Error setelah byte pertama = koneksi diputus (status/error page hanya berlaku sebelum byte pertama)"
       ]
@@ -124,11 +168,14 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/react", "@ramonyx/compiler"],
+      "packages": [
+        "@ramonyx/react",
+        "@ramonyx/compiler"
+      ],
       "evidence": [
         "packages/react/src/client.ts",
         "apps/playground/e2e/ssr.spec.ts",
-        "docs/public/adr/0007-hydration.md"
+        "docs/public/engineering/adr/0007-hydration.md"
       ],
       "limitations": []
     },
@@ -138,12 +185,14 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
-      "packages": ["@ramonyx/react"],
+      "packages": [
+        "@ramonyx/react"
+      ],
       "evidence": [
         "packages/react/src/client.ts",
         "apps/playground/e2e/navigation.spec.ts",
         "apps/playground/e2e/prefetch.spec.ts",
-        "docs/public/adr/0007-hydration.md"
+        "docs/public/engineering/adr/0007-hydration.md"
       ],
       "limitations": []
     },
@@ -153,7 +202,10 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
       "evidence": [
         "packages/core/src/page.ts",
         "packages/ssr/src/pages.ts",
@@ -170,13 +222,17 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p0",
-      "packages": ["@ramonyx/core", "@ramonyx/ssr", "@ramonyx/react"],
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr",
+        "@ramonyx/react"
+      ],
       "evidence": [
         "packages/ssr/src/pages.ts",
         "packages/ssr/test/pages.test.ts",
         "packages/react/src/client.ts",
         "apps/playground/e2e/form.spec.ts",
-        "docs/public/adr/0057-server-actions.md"
+        "docs/public/engineering/adr/0057-server-actions.md"
       ],
       "limitations": [
         "Tanpa pending state klien/optimistic UI",
@@ -189,8 +245,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/core"],
-      "evidence": ["packages/core/src/types.ts", "packages/core/test/route.test.ts"],
+      "packages": [
+        "@ramonyx/core"
+      ],
+      "evidence": [
+        "packages/core/src/types.ts",
+        "packages/core/test/route.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -199,13 +260,18 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
-      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
       "evidence": [
         "packages/core/src/page.ts",
         "packages/ssr/src/pages.ts",
         "packages/ssr/test/pages.test.ts"
       ],
-      "limitations": ["Origin kanonik dari request (di belakang proxy: pastikan header benar)"]
+      "limitations": [
+        "Origin kanonik dari request (di belakang proxy: pastikan header benar)"
+      ]
     },
     {
       "id": "schema-validation",
@@ -213,7 +279,9 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/schema"],
+      "packages": [
+        "@ramonyx/schema"
+      ],
       "evidence": [
         "packages/schema/src/validate.ts",
         "packages/schema/test/validate.test.ts",
@@ -227,8 +295,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/core"],
-      "evidence": ["packages/core/src/config.ts", "packages/core/test/config.test.ts"],
+      "packages": [
+        "@ramonyx/core"
+      ],
+      "evidence": [
+        "packages/core/src/config.ts",
+        "packages/core/test/config.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -237,8 +310,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/security"],
-      "evidence": ["packages/security/src/headers.ts", "packages/security/test/headers.test.ts"],
+      "packages": [
+        "@ramonyx/security"
+      ],
+      "evidence": [
+        "packages/security/src/headers.ts",
+        "packages/security/test/headers.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -247,8 +325,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/security"],
-      "evidence": ["packages/security/src/csp.ts", "packages/security/test/csp.test.ts"],
+      "packages": [
+        "@ramonyx/security"
+      ],
+      "evidence": [
+        "packages/security/src/csp.ts",
+        "packages/security/test/csp.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -257,8 +340,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/security"],
-      "evidence": ["packages/security/src/csrf.ts", "packages/security/test/csrf.test.ts"],
+      "packages": [
+        "@ramonyx/security"
+      ],
+      "evidence": [
+        "packages/security/src/csrf.ts",
+        "packages/security/test/csrf.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -267,8 +355,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/security"],
-      "evidence": ["packages/security/src/ssrf.ts", "packages/security/test/ssrf.test.ts"],
+      "packages": [
+        "@ramonyx/security"
+      ],
+      "evidence": [
+        "packages/security/src/ssrf.ts",
+        "packages/security/test/ssrf.test.ts"
+      ],
       "limitations": [
         "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)",
         "Body FormData/multipart belum didukung"
@@ -280,12 +373,16 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/security"],
+      "packages": [
+        "@ramonyx/security"
+      ],
       "evidence": [
         "packages/security/src/rate-limit.ts",
         "packages/security/test/rate-limit.test.ts"
       ],
-      "limitations": ["In-memory per proses (tanpa store terdistribusi)"]
+      "limitations": [
+        "In-memory per proses (tanpa store terdistribusi)"
+      ]
     },
     {
       "id": "resource-limits",
@@ -293,8 +390,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/server"],
-      "evidence": ["packages/server/src/handler.ts", "tests/security/server-hardening.test.ts"],
+      "packages": [
+        "@ramonyx/server"
+      ],
+      "evidence": [
+        "packages/server/src/handler.ts",
+        "tests/security/server-hardening.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -303,8 +405,12 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p2",
-      "packages": ["@ramonyx/ssr"],
-      "evidence": ["packages/ssr/src/pages.ts"],
+      "packages": [
+        "@ramonyx/ssr"
+      ],
+      "evidence": [
+        "packages/ssr/src/pages.ts"
+      ],
       "limitations": []
     },
     {
@@ -313,7 +419,9 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/bundler"],
+      "packages": [
+        "@ramonyx/bundler"
+      ],
       "evidence": [
         "packages/bundler/src/dev.ts",
         "packages/bundler/src/devtools.ts",
@@ -331,9 +439,16 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/bundler", "@ramonyx/compiler"],
-      "evidence": ["packages/bundler/src/build.ts"],
-      "limitations": ["Belum ada code splitting per rute"]
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/bundler/src/build.ts"
+      ],
+      "limitations": [
+        "Belum ada code splitting per rute"
+      ]
     },
     {
       "id": "source-maps",
@@ -341,8 +456,12 @@
       "status": "implemented",
       "since": "0.1.1",
       "priority": "p2",
-      "packages": ["@ramonyx/bundler"],
-      "evidence": ["packages/bundler/src/index.ts"],
+      "packages": [
+        "@ramonyx/bundler"
+      ],
+      "evidence": [
+        "packages/bundler/src/index.ts"
+      ],
       "limitations": []
     },
     {
@@ -351,8 +470,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/compiler"],
-      "evidence": ["packages/compiler/src/register.mjs", "packages/compiler/src/esbuild-hooks.mjs"],
+      "packages": [
+        "@ramonyx/compiler"
+      ],
+      "evidence": [
+        "packages/compiler/src/register.mjs",
+        "packages/compiler/src/esbuild-hooks.mjs"
+      ],
       "limitations": []
     },
     {
@@ -361,7 +485,9 @@
       "status": "implemented",
       "since": "0.1.1",
       "priority": "p0",
-      "packages": ["@ramonyx/devtools"],
+      "packages": [
+        "@ramonyx/devtools"
+      ],
       "evidence": [
         "packages/devtools/src/commands.ts",
         "packages/devtools/src/load.ts",
@@ -378,8 +504,12 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["create-ramonyx-app"],
-      "evidence": ["apps/create-app/test/create-app.test.ts"],
+      "packages": [
+        "create-ramonyx-app"
+      ],
+      "evidence": [
+        "apps/create-app/test/create-app.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -388,7 +518,12 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
-      "packages": ["@ramonyx/router", "@ramonyx/compiler", "@ramonyx/devtools", "@ramonyx/react"],
+      "packages": [
+        "@ramonyx/router",
+        "@ramonyx/compiler",
+        "@ramonyx/devtools",
+        "@ramonyx/react"
+      ],
       "evidence": [
         "packages/router/src/routes.ts",
         "packages/compiler/src/pages.ts",
@@ -406,8 +541,16 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p3",
-      "packages": ["@ramonyx/core", "@ramonyx/ssr", "@ramonyx/compiler", "@ramonyx/bundler"],
-      "evidence": ["packages/core/src/errors-docs.ts", "packages/ssr/src/pages.ts"],
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr",
+        "@ramonyx/compiler",
+        "@ramonyx/bundler"
+      ],
+      "evidence": [
+        "packages/core/src/errors-docs.ts",
+        "packages/ssr/src/pages.ts"
+      ],
       "limitations": [
         "Kode hanya untuk error framework (HttpError aplikasi bebas)",
         "Overlay berupa halaman error ber-detail (bukan panel JS)"
@@ -419,8 +562,13 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
-      "packages": ["@ramonyx/bundler"],
-      "evidence": ["apps/docs/export.ts", "apps/docs/test/docs.test.ts"],
+      "packages": [
+        "@ramonyx/bundler"
+      ],
+      "evidence": [
+        "apps/docs/export.ts",
+        "apps/docs/test/docs.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -429,13 +577,18 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p0",
-      "packages": ["@ramonyx/bundler", "@ramonyx/devtools"],
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/devtools"
+      ],
       "evidence": [
         "packages/bundler/src/prerender.ts",
         "packages/bundler/test/prerender.test.ts",
         "packages/devtools/src/commands.ts"
       ],
-      "limitations": ["Revalidasi/ISR belum (p1-revalidate)"]
+      "limitations": [
+        "Revalidasi/ISR belum (p1-revalidate)"
+      ]
     },
     {
       "id": "http-cache-helpers",
@@ -443,8 +596,13 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
-      "packages": ["@ramonyx/core"],
-      "evidence": ["packages/core/src/cache.ts", "packages/core/test/cache.test.ts"],
+      "packages": [
+        "@ramonyx/core"
+      ],
+      "evidence": [
+        "packages/core/src/cache.ts",
+        "packages/core/test/cache.test.ts"
+      ],
       "limitations": [
         "Helper untuk header respons — bukan cache runtime (cache data loader terpisah: ADR-0066)"
       ]
@@ -455,7 +613,9 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p0",
-      "packages": ["@ramonyx/bundler"],
+      "packages": [
+        "@ramonyx/bundler"
+      ],
       "evidence": [
         "packages/bundler/src/build.ts",
         "packages/bundler/test/build.test.ts",
@@ -469,12 +629,16 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
-      "packages": ["@ramonyx/adapter-runtime"],
+      "packages": [
+        "@ramonyx/adapter-runtime"
+      ],
       "evidence": [
         "packages/adapter-runtime/src/node.ts",
         "packages/adapter-runtime/test/node.test.ts"
       ],
-      "limitations": ["Range request belum"]
+      "limitations": [
+        "Range request belum"
+      ]
     },
     {
       "id": "adapter-memory",
@@ -482,7 +646,9 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p1",
-      "packages": ["@ramonyx/adapter-runtime"],
+      "packages": [
+        "@ramonyx/adapter-runtime"
+      ],
       "evidence": [
         "packages/adapter-runtime/src/memory.ts",
         "packages/adapter-runtime/test/memory.test.ts"
@@ -495,14 +661,19 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p0",
-      "packages": ["@ramonyx/bundler", "@ramonyx/compiler", "@ramonyx/devtools", "@ramonyx/server"],
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/compiler",
+        "@ramonyx/devtools",
+        "@ramonyx/server"
+      ],
       "evidence": [
         "packages/bundler/src/edge.ts",
         "packages/compiler/src/server-entry.ts",
         "scripts/edge-smoke.ts",
         "apps/create-app/test/create-app.test.ts",
         "docs/public/deployment.md",
-        "docs/public/adr/0058-edge-target.md"
+        "docs/public/engineering/adr/0058-edge-target.md"
       ],
       "limitations": [
         "Preset Vercel/Deno Deploy belum",
@@ -515,12 +686,17 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p0",
-      "packages": ["@ramonyx/adapter-runtime"],
+      "packages": [
+        "@ramonyx/adapter-runtime"
+      ],
       "evidence": [
         "packages/adapter-runtime/src/node.ts",
         "packages/adapter-runtime/test/node.test.ts"
       ],
-      "limitations": ["Range request belum", "Aset pra-kompresi (.br/.gz) belum"]
+      "limitations": [
+        "Range request belum",
+        "Aset pra-kompresi (.br/.gz) belum"
+      ]
     },
     {
       "id": "image-optimization",
@@ -528,7 +704,11 @@
       "status": "implemented",
       "since": "0.3.0",
       "priority": "p3",
-      "packages": ["@ramonyx/plugin-image", "@ramonyx/bundler", "@ramonyx/react"],
+      "packages": [
+        "@ramonyx/plugin-image",
+        "@ramonyx/bundler",
+        "@ramonyx/react"
+      ],
       "evidence": [
         "packages/plugin-image/src/index.ts",
         "packages/plugin-image/test/image.test.ts",
@@ -537,7 +717,7 @@
         "apps/playground/e2e/image.spec.ts",
         "benchmarks/results/image-pipeline-vitals.json",
         "docs/public/assets-and-images.md",
-        "docs/public/adr/0069-assets.md"
+        "docs/public/engineering/adr/0069-assets.md"
       ],
       "limitations": [
         "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
@@ -550,14 +730,17 @@
       "status": "implemented",
       "since": "0.4.0",
       "priority": "p3",
-      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
       "evidence": [
         "packages/core/src/i18n.ts",
         "packages/ssr/src/pages.ts",
         "packages/core/test/i18n.test.ts",
         "packages/ssr/test/i18n.test.ts",
         "apps/playground/e2e/i18n.spec.ts",
-        "docs/public/adr/0081-i18n.md"
+        "docs/public/engineering/adr/0081-i18n.md"
       ],
       "limitations": [
         "Tanpa ICU MessageFormat (interpolasi + plural Intl saja)",
@@ -571,7 +754,9 @@
       "status": "partial",
       "since": "0.2.0",
       "priority": "p1",
-      "packages": ["@ramonyx/security"],
+      "packages": [
+        "@ramonyx/security"
+      ],
       "evidence": [
         "packages/security/src/cookies.ts",
         "packages/security/src/session.ts",
@@ -589,14 +774,18 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
-      "packages": ["@ramonyx/ssr"],
+      "packages": [
+        "@ramonyx/ssr"
+      ],
       "evidence": [
         "packages/ssr/src/pages.ts",
         "packages/core/src/page.ts",
         "packages/core/test/page.test.ts",
-        "docs/public/adr/0057-server-actions.md"
+        "docs/public/engineering/adr/0057-server-actions.md"
       ],
-      "limitations": ["Upload file besar belum dioptimasi (multipart di-buffer FormData)"]
+      "limitations": [
+        "Upload file besar belum dioptimasi (multipart di-buffer FormData)"
+      ]
     },
     {
       "id": "observability-logger",
@@ -604,7 +793,9 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
-      "packages": ["@ramonyx/server"],
+      "packages": [
+        "@ramonyx/server"
+      ],
       "evidence": [
         "packages/server/src/observability.ts",
         "packages/server/test/observability.test.ts",
@@ -622,7 +813,9 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/metrics.rs"],
+      "evidence": [
+        "runtime/crates/js-engine/src/metrics.rs"
+      ],
       "limitations": [
         "Hanya di runtime eksperimental; versi Node kini punya createMetrics (ADR-0071)"
       ]
@@ -634,7 +827,11 @@
       "since": "0.1.0",
       "priority": "p1",
       "packages": [],
-      "evidence": ["benchmarks/http/bench.ts", "benchmarks/ssr/bench.tsx", "benchmarks/lib/env.ts"],
+      "evidence": [
+        "benchmarks/http/bench.ts",
+        "benchmarks/ssr/bench.tsx",
+        "benchmarks/lib/env.ts"
+      ],
       "limitations": [
         "Report-only di CI (runner GitHub-hosted bervariasi); --strict sahih hanya di lingkungan baseline (guard ADR-0074)",
         "Baseline mesin dev noisy (ambient load) — regenerasi di mesin tenang"
@@ -647,7 +844,10 @@
       "since": "0.1.0",
       "priority": "p1",
       "packages": [],
-      "evidence": ["apps/playground/e2e/ssr.spec.ts", "apps/playground/e2e/navigation.spec.ts"],
+      "evidence": [
+        "apps/playground/e2e/ssr.spec.ts",
+        "apps/playground/e2e/navigation.spec.ts"
+      ],
       "limitations": []
     },
     {
@@ -656,8 +856,13 @@
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p2",
-      "packages": ["@ramonyx/testing"],
-      "evidence": ["packages/testing/src/index.ts", "packages/testing/test/testing.test.ts"],
+      "packages": [
+        "@ramonyx/testing"
+      ],
+      "evidence": [
+        "packages/testing/src/index.ts",
+        "packages/testing/test/testing.test.ts"
+      ],
       "limitations": []
     },
     {
@@ -685,7 +890,9 @@
         "runtime/crates/runtime-core/src/permissions.rs",
         "runtime/crates/cli/tests/cli.rs"
       ],
-      "limitations": ["Runtime belum produksi (Phase 4+)"]
+      "limitations": [
+        "Runtime belum produksi (Phase 4+)"
+      ]
     },
     {
       "id": "runtime-http-server",
@@ -698,7 +905,9 @@
         "runtime/crates/js-engine/src/http.rs",
         "runtime/crates/js-engine/tests/compat_playground.rs"
       ],
-      "limitations": ["Bind localhost; production hardening belum"]
+      "limitations": [
+        "Bind localhost; production hardening belum"
+      ]
     },
     {
       "id": "runtime-streaming",
@@ -720,8 +929,12 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/worker.rs"],
-      "limitations": ["Kuota heap = heap V8 saja (ArrayBuffer besar tidak dihitung)"]
+      "evidence": [
+        "runtime/crates/js-engine/src/worker.rs"
+      ],
+      "limitations": [
+        "Kuota heap = heap V8 saja (ArrayBuffer besar tidak dihitung)"
+      ]
     },
     {
       "id": "runtime-plugin-process",
@@ -748,7 +961,9 @@
       "since": "0.1.1",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/plugin.rs"],
+      "evidence": [
+        "runtime/crates/js-engine/src/plugin.rs"
+      ],
       "limitations": []
     },
     {
@@ -775,7 +990,9 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/lib.rs"],
+      "evidence": [
+        "runtime/crates/js-engine/src/lib.rs"
+      ],
       "limitations": [
         "Heap hanya heap V8; alokasi ArrayBuffer raksasa tunggal masih bisa OOM fatal"
       ]
@@ -787,7 +1004,9 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/tests/compat_framework.rs"],
+      "evidence": [
+        "runtime/crates/js-engine/tests/compat_framework.rs"
+      ],
       "limitations": []
     },
     {
@@ -797,8 +1016,12 @@
       "since": "0.1.0",
       "priority": "p2",
       "packages": [],
-      "evidence": ["runtime/crates/js-engine/src/cjs.rs"],
-      "limitations": ["Subset — require dinamis/modul ESM lewat require ditolak dengan pesan jelas"]
+      "evidence": [
+        "runtime/crates/js-engine/src/cjs.rs"
+      ],
+      "limitations": [
+        "Subset — require dinamis/modul ESM lewat require ditolak dengan pesan jelas"
+      ]
     },
     {
       "id": "runtime-fetch",
@@ -820,8 +1043,13 @@
       "since": "0.1.1",
       "priority": "p1",
       "packages": [],
-      "evidence": ["apps/docs/export.ts", "apps/docs/test/docs.test.ts"],
-      "limitations": ["Di-host di GitHub Pages subpath /ramonyx/"]
+      "evidence": [
+        "apps/docs/export.ts",
+        "apps/docs/test/docs.test.ts"
+      ],
+      "limitations": [
+        "Di-host di GitHub Pages subpath /ramonyx/"
+      ]
     },
     {
       "id": "machine-docs",
@@ -830,7 +1058,10 @@
       "since": "0.2.0",
       "priority": "p1",
       "packages": [],
-      "evidence": ["docs/public/machine/features.json", "scripts/docs/validate.ts"],
+      "evidence": [
+        "docs/public/machine/features.json",
+        "scripts/docs/validate.ts"
+      ],
       "limitations": []
     },
     {
@@ -840,8 +1071,13 @@
       "since": "0.2.0",
       "priority": "p1",
       "packages": [],
-      "evidence": ["docs/public/machine/llms.txt", "docs/public/machine/llms-full.txt"],
-      "limitations": ["Belum ada markdown per halaman untuk paket npm (hanya situs)"]
+      "evidence": [
+        "docs/public/machine/llms.txt",
+        "docs/public/machine/llms-full.txt"
+      ],
+      "limitations": [
+        "Belum ada markdown per halaman untuk paket npm (hanya situs)"
+      ]
     },
     {
       "id": "agent-skill",
@@ -850,8 +1086,12 @@
       "since": "0.2.0",
       "priority": "p2",
       "packages": [],
-      "evidence": [".agents/skills/ramonyx/SKILL.md"],
-      "limitations": ["Satu skill; tanpa instalasi otomatis di scaffolder"]
+      "evidence": [
+        ".agents/skills/ramonyx/SKILL.md"
+      ],
+      "limitations": [
+        "Satu skill; tanpa instalasi otomatis di scaffolder"
+      ]
     },
     {
       "id": "mcp-docs-server",
@@ -859,14 +1099,16 @@
       "status": "implemented",
       "since": "0.3.0",
       "priority": "p2",
-      "packages": ["@ramonyx/mcp-docs-server"],
+      "packages": [
+        "@ramonyx/mcp-docs-server"
+      ],
       "evidence": [
         "packages/mcp-docs-server/src/index.ts",
         "packages/mcp-docs-server/src/docs.ts",
         "packages/mcp-docs-server/src/cli.ts",
         "packages/mcp-docs-server/test/server.test.ts",
         "packages/mcp-docs-server/test/stdio.test.ts",
-        "docs/public/adr/0078-mcp-docs-server.md"
+        "docs/public/engineering/adr/0078-mcp-docs-server.md"
       ],
       "limitations": [
         "Subset protokol: stdio saja (tanpa HTTP/prompts/sampling/batching)",
@@ -879,11 +1121,13 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p0",
-      "packages": ["@ramonyx/adapter-runtime"],
+      "packages": [
+        "@ramonyx/adapter-runtime"
+      ],
       "evidence": [
         "packages/adapter-runtime/src/static.ts",
         "packages/adapter-runtime/test/static.test.ts",
-        "docs/public/adr/0069-assets.md"
+        "docs/public/engineering/adr/0069-assets.md"
       ],
       "limitations": []
     },
@@ -893,7 +1137,9 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
-      "packages": ["@ramonyx/ssr"],
+      "packages": [
+        "@ramonyx/ssr"
+      ],
       "evidence": [
         "packages/ssr/src/seo.ts",
         "packages/ssr/test/seo.test.ts",
@@ -907,7 +1153,9 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
-      "packages": ["@ramonyx/compiler"],
+      "packages": [
+        "@ramonyx/compiler"
+      ],
       "evidence": [
         "packages/compiler/src/pages.ts",
         "packages/compiler/src/manifest.ts",
@@ -921,13 +1169,17 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
-      "packages": ["@ramonyx/bundler"],
+      "packages": [
+        "@ramonyx/bundler"
+      ],
       "evidence": [
         "packages/bundler/src/server-only.ts",
         "packages/bundler/src/build.ts",
         "packages/bundler/test/build.test.ts"
       ],
-      "limitations": ["Lint statis (Biome) untuk konvensi belum"]
+      "limitations": [
+        "Lint statis (Biome) untuk konvensi belum"
+      ]
     },
     {
       "id": "extension-primitives",
@@ -935,7 +1187,10 @@
       "status": "experimental",
       "since": "0.2.0",
       "priority": "p1",
-      "packages": ["@ramonyx/core", "@ramonyx/bundler"],
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/bundler"
+      ],
       "evidence": [
         "packages/core/src/hooks.ts",
         "packages/core/src/store.ts",
@@ -953,14 +1208,17 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
-      "packages": ["@ramonyx/core", "@ramonyx/ssr"],
+      "packages": [
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
       "evidence": [
         "packages/core/src/revalidate.ts",
         "packages/ssr/src/pages.ts",
         "packages/ssr/test/revalidate.test.ts",
         "packages/core/test/revalidate.test.ts",
         "docs/public/data-and-caching.md",
-        "docs/public/adr/0066-revalidate.md"
+        "docs/public/engineering/adr/0066-revalidate.md"
       ],
       "limitations": [
         "In-memory per proses (store eksternal belum ada implementasinya)",
@@ -974,7 +1232,11 @@
       "status": "partial",
       "since": "0.2.0",
       "priority": "p2",
-      "packages": ["@ramonyx/bundler", "@ramonyx/devtools", "@ramonyx/server"],
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/devtools",
+        "@ramonyx/server"
+      ],
       "evidence": [
         "packages/bundler/src/plugin.ts",
         "packages/plugin-image/src/index.ts",
@@ -993,7 +1255,11 @@
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
-      "packages": ["@ramonyx/bundler", "@ramonyx/core", "@ramonyx/ssr"],
+      "packages": [
+        "@ramonyx/bundler",
+        "@ramonyx/core",
+        "@ramonyx/ssr"
+      ],
       "evidence": [
         "packages/bundler/src/assets.ts",
         "packages/react/src/assets.ts",
@@ -1001,7 +1267,7 @@
         "benchmarks/vitals/image-pipeline.mjs",
         "benchmarks/results/image-pipeline-vitals.json",
         "docs/public/assets-and-images.md",
-        "docs/public/adr/0069-assets.md"
+        "docs/public/engineering/adr/0069-assets.md"
       ],
       "limitations": [
         "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",
@@ -1347,147 +1613,219 @@
     {
       "term": "SSR (Server-Side Rendering)",
       "definition": "Render React di server menjadi HTML; dua mode: sinkron (`renderToString`) dan streaming (opt-in `streaming: true`, `renderToReadableStream`).",
-      "related": ["Hydration", "Streaming SSR"],
+      "related": [
+        "Hydration",
+        "Streaming SSR"
+      ],
       "docs": "docs/public/api/core-contract.md"
     },
     {
       "term": "Streaming SSR",
       "definition": "SSR yang mengirim HTML bertahap; error setelah byte pertama memutus koneksi (status/error page hanya berlaku sebelum byte pertama). Memakai `react-dom/server.edge`.",
-      "related": ["SSR (Server-Side Rendering)", "Suspense"],
-      "docs": "docs/public/adr/0047-ssr-streaming.md"
+      "related": [
+        "SSR (Server-Side Rendering)",
+        "Suspense"
+      ],
+      "docs": "docs/public/engineering/adr/0047-ssr-streaming.md"
     },
     {
       "term": "Hydration",
       "definition": "Mengaktifkan React di browser atas HTML SSR: payload inline `window.__RAMONYX__` + satu bundle client + `hydrateRoot`. Halaman error tidak di-hydrate.",
-      "related": ["SSR (Server-Side Rendering)", "Soft navigation"],
-      "docs": "docs/public/adr/0007-hydration.md"
+      "related": [
+        "SSR (Server-Side Rendering)",
+        "Soft navigation"
+      ],
+      "docs": "docs/public/engineering/adr/0007-hydration.md"
     },
     {
       "term": "Soft navigation",
       "definition": "Navigasi klien tanpa full reload: fetch HTML halaman → swap `#ramonyx-root` → re-hydrate; `document.title` + scroll direset. Belum ada prefetch.",
-      "related": ["Hydration"]
+      "related": [
+        "Hydration"
+      ]
     },
     {
       "term": "Loader",
       "definition": "Fungsi per halaman yang mengambil data sebelum render (GET, boleh async); hasilnya harus JSON-serializable karena ikut payload hydration.",
-      "related": ["Page module", "Payload"],
+      "related": [
+        "Page module",
+        "Payload"
+      ],
       "docs": "docs/public/api/core-contract.md"
     },
     {
       "term": "Page module",
       "definition": "Modul `.tsx` di folder rute yang mengekspor komponen `default` + opsional `load` dan `metadata` (title/status).",
-      "related": ["Loader", "Layout", "Route manifest"],
+      "related": [
+        "Loader",
+        "Layout",
+        "Route manifest"
+      ],
       "docs": "docs/public/api/core-contract.md"
     },
     {
       "term": "Layout",
       "definition": "Komponen pembungkus per folder (`layout.tsx`) yang membungkus halaman; bersarang dan layout terdekat menang.",
-      "related": ["Page module", "Error boundary"],
+      "related": [
+        "Page module",
+        "Error boundary"
+      ],
       "docs": "docs/public/api/core-contract.md"
     },
     {
       "term": "Error boundary",
       "definition": "Komponen `error.tsx` per folder yang dirender saat loader/render gagal; boundary terdekat menang. Halaman error tidak di-hydrate.",
-      "related": ["Layout"],
+      "related": [
+        "Layout"
+      ],
       "docs": "docs/public/api/core-contract.md"
     },
     {
       "term": "Route manifest",
       "definition": "Artefak compiler yang memetakan file rute → pola URL, method, dan entry (dibuat saat build/dev; sumber kebenaran routing).",
-      "related": ["Page module", "Route entry"]
+      "related": [
+        "Page module",
+        "Route entry"
+      ]
     },
     {
       "term": "Route entry",
       "definition": "Pasangan rute halaman/API + handler yang dihasilkan compiler dan dipasang ke pipeline server.",
-      "related": ["Route manifest"]
+      "related": [
+        "Route manifest"
+      ]
     },
     {
       "term": "Middleware",
       "definition": "Fungsi app-level (array di `createHandler`) yang berjalan berurutan sebelum rute; dapat mengganti request (mis. menyuntik nonce). Belum ada per-folder.",
-      "related": ["Handler", "CSP nonce"],
+      "related": [
+        "Handler",
+        "CSP nonce"
+      ],
       "docs": "docs/public/api/core-contract.md"
     },
     {
       "term": "Handler",
       "definition": "Pipeline request server: middleware → pencocokan rute → validasi → eksekusi (halaman/API) dengan limits (body/timeout/concurrency).",
-      "related": ["Middleware", "Adapter"]
+      "related": [
+        "Middleware",
+        "Adapter"
+      ]
     },
     {
       "term": "Adapter",
       "definition": "Lapisan runtime yang menjalankan handler: `node` (http server), `memory` (test in-process). Adapter serverless/edge belum ada.",
-      "related": ["Handler", "RuntimeHost"]
+      "related": [
+        "Handler",
+        "RuntimeHost"
+      ]
     },
     {
       "term": "RuntimeHost",
       "definition": "Kontrak antara framework dan host runtime (Node baseline; runtime Rust eksperimental). Lihat docs/architecture.md.",
-      "related": ["Adapter"]
+      "related": [
+        "Adapter"
+      ]
     },
     {
       "term": "Client bundle",
       "definition": "Bundle JS untuk browser (Vite) berisi entry client + komponen yang di-hydrate; dibangun oleh `ramonyx build`.",
-      "related": ["Hydration"]
+      "related": [
+        "Hydration"
+      ]
     },
     {
       "term": "Capability / permission",
       "definition": "Izin eksplisit di runtime Rust (fs/env/net) — default deny-all; diberikan lewat flag `--allow-*`, dapat dicabut (`revoke`).",
-      "related": ["Deny-all", "Worker", "Plugin"]
+      "related": [
+        "Deny-all",
+        "Worker",
+        "Plugin"
+      ]
     },
     {
       "term": "Deny-all",
       "definition": "Default permission runtime: tanpa flag `--allow-*`, akses fs/env/net ditolak — bukan diizinkan dengan peringatan.",
-      "related": ["Capability / permission"]
+      "related": [
+        "Capability / permission"
+      ]
     },
     {
       "term": "Worker (runtime)",
       "definition": "Eksekusi di thread + isolate V8 terpisah dengan pesan JSON, permission irisan (anti-eskalasi), dan kill switch. Bukan sandbox keamanan penuh.",
-      "related": ["Capability / permission", "Plugin"]
+      "related": [
+        "Capability / permission",
+        "Plugin"
+      ]
     },
     {
       "term": "Plugin (runtime)",
       "definition": "Proses terpisah yang dijalankan `ramonyx.spawn` dengan protokol JSON stdin/stdout; dapat disupervisi (restart, backoff, heartbeat) dan disandbox Landlock.",
-      "related": ["Worker (runtime)", "Landlock", "Watchdog"]
+      "related": [
+        "Worker (runtime)",
+        "Landlock",
+        "Watchdog"
+      ]
     },
     {
       "term": "Landlock",
       "definition": "LSM kernel Linux yang membatasi filesystem + TCP proses plugin di level kernel; pelengkap permission JS. Net deny = TCP saja (bukan UDP/DNS).",
-      "related": ["Plugin (runtime)", "Deny-all"]
+      "related": [
+        "Plugin (runtime)",
+        "Deny-all"
+      ]
     },
     {
       "term": "Watchdog",
       "definition": "Health-check otomatis plugin: heartbeat + deteksi senyap, restart dengan backoff eksponensial dan reset stabil.",
-      "related": ["Plugin (runtime)"]
+      "related": [
+        "Plugin (runtime)"
+      ]
     },
     {
       "term": "Gate report-only",
       "definition": "Gate benchmark yang melaporkan regresi tanpa memblokir CI; `--strict` hanya sahih di mesin baseline (guard lintas-mesin).",
-      "related": ["Baseline"]
+      "related": [
+        "Baseline"
+      ]
     },
     {
       "term": "Baseline (benchmark)",
       "definition": "Hasil benchmark ter-commit di `benchmarks/results/` sebagai pembanding; median dari beberapa ulangan, bukan rata-rata.",
-      "related": ["Gate report-only"]
+      "related": [
+        "Gate report-only"
+      ]
     },
     {
       "term": "ADR (Architecture Decision Record)",
       "definition": "Catatan keputusan arsitektur di `docs/adr/` — satu keputusan per berkas, dengan konteks/alternatif/konsekuensi; indeks machine-readable di docs/machine/adrs.json.",
-      "related": ["Machine layer"]
+      "related": [
+        "Machine layer"
+      ]
     },
     {
       "term": "Machine layer",
       "definition": "Lapisan dokumentasi machine-readable di `docs/machine/` (features/adrs/rules/security/glossary/stats/llms) yang divalidasi `pnpm docs:validate`.",
-      "related": ["ADR (Architecture Decision Record)", "llms.txt"],
+      "related": [
+        "ADR (Architecture Decision Record)",
+        "llms.txt"
+      ],
       "docs": "docs/public/machine/README.md"
     },
     {
       "term": "llms.txt",
       "definition": "Indeks dokumentasi untuk agen AI (format llmstxt.org): H1 + ringkasan + daftar tautan; Ramonyx juga menerbitkan `llms-full.txt` (teks lengkap).",
-      "related": ["Machine layer"],
+      "related": [
+        "Machine layer"
+      ],
       "docs": "docs/public/machine/llms.txt"
     },
     {
       "term": "Stats",
       "definition": "`docs/machine/stats.json` — satu-satunya tempat angka (versi, jumlah paket/ADR/test) berada; digenerate `pnpm docs:stats`.",
-      "related": ["Machine layer"],
+      "related": [
+        "Machine layer"
+      ],
       "docs": "docs/public/machine/stats.json"
     }
   ]
@@ -1499,7 +1837,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T17:35:23.398Z",
+  "generatedAt": "2026-10-20T03:48:48.498Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -1912,7 +2250,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T17:35:24.820Z",
+  "generatedAt": "2026-10-20T03:48:49.713Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -1986,8 +2324,8 @@
 {
   "schemaVersion": 1,
   "version": "0.4.1",
-  "generatedAt": "2026-10-19T17:24:29.354Z",
-  "commit": "4fb5c8c9b9fdf68cb8ce349a3c257f75639d6882",
+  "generatedAt": "2026-10-20T03:47:23.499Z",
+  "commit": "2d14c64fe4a65fab6d4efe74158b42b716af7b6a",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2012,6 +2350,7 @@
     ]
   },
   "adrs": 8,
+  "docs": 10,
   "tests": {
     "node": 289,
     "rust": 116,
@@ -2064,319 +2403,6 @@
   }
 }
 ```
-
-## docs/public/adr/0007-hydration.md
-
----
-adr: 0007
-title: "Hydration: inline payload + one client bundle"
-visibility: public
----
-
-# ADR-0007: Hydration — Inline Payload + One Client Bundle
-
-- Status: Public summary (the full decision record lives in the internal log)
-- Date: 2026-10-18
-
-## Context
-
-After server rendering, the client needs the same data the server used. A second data request after
-load costs a round trip and can render a different result. Multiple per-page bundles multiply
-requests and cache misses.
-
-## Decision
-
-1. Server rendering embeds a JSON payload in the document:
-   `window.__RAMONYX__ = { path, params, data, action, locale }`.
-2. The client is **one bundle** (hashed, immutable) that hydrates the current page from that payload
-   and wires soft navigation.
-3. The payload is JSON-serializable by contract; non-serializable data is a bug in the loader.
-4. Error pages are **not** hydrated — they are server-only output.
-
-## Consequences
-
-- Hydration performs no extra data request.
-- Loader data shapes the public contract: anything non-JSON must be transformed in the loader.
-- The single bundle grows with the app; code splitting per route is a future optimization (not
-  implemented).
-- Soft navigation reuses the same payload shape, so server and client stay symmetric.
-
-## docs/public/adr/0047-ssr-streaming.md
-
----
-adr: 0047
-title: "SSR streaming: opt-in, edge renderer, synchronous error pages"
-visibility: public
----
-
-# ADR-0047: SSR Streaming — Opt-in, Edge Renderer
-
-- Status: Public summary (the full decision record lives in the internal log)
-- Date: 2026-10-18
-
-## Context
-
-Large React trees benefit from streaming the shell before the whole page is ready. Streaming also
-changes error semantics: once the first byte is sent, the HTTP status cannot change.
-
-## Decision
-
-1. Streaming is **opt-in** (`streaming: true` on page routes or `app.streaming` in config). The
-   default remains synchronous rendering.
-2. The React renderer uses `react-dom/server.edge` (`renderToReadableStream`) for both streaming and
-   synchronous rendering, so Node and edge targets share one code path.
-3. The document renderer is split around a body marker so custom HTML shells keep working; if the
-   shell omits the marker, the synchronous path is used.
-4. Error pages always render synchronously. Errors after the first streamed byte terminate the
-   connection instead of changing the status.
-
-## Consequences
-
-- Apps choose the trade-off: faster TTFB and progressive paint vs. simpler error handling.
-- `onRenderEnd` fires when the stream **starts** (not when it finishes) and reports
-  `streaming: true`.
-- Output limits still apply; exceeding them aborts the stream.
-
-## docs/public/adr/0057-server-actions.md
-
----
-adr: 0057
-title: "Server actions: form mutations per page with progressive enhancement"
-visibility: public
----
-
-# ADR-0057: Server Actions — Form Mutations First-Class
-
-- Status: Public summary (the full decision record lives in the internal log)
-- Date: 2026-10-18
-
-## Context
-
-Forms are the most common mutation path. Requiring a separate API route plus client fetch code
-duplicates validation and breaks without JavaScript. Full RPC frameworks add a mental model that
-does not fit file routing.
-
-## Decision
-
-1. A page may export `action`, handling `POST` to **the same URL**.
-2. `actionSchema` (Standard Schema) validates `FormData` before the action runs; invalid input
-   returns `400` with field errors.
-3. The action receives `params`, `formData`, `request`, `env`, `log`, `locale`, `json()`, and
-   `revalidate()`; it returns `{ message, errors, data, status, headers, redirect }`.
-4. Redirects use `303` (POST/Redirect/GET) so refresh does not resubmit.
-5. The browser intercepts submissions when JavaScript is available; without JavaScript the form
-   performs a normal POST and still works (progressive enhancement).
-
-## Consequences
-
-- Validation lives beside the UI that uses it.
-- Actions share the page's loader context (including i18n locale).
-- There is no global action router; actions are page-scoped by design.
-- Optimistic UI and pending states are the app's responsibility.
-
-## docs/public/adr/0058-edge-target.md
-
----
-adr: 0058
-title: "Edge/serverless target: one fetch handler, node:* rejected"
-visibility: public
----
-
-# ADR-0058: Target Edge/Serverless
-
-- Status: Public summary (the full decision record lives in the internal log)
-- Date: 2026-10-18
-
-## Context
-
-Platforms like Cloudflare Workers, Deno Deploy, and serverless functions expose a `fetch(request,
-env)` contract. Node APIs (`node:fs`, `node:http`) do not exist there. A separate build with static
-imports is required — dynamic file reads cannot work.
-
-## Decision
-
-1. `ramonyx build --target edge` generates a single `dist/edge/index.js` exporting `{ fetch }`.
-2. The entry imports pages, API routes, and middleware **statically** (codegen), so no filesystem
-   reads happen at runtime.
-3. The asset map is inlined; `guardedFetch` moves to a Node-only subpath so the main security entry
-   stays edge-safe.
-4. The build rejects `node:*` in the edge artifact; the React adapter uses the edge server build.
-5. CI runs a **workerd** smoke test of the artifact (SSR, API, actions, env, middleware, 404).
-
-## Consequences
-
-- Same app code, three targets (Node, static, edge).
-- Platform bindings arrive per request (`envFromRequest`) and are readable via `env.get/getRaw`.
-- Features that need the filesystem at request time are Node-only by design.
-
-## docs/public/adr/0066-revalidate.md
-
----
-adr: 0066
-title: "Revalidation: cache loader data, not HTML"
-visibility: public
----
-
-# ADR-0066: Revalidation (ISR-lite) — Loader Data, Not HTML
-
-- Status: Public summary (the full decision record lives in the internal log)
-- Date: 2026-10-19
-
-## Context
-
-Caching rendered HTML is tempting (CDN-friendly), but Ramonyx injects per-request CSP nonces into
-the document. Caching HTML would serve stale nonces or force per-request cache keys. Data caching
-avoids the problem and keeps rendering fresh.
-
-## Decision
-
-1. `revalidate` caches **loader data**, not the HTML document.
-2. Cache TTL is `revalidate` seconds; the following equal window serves stale data while refreshing
-   in the background (`stale-while-revalidate`), deduplicated per key.
-3. Requests with **cookies** or **query strings** bypass the cache (session safety by default).
-4. Cache entries carry tags (`cacheTags`, path, route) for on-demand invalidation from loaders or
-   actions.
-5. The store is pluggable (`KeyValueStore`); the default is in-memory per process.
-
-## Consequences
-
-- Fresh HTML (with a fresh nonce) every request; the expensive part (data) is cached.
-- Multi-instance deployments need a shared store to benefit from the cache.
-- There is no HTML/CDN purge integration yet.
-
-## docs/public/adr/0069-assets.md
-
----
-adr: 0069
-title: "Asset pipeline: manifest + resolver instead of a custom loader"
-visibility: public
----
-
-# ADR-0069: Asset Pipeline — Manifest + Resolver
-
-- Status: Public summary (the full decision record lives in the internal log)
-- Date: 2026-10-19
-
-## Context
-
-Node cannot `import photo.png`; only the client bundler can. A custom loader would create two asset
-systems and break SSR/edge. Instead, assets need a single source of truth usable by server, client,
-and edge output.
-
-## Decision
-
-1. `src/assets/**` is scanned at build time, content-hashed, and copied to the client output.
-2. Every asset is recorded in `ramonyx.assets.json` (path → hashed file, bytes, dimensions,
-   variants).
-3. The server resolves URLs through an `AssetResolver` passed to loaders as `assets`:
-   `assets.url(path)` and `assets.image(path)`.
-4. `Image` renders the resolved data with anti-CLS dimensions; responsive variants become
-   `srcSet` + `<picture>`.
-5. Edge builds inline the asset map (no filesystem at runtime).
-6. URLs map 1:1 to files under the client output root, so `serveStatic({ prefix: "/assets" })`
-   works without special cases. (An earlier layout put files in an `assets/` subdirectory; URLs
-   then 404'd for scanned assets. The regression is covered by an HTTP test.)
-
-## Consequences
-
-- One manifest drives SSR, client, edge, and the image plugin.
-- Dev serves raw files (no hashes/variants); build output is authoritative.
-- Fonts and images share the pipeline; `fontPreloadTag` generates preload links from hashed URLs.
-
-## docs/public/adr/0078-mcp-docs-server.md
-
----
-adr: 0078
-title: "MCP docs server: stdio, no hosting, public snapshot"
-visibility: public
----
-
-# ADR-0078: MCP Docs Server — stdio, No Hosting
-
-- Status: Public summary (the full decision record lives in the internal log)
-- Date: 2026-10-19
-
-## Context
-
-Agents need structured access to the docs. A hosted MCP server adds hosting, uptime, and
-maintenance. The protocol is JSON-RPC over stdio, and the needed surface is small (search, page
-read, feature status, rules, ADR index).
-
-## Decision
-
-1. Ship `@ramonyx/mcp-docs-server` (bin `ramonyx-mcp-docs`) running over **stdio** — the client
-   launches it locally; there is no hosted service.
-2. No external dependencies: a documented subset of JSON-RPC/MCP (initialize, tools, resources,
-   ping). Unknown methods return `-32601`.
-3. Tools: `search_docs`, `get_page`, `get_feature_status`, `get_rules`, `list_adrs`; resources expose
-   the public machine files.
-4. The npm package bundles a **snapshot of the public docs** at release time, so `npx` works without
-   cloning the repo. The release verifier checks the snapshot and runs a protocol handshake against
-   the packed tarball.
-5. Reads go through an in-memory index (slug → document); no path traversal from client input.
-
-## Consequences
-
-- Zero hosting cost; the docs version matches the package version.
-- Only public documentation is packaged; internal docs are quarantined from the release pipeline.
-- HTTP/SSE transport, prompts, sampling, and batching are not supported (documented limitations).
-
-## docs/public/adr/0081-i18n.md
-
----
-adr: 0081
-title: "i18n: primitives in core, locale routing in SSR, no auto-detection"
-visibility: public
----
-
-# ADR-0081: i18n — Primitives + Locale Routing
-
-- Status: Public summary (the full decision record lives in the internal log)
-- Date: 2026-10-19
-
-## Context
-
-A full i18n stack usually means a module or a routing convention. Ramonyx needed routing and
-translation helpers without adding dependencies, and without surprising redirects that hurt SEO.
-
-## Decision
-
-1. Edge-safe primitives live in core: `parseAcceptLanguage`, `negotiateLocale`, `localePath`,
-   `createTranslator` (interpolation, `Intl.PluralRules`, number/date formatting).
-2. `createPageRoutes({ i18n })` registers routes **per locale** with literal prefixes
-   (`/id/tentang`), not a dynamic `[locale]` segment — avoiding precedence conflicts with static
-   routes and catch-alls.
-3. The default locale is unprefixed by default; prefixed default URLs normalize with a `308`.
-4. Locale reaches loaders, actions, page props, and the hydration payload; the document gets
-   `<html lang>`/`dir` and automatic `hreflang` alternates.
-5. Cache keys include the locale, so revalidated pages cannot leak data across languages.
-6. No automatic detection/redirect: the helper is available for middleware + cookie flows, which
-   keeps behavior explicit and cache-friendly.
-
-## Consequences
-
-- Apps opt in; without `i18n` behavior is unchanged.
-- The route table grows linearly with locales.
-- No ICU MessageFormat; formatting is `Intl`-based.
-
-## docs/public/adr/README.md
-
-# Architecture Decision Records (public)
-
-Public summaries of the decisions that shape the framework's user-facing behavior. Each page keeps
-the original ADR number; the full decision records live in the repository's internal log (not part
-of the public site).
-
-| ADR | Decision |
-| --- | --- |
-| [0007](0007-hydration.md) | Hydration — inline payload + one client bundle |
-| [0047](0047-ssr-streaming.md) | SSR streaming — opt-in, edge renderer, synchronous error pages |
-| [0057](0057-server-actions.md) | Server actions — form mutations with progressive enhancement |
-| [0058](0058-edge-target.md) | Edge/serverless target — one fetch handler, `node:*` rejected |
-| [0066](0066-revalidate.md) | Revalidation — cache loader data, not HTML |
-| [0069](0069-assets.md) | Asset pipeline — manifest + resolver instead of a custom loader |
-| [0078](0078-mcp-docs-server.md) | MCP docs server — stdio, no hosting, public snapshot |
-| [0081](0081-i18n.md) | i18n — primitives + locale routing, no auto-detection |
 
 ## docs/public/api/core-contract.md
 
@@ -2691,82 +2717,6 @@ page renders the last action result as `action` (`{ ok, errors?, message?, data?
 - There is no HTML page cache (CSP nonces make HTML per-request); only **loader data** is cached.
 - A CDN can cache the HTML of static/prerendered pages separately.
 
-## docs/public/decisions/frontend-stack.md
-
-# Frontend stack decisions (docs site + landing)
-
-This page records why the public site uses what it uses. Anything not listed here was rejected or
-deferred — no silent dependencies.
-
-## Site framework: Ramonyx itself (dogfood)
-
-The public site is `apps/docs`, built with Ramonyx SSR + hydration + soft navigation. It is the
-hardest dogfood we have: markdown rendering, search, code blocks, theming, and static export all run
-through the framework on every docs deploy.
-
-- **Why**: a documentation site is the first place a framework's rough edges show up. Using it keeps
-  the public docs honest.
-- **Cost**: features that are trivial in a static-site generator (MDX islands, plugin ecosystem)
-  need framework-level work. We accept that cost for now.
-- **Alternative rejected**: Next.js + Fumadocs. Faster to assemble, but it would hide exactly the
-  regressions the dogfood is meant to catch, and would double the toolchain.
-
-## Styling: hand-written CSS with design tokens (no Tailwind)
-
-The site ships a single stylesheet in the document shell (`createDocument`), built from CSS custom
-properties (color, type scale, spacing, radius, motion).
-
-- **Why**: the docs app's client entry is generated from the page graph; wiring a CSS pipeline
-  through the generated entry adds build coupling for little benefit at this size. Tokens give full
-  control over the retro-terminal/high-contrast look and keep the client bundle CSS-only.
-- **Alternative rejected**: Tailwind v4. Good tool, but it would add a build plugin, a content
-  scanning step, and class-name churn to a site whose visual system is ~600 lines of CSS.
-- **Revisit when**: the site grows beyond ~40 components or needs a component library.
-
-## Animation: CSS transitions + IntersectionObserver
-
-Scroll reveals and hover states use CSS (`prefers-reduced-motion` respected) with one small
-IntersectionObserver helper for section reveals.
-
-- **Why**: the landing needs deliberate, sparse motion — not layout animation choreography. CSS
-  keeps the bundle ~0 KB for animation.
-- **Alternative rejected**: Motion (Framer Motion). ~30 KB for effects we can express in CSS.
-
-## Components: copy-in patterns, not a black-box library
-
-Buttons, tabs, callouts, and the command palette follow shadcn-style copy-in patterns (ownership of
-the code), without importing a component package.
-
-## Markdown & code blocks
-
-- `marked` (already used by the docs app) for markdown → HTML. The source is the public docs
-  directory (trusted, not user input).
-- **Shiki** for syntax highlighting at render time (server only — no highlighter in the client
-  bundle), with dual light/dark themes driven by CSS variables.
-- Fenced code metadata (` ```ts title="src/app.ts" `) renders a filename bar and a copy button.
-
-## Search: static index + server API
-
-A JSON index is generated from **public** docs only (slug, title, text). The command palette fetches
-it once and filters in the browser; the SSR app also exposes `/api/cari` for programmatic search and
-tests. Works on the static GitHub Pages export with no search service.
-
-- **Alternative rejected**: Pagefind/Orama. Extra build/service dependency for a 15-page site; the
-  index is small enough to filter client-side.
-
-## Theme
-
-Dark by default, light theme via `data-theme="light"`, following `prefers-color-scheme` when the
-user has not chosen. The toggle stores the choice in `localStorage`; a tiny nonce-carrying script
-applies it before hydration (no layout flash in the common case). Contrast targets WCAG AA.
-
-## Testing
-
-Playwright for navigation, search, code copy, theme toggle, and leak checks (`/docs/adr/0018` must
-be 404; internal search queries must return nothing). `axe-core` for accessibility checks.
-Lighthouse runs report-only (performance is measured, not gated, until the baselines are stable on
-CI hardware).
-
 ## docs/public/deployment.md
 
 # Deployment
@@ -2854,7 +2804,7 @@ Agents get a machine-readable view of Ramonyx that is generated from **public** 
   one file.
 - `machine/features.json` — feature status, packages, evidence, and honest limitations.
 - `machine/rules.json` — rules for writing apps with good/bad examples.
-- `machine/adrs.json` — public architecture decisions (one-line decisions + relations).
+- `machine/adrs.json` — public decision summaries (one-line decisions + relations).
 - `machine/stats.json` — the single source of truth for numbers (version, packages, tests).
 - `machine/api.json`, `machine/cli.json`, `machine/config.schema.json` — extracted API/CLI/config
   references.

@@ -15,7 +15,7 @@ export async function loader() {
   return {
     version: stats.version,
     paket: stats.packages.npm,
-    adr: stats.adrs,
+    docs: stats.docs,
     testNode: stats.tests.node,
     testRust: stats.tests.rust,
   };
@@ -23,7 +23,13 @@ export async function loader() {
 
 export default function Landing({
   data,
-}: PageProps<{ version: string; paket: number; adr: number; testNode: number; testRust: number }>) {
+}: PageProps<{
+  version: string;
+  paket: number;
+  docs: number;
+  testNode: number;
+  testRust: number;
+}>) {
   return (
     <main className="landing">
       <section className="hero">
@@ -43,8 +49,8 @@ export default function Landing({
               <a className="tombol utama" href="docs/getting-started">
                 Start in 30 seconds
               </a>
-              <a className="tombol" href="docs/adr/README">
-                Read the decisions
+              <a className="tombol" href="docs/ssr-hydration">
+                How it works
               </a>
             </div>
             <p className="hero-catatan">pnpm create ramonyx-app my-app</p>
@@ -90,8 +96,8 @@ export default function Landing({
             <div className="bukti-label">npm packages</div>
           </div>
           <div className="bukti-sel">
-            <div className="bukti-angka">{data.adr}</div>
-            <div className="bukti-label">public decisions</div>
+            <div className="bukti-angka">{data.docs}</div>
+            <div className="bukti-label">documentation pages</div>
           </div>
           <div className="bukti-sel">
             <div className="bukti-angka">

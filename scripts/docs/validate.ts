@@ -263,9 +263,9 @@ function checkAdrLayer(
 
 const publicAdrs = checkAdrLayer(
   "publik",
-  "docs/public/adr",
+  "docs/public/engineering/adr",
   `${PUBLIC_MACHINE}/adrs.json`,
-  "docs/public/adr/README.md",
+  "docs/public/engineering/adr/README.md",
   "public",
 );
 const internalAdrs = checkAdrLayer(

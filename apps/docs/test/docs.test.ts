@@ -34,9 +34,13 @@ test("markdown: frontmatter dibuang, heading ber-id, blok kode ber-nama berkas",
 
 test("katalog publik: hanya docs/public; slug internal tidak ada", () => {
   const entries = listDocs();
-  assert.ok(entries.length >= 15, `jumlah dokumen publik: ${entries.length}`);
+  assert.ok(entries.length >= 10, `jumlah dokumen publik: ${entries.length}`);
   assert.ok(entries.some((entry) => entry.slug === "getting-started"));
-  assert.ok(entries.some((entry) => entry.slug === "adr/0007-hydration"));
+  assert.ok(!entries.some((entry) => entry.slug.startsWith("adr/")), "ADR bukan halaman docs");
+  assert.ok(
+    !entries.some((entry) => entry.slug.startsWith("engineering/")),
+    "engineering bukan docs",
+  );
   assert.ok(
     entries.every((entry) => entry.title.length > 0),
     "semua berjudul",
@@ -56,7 +60,10 @@ test("katalog publik: hanya docs/public; slug internal tidak ada", () => {
   assert.equal(readDoc("../package"), null, "traversal ditolak");
   assert.equal(readDoc("../../etc/passwd"), null, "traversal ditolak");
 
-  const doc = readDoc("adr/0007-hydration");
+  assert.equal(readDoc("engineering/adr/0007-hydration"), null, "engineering tidak terbaca situs");
+  assert.equal(readDoc("engineering/frontend-stack"), null, "engineering tidak terbaca situs");
+
+  const doc = readDoc("ssr-hydration");
   assert.ok(doc);
   assert.match(doc.markdown, /Hydration/);
 });
@@ -119,6 +126,9 @@ test("app publik: landing, docs, legacy alias, machine publik, pencarian, 404", 
   assert.equal(internal.status, 404);
   const prd = await app(new Request("http://uji/docs/PRD"));
   assert.equal(prd.status, 404);
+  // Catatan rekayasa (ADR/engineering) tidak dirender sebagai dokumentasi pengguna.
+  assert.equal((await app(new Request("http://uji/docs/adr/0007-hydration"))).status, 404);
+  assert.equal((await app(new Request("http://uji/docs/engineering/frontend-stack"))).status, 404);
 
   // Machine layer: publik dilayani, internal tidak.
   const features = await app(new Request("http://uji/machine/features.json"));
@@ -137,11 +147,12 @@ test("app publik: landing, docs, legacy alias, machine publik, pencarian, 404", 
   const data = (await indeks.json()) as Array<{ slug: string }>;
   assert.ok(data.some((entry) => entry.slug === "getting-started"));
   assert.ok(!data.some((entry) => entry.slug.includes("threat-model")), "slug internal tidak ada");
+  assert.ok(!data.some((entry) => entry.slug.startsWith("adr/")), "ADR tidak di indeks pencarian");
 
   const cari = await app(new Request("http://uji/api/cari?q=hydration"));
   assert.equal(cari.status, 200);
   const hasil = (await cari.json()) as { hasil: { slug: string }[] };
-  assert.ok(hasil.hasil.some((hit) => hit.slug === "adr/0007-hydration"));
+  assert.ok(hasil.hasil.some((hit) => hit.slug === "ssr-hydration"));
 
   for (const query of ["threat-model", "IMPLEMENTATION_STATUS", "asvs-mapping"]) {
     const kosong = await app(new Request(`http://uji/api/cari?q=${query}`));
@@ -197,13 +208,13 @@ test("build klien: bundel hydrate + soft navigation disajikan sebagai aset", asy
 
 test("markdown: tautan .md relatif ditulis ulang ke /docs (relatif terhadap base)", () => {
   const rendered = renderMarkdown(
-    "[a](routing.md) [b](adr/0007-hydration.md#decision) [c](#bagian) " +
+    "[a](routing.md) [b](security/overview.md#decision) [c](#bagian) " +
       "[d](https://x.example/y.md) [e](/absolut.md) [f](../luar/..md)",
     { slug: "getting-started" },
   );
   const html = rendered.html;
   assert.ok(html.includes('href="docs/routing"'), "tautan .md relatif → docs/");
-  assert.ok(html.includes('href="docs/adr/0007-hydration#decision"'), "fragmen ikut");
+  assert.ok(html.includes('href="docs/security/overview#decision"'), "fragmen ikut");
   assert.ok(
     html.includes('href="docs/getting-started#bagian"'),
     "anchor murni → halaman yang sama",
@@ -264,6 +275,7 @@ test("export statis: halaman publik + artefak agen + nol konten internal", async
   assert.ok(!existsSync(join(out, "machine", "security.json")), "security.json tidak diekspor");
   assert.ok(!existsSync(join(out, "machine", "todo.json")), "todo.json tidak diekspor");
   assert.ok(!existsSync(join(out, "docs", "PRD", "index.html")), "PRD tidak diekspor");
+  assert.ok(!existsSync(join(out, "docs", "adr")), "ADR tidak diekspor sebagai dokumentasi");
   const semuaHtml = readdirSync(out, { recursive: true })
     .filter((file): file is string => typeof file === "string" && file.endsWith(".html"))
     .map((file) => readFileSync(join(out, file), "utf8"))

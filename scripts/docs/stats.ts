@@ -51,8 +51,29 @@ function packageNames(): string[] {
 }
 
 function adrCount(): number {
-  return readdirSync(`${ROOT}docs/public/adr`).filter((file) => /^[0-9]{4}-.+\.md$/.test(file))
-    .length;
+  return readdirSync(`${ROOT}docs/public/engineering/adr`).filter((file) =>
+    /^[0-9]{4}-.+\.md$/.test(file),
+  ).length;
+}
+
+function publicDocPageCount(): number {
+  const skip = new Set(["machine", "engineering"]);
+  let total = 0;
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name.startsWith(".") || skip.has(entry.name)) {
+        continue;
+      }
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) {
+        walk(path);
+      } else if (entry.name.endsWith(".md")) {
+        total += 1;
+      }
+    }
+  };
+  walk(`${ROOT}docs/public`);
+  return total;
 }
 
 function e2eSpecCount(): number {
@@ -127,6 +148,7 @@ const stats = {
   node: process.version,
   packages: { workspace: names.length - 1, npm: names.length, names },
   adrs: adrCount(),
+  docs: publicDocPageCount(),
   tests: {
     node: rustOnly ? 0 : runNodeTests(),
     rust: nodeOnly ? 0 : runRustTests(),

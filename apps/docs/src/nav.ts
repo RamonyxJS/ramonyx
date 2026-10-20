@@ -12,7 +12,10 @@ export interface NavSection {
 export const NAV: readonly NavSection[] = [
   {
     title: "Getting started",
-    items: [{ slug: "getting-started", label: "Getting Started" }],
+    items: [
+      { slug: "getting-started", label: "Getting Started" },
+      { slug: "whats-included", label: "What's Included" },
+    ],
   },
   {
     title: "Core concepts",
@@ -20,13 +23,17 @@ export const NAV: readonly NavSection[] = [
       { slug: "routing", label: "Routing" },
       { slug: "ssr-hydration", label: "SSR & Hydration" },
       { slug: "data-and-caching", label: "Data & Caching" },
+      { slug: "architecture", label: "Architecture" },
     ],
   },
   {
     title: "Guides",
     items: [
       { slug: "assets-and-images", label: "Assets & Images" },
+      { slug: "i18n", label: "Internationalization" },
+      { slug: "typed-routes", label: "Typed Routes" },
       { slug: "plugins", label: "Plugins" },
+      { slug: "sessions-and-auth", label: "Sessions & Auth" },
       { slug: "deployment", label: "Deployment" },
     ],
   },
@@ -36,7 +43,15 @@ export const NAV: readonly NavSection[] = [
   },
   {
     title: "Reference",
-    items: [{ slug: "api/core-contract", label: "API Reference" }],
+    items: [
+      { slug: "api/core-contract", label: "API Reference" },
+      { slug: "cli", label: "CLI" },
+      { slug: "devtools", label: "Devtools Panel" },
+      { slug: "observability", label: "Observability" },
+      { slug: "testing", label: "Testing" },
+      { slug: "troubleshooting", label: "Troubleshooting" },
+      { slug: "benchmarks", label: "Benchmarks" },
+    ],
   },
   {
     title: "For agents",

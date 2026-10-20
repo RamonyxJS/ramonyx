@@ -34,8 +34,10 @@ test("markdown: frontmatter dibuang, heading ber-id, blok kode ber-nama berkas",
 
 test("katalog publik: hanya docs/public; slug internal tidak ada", () => {
   const entries = listDocs();
-  assert.ok(entries.length >= 10, `jumlah dokumen publik: ${entries.length}`);
+  assert.ok(entries.length >= 20, `jumlah dokumen publik: ${entries.length}`);
   assert.ok(entries.some((entry) => entry.slug === "getting-started"));
+  assert.ok(entries.some((entry) => entry.slug === "whats-included"));
+  assert.ok(entries.some((entry) => entry.slug === "i18n"));
   assert.ok(!entries.some((entry) => entry.slug.startsWith("adr/")), "ADR bukan halaman docs");
   assert.ok(
     !entries.some((entry) => entry.slug.startsWith("engineering/")),
@@ -51,7 +53,7 @@ test("katalog publik: hanya docs/public; slug internal tidak ada", () => {
     "BLUEPRINT",
     "PRD",
     "IMPLEMENTATION_STATUS",
-    "architecture",
+    "releasing",
     "tutorial",
     "security/threat-model",
   ]) {

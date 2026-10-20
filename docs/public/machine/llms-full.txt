@@ -26,7 +26,8 @@
       "limitations": [
         "Route groups `(grup)` belum ada",
         "Middleware per-folder belum ada"
-      ]
+      ],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "routing-api-methods",
@@ -42,7 +43,8 @@
         "packages/compiler/src/manifest.ts",
         "packages/compiler/test/manifest.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "routing-params",
@@ -58,7 +60,8 @@
         "packages/router/test/match.test.ts",
         "packages/router/test/match.fuzz.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "layouts-nested",
@@ -73,7 +76,8 @@
         "packages/compiler/src/pages.ts",
         "packages/compiler/test/pages.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "error-boundaries",
@@ -90,7 +94,8 @@
         "packages/compiler/test/pages.test.ts",
         "apps/playground/e2e/errors.spec.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "middleware-global",
@@ -107,7 +112,8 @@
       ],
       "limitations": [
         "Tanpa matcher per-path (semua request)"
-      ]
+      ],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "middleware-per-folder",
@@ -125,7 +131,8 @@
         "packages/compiler/test/playground-pages.test.ts",
         "apps/playground/src/routes/users/middleware.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "ssr-sync",
@@ -142,7 +149,8 @@
         "packages/ssr/src/document.ts",
         "packages/ssr/test/pages.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "ssr-streaming",
@@ -160,7 +168,8 @@
       ],
       "limitations": [
         "Error setelah byte pertama = koneksi diputus (status/error page hanya berlaku sebelum byte pertama)"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "hydration",
@@ -177,7 +186,8 @@
         "apps/playground/e2e/ssr.spec.ts",
         "docs/public/engineering/adr/0007-hydration.md"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "soft-navigation",
@@ -194,7 +204,8 @@
         "apps/playground/e2e/prefetch.spec.ts",
         "docs/public/engineering/adr/0007-hydration.md"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "data-loaders",
@@ -214,7 +225,8 @@
       "limitations": [
         "Hanya GET; belum ada loader dependensi antar-route",
         "Cache opsional per halaman (ADR-0066) — data loader bisa disajikan dari cache"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "mutations-server-actions",
@@ -237,7 +249,8 @@
       "limitations": [
         "Tanpa pending state klien/optimistic UI",
         "Revalidasi antar-halaman: manual via `revalidate({ paths })` (tanpa deklarasi otomatis)"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "redirect-helper",
@@ -252,7 +265,8 @@
         "packages/core/src/types.ts",
         "packages/core/test/route.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "head-metadata",
@@ -271,7 +285,8 @@
       ],
       "limitations": [
         "Origin kanonik dari request (di belakang proxy: pastikan header benar)"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "schema-validation",
@@ -287,7 +302,8 @@
         "packages/schema/test/validate.test.ts",
         "packages/schema/test/validate.fuzz.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "config",
@@ -302,7 +318,8 @@
         "packages/core/src/config.ts",
         "packages/core/test/config.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/cli.md"
     },
     {
       "id": "security-headers",
@@ -317,7 +334,8 @@
         "packages/security/src/headers.ts",
         "packages/security/test/headers.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "csp-nonce",
@@ -332,7 +350,8 @@
         "packages/security/src/csp.ts",
         "packages/security/test/csp.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "csrf",
@@ -347,7 +366,8 @@
         "packages/security/src/csrf.ts",
         "packages/security/test/csrf.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/sessions-and-auth.md"
     },
     {
       "id": "ssrf-guard",
@@ -365,7 +385,8 @@
       "limitations": [
         "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)",
         "Body FormData/multipart belum didukung"
-      ]
+      ],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "rate-limit",
@@ -382,7 +403,8 @@
       ],
       "limitations": [
         "In-memory per proses (tanpa store terdistribusi)"
-      ]
+      ],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "resource-limits",
@@ -397,7 +419,8 @@
         "packages/server/src/handler.ts",
         "tests/security/server-hardening.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "output-limit",
@@ -411,7 +434,8 @@
       "evidence": [
         "packages/ssr/src/pages.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "dev-server-hmr",
@@ -431,7 +455,8 @@
       "limitations": [
         "Panel dev-only; korelasi hook→request aproksimasi (request terbuka terakhir dengan path sama)",
         "Daftar rute halaman saja (rute API tidak discan)"
-      ]
+      ],
+      "docs": "docs/public/cli.md"
     },
     {
       "id": "client-bundle",
@@ -448,7 +473,8 @@
       ],
       "limitations": [
         "Belum ada code splitting per rute"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "source-maps",
@@ -462,7 +488,8 @@
       "evidence": [
         "packages/bundler/src/index.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "jsx-loader",
@@ -477,7 +504,8 @@
         "packages/compiler/src/register.mjs",
         "packages/compiler/src/esbuild-hooks.mjs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "cli-devtools",
@@ -496,7 +524,8 @@
       "limitations": [
         "`start --watch` (restart server) belum",
         "Plugin hooks butuh createApp meneruskan opsi hooks (template & aplikasi repo sudah)"
-      ]
+      ],
+      "docs": "docs/public/cli.md"
     },
     {
       "id": "scaffolder",
@@ -510,7 +539,8 @@
       "evidence": [
         "apps/create-app/test/create-app.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/cli.md"
     },
     {
       "id": "typed-routes",
@@ -533,7 +563,8 @@
       "limitations": [
         "Impor via path relatif ke .ramonyx/routes.ts (belum ada alias)",
         "href Link tetap string (URL konkret rute dinamis)"
-      ]
+      ],
+      "docs": "docs/public/typed-routes.md"
     },
     {
       "id": "error-messages-id",
@@ -554,7 +585,8 @@
       "limitations": [
         "Kode hanya untuk error framework (HttpError aplikasi bebas)",
         "Overlay berupa halaman error ber-detail (bukan panel JS)"
-      ]
+      ],
+      "docs": "docs/public/troubleshooting.md"
     },
     {
       "id": "static-export",
@@ -569,7 +601,8 @@
         "apps/docs/export.ts",
         "apps/docs/test/docs.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "ssg-first-class",
@@ -588,7 +621,8 @@
       ],
       "limitations": [
         "Revalidasi/ISR belum (p1-revalidate)"
-      ]
+      ],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "http-cache-helpers",
@@ -605,7 +639,8 @@
       ],
       "limitations": [
         "Helper untuk header respons — bukan cache runtime (cache data loader terpisah: ADR-0066)"
-      ]
+      ],
+      "docs": "docs/public/data-and-caching.md"
     },
     {
       "id": "asset-fingerprinting",
@@ -621,7 +656,8 @@
         "packages/bundler/test/build.test.ts",
         "apps/create-app/template/src/routes/middleware.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/assets-and-images.md"
     },
     {
       "id": "adapter-node",
@@ -638,7 +674,8 @@
       ],
       "limitations": [
         "Range request belum"
-      ]
+      ],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "adapter-memory",
@@ -653,7 +690,8 @@
         "packages/adapter-runtime/src/memory.ts",
         "packages/adapter-runtime/test/memory.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/testing.md"
     },
     {
       "id": "adapter-serverless-edge",
@@ -678,7 +716,8 @@
       "limitations": [
         "Preset Vercel/Deno Deploy belum",
         "Deploy ke akun platform tetap langkah pengguna (tanpa kredensial di CI)"
-      ]
+      ],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "compression-etag",
@@ -696,7 +735,8 @@
       "limitations": [
         "Range request belum",
         "Aset pra-kompresi (.br/.gz) belum"
-      ]
+      ],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "image-optimization",
@@ -722,7 +762,8 @@
       "limitations": [
         "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
         "avif opt-in (jauh lebih lambat saat build); tanpa placeholder blur"
-      ]
+      ],
+      "docs": "docs/public/assets-and-images.md"
     },
     {
       "id": "i18n",
@@ -746,7 +787,8 @@
         "Tanpa ICU MessageFormat (interpolasi + plural Intl saja)",
         "Tanpa deteksi/redirect otomatis — pola middleware + cookie (docs/i18n.md)",
         "Rute didaftarkan per locale (linear); lokalisasi per-rute belum didukung"
-      ]
+      ],
+      "docs": "docs/public/i18n.md"
     },
     {
       "id": "auth-session",
@@ -766,7 +808,8 @@
       "limitations": [
         "Ditandatangani, bukan dienkripsi",
         "Tanpa rotasi secret otomatis / store bawaan / UI login"
-      ]
+      ],
+      "docs": "docs/public/sessions-and-auth.md"
     },
     {
       "id": "forms",
@@ -785,7 +828,8 @@
       ],
       "limitations": [
         "Upload file besar belum dioptimasi (multipart di-buffer FormData)"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "observability-logger",
@@ -804,7 +848,8 @@
       "limitations": [
         "In-memory per proses (tanpa agregasi multi-instance)",
         "Tanpa tracing OTel native/histogram"
-      ]
+      ],
+      "docs": "docs/public/observability.md"
     },
     {
       "id": "observability-metrics",
@@ -818,7 +863,8 @@
       ],
       "limitations": [
         "Hanya di runtime eksperimental; versi Node kini punya createMetrics (ADR-0071)"
-      ]
+      ],
+      "docs": "docs/public/observability.md"
     },
     {
       "id": "benchmark-gates",
@@ -835,7 +881,8 @@
       "limitations": [
         "Report-only di CI (runner GitHub-hosted bervariasi); --strict sahih hanya di lingkungan baseline (guard ADR-0074)",
         "Baseline mesin dev noisy (ambient load) — regenerasi di mesin tenang"
-      ]
+      ],
+      "docs": "docs/public/benchmarks.md"
     },
     {
       "id": "e2e-playwright",
@@ -848,7 +895,8 @@
         "apps/playground/e2e/ssr.spec.ts",
         "apps/playground/e2e/navigation.spec.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/testing.md"
     },
     {
       "id": "testing-utilities",
@@ -863,7 +911,8 @@
         "packages/testing/src/index.ts",
         "packages/testing/test/testing.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/testing.md"
     },
     {
       "id": "fuzz-tests",
@@ -877,7 +926,8 @@
         "packages/schema/test/validate.fuzz.test.ts",
         "packages/server/test/query.fuzz.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/testing.md"
     },
     {
       "id": "runtime-permissions",
@@ -892,7 +942,8 @@
       ],
       "limitations": [
         "Runtime belum produksi (Phase 4+)"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-http-server",
@@ -907,7 +958,8 @@
       ],
       "limitations": [
         "Bind localhost; production hardening belum"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-streaming",
@@ -920,7 +972,8 @@
         "runtime/crates/js-engine/src/http.rs",
         "runtime/crates/js-engine/tests/compat_stream_ssr.rs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "runtime-worker-isolation",
@@ -934,7 +987,8 @@
       ],
       "limitations": [
         "Kuota heap = heap V8 saja (ArrayBuffer besar tidak dihitung)"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-plugin-process",
@@ -952,7 +1006,8 @@
         "Landlock net deny hanya TCP (bukan UDP/DNS)",
         "Env proses diwariskan OS-level (API JS dijaga permission; env_clear selektif kandidat)",
         "Leaf-only: plugin tidak dapat spawn plugin (ADR-0075)"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-plugin-supervision",
@@ -964,7 +1019,8 @@
       "evidence": [
         "runtime/crates/js-engine/src/plugin.rs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "runtime-plugin-sandbox",
@@ -981,7 +1037,8 @@
       "limitations": [
         "Landlock net deny hanya TCP",
         "Pentest v1 selesai (5 skenario); audit eksternal belum"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-quotas",
@@ -995,7 +1052,8 @@
       ],
       "limitations": [
         "Heap hanya heap V8; alokasi ArrayBuffer raksasa tunggal masih bisa OOM fatal"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-compat-suite",
@@ -1007,7 +1065,8 @@
       "evidence": [
         "runtime/crates/js-engine/tests/compat_framework.rs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "runtime-cjs-interop",
@@ -1021,7 +1080,8 @@
       ],
       "limitations": [
         "Subset — require dinamis/modul ESM lewat require ditolak dengan pesan jelas"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-fetch",
@@ -1034,7 +1094,8 @@
         "runtime/crates/js-engine/src/http_client.rs",
         "runtime/crates/js-engine/tests/fetch_tls.rs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "docs-site",
@@ -1049,7 +1110,8 @@
       ],
       "limitations": [
         "Di-host di GitHub Pages subpath /ramonyx/"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "machine-docs",
@@ -1062,7 +1124,8 @@
         "docs/public/machine/features.json",
         "scripts/docs/validate.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/for-agents.md"
     },
     {
       "id": "llms-txt",
@@ -1077,7 +1140,8 @@
       ],
       "limitations": [
         "Belum ada markdown per halaman untuk paket npm (hanya situs)"
-      ]
+      ],
+      "docs": "docs/public/for-agents.md"
     },
     {
       "id": "agent-skill",
@@ -1091,7 +1155,8 @@
       ],
       "limitations": [
         "Satu skill; tanpa instalasi otomatis di scaffolder"
-      ]
+      ],
+      "docs": "docs/public/for-agents.md"
     },
     {
       "id": "mcp-docs-server",
@@ -1113,7 +1178,8 @@
       "limitations": [
         "Subset protokol: stdio saja (tanpa HTTP/prompts/sampling/batching)",
         "Snapshot docs = versi paket (docs repo terbaru butuh --docs dari clone)"
-      ]
+      ],
+      "docs": "docs/public/for-agents.md"
     },
     {
       "id": "static-assets",
@@ -1129,7 +1195,8 @@
         "packages/adapter-runtime/test/static.test.ts",
         "docs/public/engineering/adr/0069-assets.md"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/assets-and-images.md"
     },
     {
       "id": "seo-helpers",
@@ -1145,7 +1212,8 @@
         "packages/ssr/test/seo.test.ts",
         "apps/docs/export.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "routing-route-groups",
@@ -1161,7 +1229,8 @@
         "packages/compiler/src/manifest.ts",
         "packages/compiler/test/playground-pages.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "boundary-enforcement",
@@ -1179,7 +1248,8 @@
       ],
       "limitations": [
         "Lint statis (Biome) untuk konvensi belum"
-      ]
+      ],
+      "docs": "docs/public/architecture.md"
     },
     {
       "id": "extension-primitives",
@@ -1200,7 +1270,8 @@
       "limitations": [
         "Kontrak plugin experimental sampai >=2 plugin nyata",
         "Store eksternal (redis) belum ada implementasinya"
-      ]
+      ],
+      "docs": "docs/public/plugins.md"
     },
     {
       "id": "revalidate",
@@ -1224,7 +1295,8 @@
         "In-memory per proses (store eksternal belum ada implementasinya)",
         "Query string/cookie melewati cache (disengaja)",
         "Tanpa purge CDN"
-      ]
+      ],
+      "docs": "docs/public/data-and-caching.md"
     },
     {
       "id": "plugin-ecosystem",
@@ -1247,7 +1319,8 @@
         "Kontrak stabil dideklarasikan setelah satu siklus rilis tanpa perubahan aditif (ADR-0080; TODO p2-plugin-contract-freeze)",
         "Tanpa registry/`ramonyx add` (instalasi manual)",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
-      ]
+      ],
+      "docs": "docs/public/plugins.md"
     },
     {
       "id": "asset-pipeline",
@@ -1272,7 +1345,8 @@
       "limitations": [
         "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",
         "Varian gambar hanya di build (dev menyajikan berkas asli)"
-      ]
+      ],
+      "docs": "docs/public/assets-and-images.md"
     }
   ]
 }
@@ -1837,7 +1911,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-20T03:48:48.498Z",
+  "generatedAt": "2026-10-20T04:39:58.404Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2250,7 +2324,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-20T03:48:49.713Z",
+  "generatedAt": "2026-10-20T04:39:59.567Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2324,8 +2398,8 @@
 {
   "schemaVersion": 1,
   "version": "0.4.1",
-  "generatedAt": "2026-10-20T03:47:23.499Z",
-  "commit": "2d14c64fe4a65fab6d4efe74158b42b716af7b6a",
+  "generatedAt": "2026-10-20T04:37:41.931Z",
+  "commit": "a6b0d0c9ac2d8400878e363b33064e221b6c29ac",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2350,7 +2424,7 @@
     ]
   },
   "adrs": 8,
-  "docs": 10,
+  "docs": 21,
   "tests": {
     "node": 289,
     "rust": 116,
@@ -2523,6 +2597,91 @@ binding a port.
 Framework errors carry stable `RMX-*` codes. In development, error pages include the stack and
 source file; production pages never do.
 
+## docs/public/architecture.md
+
+# Architecture
+
+Ramonyx is a Node.js-first framework with an experimental Rust/V8 runtime. This page describes the
+public architecture: how a request flows, what the packages do, and where the boundaries are.
+
+## Request lifecycle
+
+```
+Request
+  → runtime host (Node adapter)
+  → server: body/timeout/concurrency gates
+  → global middleware (security headers, CSP nonce, rate limit, logging)
+  → router (API routes + page routes, 404/405)
+  → folder middleware (root → deepest)
+  → loader (GET) / action (POST)
+  → render (React: sync or stream)
+  → hydration payload + HTML document
+Response
+```
+
+## Layers
+
+| Layer | Responsibility |
+| --- | --- |
+| **Framework** | routing, SSR, server actions, data loading, client navigation, security defaults |
+| **Compiler/bundler** | route manifest, codegen (client entry, typed routes, edge entry), Vite builds |
+| **Runtime** | Node.js (baseline) or the experimental Rust/V8 host |
+| **System** | OS, TCP/TLS, filesystem, process |
+
+## Packages
+
+| Package | Role |
+| --- | --- |
+| `ramonyx` | meta package re-exporting common primitives |
+| `@ramonyx/core` | request lifecycle, context, middleware, errors, cache, i18n, assets types |
+| `@ramonyx/router` | route matching, params, 404/405 |
+| `@ramonyx/server` | HTTP wiring, limits, rate limit, observability |
+| `@ramonyx/schema` | Standard Schema validation + error mapping |
+| `@ramonyx/adapter-runtime` | runtime contract, Node + in-memory hosts, static serving |
+| `@ramonyx/ssr` | page rendering, streaming, SEO helpers, locale routing |
+| `@ramonyx/react` | React renderer, `Image`, `Link` |
+| `@ramonyx/compiler` | page/API manifests, codegen, dev loader |
+| `@ramonyx/bundler` | Vite builds, dev server, assets, plugins |
+| `@ramonyx/security` | headers, CSP, CSRF, rate limit, cookies/sessions, SSRF guard |
+| `@ramonyx/testing` | in-memory test server |
+| `@ramonyx/devtools` | the `ramonyx` CLI |
+| `@ramonyx/mcp-docs-server` | MCP server over stdio for agents |
+| `@ramonyx/plugin-image` | build-time image variants (optional `sharp`) |
+
+## Server ↔ client boundary
+
+- Page/layout modules are isomorphic; loaders and actions are server-only.
+- `*.server.ts` modules are stubbed with a poison pill in the client bundle.
+- The build rejects `node:*` imports in client modules and scans the output for leaks.
+- Secrets belong in `*.server.ts` or server-only loaders; only UI data goes into the hydration
+  payload (JSON-serializable).
+
+## Runtime contract
+
+`@ramonyx/core` defines the web-standard boundary used by every host:
+
+```ts
+export type FetchHandler = (request: Request) => Promise<Response>;
+
+export interface RuntimeHost {
+  readonly name: string;                    // "node" | "memory" | "ramonyx"
+  serve(handler: FetchHandler, options: { port: number; host?: string }): Promise<RunningServer>;
+  readonly env: { get(name: string): string | undefined };
+}
+```
+
+The Node adapter and the in-memory test host implement it; the experimental Rust/V8 runtime targets
+the same contract (compatibility suite). The framework does not depend on runtime internals.
+
+## Rendering & deployment targets
+
+- **Node**: SSR + hydration + soft navigation; streaming opt-in.
+- **Static**: prerendered pages + assets (`ramonyx build --static`).
+- **Edge**: a single `{ fetch }` artifact with statically imported routes and an inlined asset map
+  (CI exercises it in workerd).
+
+See [Routing](routing.md), [SSR & Hydration](ssr-hydration.md), and [Deployment](deployment.md).
+
 ## docs/public/assets-and-images.md
 
 # Assets & Images
@@ -2627,6 +2786,126 @@ export const metadata = {
   truth for production behavior.
 - No blur placeholders (LQIP) or on-demand dev variants yet.
 - Image optimization only runs for raster formats (PNG/JPEG/WebP/AVIF/TIFF).
+
+## docs/public/benchmarks.md
+
+# Benchmarks
+
+Performance claims need measurements you can run. The benchmark protocol is fixed: warm up, repeat,
+report the distribution (median, spread) — never a single run, never an average hiding a tail.
+
+## What is measured
+
+| Benchmark | Metric | How |
+| --- | --- | --- |
+| HTTP | requests/s, p50/p95/p99 | autocannon against the playground |
+| SSR | render time, TTFB, output size | synchronous vs streaming, in-process |
+| Security | status/error counts, RSS under abuse/soak | 6 abuse scenarios + sustained load |
+| Startup | wall/startup/load/eval | Rust runtime CLI, median of N runs |
+| Web Vitals | LCP, CLS, FCP, TTFB | Playwright on the production build |
+| Image pipeline | before/after LCP/CLS with variants | throttled CDP + cold loads |
+
+## Commands
+
+```bash
+pnpm bench                 # HTTP baseline (warm-up 3s + 5 runs, median/spread)
+pnpm bench:report          # compare against baseline (report-only, tolerance 25%)
+pnpm bench:ssr             # SSR sync vs streaming
+pnpm bench:ssr:report      # comparison artifact
+pnpm bench:security        # abuse cases + soak (RSS from /proc)
+pnpm bench:image           # image pipeline before/after (playground)
+benchmarks/runtime-startup.sh   # Rust runtime startup (needs a release build)
+```
+
+Results are written under `benchmarks/results/`. Web Vitals are measured by the e2e suite and
+compared report-only against the committed baseline.
+
+## Baselines are per environment
+
+A baseline is only meaningful on the machine that produced it. Baselines are stored per
+(platform × arch × Node major × CPU), and the strict comparison **refuses to compare across
+environments** — it prints the mismatching fields instead of pretending.
+
+- Development baselines are committed for the maintainer machine.
+- CI runs benchmarks **report-only**: GitHub-hosted runners vary too much for a blocking gate.
+- `VITALS_STRICT=1` turns the Web Vitals comparison into a gate; use it only on a stable runner.
+
+## Rules
+
+- Same hardware/OS/runtime/config for every comparison.
+- Identical work per request; verify responses match.
+- Report medians and spread; keep raw artifacts.
+- No public performance claim without a runnable benchmark in the repo.
+
+## docs/public/cli.md
+
+# CLI Reference
+
+The `ramonyx` CLI (from `@ramonyx/devtools`) runs the app: dev server, build, production start, and
+diagnostics.
+
+```bash
+ramonyx dev              # Vite + HMR (default :5173) → SSR (port from config)
+ramonyx build            # client bundle → dist/client (run before production start)
+ramonyx build --static   # client bundle + prerender pages → dist/static
+ramonyx build --target edge   # server/edge bundle → dist/edge ({ fetch } contract)
+ramonyx build --watch    # rebuild on file changes (covers --static/--target)
+ramonyx start            # production SSR (NODE_ENV=production)
+ramonyx doctor           # config + routes + build diagnostics
+ramonyx version | help
+```
+
+## Flags
+
+| Flag | Applies to | Meaning |
+| --- | --- | --- |
+| `--app <dir>` | all | App directory (default: cwd) |
+| `--config <path>` | all | Config path (default `<app>/ramonyx.config.ts`) |
+| `--port <n>` | dev/start | Override the SSR port |
+| `--dev-port <n>` | dev | Override the Vite port (default 5173) |
+| `--static` | build | Prerender static routes (`getStaticPaths` for dynamic routes) → `dist/static` |
+| `--target <name>` | build | Extra target; `edge` → `dist/edge` |
+| `--watch` | build | Rebuild on changes (debounced, safe queue) |
+
+## Conventions
+
+```
+src/app.ts             export createApp(options?) → FetchHandler
+src/server.ts          optional custom server entry (CLI still hosts it)
+src/routes/            page.tsx / layout.tsx / error.tsx + api/*.ts
+ramonyx.config.ts      default export { app?, server? } (optional)
+```
+
+- `ramonyx dev|start` prefers `src/server.ts` when present, otherwise `src/app.ts`.
+- Plugins from `ramonyx.config.ts` are loaded by the CLI (Vite, middleware, hooks, assets).
+- `ramonyx start` sets `NODE_ENV=production` if unset; reactivity/React production build depends on it.
+- `--static` and `--target edge` cannot be combined (different artifacts).
+
+## Examples
+
+```bash
+# Local development with HMR
+ramonyx dev --app examples/shop
+
+# Production build + start on port 8080
+ramonyx build --app examples/shop
+ramonyx start --app examples/shop --port 8080
+
+# Static export and edge artifact
+ramonyx build --static --app examples/shop
+ramonyx build --target edge --app examples/shop
+ramonyx build --watch --app examples/shop
+```
+
+## Doctor
+
+`ramonyx doctor` prints the CLI/Node versions, resolved config, whether `src/app.ts` exists, the
+number of pages, and whether `dist/client` has a manifest. Use it before filing an issue.
+
+## Devtools
+
+`ramonyx dev` also prints the devtools panel URL (`/__ramonyx/devtools`). See
+[Devtools Panel](devtools.md).
 
 ## docs/public/data-and-caching.md
 
@@ -2791,6 +3070,48 @@ export default { fetch };
 - HSTS/TLS termination belongs to your proxy or platform.
 - Rate limiting and load shedding are in-process by default; use an external store for
   multi-instance deployments.
+
+## docs/public/devtools.md
+
+# Devtools Panel
+
+Every `ramonyx dev` session exposes a dev-only panel with routes, request/loader/render timings,
+hydration status, and bundle sizes. It is never enabled in production builds.
+
+```bash
+ramonyx dev
+# dev: http://localhost:5173 (Vite + HMR) → SSR http://127.0.0.1:3000
+# devtools: http://localhost:5173/__ramonyx/devtools
+```
+
+## What it shows
+
+| Section | Data source | Notes |
+| --- | --- | --- |
+| **Routes** | Page manifest | Updated when route files change (same watcher as client entry regeneration) |
+| **Bundles & assets** | `dist/client/ramonyx.assets.json` + file sizes | Empty until the app has been built — the panel does not build for you |
+| **Recent requests** | Collector middleware + `AppHooks` | Last 50 requests; method, path, status, total, loader, render, cache, hydration |
+
+**Hydration** is detected from the response HTML: `payload` when
+`<script id="ramonyx-payload">` is present, `none` for HTML without it (e.g. error pages).
+
+## How it works
+
+- The dev server creates a collector backed by the app's `AppHooks` (`onLoaderEnd`, `onRenderEnd`)
+  and a middleware placed outermost in the chain.
+- `GET /__ramonyx/devtools` serves the panel (a self-contained HTML page polling every 2s);
+  `GET /__ramonyx/data` returns `{ routes, assets, requests }` as JSON.
+- Both endpoints are served by the dev server, not proxied to the SSR app, and are absent from
+  production.
+
+## Limitations (honest)
+
+- Loader/render events do not carry a request id; the panel correlates them to the **last open
+  request with the same path**. Good enough for low-concurrency development.
+- Page routes only (API routes are not listed separately).
+- Requests short-circuited by plugin middleware are still recorded (the collector is outermost), but
+  Vite asset requests and `/__ramonyx/*` calls are not.
+- Not a production observability tool — use [Observability](observability.md) for that.
 
 ## docs/public/for-agents.md
 
@@ -2961,6 +3282,215 @@ ramonyx build --target edge   # dist/edge/index.js ({ fetch } contract)
 
 See [Deployment](deployment.md) for details, and [Routing](routing.md) /
 [SSR & Hydration](ssr-hydration.md) for the runtime model.
+
+## docs/public/i18n.md
+
+# Internationalization
+
+Locale routing and translation helpers are built in — no module, no dependency. Enable routing,
+translate in loaders/components, and let the framework handle `<html lang>`, `hreflang`, and
+per-locale caching.
+
+## Enable locale routing
+
+```ts
+// src/app.ts
+createPageRoutes({
+  pages,
+  renderer: createReactRenderer(),
+  i18n: {
+    locales: ["en", "id"],
+    defaultLocale: "en",
+    // prefixDefaultLocale: true,     // every locale gets a prefix (incl. default)
+    // directions: { ar: "rtl" },     // <html dir="rtl"> for specific locales
+  },
+});
+```
+
+| Request | Result |
+| --- | --- |
+| `/about` | Served as the **default** locale (no prefix) |
+| `/id/about` | Served as `id` |
+| `/en` · `/en/about` | **308** → `/` · `/about` (when the default locale is unprefixed) |
+| `prefixDefaultLocale: true` | The inverse: `/about` → 308 `/en/about` |
+
+The framework also:
+
+- sets `<html lang="…">` (and `dir` when configured);
+- emits `<link rel="alternate" hreflang="…">` for every locale plus `x-default`;
+- passes `locale` to loaders, actions, page props (`PageProps.locale`), and the hydration payload;
+- **includes the locale in loader cache keys**, so revalidated pages cannot leak data across
+  languages;
+- leaves API routes untouched.
+
+## Translating
+
+Catalogs are plain nested objects (JSON-friendly). Load them where the data lives and pass them to
+`createTranslator`:
+
+```tsx
+import { createTranslator, type Messages } from "ramonyx";
+
+const catalog: Record<string, Messages> = {
+  en: { hello: "Hello {name}!", items: { one: "{count} item", other: "{count} items" } },
+  id: { hello: "Halo {name}!", items: { one: "{count} item", other: "{count} item" } },
+};
+
+export async function loader({ locale }: { locale?: string }) {
+  const active = locale ?? "en";
+  const { t, formatNumber, formatDate } = createTranslator({
+    locale: active,
+    messages: catalog[active] ?? {},
+    fallbackMessages: catalog.en,        // optional
+    // onMissing: (key) => console.warn("i18n:", key),
+  });
+  return {
+    greeting: t("hello", { name: "Rina" }),
+    count: t("items", { count: 3 }),      // plural via Intl.PluralRules
+    price: formatNumber(1234.5),
+    date: formatDate(new Date(), { dateStyle: "long" }),
+  };
+}
+```
+
+- **Interpolation**: `{name}` is replaced from the params object; unknown params stay as written.
+- **Plural**: object values (`one`/`other`/…) are selected with `Intl.PluralRules` using
+  `params.count`.
+- **Fallback**: missing key → `fallbackMessages` → `onMissing(key)` → the key itself.
+- The helper is pure and edge-safe; it can also be used in middleware or client components.
+
+## Language switcher
+
+```tsx
+import { localePath } from "ramonyx";
+
+// From any page, build the same page in another locale (existing prefix is stripped).
+<a href={localePath(currentPath, "id", { locales: ["en", "id"], defaultLocale: "en" })}>
+  Bahasa Indonesia
+</a>
+```
+
+## `Accept-Language` negotiation (middleware)
+
+The framework does **not** auto-detect or auto-redirect: explicit behavior is cache- and SEO-friendly.
+Use the helper in pre-routing middleware with a cookie:
+
+```ts
+import { negotiateLocale, localePath } from "ramonyx";
+import { parseCookies, serializeCookie } from "@ramonyx/security";
+
+const i18n = { locales: ["en", "id"], defaultLocale: "en" } as const;
+
+export async function localeMiddleware(context, next) {
+  const url = new URL(context.request.url);
+  if (url.pathname !== "/") return next();
+  const saved = parseCookies(context.request.headers.get("cookie") ?? "").locale;
+  const locale = saved ?? negotiateLocale(context.request.headers.get("accept-language"), i18n);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location: localePath("/", locale, i18n),
+      "set-cookie": serializeCookie("locale", locale, { path: "/", httpOnly: false, sameSite: "lax" }),
+    },
+  });
+}
+```
+
+## Limitations (honest)
+
+- No ICU MessageFormat (interpolation + `Intl` plural categories only).
+- No automatic detection/redirect; use the middleware pattern above.
+- Catalogs are app-provided (JSON/data store) — the framework does not load files for you.
+- One route per locale (linear in the number of locales); per-route localization is not supported.
+- `hreflang` uses the page's logical path; dynamic routes follow the currently requested params.
+
+## docs/public/observability.md
+
+# Observability
+
+Three edge-safe primitives, built on the existing middleware + hook system (no dependency):
+
+1. **Trace id** per request (`traceId()`) — propagated or generated, readable in loaders/actions.
+2. **Structured request logs** (`requestLogging()`) — method, path, status, duration, trace id.
+3. **Metrics** (`createMetrics()`) — counters/latencies from app hooks, exposed as JSON.
+
+## Wiring
+
+```ts
+// src/app.ts
+import { createMetrics, createMetricsRoute, requestLogging, traceId } from "@ramonyx/server";
+import { mergeHooks } from "ramonyx";
+
+const metrics = createMetrics();
+
+const handler = createHandler({
+  routes: [
+    ...apiRoutes,
+    createMetricsRoute(metrics),   // GET /metrics
+    ...createPageRoutes({ pages, renderer, hooks: mergeHooks(appHooks, metrics.hooks) }),
+  ],
+  middleware: [traceId(), requestLogging()],
+  hooks: mergeHooks(appHooks, metrics.hooks),
+});
+```
+
+Order matters: `traceId()` must run before `requestLogging()` so the log line carries the id.
+
+## Trace id
+
+- Uses the incoming `x-request-id` header when present (proxy/client propagation), otherwise
+  generates one (UUID, with a `getRandomValues` fallback).
+- Rewrites the request with the header set, so loaders/actions can read it; sets the same header on
+  the response.
+
+```ts
+// inside a loader
+const id = request.headers.get("x-request-id");
+```
+
+Custom header name: `traceId({ header: "x-trace-id" })`.
+
+## Structured logs
+
+```ts
+requestLogging();                    // message "request"
+requestLogging({ message: "http" }); // custom message
+```
+
+`requestLogging()` emits one `info` line per request through the app logger:
+
+```json
+{"level":"info","message":"request","method":"GET","path":"/","status":200,"ms":12,"traceId":"…"}
+```
+
+Ship it to any collector (Fluent Bit, Vector, OTLP log exporter). Secrets/PII must not be logged —
+the framework only emits method/path/status/duration/trace id.
+
+## Metrics
+
+`createMetrics()` returns `{ hooks, snapshot() }`:
+
+```json
+{
+  "requests": { "total": 120, "byStatusClass": { "2xx": 118, "5xx": 2 },
+                "durationMs": { "sum": 1840, "count": 120, "max": 210 } },
+  "loaders": { "count": 80, "cached": 42, "durationMs": { "sum": 620, "max": 90 } },
+  "renders": { "count": 118, "streaming": 110, "durationMs": { "sum": 980, "max": 140 } },
+  "invalidations": 3
+}
+```
+
+- `createMetricsRoute(metrics, { path: "/metrics" })` serves the snapshot as JSON.
+- Schedule `metrics.snapshot()` exports to OTLP/Prometheus from your platform, or pull `/metrics`.
+- Counters are cumulative since process start (per instance).
+
+## Notes & limitations
+
+- `traceId` is a correlation id, not a full W3C `traceparent`; native OpenTelemetry spans are not
+  built in (candidate if there is demand).
+- Metrics are process-local: multi-instance deployments should scrape each instance or aggregate in
+  your platform.
+- The hooks are zero-cost when unused; the helpers are edge-safe (no `node:*`).
 
 ## docs/public/plugins.md
 
@@ -3263,6 +3793,95 @@ OS-level sandbox (Landlock) for plugins. It is not part of the production promis
   flows is not implemented.
 - The experimental runtime has not had an external security audit.
 
+## docs/public/sessions-and-auth.md
+
+# Sessions & Auth Primitives
+
+Ramonyx ships **primitives**, not a full auth product: safe cookies, HMAC-signed values, a signed
+session cookie, and CSRF protection. Authentication flows (password/OAuth/etc.) stay in your app.
+
+## Cookies
+
+```ts
+import { parseCookies, serializeCookie, expireCookie } from "@ramonyx/security";
+
+const cookies = parseCookies(request.headers.get("cookie"));
+const header = serializeCookie("theme", "dark", { path: "/", sameSite: "lax" });
+```
+
+Defaults for session cookies are safe: `path=/`, `httpOnly`, `secure`, `sameSite=lax`.
+`expireCookie(name)` produces `Max-Age=0`.
+
+## Signed values
+
+```ts
+import { signValue, verifyValue } from "@ramonyx/security";
+
+const signed = await signValue("user-42", env.get("SESSION_SECRET")!);
+const value = await verifyValue(signed, env.get("SESSION_SECRET")!); // string | null
+```
+
+HMAC-SHA256 via Web Crypto with a constant-time comparison. The secret must come from env/bindings
+(never hard-coded).
+
+## Signed session cookie
+
+```ts
+const session = createSession({ secret: env.get("SESSION_SECRET")! });
+
+// read (loader/middleware/action)
+const data = await session.read(request);   // SessionData | null
+
+// commit (action) — returns a Set-Cookie value
+const cookie = await session.commit({ user: "rina" }, { maxAgeSeconds: 3600 });
+
+// logout
+const cleared = session.clear();
+```
+
+Options: `cookieName` (default `ramonyx_session`), `maxAgeSeconds` (default 7 days), and extra cookie
+attributes (`domain`, `secure: false` for local HTTP).
+
+```ts
+export async function action({ request, env }) {
+  const session = createSession({ secret: env.get("SESSION_SECRET")! });
+  const user = await session.read(request);
+  if (user === null) return { redirect: "/login" };
+  return {
+    message: `Hello ${String(user.user)}`,
+    headers: { "set-cookie": await session.commit({ ...user, seen: true }) },
+  };
+}
+```
+
+Action results can return `headers`; `set-cookie` headers are applied to the re-render.
+
+## CSRF
+
+```ts
+import { csrfProtection } from "@ramonyx/security";
+
+export default [csrfProtection()];
+```
+
+Double-submit cookie + header:
+- the middleware issues a signed token cookie when missing;
+- state-changing requests (non-GET/HEAD) must echo the token in `x-csrf-token`;
+- comparison is constant-time.
+
+Client code can read the cookie (`httpOnly: false` for the CSRF cookie) and send the header. Forms
+with JavaScript use the intercepted submit path; without JavaScript, use the standard form POST.
+
+## Limitations (honest)
+
+- **No auth package**: no user store, password hashing, OAuth providers, or authorization model.
+  Build those in your app (or an ecosystem package).
+- Hidden-field CSRF verification for non-JS form flows is **not implemented** (double-submit
+  header is the supported path).
+- `trustProxy` for rate limiting/client identity is opt-in; set it only behind a trusted proxy.
+- The session cookie holds JSON; keep it small and non-secret (store large/secret data in a store and
+  keep only an id in the cookie).
+
 ## docs/public/ssr-hydration.md
 
 # SSR & Hydration
@@ -3353,4 +3972,317 @@ export async function action({ formData, revalidate }) {
 - `AppHooks` (`onRequestStart/End`, `onLoaderEnd`, `onRenderEnd`, `onInvalidate`) for instrumentation.
 - `traceId()`, `requestLogging()`, `createMetrics()` from `@ramonyx/server` for observability.
 - Asset resolver + `Image` for hashed assets, responsive images, and anti-CLS dimensions.
+
+## docs/public/testing.md
+
+# Testing
+
+Test the handler in-process (no ports, no runtime), then add browser tests for hydration and
+progressive enhancement.
+
+## In-process tests
+
+`@ramonyx/testing` wraps a handler in an in-memory host:
+
+```ts
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { createTestServerFromHandler } from "@ramonyx/testing";
+import { createApp } from "../src/app.ts";
+
+test("GET / renders SSR", async () => {
+  const server = await createTestServerFromHandler(await createApp());
+  try {
+    const response = await server.fetch("/");
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /Hello/);
+  } finally {
+    await server.close();
+  }
+});
+```
+
+- `createTestServerFromHandler(handler)` — any `FetchHandler` (e.g. from `createApp`).
+- `createTestServer({ routes, middleware })` — build a handler from route entries directly.
+- `server.fetch(path | Request, init?)` resolves relative URLs against the in-memory origin.
+- **Always `close()` in `finally`** — a leaked listener makes `node --test` hang.
+
+## What to test
+
+| Layer | Approach |
+| --- | --- |
+| Routing / params / methods | `server.fetch` — assert `200`, `404`, `405` + `Allow` |
+| Validation | invalid query/params/body → `400` with `issues` |
+| Loaders & actions | assert rendered HTML and the hydration payload |
+| Cache/revalidate | call twice, assert loader counts and stale-while-revalidate behavior |
+| Security | body limits (`413`), timeout (`503`), concurrency (`503` + `Retry-After`), CSRF |
+| Browser | Playwright: hydration, soft navigation, forms with and without JS |
+
+## Browser tests
+
+The repo's playground runs Playwright against a production build (`pnpm build && pnpm test:e2e`).
+For a new app:
+
+```ts
+// e2e/home.spec.ts
+import { expect, test } from "@playwright/test";
+
+test("hydrates and handles a form", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /Click/ }).click();
+  await expect(page.getByRole("button")).toHaveText(/1/);
+});
+```
+
+Test **no-JS** by disabling JavaScript in the Playwright context: forms must still submit
+(`POST` + `303` PRG).
+
+## Commands
+
+```bash
+pnpm test          # node --test (packages, apps, tests, benchmarks)
+pnpm test:e2e      # Playwright against a production build
+pnpm test:docs     # this site's e2e (policy + a11y), if you vendor the docs app
+```
+
+## Tips
+
+- Loader data must be JSON-serializable — assert the payload shape when in doubt.
+- Use a fresh app/server per test for isolation; keep shared fixtures read-only.
+- The dev scripts run app TypeScript/JSX through `@ramonyx/compiler/register` (no build step).
+
+## docs/public/troubleshooting.md
+
+# Troubleshooting
+
+Framework errors carry a stable code and a link to this page. Search the code below, or grab the
+anchor from the error message.
+
+## RMX-CONFIG-1 — invalid config
+
+`ramonyx.config.ts` has a value with the wrong type.
+
+| Field | Expected |
+| --- | --- |
+| `app.strictValidation` | boolean |
+| `app.streaming` | boolean |
+| `server.port` | integer 0–65535 |
+| `server.host` | non-empty string |
+
+Fix the value; unknown keys are kept (config pass-through) and are not the cause.
+
+## RMX-ROUTES-1 — can't read the routes directory
+
+The compiler cannot read `src/routes` (missing directory or permissions). Create
+`src/routes/page.tsx` or point the CLI at the right app with `--app`.
+
+## RMX-ROUTES-2 — missing default export
+
+A page/layout/error module has no `default` export. Every `page.tsx`, `layout.tsx`, and `error.tsx`
+must export the component as default:
+
+```tsx
+export default function Page() { /* ... */ }
+```
+
+## RMX-ROUTES-3 — invalid middleware export
+
+A `middleware.ts` must default-export an **array of functions**:
+
+```ts
+import type { Middleware } from "ramonyx";
+export default [securityHeaders(), cspNonce()] satisfies Middleware[];
+```
+
+## RMX-ROUTES-4 — API route without an HTTP method export
+
+An `api/**/*.ts` file exports none of `GET`/`POST`/`PUT`/`PATCH`/`DELETE`/`HEAD`/`OPTIONS`. Export at
+least one using `route({ handler })`.
+
+## RMX-ROUTES-5 — invalid route definition
+
+An exported method is not a route definition. Use the helper:
+
+```ts
+export const GET = route({
+  handler: ({ json }) => json({ ok: true }),
+});
+```
+
+## RMX-BUILD-1 — server import in a client module
+
+A page/layout imports `node:*` directly. The client bundle cannot contain Node APIs. Move that code
+into a `*.server.ts` module and call it from a loader/action/API route; the client bundle gets a
+poison-pill stub instead of your server code.
+
+## RMX-BUILD-2 — server code leaked into the client bundle
+
+Same problem, but through a transitive import (or a Vite browser-external shim was found). Split the
+server-only code behind `*.server.ts` and import it only from the server side.
+
+## RMX-EDGE-1 — `node:*` in the edge artifact
+
+The edge target rejects Node built-ins. `guardedFetch` lives in a Node-only subpath; import it from
+`@ramonyx/security/ssrf` **only** in Node code, and keep edge code on `fetch`.
+
+## Common non-coded issues
+
+| Symptom | Cause / fix |
+| --- | --- |
+| `413` on POST | Body over 1 MiB. Raise `maxBodyBytes` in `createHandler` or stream/upload differently. |
+| `503` after 10 s | Handler/loader/render timeout. Optimize, or raise `timeoutMs`. `request.signal` is aborted. |
+| `503` + `Retry-After` under load | Concurrency limit (default 100) shedding load. Scale out or raise `maxConcurrent`. |
+| Hydration mismatch / no interactivity | Client bundle not built (`ramonyx build` before `ramonyx start`) or an error page (error pages are not hydrated). |
+| Assets 404 in production | Build first; assets are hashed into `dist/client` and served by `ramonyx start`. |
+| `node_modules` TypeScript fails | Node does not type-strip `node_modules`; publish compiled JS for plugins/consumers. |
+| Dev server panel missing | Open the URL printed by `ramonyx dev` (`/__ramonyx/devtools`); it is dev-only. |
+
+## Getting more detail
+
+- Development error pages include the stack and source file; production pages never do.
+- The CLI `ramonyx doctor` prints config, route count, and build status.
+- See [Testing](testing.md) for reproducing issues in-process.
+
+## docs/public/typed-routes.md
+
+# Typed Routes
+
+`ramonyx build` and `ramonyx dev` generate `.ramonyx/routes.ts` from your page manifest. Use it to
+make route paths and params type-safe at compile time.
+
+## Generated module
+
+```ts
+// .ramonyx/routes.ts (generated — do not edit)
+export type RouteParamsMap = {
+  "/": undefined;
+  "/users": undefined;
+  "/users/[id]": { id: string };
+  "/blog/[...slug]": { slug: string };
+};
+
+export function routeHref<P extends keyof RouteParamsMap>(
+  path: P,
+  ...args: RouteParamsMap[P] extends undefined ? [] : [params: RouteParamsMap[P]]
+): string;
+```
+
+Import it with a **relative path** (there is no `#routes` alias yet):
+
+```tsx
+import { routeHref } from "../.ramonyx/routes.ts";
+
+routeHref("/users");                  // "/users"
+routeHref("/users/[id]", { id: "42" }); // "/users/42"
+```
+
+Wrong paths or missing params fail at type-check time. The generated file is refreshed on
+`ramonyx dev` and `ramonyx build` — no manual step.
+
+## `Link` component
+
+`Link` from `@ramonyx/react/link` renders an `<a>` and uses the client navigation/prefetch path:
+
+```tsx
+import { Link } from "@ramonyx/react/link";
+
+<Link href={routeHref("/users/[id]", { id: "42" })}>User 42</Link>;
+```
+
+`href` is a plain string; use `routeHref` to build it safely.
+
+## Notes
+
+- The module only exists after the first `build`/`dev` run.
+- Import by relative path from your app code; a path alias is a candidate for a future release.
+- The params map follows the file router: `[param]` → required single segment, `[...param]` → rest.
+- Custom codegen? The manifest is the source; `generateRouteTypes(pages)` is exported from
+  `@ramonyx/compiler` if you need it in another tool.
+
+## docs/public/whats-included.md
+
+# What's Included
+
+A map of implemented capabilities to their documentation. Status: ✅ implemented, ◐ partial,
+⚗️ experimental (runtime). Everything below is exercised by the test suite.
+
+## Core & routing
+
+| Capability | Docs |
+| --- | --- |
+| File routing (pages, nested layouts, route groups) | [Routing](routing.md) |
+| Dynamic params `[id]` and catch-all `[...slug]` | [Routing](routing.md) |
+| API routes with method exports + 404/405 | [Routing](routing.md) |
+| Global + per-folder middleware | [Routing](routing.md) |
+| Error boundaries (`error.tsx`) + stable `RMX-*` codes | [Troubleshooting](troubleshooting.md) |
+| Request limits (body 1 MiB, 10 s timeout, 100 concurrent) | [Routing](routing.md) |
+| Config pass-through (`ramonyx.config.ts`) | [CLI](cli.md) |
+
+## Rendering & data
+
+| Capability | Docs |
+| --- | --- |
+| SSR React (sync + streaming opt-in) | [SSR & Hydration](ssr-hydration.md) |
+| Hydration payload + soft navigation + prefetch | [SSR & Hydration](ssr-hydration.md) |
+| Loaders (`params`, `query`, `env`, `assets`, `locale`) | [SSR & Hydration](ssr-hydration.md) |
+| Server actions + schema validation + 303 PRG | [SSR & Hydration](ssr-hydration.md) |
+| Loader cache with TTL + stale-while-revalidate + tags | [Data & Caching](data-and-caching.md) |
+| On-demand invalidation (`revalidate`) | [Data & Caching](data-and-caching.md) |
+| Metadata/SEO (sitemap, robots, canonical) | [SSR & Hydration](ssr-hydration.md) |
+| i18n routing + translation helpers | [Internationalization](i18n.md) |
+| Typed routes (`routeHref`) | [Typed Routes](typed-routes.md) |
+| Streaming SSR | [SSR & Hydration](ssr-hydration.md) |
+
+## Security
+
+| Capability | Docs |
+| --- | --- |
+| Security headers + CSP nonce | [Security overview](security/overview.md) |
+| CSRF double-submit | [Sessions & Auth](sessions-and-auth.md) |
+| Rate limiting per client | [Security overview](security/overview.md) |
+| SSRF guard with DNS pinning (`guardedFetch`) | [Security overview](security/overview.md) |
+| Safe cookies + HMAC-signed sessions | [Sessions & Auth](sessions-and-auth.md) |
+| Server/client boundary enforcement | [Architecture](architecture.md) |
+| Body/timeout/concurrency/output limits | [Routing](routing.md) |
+
+## Assets & media
+
+| Capability | Docs |
+| --- | --- |
+| `src/assets/**` hashing + manifest + resolver | [Assets & Images](assets-and-images.md) |
+| `Image` (anti-CLS, lazy, `<picture>`) | [Assets & Images](assets-and-images.md) |
+| Build-time image variants (WebP; AVIF opt-in) | [Assets & Images](assets-and-images.md) |
+| Font preload helper | [Assets & Images](assets-and-images.md) |
+
+## Tooling & deployment
+
+| Capability | Docs |
+| --- | --- |
+| CLI (`dev`, `build`, `start`, `doctor`, `watch`) | [CLI](cli.md) |
+| Dev server + HMR | [CLI](cli.md) |
+| Devtools panel (dev-only) | [Devtools Panel](devtools.md) |
+| Scaffolder (`create-ramonyx-app`) | [Getting Started](getting-started.md) |
+| Typed routes codegen | [Typed Routes](typed-routes.md) |
+| Observability (trace id, logs, metrics) | [Observability](observability.md) |
+| Static export / SSG | [Deployment](deployment.md) |
+| Edge/serverless target | [Deployment](deployment.md) |
+| Compression + ETag + immutable assets | [Deployment](deployment.md) |
+| Source maps (client + packages) | [Troubleshooting](troubleshooting.md) |
+| Benchmark protocol | [Benchmarks](benchmarks.md) |
+| Test utilities | [Testing](testing.md) |
+
+## Extensibility
+
+| Capability | Docs |
+| --- | --- |
+| Plugins (Vite, middleware, hooks, assets) | [Plugins](plugins.md) |
+| Plugin publishing conventions | [Plugins](plugins.md) |
+| Image plugin (`sharp` optional peer) | [Assets & Images](assets-and-images.md) |
+| MCP docs server + `llms.txt` | [For Agents](for-agents.md) |
+
+## Experimental runtime (Rust + V8)
+
+Permission deny-all model, HTTP server with streaming/cancellation, worker and process isolation,
+CPU/RSS quotas, plugin sandbox (Landlock), TLS `fetch`, CommonJS interop. Shipped as a separate
+binary; **not part of the production promise** yet — see the repository for its assessments.
 

@@ -18,7 +18,8 @@
       "limitations": [
         "Route groups `(grup)` belum ada",
         "Middleware per-folder belum ada"
-      ]
+      ],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "routing-api-methods",
@@ -34,7 +35,8 @@
         "packages/compiler/src/manifest.ts",
         "packages/compiler/test/manifest.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "routing-params",
@@ -50,7 +52,8 @@
         "packages/router/test/match.test.ts",
         "packages/router/test/match.fuzz.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "layouts-nested",
@@ -65,7 +68,8 @@
         "packages/compiler/src/pages.ts",
         "packages/compiler/test/pages.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "error-boundaries",
@@ -82,7 +86,8 @@
         "packages/compiler/test/pages.test.ts",
         "apps/playground/e2e/errors.spec.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "middleware-global",
@@ -99,7 +104,8 @@
       ],
       "limitations": [
         "Tanpa matcher per-path (semua request)"
-      ]
+      ],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "middleware-per-folder",
@@ -117,7 +123,8 @@
         "packages/compiler/test/playground-pages.test.ts",
         "apps/playground/src/routes/users/middleware.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "ssr-sync",
@@ -134,7 +141,8 @@
         "packages/ssr/src/document.ts",
         "packages/ssr/test/pages.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "ssr-streaming",
@@ -152,7 +160,8 @@
       ],
       "limitations": [
         "Error setelah byte pertama = koneksi diputus (status/error page hanya berlaku sebelum byte pertama)"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "hydration",
@@ -169,7 +178,8 @@
         "apps/playground/e2e/ssr.spec.ts",
         "docs/public/engineering/adr/0007-hydration.md"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "soft-navigation",
@@ -186,7 +196,8 @@
         "apps/playground/e2e/prefetch.spec.ts",
         "docs/public/engineering/adr/0007-hydration.md"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "data-loaders",
@@ -206,7 +217,8 @@
       "limitations": [
         "Hanya GET; belum ada loader dependensi antar-route",
         "Cache opsional per halaman (ADR-0066) — data loader bisa disajikan dari cache"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "mutations-server-actions",
@@ -229,7 +241,8 @@
       "limitations": [
         "Tanpa pending state klien/optimistic UI",
         "Revalidasi antar-halaman: manual via `revalidate({ paths })` (tanpa deklarasi otomatis)"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "redirect-helper",
@@ -244,7 +257,8 @@
         "packages/core/src/types.ts",
         "packages/core/test/route.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "head-metadata",
@@ -263,7 +277,8 @@
       ],
       "limitations": [
         "Origin kanonik dari request (di belakang proxy: pastikan header benar)"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "schema-validation",
@@ -279,7 +294,8 @@
         "packages/schema/test/validate.test.ts",
         "packages/schema/test/validate.fuzz.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "config",
@@ -294,7 +310,8 @@
         "packages/core/src/config.ts",
         "packages/core/test/config.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/cli.md"
     },
     {
       "id": "security-headers",
@@ -309,7 +326,8 @@
         "packages/security/src/headers.ts",
         "packages/security/test/headers.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "csp-nonce",
@@ -324,7 +342,8 @@
         "packages/security/src/csp.ts",
         "packages/security/test/csp.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "csrf",
@@ -339,7 +358,8 @@
         "packages/security/src/csrf.ts",
         "packages/security/test/csrf.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/sessions-and-auth.md"
     },
     {
       "id": "ssrf-guard",
@@ -357,7 +377,8 @@
       "limitations": [
         "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)",
         "Body FormData/multipart belum didukung"
-      ]
+      ],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "rate-limit",
@@ -374,7 +395,8 @@
       ],
       "limitations": [
         "In-memory per proses (tanpa store terdistribusi)"
-      ]
+      ],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "resource-limits",
@@ -389,7 +411,8 @@
         "packages/server/src/handler.ts",
         "tests/security/server-hardening.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "output-limit",
@@ -403,7 +426,8 @@
       "evidence": [
         "packages/ssr/src/pages.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/security/overview.md"
     },
     {
       "id": "dev-server-hmr",
@@ -423,7 +447,8 @@
       "limitations": [
         "Panel dev-only; korelasi hook→request aproksimasi (request terbuka terakhir dengan path sama)",
         "Daftar rute halaman saja (rute API tidak discan)"
-      ]
+      ],
+      "docs": "docs/public/cli.md"
     },
     {
       "id": "client-bundle",
@@ -440,7 +465,8 @@
       ],
       "limitations": [
         "Belum ada code splitting per rute"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "source-maps",
@@ -454,7 +480,8 @@
       "evidence": [
         "packages/bundler/src/index.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "jsx-loader",
@@ -469,7 +496,8 @@
         "packages/compiler/src/register.mjs",
         "packages/compiler/src/esbuild-hooks.mjs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "cli-devtools",
@@ -488,7 +516,8 @@
       "limitations": [
         "`start --watch` (restart server) belum",
         "Plugin hooks butuh createApp meneruskan opsi hooks (template & aplikasi repo sudah)"
-      ]
+      ],
+      "docs": "docs/public/cli.md"
     },
     {
       "id": "scaffolder",
@@ -502,7 +531,8 @@
       "evidence": [
         "apps/create-app/test/create-app.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/cli.md"
     },
     {
       "id": "typed-routes",
@@ -525,7 +555,8 @@
       "limitations": [
         "Impor via path relatif ke .ramonyx/routes.ts (belum ada alias)",
         "href Link tetap string (URL konkret rute dinamis)"
-      ]
+      ],
+      "docs": "docs/public/typed-routes.md"
     },
     {
       "id": "error-messages-id",
@@ -546,7 +577,8 @@
       "limitations": [
         "Kode hanya untuk error framework (HttpError aplikasi bebas)",
         "Overlay berupa halaman error ber-detail (bukan panel JS)"
-      ]
+      ],
+      "docs": "docs/public/troubleshooting.md"
     },
     {
       "id": "static-export",
@@ -561,7 +593,8 @@
         "apps/docs/export.ts",
         "apps/docs/test/docs.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "ssg-first-class",
@@ -580,7 +613,8 @@
       ],
       "limitations": [
         "Revalidasi/ISR belum (p1-revalidate)"
-      ]
+      ],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "http-cache-helpers",
@@ -597,7 +631,8 @@
       ],
       "limitations": [
         "Helper untuk header respons — bukan cache runtime (cache data loader terpisah: ADR-0066)"
-      ]
+      ],
+      "docs": "docs/public/data-and-caching.md"
     },
     {
       "id": "asset-fingerprinting",
@@ -613,7 +648,8 @@
         "packages/bundler/test/build.test.ts",
         "apps/create-app/template/src/routes/middleware.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/assets-and-images.md"
     },
     {
       "id": "adapter-node",
@@ -630,7 +666,8 @@
       ],
       "limitations": [
         "Range request belum"
-      ]
+      ],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "adapter-memory",
@@ -645,7 +682,8 @@
         "packages/adapter-runtime/src/memory.ts",
         "packages/adapter-runtime/test/memory.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/testing.md"
     },
     {
       "id": "adapter-serverless-edge",
@@ -670,7 +708,8 @@
       "limitations": [
         "Preset Vercel/Deno Deploy belum",
         "Deploy ke akun platform tetap langkah pengguna (tanpa kredensial di CI)"
-      ]
+      ],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "compression-etag",
@@ -688,7 +727,8 @@
       "limitations": [
         "Range request belum",
         "Aset pra-kompresi (.br/.gz) belum"
-      ]
+      ],
+      "docs": "docs/public/deployment.md"
     },
     {
       "id": "image-optimization",
@@ -714,7 +754,8 @@
       "limitations": [
         "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
         "avif opt-in (jauh lebih lambat saat build); tanpa placeholder blur"
-      ]
+      ],
+      "docs": "docs/public/assets-and-images.md"
     },
     {
       "id": "i18n",
@@ -738,7 +779,8 @@
         "Tanpa ICU MessageFormat (interpolasi + plural Intl saja)",
         "Tanpa deteksi/redirect otomatis — pola middleware + cookie (docs/i18n.md)",
         "Rute didaftarkan per locale (linear); lokalisasi per-rute belum didukung"
-      ]
+      ],
+      "docs": "docs/public/i18n.md"
     },
     {
       "id": "auth-session",
@@ -758,7 +800,8 @@
       "limitations": [
         "Ditandatangani, bukan dienkripsi",
         "Tanpa rotasi secret otomatis / store bawaan / UI login"
-      ]
+      ],
+      "docs": "docs/public/sessions-and-auth.md"
     },
     {
       "id": "forms",
@@ -777,7 +820,8 @@
       ],
       "limitations": [
         "Upload file besar belum dioptimasi (multipart di-buffer FormData)"
-      ]
+      ],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "observability-logger",
@@ -796,7 +840,8 @@
       "limitations": [
         "In-memory per proses (tanpa agregasi multi-instance)",
         "Tanpa tracing OTel native/histogram"
-      ]
+      ],
+      "docs": "docs/public/observability.md"
     },
     {
       "id": "observability-metrics",
@@ -810,7 +855,8 @@
       ],
       "limitations": [
         "Hanya di runtime eksperimental; versi Node kini punya createMetrics (ADR-0071)"
-      ]
+      ],
+      "docs": "docs/public/observability.md"
     },
     {
       "id": "benchmark-gates",
@@ -827,7 +873,8 @@
       "limitations": [
         "Report-only di CI (runner GitHub-hosted bervariasi); --strict sahih hanya di lingkungan baseline (guard ADR-0074)",
         "Baseline mesin dev noisy (ambient load) — regenerasi di mesin tenang"
-      ]
+      ],
+      "docs": "docs/public/benchmarks.md"
     },
     {
       "id": "e2e-playwright",
@@ -840,7 +887,8 @@
         "apps/playground/e2e/ssr.spec.ts",
         "apps/playground/e2e/navigation.spec.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/testing.md"
     },
     {
       "id": "testing-utilities",
@@ -855,7 +903,8 @@
         "packages/testing/src/index.ts",
         "packages/testing/test/testing.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/testing.md"
     },
     {
       "id": "fuzz-tests",
@@ -869,7 +918,8 @@
         "packages/schema/test/validate.fuzz.test.ts",
         "packages/server/test/query.fuzz.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/testing.md"
     },
     {
       "id": "runtime-permissions",
@@ -884,7 +934,8 @@
       ],
       "limitations": [
         "Runtime belum produksi (Phase 4+)"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-http-server",
@@ -899,7 +950,8 @@
       ],
       "limitations": [
         "Bind localhost; production hardening belum"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-streaming",
@@ -912,7 +964,8 @@
         "runtime/crates/js-engine/src/http.rs",
         "runtime/crates/js-engine/tests/compat_stream_ssr.rs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "runtime-worker-isolation",
@@ -926,7 +979,8 @@
       ],
       "limitations": [
         "Kuota heap = heap V8 saja (ArrayBuffer besar tidak dihitung)"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-plugin-process",
@@ -944,7 +998,8 @@
         "Landlock net deny hanya TCP (bukan UDP/DNS)",
         "Env proses diwariskan OS-level (API JS dijaga permission; env_clear selektif kandidat)",
         "Leaf-only: plugin tidak dapat spawn plugin (ADR-0075)"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-plugin-supervision",
@@ -956,7 +1011,8 @@
       "evidence": [
         "runtime/crates/js-engine/src/plugin.rs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "runtime-plugin-sandbox",
@@ -973,7 +1029,8 @@
       "limitations": [
         "Landlock net deny hanya TCP",
         "Pentest v1 selesai (5 skenario); audit eksternal belum"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-quotas",
@@ -987,7 +1044,8 @@
       ],
       "limitations": [
         "Heap hanya heap V8; alokasi ArrayBuffer raksasa tunggal masih bisa OOM fatal"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-compat-suite",
@@ -999,7 +1057,8 @@
       "evidence": [
         "runtime/crates/js-engine/tests/compat_framework.rs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "runtime-cjs-interop",
@@ -1013,7 +1072,8 @@
       ],
       "limitations": [
         "Subset — require dinamis/modul ESM lewat require ditolak dengan pesan jelas"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "runtime-fetch",
@@ -1026,7 +1086,8 @@
         "runtime/crates/js-engine/src/http_client.rs",
         "runtime/crates/js-engine/tests/fetch_tls.rs"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": null
     },
     {
       "id": "docs-site",
@@ -1041,7 +1102,8 @@
       ],
       "limitations": [
         "Di-host di GitHub Pages subpath /ramonyx/"
-      ]
+      ],
+      "docs": null
     },
     {
       "id": "machine-docs",
@@ -1054,7 +1116,8 @@
         "docs/public/machine/features.json",
         "scripts/docs/validate.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/for-agents.md"
     },
     {
       "id": "llms-txt",
@@ -1069,7 +1132,8 @@
       ],
       "limitations": [
         "Belum ada markdown per halaman untuk paket npm (hanya situs)"
-      ]
+      ],
+      "docs": "docs/public/for-agents.md"
     },
     {
       "id": "agent-skill",
@@ -1083,7 +1147,8 @@
       ],
       "limitations": [
         "Satu skill; tanpa instalasi otomatis di scaffolder"
-      ]
+      ],
+      "docs": "docs/public/for-agents.md"
     },
     {
       "id": "mcp-docs-server",
@@ -1105,7 +1170,8 @@
       "limitations": [
         "Subset protokol: stdio saja (tanpa HTTP/prompts/sampling/batching)",
         "Snapshot docs = versi paket (docs repo terbaru butuh --docs dari clone)"
-      ]
+      ],
+      "docs": "docs/public/for-agents.md"
     },
     {
       "id": "static-assets",
@@ -1121,7 +1187,8 @@
         "packages/adapter-runtime/test/static.test.ts",
         "docs/public/engineering/adr/0069-assets.md"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/assets-and-images.md"
     },
     {
       "id": "seo-helpers",
@@ -1137,7 +1204,8 @@
         "packages/ssr/test/seo.test.ts",
         "apps/docs/export.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/ssr-hydration.md"
     },
     {
       "id": "routing-route-groups",
@@ -1153,7 +1221,8 @@
         "packages/compiler/src/manifest.ts",
         "packages/compiler/test/playground-pages.test.ts"
       ],
-      "limitations": []
+      "limitations": [],
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "boundary-enforcement",
@@ -1171,7 +1240,8 @@
       ],
       "limitations": [
         "Lint statis (Biome) untuk konvensi belum"
-      ]
+      ],
+      "docs": "docs/public/architecture.md"
     },
     {
       "id": "extension-primitives",
@@ -1192,7 +1262,8 @@
       "limitations": [
         "Kontrak plugin experimental sampai >=2 plugin nyata",
         "Store eksternal (redis) belum ada implementasinya"
-      ]
+      ],
+      "docs": "docs/public/plugins.md"
     },
     {
       "id": "revalidate",
@@ -1216,7 +1287,8 @@
         "In-memory per proses (store eksternal belum ada implementasinya)",
         "Query string/cookie melewati cache (disengaja)",
         "Tanpa purge CDN"
-      ]
+      ],
+      "docs": "docs/public/data-and-caching.md"
     },
     {
       "id": "plugin-ecosystem",
@@ -1239,7 +1311,8 @@
         "Kontrak stabil dideklarasikan setelah satu siklus rilis tanpa perubahan aditif (ADR-0080; TODO p2-plugin-contract-freeze)",
         "Tanpa registry/`ramonyx add` (instalasi manual)",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
-      ]
+      ],
+      "docs": "docs/public/plugins.md"
     },
     {
       "id": "asset-pipeline",
@@ -1264,7 +1337,8 @@
       "limitations": [
         "Nama dev tanpa hash (fallbackToPath) berbeda dari produksi",
         "Varian gambar hanya di build (dev menyajikan berkas asli)"
-      ]
+      ],
+      "docs": "docs/public/assets-and-images.md"
     }
   ]
 }

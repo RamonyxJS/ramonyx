@@ -3,7 +3,7 @@
 // pengguna (dan agen) dapat mencari solusi tanpa menebak.
 
 /** Basis URL halaman troubleshooting di situs docs. */
-export const TROUBLESHOOTING_URL = "https://ramonyxjs.github.io/ramonyx/dokumen/troubleshooting/";
+export const TROUBLESHOOTING_URL = "https://ramonyxjs.github.io/ramonyx/docs/troubleshooting/";
 
 /** Kode error publik yang stabil (jangan diubah tanpa alasan; rujuk `docs/troubleshooting.md`). */
 export type ErrorCode =

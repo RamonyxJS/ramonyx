@@ -6,6 +6,11 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ### Dokumentasi
 
+- **Ekspansi dokumentasi publik** (11 halaman baru): Internationalization, Typed Routes, Devtools
+  Panel, Observability, Sessions & Auth, Testing, Troubleshooting (kode `RMX-*`), CLI reference,
+  Architecture, Benchmarks, dan **What's Included** (indeks fitur → docs). Gate cakupan baru:
+  `features.json` wajib memuat `docs` (path halaman publik atau `null` eksplisit) — 61/74 fitur
+  tertaut ke halaman publik; validator melaporkan coverage.
 - **ADR/engineering notes keluar dari dokumentasi pengguna** (amandemen ADR-0082): ringkasan ADR +
   `frontend-stack` dipindah ke `docs/public/engineering/` (publik di repo, aman) dan **dikecualikan
   dari katalog situs, pencarian, dan `llms.txt`**; sidebar "Decisions" dihapus; landing menampilkan

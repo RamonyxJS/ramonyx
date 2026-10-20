@@ -53,9 +53,13 @@
 | Berkas | Visibilitas | Alasan |
 | --- | --- | --- |
 | `docs/public/api/core-contract.md` | **public** | referensi API publik (Inggris) |
+| `docs/public/architecture.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/public/assets-and-images.md` | **public** | halaman dokumentasi publik (Inggris) |
+| `docs/public/benchmarks.md` | **public** | halaman dokumentasi publik (Inggris) |
+| `docs/public/cli.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/public/data-and-caching.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/public/deployment.md` | **public** | halaman dokumentasi publik (Inggris) |
+| `docs/public/devtools.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/public/engineering/adr/0007-hydration.md` | **public** | catatan rekayasa publik (repo) — dikecualikan dari situs/llms/pencarian |
 | `docs/public/engineering/adr/0047-ssr-streaming.md` | **public** | catatan rekayasa publik (repo) — dikecualikan dari situs/llms/pencarian |
 | `docs/public/engineering/adr/0057-server-actions.md` | **public** | catatan rekayasa publik (repo) — dikecualikan dari situs/llms/pencarian |
@@ -68,6 +72,7 @@
 | `docs/public/engineering/frontend-stack.md` | **public** | catatan rekayasa publik (repo) — dikecualikan dari situs/llms/pencarian |
 | `docs/public/for-agents.md` | **public** | panduan agen (llms + MCP) |
 | `docs/public/getting-started.md` | **public** | halaman dokumentasi publik (Inggris) |
+| `docs/public/i18n.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/public/machine/README.md` | **public** | penjelasan machine layer publik |
 | `docs/public/machine/adrs.json` | **public** | indeks ringkasan keputusan publik (untuk agen) |
 | `docs/public/machine/adrs.schema.json` | **public** | skema machine layer publik |
@@ -76,7 +81,7 @@
 | `docs/public/machine/cli.json` | **public** | ekstraksi CLI |
 | `docs/public/machine/cli.schema.json` | **public** | skema machine layer publik |
 | `docs/public/machine/config.schema.json` | **public** | skema machine layer publik |
-| `docs/public/machine/features.json` | **public** | status fitur publik (evidence disanitasi) |
+| `docs/public/machine/features.json` | **public** | status fitur publik + docs coverage (evidence disanitasi) |
 | `docs/public/machine/features.schema.json` | **public** | skema machine layer publik |
 | `docs/public/machine/glossary.json` | **public** | glosarium |
 | `docs/public/machine/glossary.schema.json` | **public** | skema machine layer publik |
@@ -86,10 +91,16 @@
 | `docs/public/machine/rules.schema.json` | **public** | skema machine layer publik |
 | `docs/public/machine/stats.json` | **public** | angka publik (versi/paket/halaman/ADR publik/test) |
 | `docs/public/machine/stats.schema.json` | **public** | skema machine layer publik |
+| `docs/public/observability.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/public/plugins.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/public/routing.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/public/security/overview.md` | **public** | halaman dokumentasi publik (Inggris) |
+| `docs/public/sessions-and-auth.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/public/ssr-hydration.md` | **public** | halaman dokumentasi publik (Inggris) |
+| `docs/public/testing.md` | **public** | halaman dokumentasi publik (Inggris) |
+| `docs/public/troubleshooting.md` | **public** | halaman dokumentasi publik (Inggris) |
+| `docs/public/typed-routes.md` | **public** | halaman dokumentasi publik (Inggris) |
+| `docs/public/whats-included.md` | **public** | halaman dokumentasi publik (Inggris) |
 | `docs/internal/BLUEPRINT.md` | **internal** | blueprint teknis internal |
 | `docs/internal/IMPLEMENTATION_STATUS.md` | **internal** | snapshot audit internal |
 | `docs/internal/PLAN-docs-consolidation.md` | **internal** | rencana/riset internal |
@@ -176,24 +187,24 @@
 | `docs/internal/adr/0080-plugin-stabilization.md` | **internal** | catatan penuh ADR internal |
 | `docs/internal/adr/0081-i18n.md` | **internal** | catatan penuh ADR internal |
 | `docs/internal/adr/0082-public-content-policy.md` | **internal** | catatan penuh ADR internal |
-| `docs/internal/adr/README.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
-| `docs/internal/api/core-contract.md` | **internal** | kontrak API versi internal (publik ditulis ulang) |
-| `docs/internal/architecture.md` | **internal** | arsitektur internal |
-| `docs/internal/assets.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
-| `docs/internal/benchmark-protocol.md` | **internal** | metodologi internal (publik menyusul) |
-| `docs/internal/caching.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
+| `docs/internal/adr/README.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
+| `docs/internal/api/core-contract.md` | **internal** | kontrak API versi internal (versi publik: docs/public/api/core-contract.md) |
+| `docs/internal/architecture.md` | **internal** | arsitektur internal (versi publik: docs/public/architecture.md) |
+| `docs/internal/assets.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
+| `docs/internal/benchmark-protocol.md` | **internal** | metodologi internal (versi publik: benchmarks.md) |
+| `docs/internal/caching.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
 | `docs/internal/coding-standards.md` | **internal** | standar kontributor internal |
-| `docs/internal/deploy-edge.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
-| `docs/internal/devtools.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
-| `docs/internal/i18n.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
+| `docs/internal/deploy-edge.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
+| `docs/internal/devtools.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
+| `docs/internal/i18n.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
 | `docs/internal/machine/README.md` | **internal** | README machine internal |
 | `docs/internal/machine/adrs.json` | **internal** | indeks ADR penuh (82) |
 | `docs/internal/machine/security.json` | **internal** | kontrol keamanan + celah yang diakui |
 | `docs/internal/machine/security.schema.json` | **internal** | skema berkas keamanan internal |
 | `docs/internal/machine/todo.schema.json` | **internal** | skema TODO internal |
-| `docs/internal/mcp.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
-| `docs/internal/observability.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
-| `docs/internal/plugins.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
+| `docs/internal/mcp.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
+| `docs/internal/observability.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
+| `docs/internal/plugins.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
 | `docs/internal/releasing.md` | **internal** | checklist rilis pemilik |
 | `docs/internal/roadmap/phase-0-1.md` | **internal** | roadmap internal |
 | `docs/internal/security/asvs-mapping.md` | **internal** | detail keamanan internal (vektor/skor/temuan) |
@@ -201,10 +212,10 @@
 | `docs/internal/security/plugin-isolation-assessment.md` | **internal** | detail keamanan internal (vektor/skor/temuan) |
 | `docs/internal/security/sessions.md` | **internal** | detail keamanan internal (vektor/skor/temuan) |
 | `docs/internal/security/threat-model.md` | **internal** | detail keamanan internal (vektor/skor/temuan) |
-| `docs/internal/testing.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
-| `docs/internal/troubleshooting.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
-| `docs/internal/tutorial.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
-| `docs/internal/typed-routes.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan |
+| `docs/internal/testing.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
+| `docs/internal/troubleshooting.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
+| `docs/internal/tutorial.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
+| `docs/internal/typed-routes.md` | **internal** | panduan berbahasa Indonesia — menunggu terjemahan (sebagian sudah ada versi publik) |
 
 ## Daftar ADR internal (82)
 
@@ -214,6 +225,13 @@
 
 ## Promosi konten (bertahap)
 
-Panduan Indonesia yang belum diterjemahkan (assets, i18n, devtools, observability, caching,
-troubleshooting, typed routes, testing, mcp, deploy, tutorial) tetap **internal** sampai ditulis
-ulang dalam bahasa Inggris sebagai berkas baru di `docs/public/`. Tidak ada penyalinan otomatis.
+Panduan Indonesia yang belum diterjemahkan (assets, caching, devtools, mcp, observability, sessions,
+testing, troubleshooting, typed-routes, tutorial, architecture, deploy-edge, benchmark) tetap
+**internal**; versi publiknya ditulis ulang sebagai halaman baru di `docs/public/` (tidak ada
+penyalinan otomatis). Halaman publik yang sudah ada: lihat tabel di atas.
+
+## Cakupan dokumentasi fitur
+
+`features.json` (publik) memuat field `docs`: path halaman dokumentasi publik atau `null` (sengaja
+tanpa halaman). Validator menolak path yang tidak ada / menunjuk engineering atau machine, dan
+melaporkan coverage fitur `implemented`.

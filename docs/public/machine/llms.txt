@@ -18,15 +18,26 @@ Documentation: https://ramonyxjs.github.io/ramonyx/ . Structured facts: https://
 ## Documentation
 
 - [API Reference](https://ramonyxjs.github.io/ramonyx/docs/api/core-contract/)
+- [Architecture](https://ramonyxjs.github.io/ramonyx/docs/architecture/)
 - [Assets & Images](https://ramonyxjs.github.io/ramonyx/docs/assets-and-images/)
+- [Benchmarks](https://ramonyxjs.github.io/ramonyx/docs/benchmarks/)
+- [CLI Reference](https://ramonyxjs.github.io/ramonyx/docs/cli/)
 - [Data & Caching](https://ramonyxjs.github.io/ramonyx/docs/data-and-caching/)
 - [Deployment](https://ramonyxjs.github.io/ramonyx/docs/deployment/)
+- [Devtools Panel](https://ramonyxjs.github.io/ramonyx/docs/devtools/)
 - [For Agents](https://ramonyxjs.github.io/ramonyx/docs/for-agents/)
 - [Getting Started](https://ramonyxjs.github.io/ramonyx/docs/getting-started/)
+- [Internationalization](https://ramonyxjs.github.io/ramonyx/docs/i18n/)
+- [Observability](https://ramonyxjs.github.io/ramonyx/docs/observability/)
 - [Plugins](https://ramonyxjs.github.io/ramonyx/docs/plugins/)
 - [Routing](https://ramonyxjs.github.io/ramonyx/docs/routing/)
 - [Security Overview](https://ramonyxjs.github.io/ramonyx/docs/security/overview/)
+- [Sessions & Auth Primitives](https://ramonyxjs.github.io/ramonyx/docs/sessions-and-auth/)
 - [SSR & Hydration](https://ramonyxjs.github.io/ramonyx/docs/ssr-hydration/)
+- [Testing](https://ramonyxjs.github.io/ramonyx/docs/testing/)
+- [Troubleshooting](https://ramonyxjs.github.io/ramonyx/docs/troubleshooting/)
+- [Typed Routes](https://ramonyxjs.github.io/ramonyx/docs/typed-routes/)
+- [What's Included](https://ramonyxjs.github.io/ramonyx/docs/whats-included/)
 
 ## For agents
 

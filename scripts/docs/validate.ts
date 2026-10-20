@@ -118,10 +118,28 @@ for (const feature of features.features) {
   for (const path of feature.evidence) {
     checkPublicPath(`features.${feature.id}`, path);
   }
-  if (feature.docs) {
-    checkPublicPath(`features.${feature.id}.docs`, feature.docs);
+  // Gate cakupan: `docs` wajib ada (path halaman docs publik) atau null eksplisit.
+  const docs = (feature as { docs?: string | null }).docs;
+  if (typeof docs === "string") {
+    if (
+      !docs.startsWith("docs/public/") ||
+      docs.startsWith("docs/public/engineering/") ||
+      docs.startsWith("docs/public/machine/")
+    ) {
+      fail(
+        "docs-cakupan",
+        `features.${feature.id}.docs harus halaman dokumentasi publik (bukan engineering/machine) → ${docs}`,
+      );
+    } else if (!existsSync(`${ROOT}${docs}`)) {
+      fail("docs-cakupan", `features.${feature.id}.docs tidak ada → ${docs}`);
+    }
   }
 }
+
+const implementedFeatures = features.features.filter((feature) => feature.status === "implemented");
+const documentedFeatures = implementedFeatures.filter(
+  (feature) => typeof (feature as { docs?: string | null }).docs === "string",
+);
 
 const glossary = readJson(`${PUBLIC_MACHINE}/glossary.json`) as {
   terms: Array<{ term: string; docs?: string }>;
@@ -440,7 +458,8 @@ if (issues.length === 0) {
     `docs:validate OK — publik: ${features.features.length} fitur, ` +
       `${publicAdrs.entries} ADR, ${glossary.terms.length} istilah; ` +
       `internal: ${internalAdrs.entries} ADR, ${security.controls.length} kontrol keamanan; ` +
-      "skema/bukti/indeks/stats/kesegaran/link/satu-arah hijau.",
+      `docs coverage: ${documentedFeatures.length}/${implementedFeatures.length} fitur implemented; ` +
+      "skema/bukti/indeks/stats/kesegaran/link/satu-arah/docs-cakupan hijau.",
   );
   process.exit(0);
 }

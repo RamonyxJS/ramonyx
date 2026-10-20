@@ -4,7 +4,7 @@ import { DeployTabs } from "../components/deploy-tabs.tsx";
 import { readPublicStats } from "../machine.server.ts";
 
 export const metadata = {
-  title: "Ramonyx — full-stack TypeScript, secure by default",
+  title: "Full-stack TypeScript, secure by default",
   description:
     "File routing, streaming SSR, server actions, and one contract for Node, static, and edge — with an experimental Rust/V8 runtime.",
 };

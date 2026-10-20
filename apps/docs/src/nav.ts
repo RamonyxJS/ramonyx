@@ -11,7 +11,7 @@ export interface NavSection {
 
 export const NAV: readonly NavSection[] = [
   {
-    title: "Getting started",
+    title: "Start here",
     items: [
       { slug: "getting-started", label: "Getting Started" },
       { slug: "whats-included", label: "What's Included" },
@@ -54,7 +54,7 @@ export const NAV: readonly NavSection[] = [
     ],
   },
   {
-    title: "For agents",
+    title: "Machine layer",
     items: [{ slug: "for-agents", label: "For Agents" }],
   },
 ];

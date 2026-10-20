@@ -128,7 +128,7 @@ export function renderMarkdown(source: string, options: { slug?: string } = {}):
     const kataLang = escapeHtml(bahasa);
     const namaBerkas =
       judul === undefined
-        ? `<span class="code-file">${kataLang}</span>`
+        ? `<span class="code-lang">${kataLang}</span>`
         : `<span class="code-file">${escapeHtml(judul)}</span><span class="code-lang">${kataLang}</span>`;
     const disorot = highlightCode(text, bahasa);
     const isi =

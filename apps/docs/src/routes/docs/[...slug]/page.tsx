@@ -3,6 +3,7 @@ import { HttpError } from "ramonyx";
 
 import { type CatalogDoc, getCatalogDoc } from "../../../catalog.ts";
 import { DocsShell } from "../../../components/docs-shell.tsx";
+import { Toc, TocMobile } from "../../../components/toc.tsx";
 import { prevNext } from "../../../nav.ts";
 
 export const metadata = { title: "Documentation" };
@@ -43,6 +44,7 @@ export default function DokumenPage({
     <DocsShell slug={data.slug}>
       <div className="docs-tata">
         <div>
+          <TocMobile items={data.toc} />
           {/* biome-ignore lint/security/noDangerouslySetInnerHtml: HTML dari markdown publik repo sendiri */}
           <article className="dokumen" dangerouslySetInnerHTML={{ __html: data.html }} />
           <a
@@ -52,36 +54,25 @@ export default function DokumenPage({
             Edit this page on GitHub ↗
           </a>
           <nav className="docs-kaki" aria-label="Previous and next">
-            <span>
+            <div>
               {data.prev === null ? null : (
                 <>
                   <span className="label">Previous</span>
                   <a href={`docs/${data.prev.slug}`}>← {data.prev.label}</a>
                 </>
               )}
-            </span>
-            <span style={{ textAlign: "right" }}>
+            </div>
+            <div>
               {data.next === null ? null : (
                 <>
                   <span className="label">Next</span>
                   <a href={`docs/${data.next.slug}`}>{data.next.label} →</a>
                 </>
               )}
-            </span>
+            </div>
           </nav>
         </div>
-        {data.toc.length === 0 ? null : (
-          <aside className="toc" aria-label="On this page">
-            <div className="toc-judul">On this page</div>
-            <ul>
-              {data.toc.map((item) => (
-                <li key={item.id} className={item.depth === 3 ? "kedalaman-3" : undefined}>
-                  <a href={`#${item.id}`}>{item.text}</a>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        )}
+        <Toc items={data.toc} />
       </div>
     </DocsShell>
   );

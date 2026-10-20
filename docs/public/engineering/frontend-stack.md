@@ -19,19 +19,33 @@ through the framework on every docs deploy.
 ## Styling: hand-written CSS with design tokens (no Tailwind)
 
 The site ships a single stylesheet in the document shell (`createDocument`), built from CSS custom
-properties (color, type scale, spacing, radius, motion).
+properties (color, type scale, spacing, radius, motion). The visual system is **"onyx strata"**:
+porcelain paper, ink, and a cobalt accent, with dark bands for technical sections; code panels stay
+dark in both site themes.
 
 - **Why**: the docs app's client entry is generated from the page graph; wiring a CSS pipeline
   through the generated entry adds build coupling for little benefit at this size. Tokens give full
-  control over the retro-terminal/high-contrast look and keep the client bundle CSS-only.
+  control over the editorial look and keep the client bundle CSS-only.
 - **Alternative rejected**: Tailwind v4. Good tool, but it would add a build plugin, a content
-  scanning step, and class-name churn to a site whose visual system is ~600 lines of CSS.
+  scanning step, and class-name churn to a site whose visual system is a single tokenized stylesheet.
 - **Revisit when**: the site grows beyond ~40 components or needs a component library.
 
-## Animation: CSS transitions + IntersectionObserver
+## Typography: self-hosted OFL fonts
 
-Scroll reveals and hover states use CSS (`prefers-reduced-motion` respected) with one small
-IntersectionObserver helper for section reveals.
+Display: **Instrument Serif** (400, roman + italic). Body/UI: **IBM Plex Sans** (400/500/600).
+Code and labels use the system monospace stack. Latin subsets live in
+`apps/docs/src/assets/fonts/` and go through the asset pipeline, so `@font-face` and the preload
+links use the hashed resolver output. `font-display: swap`; the display serif and body regular are
+preloaded. Licenses and sources: `apps/docs/FONTS.md` (SIL OFL 1.1).
+
+- **Why**: a distinctive editorial voice without a third-party font CDN or a build-time fetch.
+- **Cost**: ~135 KB of WOFF2, served immutably with the other hashed assets.
+
+## Animation: CSS only
+
+One orchestrated entrance on the landing hero (staggered fade/translate) plus hover/focus
+transitions; `prefers-reduced-motion` disables both. The docs ToC uses a rAF-throttled scroll
+listener to mark the active section. No animation library and no scroll-reveal helper.
 
 - **Why**: the landing needs deliberate, sparse motion — not layout animation choreography. CSS
   keeps the bundle ~0 KB for animation.
@@ -39,7 +53,7 @@ IntersectionObserver helper for section reveals.
 
 ## Components: copy-in patterns, not a black-box library
 
-Buttons, tabs, callouts, and the command palette follow shadcn-style copy-in patterns (ownership of
+Buttons, tabs, the command palette, and the table of contents follow copy-in patterns (ownership of
 the code), without importing a component package.
 
 ## Markdown & code blocks
@@ -47,7 +61,8 @@ the code), without importing a component package.
 - `marked` (already used by the docs app) for markdown → HTML. The source is the public docs
   directory (trusted, not user input).
 - **Shiki** for syntax highlighting at render time (server only — no highlighter in the client
-  bundle), with dual light/dark themes driven by CSS variables.
+  bundle). Code panels use the dark palette in both site themes, so the dark Shiki colors are used
+  consistently.
 - Fenced code metadata (` ```ts title="src/app.ts" `) renders a filename bar and a copy button.
 
 ## Search: static index + server API
@@ -56,18 +71,20 @@ A JSON index is generated from **public** docs only (slug, title, text). The com
 it once and filters in the browser; the SSR app also exposes `/api/cari` for programmatic search and
 tests. Works on the static GitHub Pages export with no search service.
 
-- **Alternative rejected**: Pagefind/Orama. Extra build/service dependency for a 15-page site; the
-  index is small enough to filter client-side.
+- **Alternative rejected**: Pagefind/Orama. Extra build/service dependency for a small docs set
+  (page count in `machine/stats.json`); the index is small enough to filter client-side.
 
 ## Theme
 
-Dark by default, light theme via `data-theme="light"`, following `prefers-color-scheme` when the
-user has not chosen. The toggle stores the choice in `localStorage`; a tiny nonce-carrying script
-applies it before hydration (no layout flash in the common case). Contrast targets WCAG AA.
+Light by default; dark via `data-theme="dark"` or `prefers-color-scheme` when the user has not
+chosen. The toggle stores the choice in `localStorage` and applies it after hydration, so a stored
+override can show the system theme for one frame — accepted in exchange for not adding an inline
+script. Contrast targets WCAG AA in both themes.
 
 ## Testing
 
-Playwright for navigation, search, code copy, theme toggle, and leak checks (`/docs/adr/0018` must
-be 404; internal search queries must return nothing). `axe-core` for accessibility checks.
+Playwright for navigation, search (keyboard + snippets), code copy, theme toggle, the mobile docs
+sidebar, and leak checks (`/docs/adr/0018` must be 404; internal search queries must return nothing).
+`axe-core` for accessibility checks.
 Lighthouse runs report-only (performance is measured, not gated, until the baselines are stable on
 CI hardware).

@@ -4,6 +4,15 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+### Situs publik
+
+- **Redesign landing + docs** (arah "onyx strata"): kertas porselen + tinta + kobalt, display
+  Instrument Serif (self-host, OFL) + IBM Plex Sans lewat pipeline aset ber-hash, pita gelap untuk
+  bagian teknis, blok offset di hero. Docs: sidebar mobile, ToC dengan scroll-spy, pencarian dengan
+  navigasi panah/Enter + snippet markdown dibersihkan, tombol copy di landing, halaman error/404
+  seragam. Font di-preload; tema terang default, gelap via toggle/sistem. Catatan engineering
+  diperbarui.
+
 ### Dokumentasi
 
 - **Ekspansi dokumentasi publik** (11 halaman baru): Internationalization, Typed Routes, Devtools

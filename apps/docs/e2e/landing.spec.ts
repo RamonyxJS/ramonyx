@@ -58,3 +58,31 @@ test("docs: halaman, ToC, prev/next, copy kode, dan alias lama", async ({ page, 
   await page.goto("/dokumen/getting-started");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Getting Started");
 });
+
+test("docs mobile: tanpa overflow horizontal; sidebar dan ToC bisa dibuka", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/docs/getting-started");
+
+  const lebar = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(lebar).toBeLessThanOrEqual(390);
+
+  const sidebar = page.locator(".sidebar-mobile");
+  await expect(sidebar).toBeVisible();
+  await sidebar.locator("summary").click();
+  await expect(sidebar.getByRole("link", { name: "Routing", exact: true })).toBeVisible();
+
+  const toc = page.locator(".toc-mobile");
+  await expect(toc).toBeVisible();
+  await toc.locator("summary").click();
+  await expect(toc.getByRole("link").first()).toBeVisible();
+});
+
+test("search: Enter membuka hasil pertama (navigasi keyboard)", async ({ page }) => {
+  await page.goto("/docs/getting-started");
+  await page.waitForFunction(() => document.documentElement.classList.contains("js"));
+  await page.keyboard.press("ControlOrMeta+k");
+  const dialog = page.getByRole("dialog", { name: "Search documentation" });
+  await dialog.getByRole("searchbox").fill("routing");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/docs\/routing\/?$/);
+});

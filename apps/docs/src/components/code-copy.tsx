@@ -1,4 +1,4 @@
-// Tombol copy untuk blok kode (HTML dari markdown) + penanda `js` agar tombol hanya tampil
+// Tombol copy untuk blok kode (markdown + landing) + penanda `js` agar tombol hanya tampil
 // ketika JavaScript aktif.
 import { useEffect } from "react";
 
@@ -13,15 +13,19 @@ export function CodeCopy() {
       if (target === null || target === undefined) {
         return;
       }
-      const figure = target.closest(".code");
-      const code = figure?.querySelector("pre code, pre");
+      const wadah = target.closest(".code, .kode-panel, .install");
+      const code = wadah?.querySelector("pre code, pre, code");
       const text = code?.textContent ?? "";
       void navigator.clipboard
         .writeText(text)
         .then(() => {
+          const label = target.getAttribute("aria-label");
           target.textContent = "Copied";
           window.setTimeout(() => {
             target.textContent = "Copy";
+            if (label !== null) {
+              target.setAttribute("aria-label", label);
+            }
           }, 1200);
         })
         .catch(() => undefined);

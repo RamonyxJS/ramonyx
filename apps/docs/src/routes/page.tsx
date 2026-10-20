@@ -1,7 +1,6 @@
 import type { PageProps } from "@ramonyx/react";
 
 import { DeployTabs } from "../components/deploy-tabs.tsx";
-import { Reveal } from "../components/reveal.tsx";
 import { readPublicStats } from "../machine.server.ts";
 
 export const metadata = {
@@ -31,57 +30,78 @@ export default function Landing({
   testRust: number;
 }>) {
   return (
-    <main className="landing">
+    <main className="landing" id="isi">
       <section className="hero">
         <div className="wrap hero-grid">
-          <div>
-            <p className="eyebrow">Alpha {data.version} · Node ≥ 24</p>
+          <div className="hero-copy">
+            <p className="kicker">
+              <span className="kicker-tanda" aria-hidden="true" />v{data.version} · Node ≥ 24 · MIT
+            </p>
             <h1>
               Full-stack TypeScript.
               <br />
               <em>Secure by default.</em>
             </h1>
-            <p className="sub">
+            <p className="lede">
               File routing, streaming SSR, server actions, and one contract for Node, static, and
               edge — with a Rust/V8 runtime on the road.
             </p>
-            <div className="hero-aksi">
+            <div className="aksi-baris">
               <a className="tombol utama" href="docs/getting-started">
                 Start in 30 seconds
               </a>
-              <a className="tombol" href="docs/ssr-hydration">
-                How it works
+              <a className="tautan-panah" href="docs/ssr-hydration">
+                How it works <span aria-hidden="true">→</span>
               </a>
             </div>
-            <p className="hero-catatan">pnpm create ramonyx-app my-app</p>
+            <div className="install">
+              <span className="install-prompt" aria-hidden="true">
+                $
+              </span>
+              <code>pnpm create ramonyx-app my-app</code>
+              <button className="copy" type="button" data-copy aria-label="Copy install command">
+                Copy
+              </button>
+            </div>
           </div>
-          <figure className="terminal" aria-label="Terminal example">
-            <div className="terminal-bar">
-              <i />
-              <i />
-              <i />
-              <span>~/my-app</span>
+
+          <div className="hero-visual">
+            <div className="terminal-bingkai">
+              <figure className="terminal" aria-label="Terminal example">
+                <div className="terminal-bar">
+                  <i />
+                  <i />
+                  <i />
+                  <span>~/my-app</span>
+                </div>
+                <div className="terminal-isi">
+                  <div className="baris">
+                    <span className="prompt">$</span> pnpm create ramonyx-app my-app
+                  </div>
+                  <div className="komentar">scaffold → my-app</div>
+                  <div className="baris">
+                    <span className="prompt">$</span> cd my-app &amp;&amp; pnpm dev
+                  </div>
+                  <div>
+                    <span className="komentar">vite </span> http://localhost:5173
+                  </div>
+                  <div>
+                    <span className="komentar">ssr&nbsp; </span> http://127.0.0.1:3000
+                  </div>
+                  <div className="siap">ready</div>
+                  <div className="baris">
+                    <span className="prompt">$</span> <span className="cursor" />
+                  </div>
+                </div>
+              </figure>
             </div>
-            <div className="terminal-isi">
-              <div>
-                <span className="prompt">$</span> pnpm create ramonyx-app my-app
-              </div>
-              <div>
-                <span className="prompt">$</span> cd my-app &amp;&amp; pnpm install
-              </div>
-              <div>
-                <span className="prompt">$</span> pnpm dev
-              </div>
-              <div className="komentar"># Vite (5173) → SSR (3000)</div>
-              <div>
-                dev: http://localhost:5173 (Vite + HMR) <span className="komentar">→</span> SSR
-                http://127.0.0.1:3000
-              </div>
-              <div>
-                <span className="prompt">$</span> <span className="cursor" />
-              </div>
+            <div className="penjaga">
+              <span className="penjaga-label">Default limits</span>
+              <span>1 MiB body</span>
+              <span>10 s timeout</span>
+              <span>100 concurrent</span>
             </div>
-          </figure>
+          </div>
         </div>
       </section>
 
@@ -111,7 +131,7 @@ export default function Landing({
       <section className="bagian">
         <div className="wrap">
           <div className="bagian-kepala">
-            <div className="bagian-nomor">01 — Rendering</div>
+            <div className="bagian-kicker">Rendering</div>
             <div>
               <h2>Render on the server. Hydrate with the data.</h2>
               <p className="bagian-intro">
@@ -122,45 +142,52 @@ export default function Landing({
             </div>
           </div>
 
-          <Reveal>
-            <div className="narasi">
-              <div className="narasi-teks">
-                <h3>One module, both sides</h3>
-                <p>
-                  A page exports a <code>loader</code> and a React component. The loader output is
-                  the hydration payload — no schema glue, no double fetch.
-                </p>
-                <ul className="daftar-poin">
-                  <li>Streaming SSR via `app.streaming: true`</li>
-                  <li>Soft navigation + prefetch on the client</li>
-                  <li>Error boundaries per folder, with stable `RMX-*` codes</li>
-                </ul>
-              </div>
-              <div className="kode-panel">
-                <div className="code-head">
-                  <span className="code-file">src/routes/page.tsx</span>
-                  <span className="code-lang">tsx</span>
-                </div>
-                {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
-                <pre tabIndex={0}>
-                  <code>{`export async function loader() {
+          <div className="narasi">
+            <div className="narasi-teks">
+              <h3>One module, both sides</h3>
+              <p>
+                A page exports a <code>loader</code> and a React component. The loader output is the
+                hydration payload — no schema glue, no double fetch.
+              </p>
+              <ul className="daftar-poin">
+                <li>
+                  Streaming SSR via <code>app.streaming: true</code>
+                </li>
+                <li>Soft navigation + prefetch on the client</li>
+                <li>
+                  Error boundaries per folder, with stable <code>RMX-*</code> codes
+                </li>
+              </ul>
+            </div>
+            <figure className="kode-panel">
+              <figcaption className="kode-kepala">
+                <span className="kode-berkas">src/routes/page.tsx</span>
+                <span className="kode-bahasa">tsx</span>
+                <button className="copy" type="button" data-copy aria-label="Copy code">
+                  Copy
+                </button>
+              </figcaption>
+              {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
+              <pre tabIndex={0}>
+                <code>{`export async function loader() {
   return { message: "Hello from the server" };
 }
 
-export default function Home({ data }: PageProps<{ message: string }>) {
+export default function Home({
+  data,
+}: PageProps<{ message: string }>) {
   return <h1>{data.message}</h1>;
 }`}</code>
-                </pre>
-              </div>
-            </div>
-          </Reveal>
+              </pre>
+            </figure>
+          </div>
         </div>
       </section>
 
       <section className="bagian">
         <div className="wrap">
           <div className="bagian-kepala">
-            <div className="bagian-nomor">02 — Security</div>
+            <div className="bagian-kicker">Security</div>
             <div>
               <h2>Limits before your code runs.</h2>
               <p className="bagian-intro">
@@ -171,47 +198,58 @@ export default function Home({ data }: PageProps<{ message: string }>) {
             </div>
           </div>
 
-          <Reveal>
-            <div className="narasi terbalik">
-              <div className="narasi-teks">
-                <h3>Secure by construction</h3>
-                <p>
-                  The server enforces a 1 MiB body limit, a 10 s timeout, and 100 concurrent
-                  requests before dispatch. The build rejects <code>node:*</code> in client modules
-                  and stubs <code>*.server.ts</code> imports.
-                </p>
-                <ul className="daftar-poin">
-                  <li>Per-request CSP nonce in the hydration payload</li>
-                  <li>Double-submit CSRF with Web Crypto</li>
-                  <li>SSRF guard with DNS pinning (no rebinding window)</li>
-                  <li>
-                    <a href="docs/security/overview">Security overview →</a>
-                  </li>
-                </ul>
-              </div>
-              <div className="kode-panel">
-                <div className="code-head">
-                  <span className="code-file">src/routes/middleware.ts</span>
-                  <span className="code-lang">ts</span>
-                </div>
-                {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
-                <pre tabIndex={0}>
-                  <code>{`export default [
+          <div className="narasi terbalik">
+            <div className="narasi-teks">
+              <h3>Secure by construction</h3>
+              <p>
+                The server enforces a 1 MiB body limit, a 10 s timeout, and 100 concurrent requests
+                before dispatch. The build rejects <code>node:*</code> in client modules and stubs{" "}
+                <code>*.server.ts</code> imports.
+              </p>
+              <ul className="daftar-poin">
+                <li>Per-request CSP nonce in the hydration payload</li>
+                <li>Double-submit CSRF with Web Crypto</li>
+                <li>SSRF guard with DNS pinning (no rebinding window)</li>
+                <li>
+                  <a href="docs/security/overview">Security overview →</a>
+                </li>
+              </ul>
+            </div>
+            <figure className="kode-panel">
+              <figcaption className="kode-kepala">
+                <span className="kode-berkas">src/routes/middleware.ts</span>
+                <span className="kode-bahasa">ts</span>
+                <button className="copy" type="button" data-copy aria-label="Copy code">
+                  Copy
+                </button>
+              </figcaption>
+              {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
+              <pre tabIndex={0}>
+                <code>{`export default [
   securityHeaders(),
   cspNonce(),
   rateLimit({ limit: 120, windowSeconds: 60 }),
 ];`}</code>
-                </pre>
-              </div>
-            </div>
-          </Reveal>
+              </pre>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section className="tarikan" aria-label="Design principle">
+        <div className="wrap tarikan-dalam">
+          <div className="bagian-kicker">Principle</div>
+          <div>
+            <p>“The safe path should be the default path.”</p>
+            <cite>Every limit is configurable; none of them is opt-in.</cite>
+          </div>
         </div>
       </section>
 
       <section className="bagian">
         <div className="wrap">
           <div className="bagian-kepala">
-            <div className="bagian-nomor">03 — Deployment</div>
+            <div className="bagian-kicker">Deployment</div>
             <div>
               <h2>One contract. Three targets.</h2>
               <p className="bagian-intro">
@@ -221,16 +259,14 @@ export default function Home({ data }: PageProps<{ message: string }>) {
               </p>
             </div>
           </div>
-          <Reveal>
-            <DeployTabs />
-          </Reveal>
+          <DeployTabs />
         </div>
       </section>
 
-      <section className="bagian">
+      <section className="bagian bagian-gelap">
         <div className="wrap">
           <div className="bagian-kepala">
-            <div className="bagian-nomor">04 — Agents</div>
+            <div className="bagian-kicker">Agents</div>
             <div>
               <h2>Facts an agent can cite.</h2>
               <p className="bagian-intro">
@@ -240,68 +276,51 @@ export default function Home({ data }: PageProps<{ message: string }>) {
             </div>
           </div>
 
-          <Reveal>
-            <div className="narasi">
-              <div className="narasi-teks">
-                <h3>MCP tools, no hosting</h3>
-                <p>
-                  <code>npx -y @ramonyx/mcp-docs-server</code> serves search, page reads, feature
-                  status, rules, and the public ADR index to any MCP client.
-                </p>
-                <ul className="daftar-poin">
-                  <li>llms.txt + llms-full.txt from public docs</li>
-                  <li>features.json with evidence and honest limitations</li>
-                  <li>
-                    <a href="docs/for-agents">For agents →</a>
-                  </li>
-                </ul>
-              </div>
-              <div className="kode-panel">
-                <div className="code-head">
-                  <span className="code-file">Claude Code</span>
-                  <span className="code-lang">bash</span>
-                </div>
-                {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
-                <pre tabIndex={0}>
-                  <code>{`claude mcp add ramonyx-docs \\
-  -- npx -y @ramonyx/mcp-docs-server`}</code>
-                </pre>
-              </div>
+          <div className="narasi">
+            <div className="narasi-teks">
+              <h3>MCP tools, no hosting</h3>
+              <p>
+                <code>npx -y @ramonyx/mcp-docs-server</code> serves search, page reads, feature
+                status, rules, and the public ADR index to any MCP client.
+              </p>
+              <ul className="daftar-poin">
+                <li>llms.txt + llms-full.txt from public docs</li>
+                <li>features.json with evidence and honest limitations</li>
+                <li>
+                  <a href="docs/for-agents">For agents →</a>
+                </li>
+              </ul>
             </div>
-          </Reveal>
+            <figure className="kode-panel">
+              <figcaption className="kode-kepala">
+                <span className="kode-berkas">Claude Code</span>
+                <span className="kode-bahasa">bash</span>
+                <button className="copy" type="button" data-copy aria-label="Copy code">
+                  Copy
+                </button>
+              </figcaption>
+              {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
+              <pre tabIndex={0}>
+                <code>{`claude mcp add ramonyx-docs \\
+  -- npx -y @ramonyx/mcp-docs-server`}</code>
+              </pre>
+            </figure>
+          </div>
         </div>
       </section>
 
-      <section className="bagian">
-        <div className="wrap">
-          <div className="bagian-kepala">
-            <div className="bagian-nomor">05 — Stack</div>
-            <div>
-              <h2>Built with tools you already trust.</h2>
-              <p className="bagian-intro">
-                No proprietary compiler frontend and no runtime lock-in. The framework is
-                TypeScript, ESM, and source-first.
-              </p>
-            </div>
-          </div>
-          <div className="ekosistem">
-            {[
-              "React 19",
-              "Vite",
-              "pnpm",
-              "Playwright",
-              "Rust + V8 (experimental)",
-              "Node ≥ 24",
-              "TypeScript strict",
-              "npm provenance",
-            ].map((item) => (
-              <span key={item} className="chip">
-                {item}
-              </span>
-            ))}
-          </div>
+      <div className="strip">
+        <div className="wrap strip-dalam">
+          <span className="strip-label">Built on</span>
+          <span>React 19</span>
+          <span>Vite</span>
+          <span>pnpm</span>
+          <span>Playwright</span>
+          <span>Node ≥ 24</span>
+          <span>TypeScript strict</span>
+          <span>Rust + V8 (experimental)</span>
         </div>
-      </section>
+      </div>
     </main>
   );
 }

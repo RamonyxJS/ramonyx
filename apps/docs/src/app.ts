@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serveStatic } from "@ramonyx/adapter-runtime";
-import { readClientScript } from "@ramonyx/bundler";
+import { createAssetResolver, readClientScript } from "@ramonyx/bundler";
 import { createRouteManifest, loadPageRoutes } from "@ramonyx/compiler";
 import { createReactRenderer } from "@ramonyx/react";
 import { createHandler } from "@ramonyx/server";
@@ -63,6 +63,12 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
   const appDir = fileURLToPath(new URL("..", import.meta.url));
   // Nama bundle ber-hash dari manifest build (ADR-0055) — diekspor/dijalankan setelah build.
   const clientScript = `${basePath}${await readClientScript(join(appDir, "dist/client"))}`;
+  // Font self-host ikut pipeline aset (hash di produksi, fallback path mentah saat dev).
+  const assets = await createAssetResolver(join(appDir, "dist/client"), {
+    fallbackToPath: true,
+    urlPrefix: `${basePath}/assets`,
+  });
+  const fontUrl = (path: string): string => assets.url(path) ?? `${basePath}/assets/${path}`;
 
   const [apiRoutes, pages] = await Promise.all([
     createRouteManifest({ dir }),
@@ -76,7 +82,13 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
       ...createPageRoutes({
         pages,
         renderer: createReactRenderer(),
-        document: createDocument(basePath),
+        document: createDocument(basePath, {
+          serif: fontUrl("fonts/instrument-serif-latin.woff2"),
+          serifItalic: fontUrl("fonts/instrument-serif-italic-latin.woff2"),
+          sans400: fontUrl("fonts/plex-sans-400-latin.woff2"),
+          sans500: fontUrl("fonts/plex-sans-500-latin.woff2"),
+          sans600: fontUrl("fonts/plex-sans-600-latin.woff2"),
+        }),
         client: { script: clientScript },
         hooks: options.hooks,
       }),

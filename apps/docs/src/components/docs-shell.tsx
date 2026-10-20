@@ -3,6 +3,30 @@ import type { ReactNode } from "react";
 
 import { NAV, navLabel, sectionOf } from "../nav.ts";
 
+function DaftarNav({ slug }: { readonly slug: string }) {
+  return (
+    <>
+      {NAV.map((section) => (
+        <div key={section.title} className="sidebar-seksi">
+          <div className="sidebar-judul">{section.title}</div>
+          <ul>
+            {section.items.map((item) => (
+              <li key={item.slug}>
+                <a
+                  href={`docs/${item.slug}`}
+                  {...(item.slug === slug ? { "aria-current": "page" as const } : {})}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </>
+  );
+}
+
 export function DocsShell({
   slug,
   children,
@@ -14,33 +38,38 @@ export function DocsShell({
   return (
     <div className="docs">
       <aside className="sidebar" aria-label="Documentation">
-        {NAV.map((section) => (
-          <div key={section.title} className="sidebar-seksi">
-            <div className="sidebar-judul">{section.title}</div>
-            <ul>
-              {section.items.map((item) => (
-                <li key={item.slug}>
-                  <a
-                    href={`docs/${item.slug}`}
-                    {...(item.slug === slug ? { "aria-current": "page" as const } : {})}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <DaftarNav slug={slug} />
       </aside>
-      <main className="docs-utama">
+      <details className="sidebar-mobile">
+        <summary>
+          Browse documentation
+          <span className="dim"> · {navLabel(slug)}</span>
+        </summary>
+        <nav className="sidebar" aria-label="Documentation (mobile)">
+          <DaftarNav slug={slug} />
+        </nav>
+      </details>
+      <main className="docs-utama" id="isi">
         <p className="remah">
-          <a href="docs">Docs</a> <span aria-hidden="true">/</span>{" "}
-          {bagian === undefined ? null : (
+          {slug === "" ? (
+            <span>Documentation</span>
+          ) : (
             <>
-              <span>{bagian}</span> <span aria-hidden="true">/</span>{" "}
+              <a href="docs">Docs</a>
+              <span className="pemisah" aria-hidden="true">
+                /
+              </span>
+              {bagian === undefined ? null : (
+                <>
+                  <span>{bagian}</span>
+                  <span className="pemisah" aria-hidden="true">
+                    /
+                  </span>
+                </>
+              )}
+              <span>{navLabel(slug)}</span>
             </>
           )}
-          <span>{navLabel(slug)}</span>
         </p>
         {children}
       </main>

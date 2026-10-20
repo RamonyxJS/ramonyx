@@ -3,44 +3,44 @@
 > Full-stack TypeScript framework (Node.js ≥ 24) with file routing, SSR React + hydration, soft
 > navigation, secure defaults, server actions, edge/static targets, and an experimental Rust/V8 runtime.
 
-Documentation: https://ramonyxjs.github.io/ramonyx/ . Structured facts: https://ramonyxjs.github.io/ramonyx/machine/ .
+Documentation: https://ramonyx.devmoon.net/ . Structured facts: https://ramonyx.devmoon.net/machine/ .
 
 ## Machine-readable (public only)
 
-- [features.json](https://ramonyxjs.github.io/ramonyx/machine/features.json): feature status (implemented/partial/experimental/planned), packages, evidence, limitations
-- [adrs.json](https://ramonyxjs.github.io/ramonyx/machine/adrs.json): 8 public architecture decisions (one-line decision + relations)
-- [rules.json](https://ramonyxjs.github.io/ramonyx/machine/rules.json): rules for writing apps, with good/bad examples
-- [glossary.json](https://ramonyxjs.github.io/ramonyx/machine/glossary.json): terms and concept map
-- [stats.json](https://ramonyxjs.github.io/ramonyx/machine/stats.json): version, packages, public ADR count, test counts
-- [api.json](https://ramonyxjs.github.io/ramonyx/machine/api.json) and [cli.json](https://ramonyxjs.github.io/ramonyx/machine/cli.json): extracted API/CLI reference
-- [config.schema.json](https://ramonyxjs.github.io/ramonyx/machine/config.schema.json): ramonyx.config.ts shape (verified by tests)
+- [features.json](https://ramonyx.devmoon.net/machine/features.json): feature status (implemented/partial/experimental/planned), packages, evidence, limitations
+- [adrs.json](https://ramonyx.devmoon.net/machine/adrs.json): 8 public architecture decisions (one-line decision + relations)
+- [rules.json](https://ramonyx.devmoon.net/machine/rules.json): rules for writing apps, with good/bad examples
+- [glossary.json](https://ramonyx.devmoon.net/machine/glossary.json): terms and concept map
+- [stats.json](https://ramonyx.devmoon.net/machine/stats.json): version, packages, public ADR count, test counts
+- [api.json](https://ramonyx.devmoon.net/machine/api.json) and [cli.json](https://ramonyx.devmoon.net/machine/cli.json): extracted API/CLI reference
+- [config.schema.json](https://ramonyx.devmoon.net/machine/config.schema.json): ramonyx.config.ts shape (verified by tests)
 
 ## Documentation
 
-- [API Reference](https://ramonyxjs.github.io/ramonyx/docs/api/core-contract/)
-- [Architecture](https://ramonyxjs.github.io/ramonyx/docs/architecture/)
-- [Assets & Images](https://ramonyxjs.github.io/ramonyx/docs/assets-and-images/)
-- [Benchmarks](https://ramonyxjs.github.io/ramonyx/docs/benchmarks/)
-- [CLI Reference](https://ramonyxjs.github.io/ramonyx/docs/cli/)
-- [Data & Caching](https://ramonyxjs.github.io/ramonyx/docs/data-and-caching/)
-- [Deployment](https://ramonyxjs.github.io/ramonyx/docs/deployment/)
-- [Devtools Panel](https://ramonyxjs.github.io/ramonyx/docs/devtools/)
-- [For Agents](https://ramonyxjs.github.io/ramonyx/docs/for-agents/)
-- [Getting Started](https://ramonyxjs.github.io/ramonyx/docs/getting-started/)
-- [Internationalization](https://ramonyxjs.github.io/ramonyx/docs/i18n/)
-- [Observability](https://ramonyxjs.github.io/ramonyx/docs/observability/)
-- [Plugins](https://ramonyxjs.github.io/ramonyx/docs/plugins/)
-- [Routing](https://ramonyxjs.github.io/ramonyx/docs/routing/)
-- [Security Overview](https://ramonyxjs.github.io/ramonyx/docs/security/overview/)
-- [Sessions & Auth Primitives](https://ramonyxjs.github.io/ramonyx/docs/sessions-and-auth/)
-- [SSR & Hydration](https://ramonyxjs.github.io/ramonyx/docs/ssr-hydration/)
-- [Testing](https://ramonyxjs.github.io/ramonyx/docs/testing/)
-- [Troubleshooting](https://ramonyxjs.github.io/ramonyx/docs/troubleshooting/)
-- [Typed Routes](https://ramonyxjs.github.io/ramonyx/docs/typed-routes/)
-- [What's Included](https://ramonyxjs.github.io/ramonyx/docs/whats-included/)
+- [API Reference](https://ramonyx.devmoon.net/docs/api/core-contract/)
+- [Architecture](https://ramonyx.devmoon.net/docs/architecture/)
+- [Assets & Images](https://ramonyx.devmoon.net/docs/assets-and-images/)
+- [Benchmarks](https://ramonyx.devmoon.net/docs/benchmarks/)
+- [CLI Reference](https://ramonyx.devmoon.net/docs/cli/)
+- [Data & Caching](https://ramonyx.devmoon.net/docs/data-and-caching/)
+- [Deployment](https://ramonyx.devmoon.net/docs/deployment/)
+- [Devtools Panel](https://ramonyx.devmoon.net/docs/devtools/)
+- [For Agents](https://ramonyx.devmoon.net/docs/for-agents/)
+- [Getting Started](https://ramonyx.devmoon.net/docs/getting-started/)
+- [Internationalization](https://ramonyx.devmoon.net/docs/i18n/)
+- [Observability](https://ramonyx.devmoon.net/docs/observability/)
+- [Plugins](https://ramonyx.devmoon.net/docs/plugins/)
+- [Routing](https://ramonyx.devmoon.net/docs/routing/)
+- [Security Overview](https://ramonyx.devmoon.net/docs/security/overview/)
+- [Sessions & Auth Primitives](https://ramonyx.devmoon.net/docs/sessions-and-auth/)
+- [SSR & Hydration](https://ramonyx.devmoon.net/docs/ssr-hydration/)
+- [Testing](https://ramonyx.devmoon.net/docs/testing/)
+- [Troubleshooting](https://ramonyx.devmoon.net/docs/troubleshooting/)
+- [Typed Routes](https://ramonyx.devmoon.net/docs/typed-routes/)
+- [What's Included](https://ramonyx.devmoon.net/docs/whats-included/)
 
 ## For agents
 
-- [llms-full.txt](https://ramonyxjs.github.io/ramonyx/machine/llms-full.txt): public machine layer + all public docs in one file
-- Markdown per page: append `.md` to a docs URL (e.g. https://ramonyxjs.github.io/ramonyx/docs/getting-started.md)
+- [llms-full.txt](https://ramonyx.devmoon.net/machine/llms-full.txt): public machine layer + all public docs in one file
+- Markdown per page: append `.md` to a docs URL (e.g. https://ramonyx.devmoon.net/docs/getting-started.md)
 - MCP server: `npx -y @ramonyx/mcp-docs-server` (stdio; public docs snapshot)

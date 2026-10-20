@@ -1101,7 +1101,7 @@
         "apps/docs/test/docs.test.ts"
       ],
       "limitations": [
-        "Di-host di GitHub Pages subpath /ramonyx/"
+        "Di-host di GitHub Pages dengan domain kustom (CNAME)"
       ],
       "docs": null
     },

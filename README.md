@@ -79,7 +79,7 @@ Angka aktual (versi, jumlah paket/ADR/test) ada di satu tempat:
 
 ## Dokumentasi
 
-**Online:** https://ramonyxjs.github.io/ramonyx/ (situs di-host dari **`docs/public/` saja** — ADR-0052/0082).
+**Online:** https://ramonyx.devmoon.net/ (situs di-host dari **`docs/public/` saja** — ADR-0052/0082).
 
 Mulai dari [docs/internal/BLUEPRINT.md](docs/internal/BLUEPRINT.md) (blueprint internal),
 [docs/internal/IMPLEMENTATION_STATUS.md](docs/internal/IMPLEMENTATION_STATUS.md) (snapshot audit internal),

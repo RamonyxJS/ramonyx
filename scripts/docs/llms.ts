@@ -5,7 +5,7 @@ import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
-const SITE = "https://ramonyxjs.github.io/ramonyx";
+const SITE = "https://ramonyx.devmoon.net";
 const PUBLIC = "docs/public";
 
 // Machine layer publik — security.json sengaja TIDAK ada (internal).

@@ -1,7 +1,7 @@
 # Ramonyx — llms-full (public)
 
 > Full public corpus for agents: public machine layer (JSON) + public documentation.
-> Source: repo RamonyxJS/ramonyx (https://ramonyxjs.github.io/ramonyx). Internal docs are never included.
+> Source: repo RamonyxJS/ramonyx (https://ramonyx.devmoon.net). Internal docs are never included.
 
 ## docs/public/machine/features.json
 
@@ -1109,7 +1109,7 @@
         "apps/docs/test/docs.test.ts"
       ],
       "limitations": [
-        "Di-host di GitHub Pages subpath /ramonyx/"
+        "Di-host di GitHub Pages dengan domain kustom (CNAME)"
       ],
       "docs": null
     },
@@ -1557,7 +1557,7 @@
     {
       "id": "docs-relative-links",
       "rule": "Tautan di dalam `docs/**` (situs docs) harus relatif — jangan absolut (`/dokumen/...`).",
-      "rationale": "Situs di-host di subpath `/ramonyx/`; `<base href>` menegakkan tautan relatif (ADR-0052).",
+      "rationale": "Situs di-host di root domain kustom; `<base href>` menegakkan tautan relatif (ADR-0052).",
       "scope": "docs",
       "good": "[arsitektur](../architecture.md)",
       "bad": "[arsitektur](/dokumen/architecture)",
@@ -1911,7 +1911,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-20T04:39:58.404Z",
+  "generatedAt": "2026-10-20T09:02:43.014Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2324,7 +2324,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-20T04:39:59.567Z",
+  "generatedAt": "2026-10-20T09:02:44.164Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3119,9 +3119,9 @@ ramonyx dev
 
 Agents get a machine-readable view of Ramonyx that is generated from **public** documentation only:
 
-- [`llms.txt`](https://ramonyxjs.github.io/ramonyx/machine/llms.txt) — index of the public docs and
+- [`llms.txt`](https://ramonyx.devmoon.net/machine/llms.txt) — index of the public docs and
   machine files.
-- [`llms-full.txt`](https://ramonyxjs.github.io/ramonyx/machine/llms-full.txt) — the same content in
+- [`llms-full.txt`](https://ramonyx.devmoon.net/machine/llms-full.txt) — the same content in
   one file.
 - `machine/features.json` — feature status, packages, evidence, and honest limitations.
 - `machine/rules.json` — rules for writing apps with good/bad examples.

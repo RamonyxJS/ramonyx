@@ -30,7 +30,8 @@ eksperimental (Phase 4 selesai, ADR-0001).
 - `pnpm docs` — situs dokumentasi lokal (dogfood **penuh**: SSR React + hydration/soft navigation
   atas `docs/public/**`) di http://127.0.0.1:4000 (build klien + start).
 - `pnpm docs:export` — ekspor statis situs docs (`apps/docs/export.ts`) untuk hosting;
-  workflow `pages.yml` memakai `--base /ramonyx` → https://ramonyxjs.github.io/ramonyx/ (ADR-0052).
+  workflow `pages.yml` mengekspor ke root + `--cname ramonyx.devmoon.net` → https://ramonyx.devmoon.net/
+  (domain kustom GitHub Pages; ADR-0052).
 - `pnpm test:docs` — e2e situs publik (ekspor statis + kebijakan konten + a11y) dan
   `pnpm docs:no-leak` — gate kebocoran (sumber/ekspor/indeks/llms/sitemap/tarball MCP); keduanya
   blocking di CI (ADR-0082).

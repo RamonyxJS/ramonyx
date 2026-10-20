@@ -94,7 +94,7 @@
     {
       "id": "docs-relative-links",
       "rule": "Tautan di dalam `docs/**` (situs docs) harus relatif — jangan absolut (`/dokumen/...`).",
-      "rationale": "Situs di-host di subpath `/ramonyx/`; `<base href>` menegakkan tautan relatif (ADR-0052).",
+      "rationale": "Situs di-host di root domain kustom; `<base href>` menegakkan tautan relatif (ADR-0052).",
       "scope": "docs",
       "good": "[arsitektur](../architecture.md)",
       "bad": "[arsitektur](/dokumen/architecture)",

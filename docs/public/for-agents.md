@@ -2,9 +2,9 @@
 
 Agents get a machine-readable view of Ramonyx that is generated from **public** documentation only:
 
-- [`llms.txt`](https://ramonyxjs.github.io/ramonyx/machine/llms.txt) — index of the public docs and
+- [`llms.txt`](https://ramonyx.devmoon.net/machine/llms.txt) — index of the public docs and
   machine files.
-- [`llms-full.txt`](https://ramonyxjs.github.io/ramonyx/machine/llms-full.txt) — the same content in
+- [`llms-full.txt`](https://ramonyx.devmoon.net/machine/llms-full.txt) — the same content in
   one file.
 - `machine/features.json` — feature status, packages, evidence, and honest limitations.
 - `machine/rules.json` — rules for writing apps with good/bad examples.

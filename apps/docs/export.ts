@@ -1,10 +1,11 @@
-// Ekspor statis situs publik (hosting GitHub Pages) — ADR-0052/0054/0056/0082.
+// Ekspor statis situs publik (custom domain GitHub Pages) — ADR-0052/0054/0056/0082.
 //
 // Hanya **docs/public/** yang dipublikasikan: halaman, markdown per halaman, sitemap, llms,
 // machine layer publik. `docs/internal/` tidak pernah dibaca.
 //
-// Jalankan: `pnpm docs:export` (default base "" → root) atau
-// `node --import ./tools/register.mjs apps/docs/export.ts --base /ramonyx --out <dir>`.
+// Domain kustom disajikan di **root** (bukan subpath `/ramonyx`). Jalankan:
+// `pnpm docs:export` (default base "" → root), atau
+// `node --import ./tools/register.mjs apps/docs/export.ts --cname ramonyx.devmoon.net --out <dir>`.
 
 import { cp, mkdir, readdir, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
@@ -25,6 +26,7 @@ const argValue = (name: string): string | undefined => {
 const appDir = fileURLToPath(new URL(".", import.meta.url));
 const basePath = (argValue("--base") ?? "").replace(/\/$/, "");
 const originArg = argValue("--origin");
+const cnameArg = argValue("--cname");
 const outArg = argValue("--out");
 const outDir = outArg === undefined ? join(appDir, "dist/static") : resolve(process.cwd(), outArg);
 
@@ -118,5 +120,15 @@ for (const file of machineFiles) {
   await cp(join(machineDir, file), join(outDir, "machine", file));
 }
 console.log(`✓ machine/ (${machineFiles.length} berkas publik, termasuk llms.txt)`);
+
+// 6. CNAME untuk GitHub Pages (domain kustom) — ditulis ke artefak agar pengaturan
+// domain tidak bergantung pada UI/aksi manual.
+if (cnameArg !== undefined) {
+  if (!/^[a-z0-9.-]+$/i.test(cnameArg) || cnameArg.includes("..")) {
+    throw new Error(`--cname tidak valid: "${cnameArg}" (hostname tanpa skema/path)`);
+  }
+  await writeFile(join(outDir, "CNAME"), `${cnameArg}\n`);
+  console.log(`✓ CNAME: ${cnameArg}`);
+}
 
 console.log(`ekspor selesai: ${relative(process.cwd(), outDir)}`);

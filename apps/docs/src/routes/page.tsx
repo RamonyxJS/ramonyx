@@ -473,9 +473,6 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
       </div>
 
       <section className="closing" aria-labelledby="closing-title">
-        <span className="closing-mark" aria-hidden="true">
-          RAMONYX
-        </span>
         <div className="wrap closing-inner">
           <p className="closing-kicker">
             <span className="kicker-tanda" aria-hidden="true" />

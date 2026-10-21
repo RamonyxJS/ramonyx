@@ -59,6 +59,9 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
     return name;
   };
 
+  const isGlobalMiddleware = (file: string): boolean =>
+    options.middlewareFile !== undefined && file === options.middlewareFile;
+
   const pages = options.pages.map((page) => {
     if (page.pageFile === undefined) {
       throw new Error(
@@ -68,7 +71,11 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
     const pageVar = varFor(page.pageFile);
     const layoutVars = (page.layoutFiles ?? []).map((file) => varFor(file));
     const errorVar = page.errorFile === undefined ? "undefined" : varFor(page.errorFile);
-    const middlewareVars = (page.middlewareFiles ?? []).map((file) => varFor(file));
+    // Middleware root sudah dipasang global oleh entry; jangan jalankan dua kali
+    // (CSP nonce ganda menyebabkan nonce HTML != header).
+    const middlewareVars = (page.middlewareFiles ?? [])
+      .filter((file) => !isGlobalMiddleware(file))
+      .map((file) => varFor(file));
     return [
       "  {",
       `    path: ${JSON.stringify(page.path)},`,
@@ -89,7 +96,9 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
   const apiEntries: string[] = [];
   for (const route of options.apiRoutes) {
     const apiVar = varFor(route.file);
-    const middlewareVars = route.middlewareFiles.map((file) => varFor(file));
+    const middlewareVars = route.middlewareFiles
+      .filter((file) => !isGlobalMiddleware(file))
+      .map((file) => varFor(file));
     const middlewareList = middlewareVars.map((name) => `...${name}.default`).join(", ");
     for (const method of route.methods) {
       apiEntries.push(

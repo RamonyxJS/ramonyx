@@ -1,8 +1,8 @@
 name: Docs (GitHub Pages)
 
 # Ekspor statis situs dokumentasi (dogfood: SSR + hydration + soft navigation atas docs/**)
-# lalu publikasi ke GitHub Pages — ADR-0052. Domain kustom disajikan di root:
-# https://ramonyx.devmoon.net/ (CNAME; tanpa base path).
+# lalu publikasi mirror statis ke GitHub Pages — ADR-0052. Situs kanonis:
+# https://ramonyx.devmoon.net/ (Cloudflare Worker). Mirror: github.io/ramonyx (base /ramonyx).
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
       - name: Ekspor
         env:
           NODE_ENV: production
-        run: node --import ./tools/register.mjs apps/docs/export.ts --origin https://ramonyx.devmoon.net --cname ramonyx.devmoon.net
+        run: node --import ./tools/register.mjs apps/docs/export.ts --base /ramonyx --origin https://ramonyx.devmoon.net
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

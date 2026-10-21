@@ -22,7 +22,10 @@ not_found_handling = "404-page"
 binding = "WAITLIST"
 id = "9a90649976b144359ece1c72e98af3ee"
 
-# Aktifkan setelah custom domain GitHub Pages dilepas:
+[triggers]
+crons = ["17 * * * *"]
+
+# Custom domain Worker aktif (Cloudflare membuat record proxied otomatis):
 [[routes]]
 pattern = "ramonyx.devmoon.net"
 custom_domain = true

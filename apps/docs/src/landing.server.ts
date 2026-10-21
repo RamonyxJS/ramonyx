@@ -2,6 +2,7 @@
 import type { EnvReader } from "@ramonyx/core";
 
 export interface WaitlistStore {
+  get?(key: string): Promise<string | null>;
   put(key: string, value: string, options?: { readonly expirationTtl?: number }): Promise<void>;
 }
 
@@ -119,42 +120,23 @@ export async function subscribe(
   return { ok: true, message: "You're on the list. Only release news, no noise." };
 }
 
-interface StarCache {
-  readonly stars: number;
-  readonly at: number;
-}
-
-let starsCache: StarCache | null = null;
-
-/** GitHub stars (cache in-process 15 menit; token opsional untuk rate limit lebih tinggi). */
+/**
+ * Baca jumlah stars dari KV (`meta:stars`), diisi Cron Trigger Worker tiap jam.
+ * Tidak melakukan fetch di jalur request — TTFB/LCP tidak menunggu GitHub.
+ */
 export async function readStars(env: EnvReader): Promise<number | null> {
-  if (starsCache !== null && Date.now() - starsCache.at < 15 * 60 * 1000) {
-    return starsCache.stars;
+  const store = waitlistStore(env);
+  if (store?.get === undefined) {
+    return null;
   }
-  const token = env.get("GITHUB_TOKEN");
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 1500);
   try {
-    const response = await fetch("https://api.github.com/repos/RamonyxJS/ramonyx", {
-      headers: {
-        accept: "application/vnd.github+json",
-        "user-agent": "ramonyx-site",
-        ...(token === undefined ? {} : { authorization: `Bearer ${token}` }),
-      },
-      signal: controller.signal,
-    });
-    if (!response.ok) {
-      return starsCache?.stars ?? null;
+    const raw = await store.get("meta:stars");
+    if (raw === null) {
+      return null;
     }
-    const data = (await response.json()) as { stargazers_count?: unknown };
-    const stars = typeof data.stargazers_count === "number" ? data.stargazers_count : null;
-    if (stars !== null) {
-      starsCache = { stars, at: Date.now() };
-    }
-    return stars;
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : null;
   } catch {
-    return starsCache?.stars ?? null;
-  } finally {
-    clearTimeout(timer);
+    return null;
   }
 }

@@ -277,7 +277,7 @@ async function buildElement(
     if (layout === undefined) {
       continue;
     }
-    element = createElement(layout.default as ElementType, {}, element);
+    element = createElement(layout.default as ElementType, { path: payload.path }, element);
   }
   return element;
 }

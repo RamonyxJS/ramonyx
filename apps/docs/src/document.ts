@@ -5,6 +5,8 @@
 
 import type { DocumentRenderer } from "@ramonyx/ssr";
 
+import { CONTEXT7_SITE_KEY, isContext7DocsPath } from "./context7.ts";
+
 export interface DocumentFonts {
   readonly serif: string;
   readonly serifItalic: string;
@@ -1610,7 +1612,12 @@ export function createDocument(
   const favicon =
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2311130d'/%3E%3Cpath d='M16 5l11 11-11 11L5 16z' fill='%23a9b9ff'/%3E%3C/svg%3E";
 
-  return ({ title, body, head = "", scripts = "", lang = "en", dir, path }) => `<!doctype html>
+  return ({ title, body, head = "", scripts = "", lang = "en", dir, path }) => {
+    const context7 = isContext7DocsPath(path ?? "");
+    const context7Meta = context7
+      ? `<meta name="context7-site-verification" content="${CONTEXT7_SITE_KEY}" />`
+      : "";
+    return `<!doctype html>
 <html lang="${lang}"${dir === undefined ? "" : ` dir="${dir}"`}>
 <head>
 <meta charset="utf-8" />
@@ -1621,6 +1628,7 @@ export function createDocument(
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f1e9" />
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0c0e09" />
 <meta property="og:site_name" content="Ramonyx" />
+${context7Meta}
 <link rel="icon" href="${favicon}" />
 ${preload}
 <title>${title.length > 0 ? `${title} · Ramonyx` : "Ramonyx — full-stack TypeScript, secure by default"}</title>
@@ -1631,4 +1639,5 @@ ${preload}
 </body>
 </html>
 `;
+  };
 }

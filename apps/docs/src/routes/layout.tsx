@@ -1,12 +1,15 @@
 import type { LayoutProps } from "@ramonyx/react";
 
 import { CodeCopy } from "../components/code-copy.tsx";
+import { Context7Note } from "../components/context7-note.tsx";
 import { Search } from "../components/search.tsx";
 import { ThemeToggle } from "../components/theme-toggle.tsx";
+import { isContext7DocsPath } from "../context7.ts";
 
-export default function RootLayout({ children }: LayoutProps) {
+export default function RootLayout({ children, path }: LayoutProps) {
   return (
     <div className="shell">
+      {isContext7DocsPath(path ?? "") ? <Context7Note /> : null}
       <a className="lewati" href="#isi">
         Skip to content
       </a>

@@ -4,6 +4,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { CONTEXT7_SEARCH_SECTION } from "../../apps/docs/src/context7.ts";
+
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const SITE = "https://ramonyx.devmoon.net";
 const PUBLIC = "docs/public";
@@ -66,6 +68,8 @@ export function generateLlms(): { llms: string; llmsFull: string } {
 
 Documentation: ${SITE}/ . Structured facts: ${SITE}/machine/ .
 
+${CONTEXT7_SEARCH_SECTION}
+
 ## Machine-readable (public only)
 
 - [features.json](${SITE}/machine/features.json): feature status (implemented/partial/experimental/planned), packages, evidence, limitations
@@ -92,6 +96,8 @@ ${docs.map((file) => `- [${titleOf(readFileSync(file, "utf8"))}](${SITE}/docs/${
     ``,
     `> Full public corpus for agents: public machine layer (JSON) + public documentation.`,
     `> Source: repo RamonyxJS/ramonyx (${SITE}). Internal docs are never included.`,
+    ``,
+    CONTEXT7_SEARCH_SECTION,
     ``,
   ];
   for (const file of MACHINE_FILES) {

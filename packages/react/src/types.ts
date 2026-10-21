@@ -15,6 +15,8 @@ export interface PageProps<
 
 export interface LayoutProps {
   readonly children?: ReactNode;
+  /** Path halaman aktif; dipakai layout untuk kondisi situs (mis. discovery Context7). */
+  readonly path?: string;
 }
 
 export interface ErrorPageProps {

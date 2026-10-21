@@ -43,9 +43,19 @@ status can no longer change. Error pages are always rendered synchronously.
 | --- | --- |
 | Hydration | `hydrateRoot` on the existing markup; no re-render flash |
 | Soft navigation | same-origin links fetch the next HTML, reconcile the head, swap the container, re-hydrate, `pushState` |
-| Prefetch | hover/focus/viewport prefetch with a small LRU cache (8 entries, 30 s TTL, max 2 concurrent) |
+| Code splitting | client entry dynamically imports the active route/layout chunks; other routes load on navigation/prefetch |
+| Prefetch | hover/focus/viewport prefetch HTML and warm the route chunk (LRU 8 entries, 30 s, max 2 concurrent) |
 | Forms | submit intercepted when JS is available; `POST` + `303` PRG without JS |
 | Scroll | `popstate` restores scroll; new navigations start at the top |
+
+## Code splitting & streaming boundaries
+
+- The generated client entry uses dynamic imports per page/layout. The initial entry hydrates
+  only the active route; other route chunks are loaded on navigation and warmed by prefetch.
+- Streaming is active (`streaming: true`), but loaders resolve before render. This is deliberate:
+  the HTML and hydration payload remain complete when JavaScript is disabled. React Suspense
+  deferred data is not enabled; it is tracked as `p2-deferred-data-streaming`, including the
+  no-JS fallback design.
 
 ## Soft navigation & head reconciliation
 

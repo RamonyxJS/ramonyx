@@ -11,7 +11,7 @@
 | --- | --- | --- |
 | P0 — blocker adopsi | 6 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` · `p0-package-readiness-gate` |
 | P1 — paritas | 10 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` · `p1-package-contract-coverage` |
-| P2 — diferensiasi & utang | 13 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` |
+| P2 — diferensiasi & utang | 15 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` · `p2-partial-hydration-islands` · `p2-deferred-data-streaming` |
 | P3 — nice-to-have | 3 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` |
 
 **Quick wins** (dampak besar, usaha kecil): `p0-http-production-basics` · `p1-prefetch` · `p1-docs-tutorial` · `p2-watch-mode` · `p2-context7` · `p2-testing-docs`
@@ -429,6 +429,34 @@
 - **ADR**: ADR-0080
 - **Pembanding**: Nuxt modules (versi modul + kompatibilitas Nuxt); SvelteKit/Vite plugin ecosystem (peer deps standar)
 
+### `p2-partial-hydration-islands` — Partial hydration / islands per komponen
+
+*tema: rendering · ukuran: L · status: open · dependensi: `p1-package-contract-coverage` · sumber: turunan DF-03/DF-08; code splitting rute sudah selesai*
+
+- **Apa**: Hidrasi hanya komponen interaktif (island) yang ditandai, sementara konten statis tetap HTML server tanpa React root penuh.
+- **Kenapa penting untuk bersaing**: Code splitting per rute menurunkan bundle awal, tetapi seluruh pohon rute masih di-hydrate; islands mengurangi JS/TBT dan memungkinkan halaman besar tetap interaktif secara selektif.
+- **Selesai bila**:
+  - [ ] API penanda island (mis. `use client`/`<Island>`) tanpa memecah kontrak halaman.
+  - [ ] Server merender island dan client hanya hydrate batas yang ditandai.
+  - [ ] Soft navigation/prefetch bekerja tanpa hydration ganda atau mismatch.
+  - [ ] Test e2e interaksi, no-JS, back/forward, dan docs.
+- **Area kode**: `packages/compiler`, `packages/react`, `packages/ssr`
+- **Pembanding**: Astro islands; Next.js client components/partial hydration; Fresh islands.
+
+### `p2-deferred-data-streaming` — Deferred loader/Suspense data yang no-JS-safe
+
+*tema: rendering · ukuran: L · status: open · dependensi: `p1-package-contract-coverage` · sumber: turunan DF-07; prototipe Suspense ditolak karena fallback kosong tanpa JS*
+
+- **Apa**: Dukungan data deferred per-boundary yang mengalir setelah shell tanpa mengorbankan HTML tanpa JS dan konsistensi payload hydration.
+- **Kenapa penting untuk bersaing**: Streaming shell/body sudah aktif, tetapi loader tetap resolve sebelum render; Suspense naif membuat fallback kosong saat JS mati.
+- **Selesai bila**:
+  - [ ] Desain payload deferred yang tetap tersedia untuk no-JS/hydration.
+  - [ ] Fallback konten server yang terbaca tanpa JS atau mekanisme noscript yang teruji.
+  - [ ] Streaming per-boundary + error handling setelah byte pertama.
+  - [ ] Test e2e streaming, no-JS, hydration, dan back/forward.
+- **Area kode**: `packages/ssr`, `packages/react`
+- **Pembanding**: React Router streaming/defer; Next.js Suspense; SvelteKit streaming promises.
+
 ## P3 — nice-to-have
 
 ### `p3-i18n` — i18n routing + helper terjemahan
@@ -488,10 +516,10 @@
 
 ### `DF-03` — Hydration penuh memblokir LCP dan menaikkan TBT
 
-*status: partial · area: packages/ssr, packages/react, apps/docs · commit: `b7322c9, a4bdf41`*
+*status: fixed · area: packages/ssr, packages/react, apps/docs · commit: `b7322c9, a4bdf41, fcd4d43`*
 
 - **Masalah**: Satu bundle/hydrate untuk seluruh halaman membuat LCP 2.4 dtk dan TBT 900 ms pada Lighthouse mobile meski konten sudah SSR.
-- **Perbaikan**: Tambah `client.load: "interaction"` (bundle dimuat saat pointer/wheel/key pertama), hydration dijadwalkan idle, bootstrap tema nonce, dan CSS-based hero. Lighthouse turun ke LCP 1.5 dtk/TBT ~160 ms. Islands + code splitting per rute masih terbuka (lihat DF-08).
+- **Perbaikan**: Tambah `client.load: "interaction"` + hydration idle, CSS-based hero, dan code splitting per rute. Lighthouse lokal LCP 1.7 dtk/TBT rendah. Partial hydration/islands per komponen tetap pekerjaan terpisah `p2-partial-hydration-islands`.
 
 ### `DF-04` — Canvas partikel kontinu membebani main thread
 
@@ -516,17 +544,17 @@
 
 ### `DF-07` — Streaming belum aktif; loader tetap memblokir render
 
-*status: partial · area: apps/docs, packages/ssr · commit: `a4bdf41`*
+*status: fixed · area: apps/docs, packages/ssr · commit: `a4bdf41, fcd4d43`*
 
 - **Masalah**: Docs app memakai render sinkron dan loader selesai sebelum render; streaming SSR belum dimanfaatkan, dan belum ada mekanisme deferred loader/Suspense data.
-- **Perbaikan**: Aktifkan `streaming: true` di Node/static app dan edge entry (dokument marker + CSP nonce). Batasan deferred data dicatat: loader tetap resolve sebelum render; streaming hanya memecah dokumen/body, bukan loader per-boundary.
+- **Perbaikan**: Streaming shell/body aktif di Node/docs/edge. Loader tetap resolve sebelum render secara sengaja agar HTML + payload hydration tetap terbaca tanpa JS. Prototipe React Suspense deferred ditolak karena fallback kosong saat JS mati; deferred data yang no-JS-safe dilacak sebagai `p2-deferred-data-streaming`.
 
 ### `DF-08` — Client bundle memuat semua halaman (tanpa code splitting)
 
-*status: open · area: packages/compiler, packages/react · commit: `a4bdf41`*
+*status: fixed · area: packages/compiler, packages/react · commit: `a4bdf41, fcd4d43`*
 
 - **Masalah**: `generateClientEntry` mengimpor seluruh registry halaman; landing ikut membawa komponen docs dan tidak ada pemisahan chunk per rute/island.
-- **Perbaikan**: Belum diperbaiki: lazy canvas saja. Dicatat sebagai backlog; solusi yang benar adalah code splitting per rute/island dan partial hydration di framework.
+- **Perbaikan**: `generateClientEntry` memakai dynamic import per halaman/layout; entry hanya memuat rute aktif, chunk terpisah, prefetch HTML menghangatkan chunk. Partial hydration/islands per komponen dilacak terpisah `p2-partial-hydration-islands`.
 
 ### `DF-09` — Tema tersimpan hilang saat hydration ditunda
 

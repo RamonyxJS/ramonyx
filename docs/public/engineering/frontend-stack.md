@@ -102,7 +102,9 @@ built landing-only (`pagePaths: ["/"]`) with a custom document; docs stay static
 - **Why**: GitHub Pages cannot execute actions or streaming; the Worker gives one origin with real
   server actions and keeps docs cheap.
 - **Trade-off**: the landing's dynamic data is loader-based (resolved before render); deferred
-  data/Suspense streaming is not implemented.
+  data/Suspense remains a future item because a naive fallback breaks no-JS readability.
+- **Route chunks**: the client entry dynamically imports the active page/layout; route code is
+  loaded on navigation and prefetch, not all at startup.
 
 ## Testing
 

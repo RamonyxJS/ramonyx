@@ -77,6 +77,16 @@ Rilis kesiapan paket publik.
   v0.3.0. Perubahan breaking berikutnya mengikuti semver + catatan migrasi; hook aditif tetap
   dimungkinkan. `features.json` `plugin-ecosystem`/`extension-primitives` diperbarui.
 
+### Client & streaming
+
+- **Code splitting per rute**: `generateClientEntry` memakai dynamic import per halaman/layout;
+  entry hanya memuat rute aktif, chunk dimuat saat hydration/navigasi dan dihangatkan oleh
+  prefetch. Partial hydration/islands tetap item `p2-partial-hydration-islands`.
+- **Streaming decision**: shell/body streaming tetap aktif; loader resolve sebelum render agar
+  HTML/payload tetap terbaca tanpa JS. Deferred Suspense ditolak untuk saat ini dan dilacak di
+  `p2-deferred-data-streaming`.
+- DF-03, DF-07, dan DF-08 ditutup dengan batasan yang eksplisit; tidak ada status partial.
+
 ### Kontrak & coverage paket
 
 - **Contract test publik**: `tests/package-exports.test.ts` memeriksa nilai export setiap paket,

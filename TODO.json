@@ -651,7 +651,7 @@
       "theme": "rendering",
       "priority": "p2",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Dukungan data deferred per-boundary yang mengalir setelah shell tanpa mengorbankan HTML tanpa JS dan konsistensi payload hydration.",
       "why": "Streaming shell/body sudah aktif, tetapi loader tetap resolve sebelum render; Suspense naif membuat fallback kosong saat JS mati.",
       "done": [
@@ -662,7 +662,7 @@
       ],
       "areas": ["packages/ssr", "packages/react"],
       "competitor": "React Router streaming/defer; Next.js Suspense; SvelteKit streaming promises.",
-      "source": "turunan DF-07; prototipe Suspense ditolak karena fallback kosong tanpa JS",
+      "source": "turunan DF-07; `defer` + Suspense, state JSON nonce, fallback no-JS, e2e playground streaming/hydration/back-forward",
       "dependsOn": ["p1-package-contract-coverage"]
     }
   ],
@@ -725,7 +725,7 @@
       "id": "DF-07",
       "title": "Streaming belum aktif; loader tetap memblokir render",
       "problem": "Docs app memakai render sinkron dan loader selesai sebelum render; streaming SSR belum dimanfaatkan, dan belum ada mekanisme deferred loader/Suspense data.",
-      "fix": "Streaming shell/body aktif di Node/docs/edge. Loader tetap resolve sebelum render secara sengaja agar HTML + payload hydration tetap terbaca tanpa JS. Prototipe React Suspense deferred ditolak karena fallback kosong saat JS mati; deferred data yang no-JS-safe dilacak sebagai `p2-deferred-data-streaming`.",
+      "fix": "Streaming shell/body aktif di Node/docs/edge. Loader tetap resolve sebelum render secara sengaja agar HTML + payload hydration tetap terbaca tanpa JS. Prototipe React Suspense deferred ditolak karena fallback kosong saat JS mati; deferred data no-JS-safe selesai di `p2-deferred-data-streaming` (`defer` + fallback server + state JSON).",
       "commit": "a4bdf41, fcd4d43",
       "area": "apps/docs, packages/ssr",
       "status": "fixed"

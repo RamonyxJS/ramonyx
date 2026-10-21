@@ -20,6 +20,12 @@ import {
   routeTag,
 } from "@ramonyx/core";
 import { type ValidationIssue, validate } from "@ramonyx/schema";
+import {
+  deferredStateScript,
+  insertAfterMount,
+  prepareDeferredData,
+  settleDeferreds,
+} from "./deferred.ts";
 import { defaultDocument, escapeHtml } from "./document.ts";
 import type { DocumentRenderer, ElementDescriptor, Renderer } from "./types.ts";
 
@@ -125,13 +131,13 @@ const streamedResponses = new WeakSet<Response>();
 function streamDocument(
   source: ReadableStream<Uint8Array>,
   prefix: Uint8Array,
-  suffix: Uint8Array,
+  suffix: Uint8Array | (() => Promise<Uint8Array>),
   maxDocumentBytes: number,
   onExceed: () => void,
   onError: (error: unknown) => void,
 ): ReadableStream<Uint8Array> {
   const reader = source.getReader();
-  let total = prefix.byteLength + suffix.byteLength;
+  let total = prefix.byteLength;
   let cancelled = false;
 
   return new ReadableStream<Uint8Array>({
@@ -155,7 +161,14 @@ function streamDocument(
           }
           controller.enqueue(value);
         }
-        controller.enqueue(suffix);
+        const tail = typeof suffix === "function" ? await suffix() : suffix;
+        total += tail.byteLength;
+        if (total > maxDocumentBytes) {
+          onExceed();
+          controller.error(new Error("dokumen melebihi batas streaming"));
+          return;
+        }
+        controller.enqueue(tail);
         controller.close();
       } catch (error) {
         if (!cancelled) {
@@ -386,7 +399,9 @@ function scheduleRefresh(
   const refresh = (async () => {
     try {
       const data = await runLoader();
-      await cache.store.set(key, { data }, { ttlSeconds: revalidateSeconds * 2, tags });
+      if (prepareDeferredData(data).length === 0) {
+        await cache.store.set(key, { data }, { ttlSeconds: revalidateSeconds * 2, tags });
+      }
     } catch (error) {
       log.warn("Refresh cache gagal — data lama tetap disajikan", {
         path,
@@ -471,7 +486,10 @@ async function renderPage(
 
         if (entry === undefined) {
           data = await runLoader();
-          await cache.store.set(key, { data }, { ttlSeconds: revalidateSeconds * 2, tags });
+          // Nilai deferred tidak boleh di-cache: promise/state-nya milik satu request.
+          if (prepareDeferredData(data).length === 0) {
+            await cache.store.set(key, { data }, { ttlSeconds: revalidateSeconds * 2, tags });
+          }
         } else {
           data = entry.value.data;
           hooks?.onLoaderEnd?.({ path: page.path, durationMs: 0, cached: true });
@@ -493,6 +511,26 @@ async function renderPage(
         ? configuredStatus
         : 200;
 
+    const deferredItems = prepareDeferredData(data);
+    const renderStream = renderer.renderStream?.bind(renderer);
+    if (deferredItems.length > 0 && (!streaming || renderStream === undefined)) {
+      throw new Error(
+        "Deferred loader data membutuhkan SSR streaming (`streaming: true`) dan renderer dengan renderStream.",
+      );
+    }
+    const nonce = context.request.headers.get(NONCE_HEADER) ?? undefined;
+    // Soft navigation/action memakai render sinkron: response dibaca utuh oleh client, dan
+    // markup streaming yang belum di-reveal tidak boleh dimasukkan lewat innerHTML.
+    const deferredNavigation =
+      deferredItems.length > 0 &&
+      (context.request.headers.has("x-ramonyx-nav") ||
+        context.request.headers.has("x-ramonyx-prefetch") ||
+        context.request.headers.has("x-ramonyx-action"));
+    if (deferredNavigation) {
+      await Promise.all(deferredItems.map((item) => item.promise.catch(() => undefined)));
+    }
+    const useStreaming = streaming && renderStream !== undefined && !deferredNavigation;
+
     const title = page.page.metadata?.title ?? "";
     const headParts = [metadataHead(page.page.metadata, context.request)];
     if (i18n !== undefined && locale !== undefined) {
@@ -501,12 +539,18 @@ async function renderPage(
     const head = headParts.filter((bagian) => bagian.length > 0).join("\n");
     const scripts = hydrationScripts(
       client,
-      { path: page.path, params, data, action: actionState, locale },
-      context.request.headers.get(NONCE_HEADER) ?? undefined,
+      {
+        path: page.path,
+        params,
+        data,
+        action: actionState,
+        ...(deferredItems.length > 0 ? { deferred: true } : {}),
+        locale,
+      },
+      nonce,
     );
-    const renderStream = renderer.renderStream?.bind(renderer);
 
-    if (streaming && renderStream !== undefined) {
+    if (useStreaming) {
       const shell = documentRenderer({
         title,
         body: BODY_MARKER,
@@ -520,8 +564,24 @@ async function renderPage(
       const markerIndex = shell.indexOf(BODY_MARKER);
       if (markerIndex !== -1) {
         const prefix = encoder.encode(shell.slice(0, markerIndex));
-        const suffix = encoder.encode(shell.slice(markerIndex + BODY_MARKER.length));
-        const body = await renderStream(buildPageTree(page, data, params, actionState, locale));
+        const suffixText = shell.slice(markerIndex + BODY_MARKER.length);
+        const suffix =
+          deferredItems.length === 0
+            ? encoder.encode(suffixText)
+            : async (): Promise<Uint8Array> => {
+                const state = await settleDeferreds(deferredItems);
+                return encoder.encode(
+                  insertAfterMount(suffixText, deferredStateScript(state, nonce, page.path)),
+                );
+              };
+        const body = await renderStream(buildPageTree(page, data, params, actionState, locale), {
+          ...(nonce === undefined ? {} : { nonce }),
+          onError: (error) =>
+            log.error("Render streaming menemukan error", {
+              path: page.path,
+              error: error instanceof Error ? error.message : String(error),
+            }),
+        });
         const streamed = new Response(
           streamDocument(
             body,
@@ -545,14 +605,26 @@ async function renderPage(
         return streamed;
       }
       // Dokumen kustom mengabaikan body/penanda → fallback sinkron di bawah (ADR-0047).
+      if (deferredItems.length > 0) {
+        throw new Error(
+          "Deferred loader data membutuhkan dokumen dengan penanda body streaming (<!--__RAMONYX_BODY__-->).",
+        );
+      }
     }
 
-    const body = await renderer.render(buildPageTree(page, data, params, actionState, locale));
+    const body = await renderer.render(buildPageTree(page, data, params, actionState, locale), {
+      ...(nonce === undefined ? {} : { nonce }),
+    });
+    const deferredState = deferredItems.length === 0 ? null : await settleDeferreds(deferredItems);
+    const finalScripts =
+      deferredState === null
+        ? scripts
+        : `${scripts}\n${deferredStateScript(deferredState, nonce, page.path)}`;
     const document = documentRenderer({
       title,
       body,
       status,
-      scripts,
+      scripts: finalScripts,
       head,
       assets,
       path: page.path,

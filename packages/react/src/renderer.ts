@@ -29,8 +29,11 @@ export function createReactRenderer(): Renderer {
     async render(element) {
       return renderToString(toReactElement(element));
     },
-    async renderStream(element) {
-      return renderToReadableStream(toReactElement(element));
+    async renderStream(element, options) {
+      return renderToReadableStream(toReactElement(element), {
+        ...(options?.nonce === undefined ? {} : { nonce: options.nonce }),
+        ...(options?.onError === undefined ? {} : { onError: options.onError }),
+      });
     },
   };
 }

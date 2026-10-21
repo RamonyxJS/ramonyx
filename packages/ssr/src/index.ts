@@ -7,4 +7,10 @@ export type {
   SitemapEntry,
 } from "./seo.ts";
 export { createSeoRoutes, robotsTxt, sitemapXml } from "./seo.ts";
-export type { DocumentOptions, DocumentRenderer, ElementDescriptor, Renderer } from "./types.ts";
+export type {
+  DocumentOptions,
+  DocumentRenderer,
+  ElementDescriptor,
+  Renderer,
+  RenderOptions,
+} from "./types.ts";

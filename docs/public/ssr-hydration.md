@@ -42,20 +42,71 @@ status can no longer change. Error pages are always rendered synchronously.
 | Feature | Behavior |
 | --- | --- |
 | Hydration | `hydrateRoot` on the existing markup; pages with islands hydrate only their marked boundaries |
+| Deferred data | `defer()` + `<Suspense>` streams a server fallback, then the resolved boundary with a state script for hydration |
 | Soft navigation | same-origin links fetch the next HTML, reconcile the head, swap the container, re-hydrate, `pushState` |
 | Code splitting | client entry dynamically imports the active route/layout chunks; other routes load on navigation/prefetch |
 | Prefetch | hover/focus/viewport prefetch HTML and warm the route chunk (LRU 8 entries, 30 s, max 2 concurrent) |
 | Forms | submit intercepted when JS is available; `POST` + `303` PRG without JS |
 | Scroll | `popstate` restores scroll; new navigations start at the top |
 
+## Deferred loader data (streaming)
+
+`defer()` starts non-critical work immediately and returns a thenable that can be read with
+React's `use()` inside a `<Suspense>` boundary:
+
+```tsx
+import { defer, type Deferred } from "ramonyx";
+import { Suspense, use } from "react";
+
+export async function loader() {
+  return {
+    title: "Dashboard",
+    stats: defer(() => loadStats()),
+  };
+}
+
+function Stats({ value }: { value: Deferred<{ visits: number }> }) {
+  const stats = use(value);
+  return <p data-stats>{stats.visits} visits</p>;
+}
+
+export default function Dashboard({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
+  return (
+    <main>
+      <h1>{data.title}</h1>
+      <Suspense fallback={<p>Loading stats…</p>}>
+        <Stats value={data.stats} />
+      </Suspense>
+    </main>
+  );
+}
+```
+
+- **Streaming is required** (`streaming: true`). The shell and a meaningful fallback are sent
+  first; the resolved boundary follows and is revealed in the browser.
+- **No-JS**: the fallback is the content users see. Make it useful (not an empty spinner); the
+  final deferred value is progressively enhanced and is not available without JavaScript.
+- The resolved values are serialized into a `<script type="application/json">` state tag after
+  the mount container; the client reads it for hydration. Values must be JSON-serializable and
+  must be rendered inside the boundary.
+- **Soft navigation/actions** use a synchronous render; the client re-renders the deferred route
+  from the state tag (avoiding React Suspense hydration mismatch). Prefetch, back/forward, and
+  no-JS remain unchanged.
+- A deferred rejection cannot change the response status after the first byte; React keeps the
+  boundary fallback and switches it to client rendering, while `onError` logs the failure. Wrap
+  recoverable failures with a React error boundary for a custom fallback.
+- Deferred data is for non-critical UI. Keep critical content in the awaited loader result; do not
+  combine deferred loader data with loader caching (`revalidate`).
+
 ## Code splitting & streaming boundaries
 
 - The generated client entry uses dynamic imports per page/layout. The initial entry hydrates
   only the active route; other route chunks are loaded on navigation and warmed by prefetch.
-- Streaming is active (`streaming: true`), but loaders resolve before render. This is deliberate:
-  the HTML and hydration payload remain complete when JavaScript is disabled. React Suspense
-  deferred data is not enabled; it is tracked as `p2-deferred-data-streaming`, including the
-  no-JS fallback design.
+- Streaming is active (`streaming: true`), but loaders resolve before render except data explicitly
+  wrapped in `defer()`. Deferred boundaries are opt-in and retain a server-rendered fallback.
+- Islands and deferred data are separate opt-ins. A page with islands hydrates only marked
+  boundaries; a page with deferred data hydrates the route and client-renders it on soft
+  navigation.
 
 ## Partial hydration islands (opt-in)
 

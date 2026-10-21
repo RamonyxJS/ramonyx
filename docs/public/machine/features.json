@@ -146,20 +146,28 @@
     },
     {
       "id": "ssr-streaming",
-      "name": "SSR streaming (opt-in `streaming: true`, react-dom/server.edge)",
+      "name": "SSR streaming (opt-in `streaming: true`, react-dom/server.edge) + deferred loader data (`defer` + Suspense)",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
       "packages": [
         "@ramonyx/ssr",
-        "@ramonyx/react"
+        "@ramonyx/react",
+        "@ramonyx/core"
       ],
       "evidence": [
         "packages/ssr/src/pages.ts",
+        "packages/ssr/src/deferred.ts",
+        "packages/core/src/deferred.ts",
+        "packages/react/src/client.ts",
+        "packages/ssr/test/deferred.test.ts",
+        "apps/playground/e2e/deferred.spec.ts",
         "docs/public/engineering/adr/0047-ssr-streaming.md"
       ],
       "limitations": [
-        "Error setelah byte pertama = koneksi diputus (status/error page hanya berlaku sebelum byte pertama)"
+        "Error stream setelah byte pertama = koneksi diputus; error deferred dialihkan ke client rendering + dilaporkan onError (status tidak berubah)",
+        "Data deferred membutuhkan fallback server yang bermakna; tanpa JS hanya fallback yang terlihat",
+        "Nilai deferred harus JSON-serializable dan dirender di dalam Suspense; soft navigation dirender ulang di client"
       ],
       "docs": "docs/public/ssr-hydration.md"
     },

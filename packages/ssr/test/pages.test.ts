@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  defer,
   HttpError,
   type LoadedPage,
   type Logger,
@@ -849,4 +850,82 @@ test("assets: resolver diteruskan ke konteks loader (ADR-0069)", async () => {
   const html = await (await handler(new Request("http://test.local/aset"))).text();
   assert.ok(diterima !== undefined, "loader menerima resolver aset");
   assert.ok(html.includes("/assets/logo-abc.svg"), "URL aset masuk ke data halaman");
+});
+
+test("deferred: streaming menulis state JSON setelah root + nonce", async () => {
+  const encoder = new TextEncoder();
+  const page = basePage("/", {
+    default: Page,
+    loader: () => ({ slow: defer(async () => ({ nama: "Rina" })) }),
+  });
+  const renderer: Renderer = {
+    name: "deferred-stream",
+    render: async () => "<p>fallback</p>",
+    renderStream: async (element) => {
+      const data = element.props.data as { slow: { then: (fn: () => void) => Promise<unknown> } };
+      await data.slow;
+      return new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(encoder.encode("<p>fallback</p>"));
+          controller.close();
+        },
+      });
+    },
+  };
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer,
+      client: { script: "/assets/client.js" },
+      streaming: true,
+    }),
+  });
+  const response = await handler(
+    new Request("http://test.local/", { headers: { [NONCE_HEADER]: "nonce-deferred" } }),
+  );
+  const html = await response.text();
+
+  assert.match(html, /id="ramonyx-deferred"/);
+  assert.match(html, /"d0":\{"status":"fulfilled","value":\{"nama":"Rina"\}\}/);
+  assert.match(html, /nonce="nonce-deferred"/);
+  assert.ok(html.indexOf("</div>") < html.indexOf('id="ramonyx-deferred"'), "state di luar root");
+});
+
+test("deferred: navigasi memakai render sinkron + state, dan tanpa streaming ditolak", async () => {
+  const page = basePage("/", {
+    default: Page,
+    loader: () => ({ slow: defer(async () => "lambat") }),
+  });
+  const renderer: Renderer = {
+    name: "deferred-sync",
+    render: async (element) => {
+      const data = element.props.data as { slow: PromiseLike<unknown> };
+      await data.slow;
+      return "<p>fallback</p>";
+    },
+    renderStream: async () => {
+      throw new Error("tidak dipakai");
+    },
+  };
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer,
+      client: { script: "/assets/client.js" },
+      streaming: true,
+    }),
+  });
+  const response = await handler(
+    new Request("http://test.local/", { headers: { "x-ramonyx-nav": "1" } }),
+  );
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /id="ramonyx-deferred"/);
+  assert.match(html, /"d0":\{"status":"fulfilled","value":"lambat"\}/);
+  assert.doesNotMatch(html, /<template id="B:/);
+
+  const noStreaming = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: { name: "sync", render: async () => "" } }),
+  });
+  assert.equal((await noStreaming(new Request("http://test.local/"))).status, 500);
 });

@@ -13,7 +13,17 @@ test("memindai halaman playground", async () => {
 
   assert.deepEqual(
     pages.map((page) => page.path),
-    ["/", "/tentang", "/[...notFound]", "/form", "/islands", "/sesi", "/users", "/users/[id]"],
+    [
+      "/",
+      "/tentang",
+      "/[...notFound]",
+      "/deferred",
+      "/form",
+      "/islands",
+      "/sesi",
+      "/users",
+      "/users/[id]",
+    ],
   );
   for (const page of pages) {
     assert.ok(page.layouts.length >= 1, `${page.path} punya layout root`);

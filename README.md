@@ -31,6 +31,9 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
 - **Partial hydration islands** (`@ramonyx/react/islands`): `<Island>` + `defineIsland`; server
   merender batas interaktif, client hanya hydrate marker tersebut. Halaman dengan island memakai
   mode islands otomatis; `useId`, soft navigation, back/forward, dan no-JS tetap bekerja.
+- **Deferred loader data**: `defer()` + React `<Suspense>`; shell + fallback server tetap terbaca
+  tanpa JS, lalu boundary mengalir dengan state JSON untuk hydration. Soft navigation/action
+  dirender ulang di client untuk boundary deferred.
 - **CLI devtools** (`@ramonyx/devtools`): `ramonyx dev` (Vite + HMR + **panel devtools**
   `/__ramonyx/devtools`: rute, timing, hydration, bundel), `ramonyx build`
   (`--static`, `--target edge`, `--watch`), `ramonyx start`, `ramonyx doctor` — konvensi

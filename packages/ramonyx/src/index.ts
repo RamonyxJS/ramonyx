@@ -29,6 +29,8 @@ export {
   createCache,
   createMemoryStore,
   createTranslator,
+  Deferred,
+  defer,
   defineConfig,
   formDataToObject,
   HttpError,

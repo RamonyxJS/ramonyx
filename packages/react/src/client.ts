@@ -1,6 +1,7 @@
 import type { PageActionState, PageModule } from "@ramonyx/core";
+import { DEFERRED_SCRIPT_ID, type DeferredState, isDeferredWire } from "@ramonyx/core";
 import { createElement, type ElementType, type ReactElement } from "react";
-import { hydrateRoot, type Root } from "react-dom/client";
+import { createRoot, hydrateRoot, type Root } from "react-dom/client";
 import { islandComponent, islandPrefix } from "./islands.ts";
 
 export interface ClientRegistryEntry {
@@ -17,6 +18,8 @@ export interface HydrationPayload {
   readonly data: unknown;
   /** Hasil action terakhir (ADR-0057). */
   readonly action?: PageActionState;
+  /** Halaman memakai data deferred; soft navigation memakai client render untuk boundary. */
+  readonly deferred?: boolean;
   /** Locale aktif (routing i18n — ADR-0081). */
   readonly locale?: string;
 }
@@ -24,6 +27,8 @@ export interface HydrationPayload {
 declare global {
   interface Window {
     __RAMONYX__?: HydrationPayload;
+    __RAMONYX_DEFERRED__?: DeferredState;
+    __ramonyxResolveDeferred?: (state: DeferredState) => void;
   }
 }
 
@@ -37,6 +42,88 @@ const HEAD_DEV_ATTRIBUTES = ["data-vite-dev-id", "data-vite"] as const;
 
 let activeRoot: Root | null = null;
 let activeIslandRoots: Root[] = [];
+const deferredPromises = new Map<string, Promise<unknown>>();
+const deferredWaiters = new Map<
+  string,
+  { readonly resolve: (value: unknown) => void; readonly reject: (reason: unknown) => void }
+>();
+
+function deferredPromise(key: string): Promise<unknown> {
+  const existing = deferredPromises.get(key);
+  if (existing !== undefined) {
+    return existing;
+  }
+  const state = window.__RAMONYX_DEFERRED__?.[key];
+  if (state?.status === "fulfilled") {
+    const resolved = Promise.resolve(state.value);
+    deferredPromises.set(key, resolved);
+    return resolved;
+  }
+  if (state?.status === "rejected") {
+    const rejected = Promise.reject(new Error(state.reason));
+    rejected.catch(() => undefined);
+    deferredPromises.set(key, rejected);
+    return rejected;
+  }
+  let resolve: (value: unknown) => void = () => undefined;
+  let reject: (reason: unknown) => void = () => undefined;
+  const promise = new Promise<unknown>((fulfill, fail) => {
+    resolve = fulfill;
+    reject = fail;
+  });
+  // Deferred state bisa tiba setelah bundle (script state berada di akhir stream).
+  promise.catch(() => undefined);
+  deferredWaiters.set(key, { resolve, reject });
+  deferredPromises.set(key, promise);
+  return promise;
+}
+
+function applyDeferredState(state: DeferredState): void {
+  window.__RAMONYX_DEFERRED__ = state;
+  for (const [key, entry] of Object.entries(state)) {
+    const waiter = deferredWaiters.get(key);
+    if (waiter === undefined) {
+      continue;
+    }
+    deferredWaiters.delete(key);
+    if (entry.status === "fulfilled") {
+      waiter.resolve(entry.value);
+    } else {
+      waiter.reject(new Error(entry.reason));
+    }
+  }
+}
+
+/** Hapus promise deferred halaman lama sebelum state dokumen berikutnya diterapkan. */
+function resetDeferredState(): void {
+  deferredPromises.clear();
+  deferredWaiters.clear();
+  window.__RAMONYX_DEFERRED__ = {};
+}
+
+if (typeof window !== "undefined") {
+  window.__ramonyxResolveDeferred = applyDeferredState;
+}
+
+function reviveDeferredData<T>(value: T): T {
+  if (isDeferredWire(value)) {
+    return deferredPromise(value.__ramonyxDeferred) as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((child) => reviveDeferredData(child)) as T;
+  }
+  if (value !== null && typeof value === "object") {
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) {
+      return value;
+    }
+    const revived = Object.fromEntries(
+      Object.entries(value).map(([key, child]) => [key, reviveDeferredData(child)]),
+    );
+    return revived as T;
+  }
+  return value;
+}
 
 /** Halaman yang memuat marker island memakai hydration parsial; root halaman tidak di-hydrate. */
 function isIslandPage(container: HTMLElement): boolean {
@@ -321,7 +408,7 @@ async function buildElement(
   // didukung untuk aplikasi yang belum memakai codegen terbaru.
   const entry = typeof registered === "function" ? await registered() : registered;
   let element: ReactElement = createElement(entry.page.default as ElementType, {
-    data: payload.data,
+    data: reviveDeferredData(payload.data),
     params: payload.params,
     action: payload.action,
     ...(payload.locale !== undefined ? { locale: payload.locale } : {}),
@@ -360,8 +447,18 @@ export function hydrateAll(registry: ClientRegistry): void {
         return;
       }
       const islands = isIslandPage(container);
-      document.documentElement.dataset.ramonyxHydration = islands ? "islands" : "full";
-      if (islands) {
+      document.documentElement.dataset.ramonyxHydration = payload.deferred
+        ? "deferred"
+        : islands
+          ? "islands"
+          : "full";
+      if (payload.deferred === true && islands) {
+        // Deferred + island: render ulang agar prefix useId island server tidak mismatch.
+        activeRoot = createRoot(container);
+        activeRoot.render(element);
+      } else if (payload.deferred === true) {
+        activeRoot = hydrateRoot(container, element);
+      } else if (islands) {
         hydrateIslands(container);
       } else {
         activeRoot = hydrateRoot(container, element);
@@ -401,6 +498,19 @@ function readPayloadFromDocument(doc: Document): HydrationPayload | null {
   }
   try {
     return JSON.parse(text.slice(PAYLOAD_PREFIX.length)) as HydrationPayload;
+  } catch {
+    return null;
+  }
+}
+
+function readDeferredStateFromDocument(doc: Document): DeferredState | null {
+  const text = doc.getElementById(DEFERRED_SCRIPT_ID)?.textContent ?? "";
+  if (text.length === 0) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(text) as unknown;
+    return typeof parsed === "object" && parsed !== null ? (parsed as DeferredState) : null;
   } catch {
     return null;
   }
@@ -561,8 +671,17 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
     unmountActiveIslands();
     container.innerHTML = nextContainer.innerHTML;
     const islands = isIslandPage(container);
-    document.documentElement.dataset.ramonyxHydration = islands ? "islands" : "full";
-    if (islands) {
+    document.documentElement.dataset.ramonyxHydration = payload.deferred
+      ? "deferred"
+      : islands
+        ? "islands"
+        : "full";
+    if (payload.deferred === true) {
+      // HTML sinkron untuk navigasi deferred hanya berisi fallback Suspense; render ulang
+      // di client menghindari hydration mismatch boundary (React #419) dan duplikasi.
+      activeRoot = createRoot(container);
+      activeRoot.render(element);
+    } else if (islands) {
       hydrateIslands(container);
     } else {
       activeRoot = hydrateRoot(container, element);
@@ -599,6 +718,8 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
       return false;
     }
 
+    resetDeferredState();
+    applyDeferredState(readDeferredStateFromDocument(doc) ?? {});
     const element = await buildElement(registry, payload);
     if (element === null) {
       return false;

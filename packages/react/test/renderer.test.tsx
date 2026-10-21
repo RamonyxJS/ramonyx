@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { defer } from "@ramonyx/core";
 import type { ElementDescriptor } from "@ramonyx/ssr";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense, use } from "react";
 import { createReactRenderer } from "../src/index.ts";
 
 test("JSX automatic runtime + escaping React", async () => {
@@ -54,4 +55,73 @@ test("renderStream: paritas byte-per-byte dengan render sinkron", async () => {
 
   const streamed = await new Response(await renderStream(descriptor)).text();
   assert.equal(streamed, sync);
+});
+
+test("renderStream: deferred Suspense fallback + konten akhir memakai nonce CSP", async () => {
+  const renderer = createReactRenderer();
+  const slow = defer(
+    () => new Promise<string>((resolve) => setTimeout(() => resolve("selesai"), 25)),
+  );
+
+  function Value() {
+    return <p data-value>{use(slow)}</p>;
+  }
+
+  const descriptor: ElementDescriptor = {
+    type: function Page() {
+      return (
+        <main>
+          <h1>Shell</h1>
+          <Suspense fallback={<p data-fallback>memuat</p>}>
+            <Value />
+          </Suspense>
+        </main>
+      );
+    },
+    props: {},
+    children: [],
+  };
+
+  const stream = await renderer.renderStream?.(descriptor, { nonce: "nonce-stream" });
+  assert.ok(stream !== undefined);
+  const html = await new Response(stream).text();
+  assert.match(html, /data-fallback/);
+  assert.match(html, /data-value/);
+  assert.match(html, /selesai/);
+  assert.match(html, /nonce="nonce-stream"/);
+});
+
+test("renderStream: rejection deferred dilaporkan onError dan fallback tetap terkirim", async () => {
+  const failing = defer(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    throw new Error("deferred gagal");
+  });
+  const errors: unknown[] = [];
+  function Value() {
+    return <p>{use(failing)}</p>;
+  }
+  const descriptor: ElementDescriptor = {
+    type: function Page() {
+      return (
+        <main>
+          <Suspense fallback={<p data-fallback>fallback</p>}>
+            <Value />
+          </Suspense>
+        </main>
+      );
+    },
+    props: {},
+    children: [],
+  };
+  const renderer = createReactRenderer();
+  const stream = await renderer.renderStream?.(descriptor, {
+    onError: (error) => {
+      errors.push(error);
+    },
+  });
+  assert.ok(stream !== undefined);
+  const html = await new Response(stream).text();
+  assert.match(html, /data-fallback/);
+  assert.match(html, /Switched to client rendering/);
+  assert.ok(errors.some((error) => String(error).includes("deferred gagal")));
 });

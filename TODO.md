@@ -445,7 +445,7 @@
 
 ### `p2-deferred-data-streaming` — Deferred loader/Suspense data yang no-JS-safe
 
-*tema: rendering · ukuran: L · status: open · dependensi: `p1-package-contract-coverage` · sumber: turunan DF-07; prototipe Suspense ditolak karena fallback kosong tanpa JS*
+*tema: rendering · ukuran: L · status: done · dependensi: `p1-package-contract-coverage` · sumber: turunan DF-07; `defer` + Suspense, state JSON nonce, fallback no-JS, e2e playground streaming/hydration/back-forward*
 
 - **Apa**: Dukungan data deferred per-boundary yang mengalir setelah shell tanpa mengorbankan HTML tanpa JS dan konsistensi payload hydration.
 - **Kenapa penting untuk bersaing**: Streaming shell/body sudah aktif, tetapi loader tetap resolve sebelum render; Suspense naif membuat fallback kosong saat JS mati.
@@ -547,7 +547,7 @@
 *status: fixed · area: apps/docs, packages/ssr · commit: `a4bdf41, fcd4d43`*
 
 - **Masalah**: Docs app memakai render sinkron dan loader selesai sebelum render; streaming SSR belum dimanfaatkan, dan belum ada mekanisme deferred loader/Suspense data.
-- **Perbaikan**: Streaming shell/body aktif di Node/docs/edge. Loader tetap resolve sebelum render secara sengaja agar HTML + payload hydration tetap terbaca tanpa JS. Prototipe React Suspense deferred ditolak karena fallback kosong saat JS mati; deferred data yang no-JS-safe dilacak sebagai `p2-deferred-data-streaming`.
+- **Perbaikan**: Streaming shell/body aktif di Node/docs/edge. Loader tetap resolve sebelum render secara sengaja agar HTML + payload hydration tetap terbaca tanpa JS. Prototipe React Suspense deferred ditolak karena fallback kosong saat JS mati; deferred data no-JS-safe selesai di `p2-deferred-data-streaming` (`defer` + fallback server + state JSON).
 
 ### `DF-08` — Client bundle memuat semua halaman (tanpa code splitting)
 

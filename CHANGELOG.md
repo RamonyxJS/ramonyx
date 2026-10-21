@@ -4,6 +4,13 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+### Deferred loader data
+
+- **`defer()` + React Suspense**: loader dapat memulai data non-kritis tanpa menahan shell;
+  fallback server tetap terbaca tanpa JS, nilai deferred dirender di boundary dan diserialisasi
+  sebagai state JSON ber-nonce untuk hydration. Soft navigation/action memakai render sinkron +
+  client render boundary; e2e playground mencakup streaming, no-JS, hydration, dan back/forward.
+
 ## [0.5.0] — 2026-10-21
 
 Rilis partial hydration islands, route code splitting, rekonsiliasi head soft navigation, dan

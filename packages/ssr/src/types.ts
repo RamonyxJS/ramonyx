@@ -7,14 +7,24 @@ export interface ElementDescriptor {
   readonly children: readonly ElementDescriptor[];
 }
 
+export interface RenderOptions {
+  /** Nonce CSP untuk script inline React (Suspense reveal, deferred). */
+  readonly nonce?: string;
+  /** Dipanggil saat renderer menemukan error yang bisa dipulihkan/dilaporkan. */
+  readonly onError?: (error: unknown) => void;
+}
+
 export interface Renderer {
   readonly name: string;
-  render(element: ElementDescriptor): Promise<string>;
+  render(element: ElementDescriptor, options?: RenderOptions): Promise<string>;
   /**
    * Opsional: render body sebagai aliran chunk (SSR streaming — ADR-0047).
    * Bila tidak ada, `createPageRoutes` tetap memakai `render` walaupun `streaming: true`.
    */
-  renderStream?(element: ElementDescriptor): Promise<ReadableStream<Uint8Array>>;
+  renderStream?(
+    element: ElementDescriptor,
+    options?: RenderOptions,
+  ): Promise<ReadableStream<Uint8Array>>;
 }
 
 export interface DocumentOptions {

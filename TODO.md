@@ -242,7 +242,7 @@
 
 ### `p1-package-contract-coverage` — Kontrak API + coverage per paket
 
-*tema: quality · ukuran: M · status: open · dependensi: `p0-package-readiness-gate` · sumber: audit kesiapan paket 2026-10-21*
+*tema: quality · ukuran: M · status: done · dependensi: `p0-package-readiness-gate` · sumber: audit kesiapan paket 2026-10-21; test:coverage per paket + CI gate*
 
 - **Apa**: Tambahkan contract test export/type surface dan baseline coverage per paket, termasuk paket meta yang saat ini belum punya test.
 - **Kenapa penting untuk bersaing**: Tanpa kontrak per paket, perubahan export atau dependency bisa lolos typecheck aplikasi tetapi merusak konsumen; coverage juga belum terukur.

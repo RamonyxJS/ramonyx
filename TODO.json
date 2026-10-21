@@ -611,7 +611,7 @@
       "theme": "quality",
       "priority": "p1",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Tambahkan contract test export/type surface dan baseline coverage per paket, termasuk paket meta yang saat ini belum punya test.",
       "why": "Tanpa kontrak per paket, perubahan export atau dependency bisa lolos typecheck aplikasi tetapi merusak konsumen; coverage juga belum terukur.",
       "done": [
@@ -622,7 +622,7 @@
       ],
       "areas": ["packages", "scripts", ".github/workflows"],
       "competitor": "Next.js/SvelteKit menguji package exports dan tipe publik; proyek matang menjaga coverage paket inti di CI.",
-      "source": "audit kesiapan paket 2026-10-21",
+      "source": "audit kesiapan paket 2026-10-21; test:coverage per paket + CI gate",
       "dependsOn": ["p0-package-readiness-gate"]
     }
   ],

@@ -34,7 +34,8 @@
     "docs:no-leak": "node scripts/verify-no-leak.mjs",
     "test:docs": "NODE_ENV=production node --import ./tools/register.mjs apps/docs/export.ts --origin https://ramonyx.example && playwright test --config apps/docs/playwright.config.ts",
     "build:worker": "node --import ./tools/register.mjs scripts/build-worker.ts",
-    "deploy:worker": "pnpm build:worker && pnpm dlx wrangler deploy"
+    "deploy:worker": "pnpm build:worker && pnpm dlx wrangler deploy",
+    "test:coverage": "node scripts/test-coverage.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

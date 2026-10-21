@@ -66,6 +66,8 @@ jobs:
         run: pnpm typecheck
       - name: Test
         run: pnpm test
+      - name: Test coverage (contract + per-package gate)
+        run: pnpm test:coverage
       - name: Docs machine layer (blocking)
         run: pnpm docs:validate
       - name: Build (client bundle)

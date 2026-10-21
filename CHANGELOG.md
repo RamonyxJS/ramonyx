@@ -63,6 +63,15 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 Rilis kesiapan paket publik.
 
 ### Paket & API
+### Kontrak & coverage paket
+
+- **Contract test publik**: `tests/package-exports.test.ts` memeriksa nilai export setiap paket,
+  termasuk subpath `@ramonyx/react/{client,assets,link}`, `@ramonyx/router/routes`, dan
+  `@ramonyx/security/ssrf`; `tests/package-contracts.test.ts` mengunci metadata source.
+- **Coverage gate per paket**: `pnpm test:coverage` menjalankan suite tiap paket dengan ambang
+  baris/fungsi/cabang yang terdokumentasi; CI menjalankannya setelah `pnpm test`.
+- `p1-package-contract-coverage` ditutup; `p0-package-readiness-gate` sudah selesai di 0.4.2.
+
 
 - **Meta package**: `ramonyx` kini mengekspor `createHandler` dari `@ramonyx/server` sesuai
   `docs/public/api/core-contract.md`; ditambah contract test.

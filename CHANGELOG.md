@@ -63,6 +63,13 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 Rilis kesiapan paket publik.
 
 ### Paket & API
+### Dokumentasi
+
+- `p3-docs-domain` selesai: domain Worker `ramonyx.devmoon.net` dan mirror Pages terdokumentasi;
+  preview PR otomatis tidak dipakai karena kredensial Cloudflare dibatasi untuk workflow
+  `main`/manual, bukan PR dari fork. Preview lokal/manual dijelaskan di
+  `docs/public/deployment.md`.
+
 ### Plugin contract
 
 - Kontrak plugin dinyatakan **stabil sejak 0.4.2** setelah verifikasi tidak ada perubahan aditif

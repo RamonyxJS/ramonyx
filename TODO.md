@@ -458,7 +458,7 @@
 
 ### `p3-docs-domain` — Domain kustom + preview PR untuk situs docs
 
-*tema: docs · ukuran: S · status: in-progress · sumber: domain Worker live 2026-10-21; preview PR/decision pending*
+*tema: docs · ukuran: S · status: done · sumber: domain Worker live 2026-10-21; preview PR otomatis tidak dipakai — lokal/manual deploy terdokumentasi di deployment.md (keputusan 2026-10-21)*
 
 - **Apa**: Domain kustom `ramonyx.devmoon.net` sudah live (Worker) + preview deploy per PR atau keputusan sadar untuk tidak.
 - **Kenapa penting untuk bersaing**: Profesionalisme dan kepercayaan; GitHub Pages subpath sudah jalan, jadi ini peningkatan kenyamanan, bukan kebutuhan.

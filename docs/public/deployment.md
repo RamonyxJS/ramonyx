@@ -55,6 +55,16 @@ export default { fetch };
 - CI runs a **workerd** smoke test against the edge artifact (Cloudflare's runtime), so SSR, API,
   actions, env bindings, middleware, and 404s are exercised in a real edge runtime.
 
+## Preview and staging
+
+- Local preview: `pnpm docs` (and `pnpm dev` for the playground).
+- Worker preview: run `pnpm build:worker` then `pnpm dlx wrangler deploy`, or trigger
+  `deploy-worker.yml` manually. The canonical domain is `https://ramonyx.devmoon.net/`; the
+  GitHub Pages mirror is published at `/ramonyx`.
+- **Automatic PR previews are intentionally not enabled.** Cloudflare credentials are limited to
+  trusted `main`/manual workflows so pull requests (especially forks) never receive deployment
+  secrets. A PR is previewed locally or via an explicitly authorized manual deploy.
+
 ## Environment variables
 
 | Context | Access |

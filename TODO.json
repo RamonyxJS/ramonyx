@@ -511,7 +511,7 @@
       "theme": "docs",
       "priority": "p3",
       "size": "S",
-      "status": "in-progress",
+      "status": "done",
       "what": "Domain kustom `ramonyx.devmoon.net` sudah live (Worker) + preview deploy per PR atau keputusan sadar untuk tidak.",
       "why": "Profesionalisme dan kepercayaan; GitHub Pages subpath sudah jalan, jadi ini peningkatan kenyamanan, bukan kebutuhan.",
       "done": [
@@ -521,7 +521,7 @@
       "areas": [".github/workflows", "docs"],
       "adrs": [],
       "competitor": "Semua docs resmi framework besar berada di domain sendiri.",
-      "source": "domain Worker live 2026-10-21; preview PR/decision pending"
+      "source": "domain Worker live 2026-10-21; preview PR otomatis tidak dipakai — lokal/manual deploy terdokumentasi di deployment.md (keputusan 2026-10-21)"
     },
     {
       "id": "f0-extension-primitives",

@@ -1909,7 +1909,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T11:43:03.134Z",
+  "generatedAt": "2026-10-21T11:46:55.926Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2323,7 +2323,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T11:43:04.137Z",
+  "generatedAt": "2026-10-21T11:46:57.010Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3053,6 +3053,16 @@ export default { fetch };
 - The build rejects `node:*` imports in the edge artifact (except where shimmed by the platform).
 - CI runs a **workerd** smoke test against the edge artifact (Cloudflare's runtime), so SSR, API,
   actions, env bindings, middleware, and 404s are exercised in a real edge runtime.
+
+## Preview and staging
+
+- Local preview: `pnpm docs` (and `pnpm dev` for the playground).
+- Worker preview: run `pnpm build:worker` then `pnpm dlx wrangler deploy`, or trigger
+  `deploy-worker.yml` manually. The canonical domain is `https://ramonyx.devmoon.net/`; the
+  GitHub Pages mirror is published at `/ramonyx`.
+- **Automatic PR previews are intentionally not enabled.** Cloudflare credentials are limited to
+  trusted `main`/manual workflows so pull requests (especially forks) never receive deployment
+  secrets. A PR is previewed locally or via an explicitly authorized manual deploy.
 
 ## Environment variables
 

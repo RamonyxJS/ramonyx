@@ -35,3 +35,16 @@ test("Context7 Ask: verification, hidden note, llms, dan markdown docs", async (
   await expect(notFoundMarkdown).toBeOK();
   expect((await notFoundMarkdown.text()).startsWith("## Search")).toBe(true);
 });
+
+test("Context7 Ask: meta + note ikut soft navigation", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => window.__ramonyxLoadClient?.());
+  await page.waitForFunction(() => document.documentElement.classList.contains("hydrated"));
+  await page.getByRole("link", { name: "Architecture", exact: true }).click();
+  await expect(page).toHaveURL(/\/docs\/architecture\/?$/);
+  await expect(page.locator('meta[name="context7-site-verification"]')).toHaveAttribute(
+    "content",
+    CONTEXT7_SITE_KEY,
+  );
+  await expect(page.locator("blockquote[data-context7-ask]")).toHaveCount(1);
+});

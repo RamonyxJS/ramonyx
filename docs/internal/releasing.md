@@ -13,6 +13,20 @@
 - **TERBIT — 0.4.2** (2026-10-21): gate kesiapan paket publik — meta `createHandler`, React
   peer dependency, deskripsi/README 16 paket, metadata release, `release:verify` dari tarball,
   dan seluruh paket terverifikasi di registry dengan provenance.
+- **PERSIAPAN — 0.5.0** (2026-10-21): partial hydration islands (`@ramonyx/react/islands`),
+  route code splitting, rekonsiliasi head soft navigation, dan pembaruan situs/docs. Bump versi
+  16 paket + template; verifikasi rilis penuh sebelum tag.
+
+## Persiapan 0.5.0 (2026-10-21)
+
+- Fitur: `<Island>`/`defineIsland` dengan SSR root terisolasi + hydration per marker, `useId`
+  stabil; e2e playground interaksi/no-JS/back-forward; docs SSR.
+- Bump: `Cargo.toml` + 15 paket `packages/*` + `apps/create-app` → **0.5.0**; template
+  `^0.5.0`; CHANGELOG `[0.5.0]`; README/AGENTS status.
+- Gate: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm docs:stats`, `pnpm docs:generate`,
+  `pnpm docs:validate`; lalu `pnpm release` + `pnpm release:verify` + `npm publish --dry-run`
+  untuk 16 tarball.
+- Langkah pemilik: tag `v0.5.0` → workflow publish provenance + GitHub Release.
 
 ## Persiapan 0.4.0 (2026-10-19)
 

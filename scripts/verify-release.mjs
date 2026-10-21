@@ -233,7 +233,7 @@ async function main() {
     join(workDir, "smoke.mjs"),
     `// Smoke konsumen: Node polos, tanpa loader (ADR-0039).
 import assert from "node:assert/strict";
-import { createElement } from "react";
+import { createElement, useId } from "react";
 import { route } from "@ramonyx/core";
 import { createRouteTable, matchRoute } from "@ramonyx/router";
 import { validate } from "@ramonyx/schema";
@@ -242,6 +242,7 @@ import { createHandler as metaCreateHandler } from "ramonyx";
 import { cspNonce, securityHeaders } from "@ramonyx/security";
 import { createPageRoutes, RAMONYX_MOUNT_ID } from "@ramonyx/ssr";
 import { createReactRenderer } from "@ramonyx/react";
+import { defineIsland, Island } from "@ramonyx/react/islands";
 import "@ramonyx/adapter-runtime";
 import "@ramonyx/compiler";
 import "@ramonyx/bundler";
@@ -303,6 +304,21 @@ const pageHandler = createHandler({ routes: createPageRoutes({ pages, renderer: 
 const html = await (await pageHandler(new Request("http://uji/"))).text();
 assert.ok(html.includes("halo paket"), "ISI SSR");
 assert.ok(html.includes(\`id="\${RAMONYX_MOUNT_ID}"\`), "MOUNT ID");
+
+// Partial hydration island dari subpath paket hasil rilis.
+function ReleaseIsland() {
+  const id = useId();
+  return createElement("span", { id, "data-release-island": "ok" }, "island");
+}
+defineIsland("release-island", ReleaseIsland);
+const islandRenderer = createReactRenderer();
+const islandHtml = await islandRenderer.render({
+  type: () => createElement(Island, { id: "release-island", props: {} }),
+  props: {},
+  children: [],
+});
+assert.ok(islandHtml.includes('data-ramonyx-island="release-island"'), "ISLAND MARKER");
+assert.ok(/id="[^"]*ramonyx-island-release-island-/.test(islandHtml), "ISLAND PREFIX");
 
 console.log("SMOKE OK halo,dunia paket", process.versions.node);
 `,

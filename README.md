@@ -4,9 +4,9 @@ Framework full-stack TypeScript (Node ≥ 24) + runtime Rust/V8 **eksperimental*
 SSR React (+ streaming), hydration + soft navigation, middleware security, validasi schema di
 tepi kepercayaan, dan benchmark/gate reproducible.
 
-> **Status: alpha 0.4.2 — terbit di npm** (2026-10-21, 16 paket `@ramonyx/*` + `ramonyx` +
+> **Status: alpha 0.5.0 — terbit di npm** (2026-10-21, 16 paket `@ramonyx/*` + `ramonyx` +
 > `create-ramonyx-app`, **dengan provenance**) — lihat
-> [Rilis v0.4.2](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.4.2).
+> [Rilis v0.5.0](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.5.0).
 > Framework Node adalah baseline produksi; runtime Rust/V8 eksperimental. Aplikasi baru:
 > `pnpm create ramonyx-app aplikasi-saya` → `pnpm dev|build|start` (CLI `ramonyx`).
 > Verifikasi registry end-to-end: scaffold → install → build → start → SSR + API.
@@ -28,6 +28,9 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
 - **Framework**: file routing (`src/routes`), lifecycle loader → render → dokumen; **SSR React**
   dengan **streaming** (opt-in, `createPageRoutes({ streaming: true })`) + payload hydration
   `window.__RAMONYX__` + soft navigation.
+- **Partial hydration islands** (`@ramonyx/react/islands`): `<Island>` + `defineIsland`; server
+  merender batas interaktif, client hanya hydrate marker tersebut. Halaman dengan island memakai
+  mode islands otomatis; `useId`, soft navigation, back/forward, dan no-JS tetap bekerja.
 - **CLI devtools** (`@ramonyx/devtools`): `ramonyx dev` (Vite + HMR + **panel devtools**
   `/__ramonyx/devtools`: rute, timing, hydration, bundel), `ramonyx build`
   (`--static`, `--target edge`, `--watch`), `ramonyx start`, `ramonyx doctor` — konvensi

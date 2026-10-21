@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T13:43:47.156Z",
+  "generatedAt": "2026-10-21T13:58:16.808Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
         "createConsoleLogger",
@@ -27,7 +27,7 @@
     },
     {
       "name": "@ramonyx/bundler",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
@@ -77,7 +77,7 @@
     },
     {
       "name": "@ramonyx/compiler",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/compiler/src/index.ts",
       "values": [
         "HTTP_METHODS",
@@ -103,7 +103,7 @@
     },
     {
       "name": "@ramonyx/core",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/core/src/index.ts",
       "values": [
         "HttpError",
@@ -174,7 +174,7 @@
     },
     {
       "name": "@ramonyx/devtools",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
         "loadConfigFile",
@@ -189,7 +189,7 @@
     },
     {
       "name": "@ramonyx/mcp-docs-server",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/mcp-docs-server/src/index.ts",
       "values": [
         "MCP_PROTOCOL_VERSION",
@@ -208,7 +208,7 @@
     },
     {
       "name": "@ramonyx/plugin-image",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/plugin-image/src/index.ts",
       "values": [
         "imageOptimizer"
@@ -218,7 +218,7 @@
     },
     {
       "name": "ramonyx",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "HttpError",
@@ -266,7 +266,7 @@
     },
     {
       "name": "@ramonyx/react",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/react/src/index.ts",
       "values": [
         "Island",
@@ -283,7 +283,7 @@
     },
     {
       "name": "@ramonyx/router",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/router/src/index.ts",
       "values": [
         "createRouteTable",
@@ -298,7 +298,7 @@
     },
     {
       "name": "@ramonyx/schema",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/schema/src/index.ts",
       "values": [
         "validate"
@@ -318,7 +318,7 @@
     },
     {
       "name": "@ramonyx/security",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/security/src/index.ts",
       "values": [
         "DEFAULT_COOKIE_OPTIONS",
@@ -348,7 +348,7 @@
     },
     {
       "name": "@ramonyx/server",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/server/src/index.ts",
       "values": [
         "createHandler",
@@ -372,7 +372,7 @@
     },
     {
       "name": "@ramonyx/ssr",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/ssr/src/index.ts",
       "values": [
         "PAYLOAD_SCRIPT_ID",
@@ -399,7 +399,7 @@
     },
     {
       "name": "@ramonyx/testing",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "source": "packages/testing/src/index.ts",
       "values": [
         "createTestServer",

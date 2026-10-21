@@ -4,6 +4,11 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-10-21
+
+Rilis partial hydration islands, route code splitting, rekonsiliasi head soft navigation, dan
+pembaruan situs publik.
+
 ### Landing 2.0 + Cloudflare Worker
 
 - **Landing total redesign** ("onyx engine room"): wordmark `RAMONYX` edge-to-edge, particle/grid

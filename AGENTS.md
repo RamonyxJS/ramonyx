@@ -1,7 +1,7 @@
 # AGENTS.md — Ramonyx
 
 Framework full-stack TypeScript + runtime eksperimental (Rust + V8) — dua proyek yang terintegrasi
-tetapi terpisah. **Phase 0–5 praktis tuntas; rilis 0.4.2 terbit (16 paket npm)**; runtime Rust/V8
+tetapi terpisah. **Phase 0–5 praktis tuntas; rilis 0.5.0 terbit (16 paket npm)**; runtime Rust/V8
 eksperimental (Phase 4 selesai, ADR-0001).
 
 ## Baca dulu, berurutan

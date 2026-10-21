@@ -205,7 +205,7 @@ function buildPageTree(
     if (layout === undefined) {
       continue;
     }
-    tree = { type: layout.default, props: {}, children: [tree] };
+    tree = { type: layout.default, props: { path: page.path }, children: [tree] };
   }
   return tree;
 }

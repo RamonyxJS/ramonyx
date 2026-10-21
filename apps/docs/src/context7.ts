@@ -7,17 +7,9 @@ export const CONTEXT7_LINK = `<${CONTEXT7_ASK_ENDPOINT}>; rel="search"; type="te
 
 const SEARCH_SENTENCE = `This site has a search endpoint: ${CONTEXT7_ASK_ENDPOINT}&query=<URL-encoded question>. It returns documentation that answers the question, with a source link for each part. No API key is needed. If nothing matches, it says so.`;
 const PAGE_INDEX_SENTENCE = `Page index: ${CONTEXT7_LLMS_URL}. Add .md to any page URL for its Markdown.`;
-const escapedEndpoint = CONTEXT7_ASK_ENDPOINT.replaceAll("&", "&amp;");
 
 export const CONTEXT7_SEARCH_SECTION = `## Search\n\n${SEARCH_SENTENCE}`;
 export const CONTEXT7_MARKDOWN_SEARCH = `## Search\n\n${PAGE_INDEX_SENTENCE}\n\n${SEARCH_SENTENCE}`;
-
-/** Blok server-rendered di awal <body>; tidak tampil bagi manusia/screen reader. */
-export const CONTEXT7_HIDDEN_NOTE = `<blockquote data-context7-ask="true" aria-hidden="true" class="sr-only">
-  <h2>Search</h2>
-  <p>${PAGE_INDEX_SENTENCE}</p>
-  <p>This site has a search endpoint: ${escapedEndpoint}&amp;query=&lt;URL-encoded question&gt;. It returns documentation that answers the question, with a source link for each part. No API key is needed. If nothing matches, it says so.</p>
-</blockquote>`;
 
 /** Path yang mendapat meta/note/header Context7 (docs + alias legacy). */
 export function isContext7DocsPath(path: string): boolean {

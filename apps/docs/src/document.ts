@@ -5,7 +5,7 @@
 
 import type { DocumentRenderer } from "@ramonyx/ssr";
 
-import { CONTEXT7_HIDDEN_NOTE, CONTEXT7_SITE_KEY, isContext7DocsPath } from "./context7.ts";
+import { CONTEXT7_SITE_KEY, isContext7DocsPath } from "./context7.ts";
 
 export interface DocumentFonts {
   readonly serif: string;
@@ -1617,7 +1617,6 @@ export function createDocument(
     const context7Meta = context7
       ? `<meta name="context7-site-verification" content="${CONTEXT7_SITE_KEY}" />`
       : "";
-    const context7Note = context7 ? CONTEXT7_HIDDEN_NOTE : "";
     return `<!doctype html>
 <html lang="${lang}"${dir === undefined ? "" : ` dir="${dir}"`}>
 <head>
@@ -1636,7 +1635,6 @@ ${preload}
 <style data-ramonyx-style>${path === "/" ? GAYA_LANDING(f) : GAYA(f)}</style>${head.length > 0 ? `\n${head}` : ""}
 </head>
 <body>
-${context7Note}
 <div id="ramonyx-root">${body}</div>${scripts.length > 0 ? `\n${scripts}` : ""}
 </body>
 </html>

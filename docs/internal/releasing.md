@@ -10,6 +10,9 @@
   hasil + acceptance di bagian "Hasil rilis 0.4.0".
 - **TERBIT — 0.4.1** (2026-10-20): remediasi snapshot MCP (`docs/public` saja) + situs publik
   berbasis kebijakan konten (ADR-0082); 17 artefak; hasil + verifikasi di "Hasil rilis 0.4.1".
+- **KANDIDAT — 0.4.2** (2026-10-21): gate kesiapan paket publik — meta `createHandler`, React
+  peer dependency, deskripsi/README 16 paket, metadata release, dan `release:verify` dari
+  tarball. Tag/publikasi menunggu hasil CI dan registry.
 
 ## Persiapan 0.4.0 (2026-10-19)
 

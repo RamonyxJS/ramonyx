@@ -1911,11 +1911,11 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T08:02:04.608Z",
+  "generatedAt": "2026-10-21T10:40:08.197Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
         "createConsoleLogger",
@@ -1938,7 +1938,7 @@
     },
     {
       "name": "@ramonyx/bundler",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
@@ -1988,7 +1988,7 @@
     },
     {
       "name": "@ramonyx/compiler",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/compiler/src/index.ts",
       "values": [
         "HTTP_METHODS",
@@ -2014,7 +2014,7 @@
     },
     {
       "name": "@ramonyx/core",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/core/src/index.ts",
       "values": [
         "HttpError",
@@ -2085,7 +2085,7 @@
     },
     {
       "name": "@ramonyx/devtools",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/devtools/src/index.ts",
       "values": [
         "loadConfigFile",
@@ -2100,7 +2100,7 @@
     },
     {
       "name": "@ramonyx/mcp-docs-server",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/mcp-docs-server/src/index.ts",
       "values": [
         "MCP_PROTOCOL_VERSION",
@@ -2119,7 +2119,7 @@
     },
     {
       "name": "@ramonyx/plugin-image",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/plugin-image/src/index.ts",
       "values": [
         "imageOptimizer"
@@ -2129,12 +2129,13 @@
     },
     {
       "name": "ramonyx",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "HttpError",
         "cacheControl",
         "createCache",
+        "createHandler",
         "createMemoryStore",
         "createTranslator",
         "defineConfig",
@@ -2176,7 +2177,7 @@
     },
     {
       "name": "@ramonyx/react",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/react/src/index.ts",
       "values": [
         "createReactRenderer"
@@ -2190,7 +2191,7 @@
     },
     {
       "name": "@ramonyx/router",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/router/src/index.ts",
       "values": [
         "createRouteTable",
@@ -2205,7 +2206,7 @@
     },
     {
       "name": "@ramonyx/schema",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/schema/src/index.ts",
       "values": [
         "validate"
@@ -2225,7 +2226,7 @@
     },
     {
       "name": "@ramonyx/security",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/security/src/index.ts",
       "values": [
         "DEFAULT_COOKIE_OPTIONS",
@@ -2255,7 +2256,7 @@
     },
     {
       "name": "@ramonyx/server",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/server/src/index.ts",
       "values": [
         "createHandler",
@@ -2279,7 +2280,7 @@
     },
     {
       "name": "@ramonyx/ssr",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/ssr/src/index.ts",
       "values": [
         "PAYLOAD_SCRIPT_ID",
@@ -2306,7 +2307,7 @@
     },
     {
       "name": "@ramonyx/testing",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": "packages/testing/src/index.ts",
       "values": [
         "createTestServer",
@@ -2324,7 +2325,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T08:02:05.789Z",
+  "generatedAt": "2026-10-21T10:40:09.444Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2397,9 +2398,9 @@
 ```json
 {
   "schemaVersion": 1,
-  "version": "0.4.1",
-  "generatedAt": "2026-10-21T04:56:15.824Z",
-  "commit": "195f66a9148b9deba27bbc40a4964551921920bf",
+  "version": "0.4.2",
+  "generatedAt": "2026-10-21T10:38:06.564Z",
+  "commit": "03abe14eaa61da5f890f2ba3ec07bfaf5e63a808",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2426,7 +2427,7 @@
   "adrs": 8,
   "docs": 21,
   "tests": {
-    "node": 291,
+    "node": 295,
     "rust": 116,
     "e2eSpecFiles": 9
   }

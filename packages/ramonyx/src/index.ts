@@ -39,3 +39,5 @@ export {
   resolveConfig,
   route,
 } from "@ramonyx/core";
+
+export { createHandler } from "@ramonyx/server";

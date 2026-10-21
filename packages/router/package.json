@@ -1,6 +1,6 @@
 {
   "name": "@ramonyx/router",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -13,5 +13,6 @@
   },
   "devDependencies": {
     "fast-check": "4.10.2"
-  }
+  },
+  "description": "Route table and matcher for Ramonyx file routes and middleware."
 }

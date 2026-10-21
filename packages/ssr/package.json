@@ -1,6 +1,6 @@
 {
   "name": "@ramonyx/ssr",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -12,5 +12,6 @@
   },
   "devDependencies": {
     "@ramonyx/server": "workspace:*"
-  }
+  },
+  "description": "SSR page routes, streaming, metadata, SEO, caching, and static generation for Ramonyx."
 }

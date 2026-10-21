@@ -1,6 +1,6 @@
 {
   "name": "@ramonyx/bundler",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -11,5 +11,6 @@
     "@ramonyx/compiler": "workspace:*",
     "@ramonyx/core": "workspace:*",
     "vite": "8.3.4"
-  }
+  },
+  "description": "Build pipeline for Ramonyx: Vite client bundles, edge builds, static prerender, and plugin hooks."
 }

@@ -1,6 +1,6 @@
 {
   "name": "@ramonyx/devtools",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -15,5 +15,6 @@
     "@ramonyx/bundler": "workspace:*",
     "@ramonyx/compiler": "workspace:*",
     "ramonyx": "workspace:*"
-  }
+  },
+  "description": "Ramonyx CLI for dev/build/start/doctor and the development devtools panel."
 }

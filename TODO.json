@@ -593,7 +593,13 @@
       "status": "open",
       "what": "Jadikan kesiapan paket publik sebagai gate rilis: kontrak API meta, peer dependency React, metadata/README npm, dan rilis yang dibangun dari main.",
       "why": "Fitur sudah matang, tetapi adopsi publik bisa gagal karena export meta tidak cocok, React terduplikasi, metadata paket minim, atau registry tertinggal dari main.",
-      "done": ["Kontrak export `ramonyx` cocok dengan `docs/public/api/core-contract.md` — atau dokumentasi dikoreksi — dan diuji.", "`@ramonyx/react` memakai `react`/`react-dom` sebagai peerDependencies; consumer matrix React 19.x lulus.", "16 paket memiliki deskripsi dan README unik serta metadata npm valid; diverifikasi dengan `npm pack`.", "Rilis berikutnya dibangun dari `main`, lolos `release:verify`, provenance, dan verifikasi registry.", "CI memiliki gate API export/metadata paket di samping typecheck aplikasi."],
+      "done": [
+        "Kontrak export `ramonyx` cocok dengan `docs/public/api/core-contract.md` — atau dokumentasi dikoreksi — dan diuji.",
+        "`@ramonyx/react` memakai `react`/`react-dom` sebagai peerDependencies; consumer matrix React 19.x lulus.",
+        "16 paket memiliki deskripsi dan README unik serta metadata npm valid; diverifikasi dengan `npm pack`.",
+        "Rilis berikutnya dibangun dari `main`, lolos `release:verify`, provenance, dan verifikasi registry.",
+        "CI memiliki gate API export/metadata paket di samping typecheck aplikasi."
+      ],
       "areas": ["packages", "apps/create-app", "docs/public/api", "scripts", ".github/workflows"],
       "competitor": "Next.js/SvelteKit menegakkan exports, peer dependency, dan dokumentasi paket; provenance npm menjadi standar adopsi.",
       "source": "audit kesiapan paket 2026-10-21",
@@ -608,7 +614,12 @@
       "status": "open",
       "what": "Tambahkan contract test export/type surface dan baseline coverage per paket, termasuk paket meta yang saat ini belum punya test.",
       "why": "Tanpa kontrak per paket, perubahan export atau dependency bisa lolos typecheck aplikasi tetapi merusak konsumen; coverage juga belum terukur.",
-      "done": ["Setiap paket punya contract test export/type surface minimal.", "`ramonyx` meta memiliki test yang memverifikasi re-export sesuai kontrak.", "Ada laporan coverage per paket dan ambang minimal untuk paket inti.", "CI menjalankan contract test + coverage; regresi API/paket menggagalkan build."],
+      "done": [
+        "Setiap paket punya contract test export/type surface minimal.",
+        "`ramonyx` meta memiliki test yang memverifikasi re-export sesuai kontrak.",
+        "Ada laporan coverage per paket dan ambang minimal untuk paket inti.",
+        "CI menjalankan contract test + coverage; regresi API/paket menggagalkan build."
+      ],
       "areas": ["packages", "scripts", ".github/workflows"],
       "competitor": "Next.js/SvelteKit menguji package exports dan tipe publik; proyek matang menjaga coverage paket inti di CI.",
       "source": "audit kesiapan paket 2026-10-21",

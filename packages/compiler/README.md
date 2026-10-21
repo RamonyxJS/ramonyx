@@ -1,0 +1,21 @@
+# @ramonyx/compiler
+
+File-routing compiler and development TypeScript/JSX loader for Ramonyx.
+
+Part of the Ramonyx framework. Requires Node.js 24 or newer and ESM.
+
+## Install
+
+```bash
+npm install @ramonyx/compiler
+```
+
+## Documentation
+
+- [Ramonyx docs](https://ramonyx.devmoon.net/docs/routing)
+- [Repository](https://github.com/RamonyxJS/ramonyx)
+- [Issues](https://github.com/RamonyxJS/ramonyx/issues)
+
+## License
+
+MIT

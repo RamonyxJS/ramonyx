@@ -74,7 +74,13 @@ function stagePackage(entry, releaseVersion) {
     recursive: true,
   });
   cpSync(join(root, "LICENSE"), join(staging, "LICENSE"));
-  writeFileSync(join(staging, "README.md"), packageReadme(source));
+  // README paket berasal dari sumber (unik per paket); fallback generik hanya untuk
+  // paket lama yang belum punya README.
+  const readmeSource = join(entry.dir, "README.md");
+  writeFileSync(
+    join(staging, "README.md"),
+    existsSync(readmeSource) ? readFileSync(readmeSource, "utf8") : packageReadme(source),
+  );
 
   const exportsMap = {};
   for (const [key, target] of Object.entries(source.exports ?? { ".": "./src/index.ts" })) {
@@ -144,6 +150,8 @@ function stagePackage(entry, releaseVersion) {
     ...(peerDependenciesMeta !== undefined ? { peerDependenciesMeta } : {}),
     publishConfig: { access: "public" },
     repository: REPOSITORY,
+    homepage: "https://ramonyx.devmoon.net/",
+    bugs: { url: `${REPOSITORY}/issues` },
   };
 
   writeFileSync(join(staging, "package.json"), `${JSON.stringify(staged, null, 2)}\n`);
@@ -204,6 +212,8 @@ function stageCreateApp(releaseVersion) {
     engines: { node: ">=24" },
     publishConfig: { access: "public" },
     repository: REPOSITORY,
+    homepage: "https://ramonyx.devmoon.net/",
+    bugs: { url: `${REPOSITORY}/issues` },
   };
   writeFileSync(join(staging, "package.json"), `${JSON.stringify(staged, null, 2)}\n`);
   return staging;

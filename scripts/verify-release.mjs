@@ -238,6 +238,7 @@ import { route } from "@ramonyx/core";
 import { createRouteTable, matchRoute } from "@ramonyx/router";
 import { validate } from "@ramonyx/schema";
 import { createHandler } from "@ramonyx/server";
+import { createHandler as metaCreateHandler } from "ramonyx";
 import { cspNonce, securityHeaders } from "@ramonyx/security";
 import { createPageRoutes, RAMONYX_MOUNT_ID } from "@ramonyx/ssr";
 import { createReactRenderer } from "@ramonyx/react";
@@ -286,6 +287,7 @@ assert.match(halo.headers.get("content-security-policy") ?? "", /nonce-[0-9a-f]{
 assert.deepEqual(await halo.json(), { halo: "dunia" });
 const echo = await handler(new Request("http://uji/api/echo", { method: "POST", body: "isi-paket" }));
 assert.deepEqual(await echo.json(), { terima: "isi-paket" });
+assert.equal(metaCreateHandler, createHandler, "ramonyx meta harus mengekspor createHandler");
 const hilang = await handler(new Request("http://uji/tidak-ada"));
 assert.equal(hilang.status, 404);
 
@@ -308,6 +310,39 @@ console.log("SMOKE OK halo,dunia paket", process.versions.node);
 
   console.log(`verifikasi: ${files.length} tarball → ${workDir}`);
   run("pnpm", ["install", "--silent"], { cwd: workDir });
+
+  // Gate metadata paket: tarball terpasang harus punya deskripsi/README unik dan peer React.
+  const installedPackages = Object.keys(dependencies).filter(
+    (name) => name !== "react" && name !== "react-dom",
+  );
+  for (const name of installedPackages) {
+    const dir = join(workDir, "node_modules", ...name.split("/"));
+    const manifest = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+    const description = String(manifest.description ?? "").trim();
+    if (description.length < 20 || description === "Paket framework Ramonyx.") {
+      fail(`${name}: deskripsi paket tidak valid/generik`);
+    }
+    if (!existsSync(join(dir, "README.md"))) {
+      fail(`${name}: README tidak ada di tarball`);
+    }
+  }
+  const reactManifest = JSON.parse(
+    readFileSync(join(workDir, "node_modules", "@ramonyx", "react", "package.json"), "utf8"),
+  );
+  if (
+    reactManifest.dependencies?.react !== undefined ||
+    reactManifest.dependencies?.["react-dom"] !== undefined
+  ) {
+    fail("@ramonyx/react masih membawa react/react-dom di dependencies");
+  }
+  if (
+    typeof reactManifest.peerDependencies?.react !== "string" ||
+    typeof reactManifest.peerDependencies?.["react-dom"] !== "string"
+  ) {
+    fail("@ramonyx/react tidak mendeklarasikan peer react/react-dom");
+  }
+  console.log(`  ✓ npm: metadata + README ${installedPackages.length} paket, peer React`);
+
   const smoke = run("node", ["smoke.mjs"], { cwd: workDir, capture: true });
   if (!smoke.includes("SMOKE OK")) fail(`smoke gagal: ${smoke}`);
   console.log(`  ✓ npm: ${smoke.trim().split("\n").pop()}`);

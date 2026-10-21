@@ -58,6 +58,26 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
   jumlah halaman dokumentasi. Selaras praktik Next.js/Astro/Svelte/Django (keputusan desain di luar
   user docs; Backstage adalah pengecualian).
 
+## [0.4.2] — 2026-10-21
+
+Rilis kesiapan paket publik.
+
+### Paket & API
+
+- **Meta package**: `ramonyx` kini mengekspor `createHandler` dari `@ramonyx/server` sesuai
+  `docs/public/api/core-contract.md`; ditambah contract test.
+- **React peer**: `@ramonyx/react` memakai `react`/`react-dom` sebagai peer dependency (React 19.x),
+  bukan dependency; mencegah duplikasi React di aplikasi konsumen.
+- **Metadata npm**: deskripsi unik dan README per paket; homepage/issues dan verifikasi metadata
+  ditambahkan ke pipeline rilis.
+- **Contract gate**: test source package (nama, deskripsi, README, private/ESM/export, peer React)
+  dan smoke konsumen memeriksa metadata tarball.
+
+### Verifikasi
+
+- `pnpm release` + `pnpm release:verify` (tarball terpasang di konsumen bersih, Node polos).
+- 16 paket npm + provenance; registry diverifikasi setelah publikasi.
+
 ## [0.4.1] — 2026-10-20
 
 Rilis remediasi: snapshot dokumentasi paket MCP hanya `docs/public/` (kebocoran dokumen internal di

@@ -1,6 +1,6 @@
 {
   "name": "@ramonyx/core",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -9,5 +9,6 @@
   },
   "dependencies": {
     "@ramonyx/schema": "workspace:*"
-  }
+  },
+  "description": "Core contracts and primitives for Ramonyx: routes, config, cache, i18n, errors, and hooks."
 }

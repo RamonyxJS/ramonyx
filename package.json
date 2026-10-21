@@ -32,7 +32,9 @@
     "test:edge": "node --import ./tools/register.mjs scripts/edge-smoke.ts",
     "bench:image": "node benchmarks/vitals/image-pipeline.mjs",
     "docs:no-leak": "node scripts/verify-no-leak.mjs",
-    "test:docs": "NODE_ENV=production node --import ./tools/register.mjs apps/docs/export.ts --origin https://ramonyx.example && playwright test --config apps/docs/playwright.config.ts"
+    "test:docs": "NODE_ENV=production node --import ./tools/register.mjs apps/docs/export.ts --origin https://ramonyx.example && playwright test --config apps/docs/playwright.config.ts",
+    "build:worker": "node --import ./tools/register.mjs scripts/build-worker.ts",
+    "deploy:worker": "pnpm build:worker && pnpm dlx wrangler deploy"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

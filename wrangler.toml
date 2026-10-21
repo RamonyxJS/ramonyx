@@ -1,0 +1,28 @@
+# Cloudflare Worker untuk situs Ramonyx.
+# Build dulu: `pnpm build:worker` (docs static + landing edge).
+#
+# Preview: `pnpm dlx wrangler deploy` → URL *.workers.dev.
+# Custom domain: aktifkan blok [[routes]] SETELAH custom domain GitHub Pages dilepas.
+name = "ramonyx-site"
+main = "apps/docs/dist/worker/index.js"
+compatibility_date = "2026-10-21"
+workers_dev = true
+
+[assets]
+directory = "apps/docs/dist/static"
+binding = "ASSETS"
+run_worker_first = true
+html_handling = "auto-trailing-slash"
+not_found_handling = "404-page"
+
+# Waitlist (Workers KV). Buat namespace:
+#   pnpm dlx wrangler kv namespace create WAITLIST
+# lalu isi id dan hapus komentar.
+# [[kv_namespaces]]
+# binding = "WAITLIST"
+# id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Aktifkan setelah custom domain GitHub Pages dilepas:
+# [[routes]]
+# pattern = "ramonyx.devmoon.net"
+# custom_domain = true

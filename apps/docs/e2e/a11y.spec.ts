@@ -12,3 +12,13 @@ for (const path of ["/", "/docs/getting-started"]) {
     expect(serius.map((violation) => `${violation.id}: ${violation.help}`)).toEqual([]);
   });
 }
+
+test("a11y: landing dark juga bebas pelanggaran serious/critical", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/");
+  const hasil = await new AxeBuilder({ page }).analyze();
+  const serius = hasil.violations.filter(
+    (violation) => violation.impact === "serious" || violation.impact === "critical",
+  );
+  expect(serius.map((violation) => `${violation.id}: ${violation.help}`)).toEqual([]);
+});

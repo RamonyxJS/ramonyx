@@ -25,8 +25,15 @@ test("landing: hero, bukti dari machine layer, tema, pencarian Cmd+K", async ({ 
   await page.waitForFunction(() => document.documentElement.hasAttribute("data-theme"));
   const toggle = page.getByRole("button", { name: /Switch to (dark|light) theme/ });
   const temaAwal = await page.locator("html").getAttribute("data-theme");
+  const paperAwal = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--paper").trim(),
+  );
   await toggle.click();
   await expect(page.locator("html")).not.toHaveAttribute("data-theme", temaAwal ?? "");
+  const paperAkhir = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--paper").trim(),
+  );
+  expect(paperAkhir).not.toBe(paperAwal);
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute(
     "data-theme",
@@ -132,8 +139,9 @@ test("landing reduced-motion: animasi besar dimatikan", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   const state = await page.evaluate(() => ({
-    wordmark: getComputedStyle(document.querySelector(".hero-wordmark span") ?? document.body)
-      .animationName,
+    wordmark: getComputedStyle(
+      document.querySelector(".hero-wordmark .wm-outline") ?? document.body,
+    ).animationName,
     chapter: getComputedStyle(document.querySelector(".chapter-head") ?? document.body)
       .animationName,
     glow: getComputedStyle(document.querySelector(".cursor-glow") ?? document.body).display,

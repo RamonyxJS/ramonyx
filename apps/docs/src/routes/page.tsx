@@ -9,6 +9,7 @@ import { LandingReveal } from "../components/landing/landing-reveal.tsx";
 import { LimitsDemo } from "../components/landing/limits-demo.tsx";
 import { ParticleField } from "../components/landing/particle-field.tsx";
 import { RouteDemo } from "../components/landing/route-demo.tsx";
+import { ScrollFx } from "../components/landing/scroll-fx.tsx";
 import { LANDING_SECTIONS } from "../components/landing/sections.ts";
 import { StreamDemo } from "../components/landing/stream-demo.tsx";
 import { TypedTerminal } from "../components/landing/typed-terminal.tsx";
@@ -57,7 +58,86 @@ export async function action({ request, formData, env }: PageActionContext) {
     : { errors: result.errors ?? { email: "Could not save your email." } };
 }
 
-const WORDMARK = ["R", "A", "M", "O", "N", "Y", "X"] as const;
+const MARQUEE = [
+  "File routing",
+  "Streaming SSR",
+  "Server actions",
+  "One contract",
+  "Secure by default",
+  "Rust/V8 runtime",
+  "For agents",
+] as const;
+
+/** Wordmark SVG: teks diregangkan ke lebar penuh (textLength) → selalu edge-to-edge, tanpa layout shift. */
+function Wordmark() {
+  return (
+    <div className="hero-wordmark" role="img" aria-label="Ramonyx">
+      <svg viewBox="0 0 1400 270" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <defs>
+          <linearGradient
+            id="wm-fill"
+            gradientUnits="userSpaceOnUse"
+            x1="0"
+            y1="0"
+            x2="1400"
+            y2="270"
+          >
+            <stop offset="0" stopColor="#ffffff" />
+            <stop offset="0.42" stopColor="#b4c2ff" />
+            <stop offset="1" stopColor="#4766ff" />
+          </linearGradient>
+          <linearGradient
+            id="wm-shine"
+            gradientUnits="userSpaceOnUse"
+            x1="-500"
+            y1="0"
+            x2="-100"
+            y2="270"
+          >
+            <stop offset="0" stopColor="#fff" stopOpacity="0" />
+            <stop offset="0.5" stopColor="#fff" stopOpacity="0.95" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+            <animateTransform
+              attributeName="gradientTransform"
+              type="translate"
+              values="0 0; 2100 0; 2100 0"
+              keyTimes="0; 0.28; 1"
+              dur="7s"
+              begin="1.6s"
+              repeatCount="indefinite"
+            />
+          </linearGradient>
+        </defs>
+        <g transform="skewX(-9) translate(40 0)">
+          <text className="wm-glow" x="0" y="248" textLength="1330" lengthAdjust="spacingAndGlyphs">
+            RAMONYX
+          </text>
+          <text
+            className="wm-outline"
+            x="0"
+            y="248"
+            textLength="1330"
+            lengthAdjust="spacingAndGlyphs"
+          >
+            RAMONYX
+          </text>
+          <text className="wm-fill" x="0" y="248" textLength="1330" lengthAdjust="spacingAndGlyphs">
+            RAMONYX
+          </text>
+          <text
+            className="wm-shine"
+            x="0"
+            y="248"
+            textLength="1330"
+            lengthAdjust="spacingAndGlyphs"
+          >
+            RAMONYX
+          </text>
+        </g>
+      </svg>
+    </div>
+  );
+}
 
 function Kicker({ children }: { readonly children: ReactNode }) {
   return (
@@ -85,6 +165,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
     <main className="landing" id="isi" data-no-prefetch>
       <CursorGlow />
       <LandingReveal />
+      <ScrollFx />
 
       <section className="hero-stage" aria-labelledby="hero-title">
         <ParticleField />
@@ -95,13 +176,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
             </Kicker>
             <span className="hero-meta-note">scroll to explore</span>
           </div>
-          <div className="hero-wordmark" aria-hidden="true">
-            {WORDMARK.map((letter, index) => (
-              <span key={letter} style={{ animationDelay: `${index * 45}ms` }}>
-                {letter}
-              </span>
-            ))}
-          </div>
+          <Wordmark />
           <div className="hero-grid">
             <div className="hero-copy">
               <h1 id="hero-title" className="hero-title">
@@ -168,6 +243,19 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
         </div>
       </section>
 
+      <section className="marquee" data-scrub aria-hidden="true">
+        <div className="marquee-track">
+          {(["a", "b"] as const).flatMap((copy) =>
+            MARQUEE.map((word, index) => (
+              <span key={`${copy}-${word}`} className={index % 2 === 1 ? "is-outline" : ""}>
+                {word}
+                <i />
+              </span>
+            )),
+          )}
+        </div>
+      </section>
+
       <section className="stats-band" aria-label="Project facts">
         <div className="wrap stats-grid">
           <div className="stat">
@@ -199,7 +287,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
         <LandingNav sections={LANDING_SECTIONS} />
         <div className="story">
           <section id="routing" className="chapter">
-            <header className="chapter-head" data-reveal>
+            <header className="chapter-head" data-reveal data-scrub>
               <span className="chapter-num">01</span>
               <div>
                 <p className="chapter-kicker">File routing</p>
@@ -228,7 +316,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
           </section>
 
           <section id="streaming" className="chapter">
-            <header className="chapter-head" data-reveal>
+            <header className="chapter-head" data-reveal data-scrub>
               <span className="chapter-num">02</span>
               <div>
                 <p className="chapter-kicker">Streaming SSR</p>
@@ -257,7 +345,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
           </section>
 
           <section id="actions" className="chapter">
-            <header className="chapter-head" data-reveal>
+            <header className="chapter-head" data-reveal data-scrub>
               <span className="chapter-num">03</span>
               <div>
                 <p className="chapter-kicker">Server actions</p>
@@ -341,7 +429,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
           </section>
 
           <section id="contract" className="chapter">
-            <header className="chapter-head" data-reveal>
+            <header className="chapter-head" data-reveal data-scrub>
               <span className="chapter-num">04</span>
               <div>
                 <p className="chapter-kicker">Deployment</p>
@@ -356,7 +444,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
           </section>
 
           <section id="security" className="chapter">
-            <header className="chapter-head" data-reveal>
+            <header className="chapter-head" data-reveal data-scrub>
               <span className="chapter-num">05</span>
               <div>
                 <p className="chapter-kicker">Secure by default</p>
@@ -385,7 +473,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
           </section>
 
           <section id="runtime" className="chapter chapter-dark">
-            <header className="chapter-head" data-reveal>
+            <header className="chapter-head" data-reveal data-scrub>
               <span className="chapter-num">06</span>
               <div>
                 <p className="chapter-kicker">Rust/V8 runtime · experimental</p>
@@ -429,7 +517,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
           </section>
 
           <section id="agents" className="chapter">
-            <header className="chapter-head" data-reveal>
+            <header className="chapter-head" data-reveal data-scrub>
               <span className="chapter-num">07</span>
               <div>
                 <p className="chapter-kicker">For agents</p>
@@ -473,6 +561,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
       </div>
 
       <section className="closing" aria-labelledby="closing-title">
+        <ParticleField tone="dark" />
         <div className="wrap closing-inner">
           <p className="closing-kicker">
             <span className="kicker-tanda" aria-hidden="true" />

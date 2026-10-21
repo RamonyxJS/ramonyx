@@ -1096,7 +1096,7 @@ html.js .rail-help { display: inline-flex; gap: 8px; align-items: center; }
 .stream-steps li {
   display: grid; grid-template-columns: 28px 92px minmax(0, 1fr); gap: 8px;
   padding: 7px 0; border-bottom: 1px solid var(--line); font-family: var(--font-mono);
-  font-size: 9.5px; color: var(--muted); transition: color 0.25s var(--ease);
+  font-size: 9.5px; color: var(--muted);
 }
 .stream-steps li:last-child { border-bottom: 0; }
 .stream-steps li.is-on { color: var(--ink); }
@@ -1107,7 +1107,6 @@ html.js .rail-help { display: inline-flex; gap: 8px; align-items: center; }
 .stream-chunks span {
   border: 1px solid var(--line); padding: 7px 6px; text-align: center;
   font-family: var(--font-mono); font-size: 8px; color: var(--muted);
-  transition: background 0.25s var(--ease), color 0.25s var(--ease);
 }
 .stream-chunks span.is-on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 

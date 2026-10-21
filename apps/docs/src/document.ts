@@ -1624,7 +1624,7 @@ export function createDocument(
 <link rel="icon" href="${favicon}" />
 ${preload}
 <title>${title.length > 0 ? `${title} · Ramonyx` : "Ramonyx — full-stack TypeScript, secure by default"}</title>
-<style>${path === "/" ? GAYA_LANDING(f) : GAYA(f)}</style>${head.length > 0 ? `\n${head}` : ""}
+<style data-ramonyx-style>${path === "/" ? GAYA_LANDING(f) : GAYA(f)}</style>${head.length > 0 ? `\n${head}` : ""}
 </head>
 <body>
 <div id="ramonyx-root">${body}</div>${scripts.length > 0 ? `\n${scripts}` : ""}

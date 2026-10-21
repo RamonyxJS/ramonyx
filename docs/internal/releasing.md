@@ -13,9 +13,9 @@
 - **TERBIT — 0.4.2** (2026-10-21): gate kesiapan paket publik — meta `createHandler`, React
   peer dependency, deskripsi/README 16 paket, metadata release, `release:verify` dari tarball,
   dan seluruh paket terverifikasi di registry dengan provenance.
-- **PERSIAPAN — 0.5.0** (2026-10-21): partial hydration islands (`@ramonyx/react/islands`),
-  route code splitting, rekonsiliasi head soft navigation, dan pembaruan situs/docs. Bump versi
-  16 paket + template; verifikasi rilis penuh sebelum tag.
+- **TERBIT — 0.5.0** (2026-10-21): partial hydration islands (`@ramonyx/react/islands`),
+  route code splitting, rekonsiliasi head soft navigation, dan pembaruan situs/docs.
+  16 paket @ 0.5.0 + provenance; GitHub Release 19 aset.
 
 ## Persiapan 0.5.0 (2026-10-21)
 
@@ -38,6 +38,20 @@
 - `npm publish --dry-run` ×16 → exit 0 tanpa warning.
 - **Langkah tersisa (pemilik)**: `git tag v0.4.0 && git push origin main --tags` — **selesai**
   (lihat "Hasil rilis 0.4.0").
+
+## Hasil rilis 0.5.0 (2026-10-21)
+
+- Tag `v0.5.0` → workflow **success**: 16 paket @ 0.5.0 (provenance) + **GitHub Release 19 aset**;
+  binary runtime `ramonyx-runtime-0.5.0-x86_64-unknown-linux-gnu.tar.gz`.
+- **Gate**: `pnpm lint`, `typecheck`, `test` (300 Node), `docs:validate`; `pnpm release` (17 artefak)
+  + `pnpm release:verify` (konsumen bersih, scaffold build/start, MCP, runtime) + dry-run publish
+  16 tarball.
+- **Islands dari tarball**: smoke `@ramonyx/react/islands` memeriksa marker + prefix `useId`;
+  subpath `./islands` ikut ter-stage di `@ramonyx/react@0.5.0`.
+- **Template**: `create-ramonyx-app` memakai rentang `^0.5.0`; scaffold + build/start terverifikasi.
+- Registry: seluruh 16 paket @ 0.5.0 terlihat dengan `dist.attestations`; `@ramonyx/react`
+  mengekspor subpath `./islands`; acceptance `create-ramonyx-app@0.5.0` → install → build →
+  start → SSR 200.
 
 ## Hasil rilis 0.4.2 (2026-10-21)
 

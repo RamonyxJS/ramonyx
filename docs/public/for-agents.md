@@ -13,6 +13,12 @@ Agents get a machine-readable view of Ramonyx that is generated from **public** 
 - `machine/api.json`, `machine/cli.json`, `machine/config.schema.json` — extracted API/CLI/config
   references.
 
+## Context7
+
+- Library listing: [ramonyx_devmoon_net](https://context7.com/websites/ramonyx_devmoon_net)
+- Search endpoint: `https://context7.com/api/v2/ask?siteKey=ask_89339fd8bad939f239a589fa&query=<URL-encoded question>`
+  — returns documentation with source links; no API key required.
+
 ## MCP server (stdio)
 
 The docs are also available as an MCP server with five tools — `search_docs`, `get_page`,

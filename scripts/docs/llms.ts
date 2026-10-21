@@ -89,6 +89,7 @@ ${docs.map((file) => `- [${titleOf(readFileSync(file, "utf8"))}](${SITE}/docs/${
 - [llms-full.txt](${SITE}/machine/llms-full.txt): public machine layer + all public docs in one file
 - Markdown per page: append \`.md\` to a docs URL (e.g. ${SITE}/docs/getting-started.md)
 - MCP server: \`npx -y @ramonyx/mcp-docs-server\` (stdio; public docs snapshot)
+- [Context7](https://context7.com/websites/ramonyx_devmoon_net): searchable docs index + Ask endpoint
 `;
 
   const parts: string[] = [
@@ -98,6 +99,8 @@ ${docs.map((file) => `- [${titleOf(readFileSync(file, "utf8"))}](${SITE}/docs/${
     `> Source: repo RamonyxJS/ramonyx (${SITE}). Internal docs are never included.`,
     ``,
     CONTEXT7_SEARCH_SECTION,
+    ``,
+    `Context7 library: https://context7.com/websites/ramonyx_devmoon_net`,
     ``,
   ];
   for (const file of MACHINE_FILES) {

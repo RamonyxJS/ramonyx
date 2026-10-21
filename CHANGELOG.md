@@ -45,6 +45,12 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
   seragam. Font di-preload; tema terang default, gelap via toggle/sistem. Catatan engineering
   diperbarui.
 
+### Context7
+
+- Library **ramonyx_devmoon_net** aktif di Context7 (495 snippets; terverifikasi via `ctx7
+  library`/`ctx7 docs`). Context7 Ask endpoint terpasang di docs. Ditambahkan ke README,
+  `docs/public/for-agents.md`, `llms.txt`, dan `llms-full.txt`.
+
 ### Dokumentasi
 
 - **Ekspansi dokumentasi publik** (11 halaman baru): Internationalization, Typed Routes, Devtools

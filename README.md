@@ -46,6 +46,8 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
 - **Docs agen (MCP)**: `@ramonyx/mcp-docs-server` — tools `search_docs`/`get_page`/
   `get_feature_status`/`get_rules`/`list_adrs` (stdio, `npx -y @ramonyx/mcp-docs-server`;
   pemasangan: [docs/public/for-agents.md](docs/public/for-agents.md)).
+- **Context7**: [ramonyx_devmoon_net](https://context7.com/websites/ramonyx_devmoon_net) —
+  listing docs untuk agen + Context7 Ask search endpoint (tanpa API key).
 - **Benchmark**: protokol §8 (warm-up + ulangan + distribusi) dengan gate **report-only** —
   HTTP, SSR (sinkron vs streaming + suspense), Web Vitals di e2e, baseline per-lingkungan.
 - **Runtime Rust/V8 (eksperimental)**: ESM + TypeScript + `node_modules`, permission **deny-all**,

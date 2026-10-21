@@ -427,7 +427,7 @@
       "theme": "docs",
       "priority": "p2",
       "size": "S",
-      "status": "open",
+      "status": "done",
       "what": "Ajukan repo RamonyxJS/ramonyx ke Context7 (kanal dokumentasi pihak ketiga untuk agen).",
       "why": "Riset: kelima framework besar terdaftar di Context7; gratis, tanpa infrastruktur, dan langsung memberi agen sumber docs yang familiar.",
       "done": [
@@ -437,7 +437,7 @@
       "areas": ["docs"],
       "adrs": [],
       "competitor": "Next.js, Svelte, Nuxt, Astro, React Router semuanya terdaftar.",
-      "source": "riset §2",
+      "source": "listing /websites/ramonyx_devmoon_net (495 snippets) diverifikasi ctx7 library/docs 2026-10-21; README + llms + for-agents diperbarui",
       "quickWin": true
     },
     {

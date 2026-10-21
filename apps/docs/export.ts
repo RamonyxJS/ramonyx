@@ -14,6 +14,7 @@ import { buildClient, prerenderRoutes } from "@ramonyx/bundler";
 import { loadPageRoutes } from "@ramonyx/compiler";
 import { sitemapXml } from "@ramonyx/ssr";
 import { createApp } from "./src/app.ts";
+import { CONTEXT7_MARKDOWN_SEARCH } from "./src/context7.ts";
 import { loadCatalog, publicMachineDir, searchIndex } from "./src/docs.ts";
 import { rewriteDocLinks } from "./src/markdown.ts";
 
@@ -75,9 +76,16 @@ console.log(`✓ ${result.routes.length} halaman dirender + 404 + aset + .nojeky
 for (const doc of catalog) {
   const target = join(outDir, `docs/${doc.slug}.md`);
   await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, `${rewriteDocLinks(doc.text, doc.slug).trimEnd()}\n`);
+  await writeFile(
+    target,
+    `${CONTEXT7_MARKDOWN_SEARCH}\n\n${rewriteDocLinks(doc.text, doc.slug).trimEnd()}\n`,
+  );
 }
-console.log(`✓ ${catalog.length} markdown per halaman (docs/<slug>.md)`);
+await writeFile(
+  join(outDir, "404.md"),
+  `${CONTEXT7_MARKDOWN_SEARCH}\n\n# 404 — Page not found\n\nThis page is not part of the public documentation.\n`,
+);
+console.log(`✓ ${catalog.length} markdown per halaman (docs/<slug>.md) + 404.md`);
 
 // 3b. Indeks pencarian (Cmd+K statis) — hanya slug publik.
 await mkdir(join(outDir, "api"), { recursive: true });

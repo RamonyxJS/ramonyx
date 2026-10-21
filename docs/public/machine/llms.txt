@@ -5,6 +5,10 @@
 
 Documentation: https://ramonyx.devmoon.net/ . Structured facts: https://ramonyx.devmoon.net/machine/ .
 
+## Search
+
+This site has a search endpoint: https://context7.com/api/v2/ask?siteKey=ask_89339fd8bad939f239a589fa&query=<URL-encoded question>. It returns documentation that answers the question, with a source link for each part. No API key is needed. If nothing matches, it says so.
+
 ## Machine-readable (public only)
 
 - [features.json](https://ramonyx.devmoon.net/machine/features.json): feature status (implemented/partial/experimental/planned), packages, evidence, limitations

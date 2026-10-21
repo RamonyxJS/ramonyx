@@ -109,7 +109,17 @@ export default {
       }
       return landing.fetch(request, env);
     }
-    const response = await env.ASSETS.fetch(request);
+    // Worker Assets mengalihkan /docs → /docs/ (307). Context7 dan pengecekan curl
+    // mengharapkan HTML langsung di /docs; layani index-nya tanpa redirect.
+    const docsIndex =
+      url.pathname === "/docs" || url.pathname === "/dokumen"
+        ? new URL(url.pathname + "/", request.url)
+        : null;
+    const assetRequest =
+      docsIndex === null
+        ? request
+        : new Request(docsIndex, { method: request.method, headers: request.headers });
+    const response = await env.ASSETS.fetch(assetRequest);
     const headers = new Headers(response.headers);
     headers.set("x-content-type-options", "nosniff");
     headers.set("referrer-policy", "strict-origin-when-cross-origin");

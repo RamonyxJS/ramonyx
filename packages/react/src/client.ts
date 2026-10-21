@@ -33,6 +33,13 @@ const PAYLOAD_PREFIX = "window.__RAMONYX__=";
 
 let activeRoot: Root | null = null;
 
+function viewTransitionsSupported(): boolean {
+  return (
+    typeof document.startViewTransition === "function" &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
 function buildElement(registry: ClientRegistry, payload: HydrationPayload): ReactElement | null {
   const entry = registry[payload.path];
   if (entry === undefined) {
@@ -65,7 +72,24 @@ export function hydrateAll(registry: ClientRegistry): void {
     return;
   }
 
-  activeRoot = hydrateRoot(container, element);
+  const mount = (): void => {
+    activeRoot = hydrateRoot(container, element);
+    // Marker setelah effect klien terpasang (bukan hanya hydrateRoot).
+    window.requestAnimationFrame(() => {
+      document.documentElement.classList.add("hydrated");
+    });
+  };
+  // Biarkan paint pertama (LCP) selesai sebelum pekerjaan hydration penuh.
+  const idle = (
+    window as unknown as {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => void;
+    }
+  ).requestIdleCallback;
+  if (typeof idle === "function") {
+    idle(mount, { timeout: 800 });
+  } else {
+    window.setTimeout(mount, 1);
+  }
 }
 
 export interface ClientNavigation {
@@ -188,7 +212,11 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
       : new IntersectionObserver(
           (entries) => {
             for (const entry of entries) {
-              if (entry.isIntersecting && entry.target instanceof HTMLAnchorElement) {
+              if (
+                entry.isIntersecting &&
+                entry.target instanceof HTMLAnchorElement &&
+                entry.target.closest("[data-no-prefetch]") === null
+              ) {
                 prefetchAnchor(entry.target);
               }
             }
@@ -212,6 +240,37 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
     window.location.assign(url);
   };
 
+  /** Tukar DOM + hydrate (tanpa validasi/parse; dipanggil sinkron atau dalam view transition). */
+  const commitHtml = (
+    doc: Document,
+    nextContainer: HTMLElement,
+    payload: HydrationPayload,
+    element: ReactElement,
+    container: HTMLElement,
+    url: string,
+    push: boolean,
+    scroll: boolean,
+  ): void => {
+    activeRoot?.unmount();
+    container.innerHTML = nextContainer.innerHTML;
+    activeRoot = hydrateRoot(container, element);
+
+    // Payload global harus mencerminkan halaman AKTIF (kontrak `window.__RAMONYX__`);
+    // tanpa ini, kode yang membacanya setelah soft navigation melihat data basi.
+    window.__RAMONYX__ = payload;
+    document.title = doc.title;
+    if (push) {
+      window.history.pushState({ ramonyx: true }, "", url);
+    }
+    // Fokus ke root agar pembaca layar mengumumkan halaman baru; scroll tetap dikendalikan.
+    container.setAttribute("tabindex", "-1");
+    container.focus({ preventScroll: true });
+    if (scroll) {
+      window.scrollTo(0, 0);
+    }
+    observeLinks();
+  };
+
   /** Terapkan dokumen HTML baru (navigasi atau respons action). `false` → pemanggil fallback. */
   const applyHtml = (html: string, url: string, push: boolean, scroll = true): boolean => {
     const doc = new DOMParser().parseFromString(html, "text/html");
@@ -227,22 +286,24 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
       return false;
     }
 
-    activeRoot?.unmount();
-    container.innerHTML = nextContainer.innerHTML;
-    activeRoot = hydrateRoot(container, element);
+    const update = (): void => {
+      commitHtml(doc, nextContainer, payload, element, container, url, push, scroll);
+    };
 
-    // Payload global harus mencerminkan halaman AKTIF (kontrak `window.__RAMONYX__`);
-    // tanpa ini, kode yang membacanya setelah soft navigation melihat data basi.
-    window.__RAMONYX__ = payload;
-    document.title = doc.title;
-    if (push) {
-      window.history.pushState({ ramonyx: true }, "", url);
+    // View Transitions: progressive enhancement; reduced-motion dan browser tanpa API
+    // langsung memakai jalur sinkron.
+    if (!viewTransitionsSupported()) {
+      update();
+      return true;
     }
-    if (scroll) {
-      window.scrollTo(0, 0);
+    try {
+      const transition = document.startViewTransition(update);
+      transition.finished.catch(() => undefined);
+      return true;
+    } catch {
+      update();
+      return true;
     }
-    observeLinks();
-    return true;
   };
 
   const navigate = async (url: string, push: boolean): Promise<void> => {

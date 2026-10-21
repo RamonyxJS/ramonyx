@@ -20,8 +20,24 @@ export interface BuildEdgeOptions {
   readonly outDir?: string;
   /** URL bundle klien (default: manifest `dist/client`, fallback `/assets/client.js`). */
   readonly clientScript?: string;
+  /** Strategi muat bundle klien (default eager). */
+  readonly clientLoad?: "eager" | "interaction";
+  /** Skrip bootstrap inline (nonce) sebelum hydration. */
+  readonly clientBootstrap?: string;
   /** Aktifkan SSR streaming di artefak; default true (renderer React mendukung). */
   readonly streaming?: boolean;
+  /**
+   * Batasi halaman yang ikut artefak (mis. `["/"]` untuk landing-only Worker).
+   * Default: semua halaman.
+   */
+  readonly pagePaths?: readonly string[];
+  /** Batasi route API yang ikut artefak; default semua. */
+  readonly apiPaths?: readonly string[];
+  /**
+   * Modul dokumen kustom relatif terhadap `appDir` (mengekspor `document` —
+   * `DocumentRenderer`). Tanpa ini artefak memakai dokumen default.
+   */
+  readonly document?: string;
   readonly minify?: boolean;
   /** Plugin Vite tambahan (harus edge-safe — ADR-0067). */
   readonly plugins?: readonly PluginOption[];
@@ -52,10 +68,21 @@ export async function buildEdge(options: BuildEdgeOptions): Promise<BuildEdgeRes
   const entryDir = join(appDir, ".ramonyx");
   const entryFile = join(entryDir, "edge-entry.ts");
 
-  const [pages, apiRoutes] = await Promise.all([
+  const [allPages, allApiRoutes] = await Promise.all([
     loadPageRoutes({ dir: routesDir }),
     listApiRoutes({ dir: routesDir }),
   ]);
+  const pages =
+    options.pagePaths === undefined
+      ? allPages
+      : allPages.filter((page) => options.pagePaths?.includes(page.path) === true);
+  const apiRoutes =
+    options.apiPaths === undefined
+      ? allApiRoutes
+      : allApiRoutes.filter((route) => options.apiPaths?.includes(route.routePath) === true);
+  if (pages.length === 0) {
+    throw new Error("buildEdge: tidak ada halaman yang cocok dengan pagePaths");
+  }
 
   const middlewareCandidate = join(routesDir, "middleware.ts");
   const middlewareFile = existsSync(middlewareCandidate) ? middlewareCandidate : undefined;
@@ -74,7 +101,10 @@ export async function buildEdge(options: BuildEdgeOptions): Promise<BuildEdgeRes
       pages,
       apiRoutes,
       middlewareFile,
+      document: options.document === undefined ? undefined : resolve(appDir, options.document),
       clientScript,
+      clientLoad: options.clientLoad,
+      clientBootstrap: options.clientBootstrap,
       streaming: options.streaming ?? true,
       assets,
     }),

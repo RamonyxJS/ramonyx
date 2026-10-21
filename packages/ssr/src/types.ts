@@ -1,3 +1,5 @@
+import type { AssetResolver } from "@ramonyx/core";
+
 /** Descriptor UI-agnostic: ssr membangun pohon ini, adapter (mis. React) merendernya. */
 export interface ElementDescriptor {
   readonly type: unknown;
@@ -26,6 +28,13 @@ export interface DocumentOptions {
   readonly lang?: string;
   /** Atribut `<html dir>` — diisi bila locale punya arah (mis. `rtl`). */
   readonly dir?: "ltr" | "rtl";
+  /** Path halaman aktif (mis. "/" untuk landing) — dokumen dapat memilih CSS. */
+  readonly path?: string;
+  /**
+   * Resolver aset (manifest build) untuk dokumen — mis. font ber-hash. Tersedia juga
+   * di edge (asset map di-inline), sehingga dokumen tidak perlu `node:fs`.
+   */
+  readonly assets?: AssetResolver;
 }
 
 export type DocumentRenderer = (options: DocumentOptions) => string;

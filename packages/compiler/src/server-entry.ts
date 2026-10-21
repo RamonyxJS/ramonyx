@@ -13,8 +13,17 @@ export interface GenerateServerEntryOptions {
   readonly apiRoutes: readonly ApiRouteFile[];
   /** File middleware (default export array `Middleware[]`), bila ada. */
   readonly middlewareFile?: string;
+  /**
+   * Modul dokumen kustom (mis. `src/edge-document.ts`) yang mengekspor `document:
+   * DocumentRenderer`. Tanpa ini entry memakai dokumen default `@ramonyx/ssr`.
+   */
+  readonly document?: string;
   /** URL bundle klien untuk hydration (mis. `/assets/client-<hash>.js`). */
   readonly clientScript?: string;
+  /** Strategi muat bundle klien (default eager). */
+  readonly clientLoad?: "eager" | "interaction";
+  /** Skrip bootstrap inline (nonce) sebelum hydration. */
+  readonly clientBootstrap?: string;
   /** Aktifkan SSR streaming (renderer React mendukung `renderStream`). */
   readonly streaming?: boolean;
   /**
@@ -93,6 +102,7 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
   if (options.middlewareFile !== undefined) {
     middlewareVar = varFor(options.middlewareFile);
   }
+  const documentVar = options.document === undefined ? undefined : varFor(options.document);
 
   return [
     "// File ini digenerate otomatis oleh @ramonyx/compiler — jangan diedit manual.",
@@ -134,9 +144,12 @@ export function generateServerEntry(options: GenerateServerEntryOptions): string
     "    ...createPageRoutes({",
     "      pages,",
     "      renderer: createReactRenderer(),",
+    documentVar === undefined ? null : `      document: ${documentVar}.document,`,
     options.clientScript === undefined
       ? null
-      : `      client: { script: ${JSON.stringify(options.clientScript)} },`,
+      : `      client: { script: ${JSON.stringify(options.clientScript)}, load: ${JSON.stringify(
+          options.clientLoad ?? "eager",
+        )}${options.clientBootstrap === undefined ? "" : `, bootstrap: ${JSON.stringify(options.clientBootstrap)}`} },`,
     options.streaming === true ? "      streaming: true," : null,
     options.assets === undefined || Object.keys(options.assets).length === 0
       ? null

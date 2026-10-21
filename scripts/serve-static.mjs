@@ -4,6 +4,7 @@
 import { readFile, stat } from "node:fs/promises";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
+import { gzipSync } from "node:zlib";
 
 const dir = resolve(process.argv[2] ?? ".");
 const port = Number(process.argv[3] ?? 4173);
@@ -49,11 +50,17 @@ createServer(async (req, res) => {
 
   try {
     const data = await readFile(file);
-    res.writeHead(200, {
-      "content-type": TIPE[extname(file)] ?? "application/octet-stream",
+    const ext = extname(file);
+    const compressible = new Set([".html", ".js", ".css", ".json", ".txt", ".md", ".svg", ".xml"]);
+    const acceptsGzip = (req.headers["accept-encoding"] ?? "").includes("gzip");
+    const body = acceptsGzip && compressible.has(ext) ? gzipSync(data) : data;
+    const headers = {
+      "content-type": TIPE[ext] ?? "application/octet-stream",
       "cache-control": "no-cache",
-    });
-    res.end(data);
+      ...(body !== data ? { "content-encoding": "gzip", vary: "Accept-Encoding" } : {}),
+    };
+    res.writeHead(200, headers);
+    res.end(body);
   } catch {
     try {
       const data = await readFile(join(dir, "404.html"));

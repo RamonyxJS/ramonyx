@@ -28,6 +28,16 @@ export interface ClientOptions {
   readonly script: string;
   /** Modul tambahan yang dimuat sebelum entry (mis. "/@vite/client" saat dev). */
   readonly extraModules?: readonly string[];
+  /**
+   * Kapan bundle klien dimuat. `"interaction"` menunda unduhan + hydration sampai
+   * pointer/wheel/key pertama (progressive enhancement; konten tetap SSR). Default eager.
+   */
+  readonly load?: "eager" | "interaction";
+  /**
+   * Skrip inline (tepercaya, diberi nonce) yang dijalankan sebelum hydration —
+   * mis. menerapkan tema tersimpan agar tidak flash. Jangan memuat bundle di sini.
+   */
+  readonly bootstrap?: string;
 }
 
 export interface CreatePageRoutesOptions {
@@ -343,10 +353,18 @@ function hydrationScripts(
     (url) => `<script type="module" src="${escapeHtml(url)}"></script>`,
   );
   const nonceAttribute = nonce === undefined ? "" : ` nonce="${escapeHtml(nonce)}"`;
+  const scriptTag =
+    client.load === "interaction"
+      ? `<script${nonceAttribute}>(()=>{let loaded=false;const src=${JSON.stringify(client.script)};const load=()=>{if(loaded)return;loaded=true;const script=document.createElement("script");script.type="module";script.src=src;document.body.appendChild(script);};window.__ramonyxLoadClient=load;for(const event of ["pointermove","pointerdown","touchstart","wheel","keydown"]){window.addEventListener(event,load,{once:true,passive:true});}if(location.hash!=="")load();})();</script>`
+      : `<script type="module" src="${escapeHtml(client.script)}"></script>`;
   return [
     `<script id="${PAYLOAD_SCRIPT_ID}"${nonceAttribute}>window.__RAMONYX__=${serializePayload(payload)}</script>`,
+    `<script${nonceAttribute}>document.documentElement.classList.add("js");</script>`,
+    ...(client.bootstrap === undefined
+      ? []
+      : [`<script${nonceAttribute}>${client.bootstrap}</script>`]),
     ...extraModules,
-    `<script type="module" src="${escapeHtml(client.script)}"></script>`,
+    scriptTag,
   ].join("\n");
 }
 
@@ -495,6 +513,8 @@ async function renderPage(
         status,
         scripts,
         head,
+        assets,
+        path: page.path,
         ...docLocale,
       });
       const markerIndex = shell.indexOf(BODY_MARKER);
@@ -528,7 +548,16 @@ async function renderPage(
     }
 
     const body = await renderer.render(buildPageTree(page, data, params, actionState, locale));
-    const document = documentRenderer({ title, body, status, scripts, head, ...docLocale });
+    const document = documentRenderer({
+      title,
+      body,
+      status,
+      scripts,
+      head,
+      assets,
+      path: page.path,
+      ...docLocale,
+    });
 
     if (document.length > maxDocumentBytes) {
       log.error("Output halaman melebihi batas", {
@@ -541,6 +570,8 @@ async function renderPage(
           title: "500",
           body: fallbackBody({ status: 500, message: "Internal Server Error" }),
           status: 500,
+          assets,
+          path: page.path,
           ...docLocale,
         }),
         500,
@@ -580,6 +611,8 @@ async function renderPage(
             title: page.page.metadata?.title ?? "",
             body,
             status: publicError.status,
+            assets,
+            path: page.path,
             ...docLocale,
           }),
           publicError.status,
@@ -597,6 +630,8 @@ async function renderPage(
         title: String(publicError.status),
         body: fallbackBody(publicError),
         status: publicError.status,
+        assets,
+        path: page.path,
         ...docLocale,
       }),
       publicError.status,

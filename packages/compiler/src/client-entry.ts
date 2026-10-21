@@ -14,24 +14,25 @@ function toImportSpecifier(from: string, file: string): string {
 
 /**
  * Menghasilkan entry client (`hydrateAll` + registry halaman).
- * Bundle client memuat semua halaman untuk sekarang; code splitting menyusul.
+ * Setiap halaman/layout dimuat lewat dynamic import, sehingga bundler memecah chunk per rute;
+ * halaman aktif di-load saat hydration/navigasi, bukan seluruh registry di awal.
  */
 export function generateClientEntry(
   pages: readonly LoadedPage[],
   options: GenerateClientEntryOptions,
 ): string {
-  const imports: string[] = [];
-  const vars = new Map<string, string>();
+  const loaders: string[] = [];
+  const loaderVars = new Map<string, string>();
 
-  const varFor = (file: string): string => {
-    const existing = vars.get(file);
+  const loaderFor = (file: string): string => {
+    const existing = loaderVars.get(file);
     if (existing !== undefined) {
       return existing;
     }
-    const name = `m${vars.size}`;
-    vars.set(file, name);
-    imports.push(
-      `import * as ${name} from ${JSON.stringify(toImportSpecifier(options.from, file))};`,
+    const name = `l${loaderVars.size}`;
+    loaderVars.set(file, name);
+    loaders.push(
+      `const ${name} = () => import(${JSON.stringify(toImportSpecifier(options.from, file))});`,
     );
     return name;
   };
@@ -42,21 +43,28 @@ export function generateClientEntry(
         `Halaman ${page.path} tidak punya pageFile; jalankan loadPageRoutes() dulu sebelum generateClientEntry().`,
       );
     }
-    const pageVar = varFor(page.pageFile);
-    const layoutVars = (page.layoutFiles ?? []).map((file) => varFor(file));
-    return `  ${JSON.stringify(page.path)}: { page: ${pageVar}, layouts: [${layoutVars.join(", ")}] },`;
+    const pageLoader = loaderFor(page.pageFile);
+    const layoutLoaders = (page.layoutFiles ?? []).map((file) => loaderFor(file));
+    const all = [pageLoader, ...layoutLoaders];
+    const names = all.map((_, index) => (index === 0 ? "page" : `layout${index - 1}`));
+    return [
+      `  ${JSON.stringify(page.path)}: async () => {`,
+      `    const [${names.join(", ")}] = await Promise.all([${all.map((name) => `${name}()`).join(", ")}]);`,
+      `    return { page, layouts: [${layoutLoaders.map((_, index) => `layout${index}`).join(", ")}] };`,
+      "  },",
+    ].join("\n");
   });
 
   return [
     "// File ini digenerate otomatis oleh @ramonyx/compiler — jangan diedit manual.",
     'import { enableClientNavigation, hydrateAll } from "@ramonyx/react/client";',
-    ...imports,
+    ...loaders,
     "",
     "const registry = {",
     ...registry,
     "};",
     "",
-    "hydrateAll(registry);",
+    "void hydrateAll(registry);",
     "enableClientNavigation(registry);",
     "",
   ].join("\n");

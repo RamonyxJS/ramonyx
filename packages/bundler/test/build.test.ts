@@ -43,10 +43,14 @@ test("buildClient: `*.server.ts` distub di bundle klien; `node:*` langsung ditol
     const result = await buildClient({ appDir: appA, pages: pagesA, minify: true });
     const clientFile = result.files.find((file) => /^client-.*\.js$/.test(file));
     assert.ok(clientFile !== undefined, "bundle klien ada");
-    const bundle = await readFile(`${result.outDir}/${clientFile}`, "utf8");
+    // Route-level code splitting: stub server dapat berada di chunk halaman, bukan entry.
+    const jsFiles = result.files.filter((file) => file.endsWith(".js"));
+    const bundles = await Promise.all(
+      jsFiles.map((file) => readFile(`${result.outDir}/${file}`, "utf8")),
+    );
     assert.ok(
-      bundle.includes("hanya tersedia di server"),
-      "bundle klien memuat stub poison-pill untuk modul server",
+      bundles.some((bundle) => bundle.includes("hanya tersedia di server")),
+      "bundle klien (entry/chunk) memuat stub poison-pill untuk modul server",
     );
 
     const pagesB = await loadPageRoutes({ dir: `${appB}/src/routes` });

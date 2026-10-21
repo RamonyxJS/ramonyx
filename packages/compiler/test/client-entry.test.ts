@@ -27,13 +27,14 @@ test("generateClientEntry: registry halaman + impor relatif ke entry", async () 
     assert.ok(
       entry.includes('import { enableClientNavigation, hydrateAll } from "@ramonyx/react/client";'),
     );
-    assert.ok(entry.includes('import * as m0 from "../page.tsx";'));
-    assert.ok(entry.includes('import * as m1 from "../layout.tsx";'));
-    assert.ok(entry.includes('import * as m2 from "../users/page.tsx";'));
-    assert.ok(entry.includes('"/": { page: m0, layouts: [m1] },'));
-    assert.ok(entry.includes('"/users": { page: m2, layouts: [m1] },'));
+    assert.ok(entry.includes('const l0 = () => import("../page.tsx");'));
+    assert.ok(entry.includes('const l1 = () => import("../layout.tsx");'));
+    assert.ok(entry.includes('const l2 = () => import("../users/page.tsx");'));
     assert.ok(entry.includes("const registry = {"));
-    assert.ok(entry.includes("hydrateAll(registry);"));
+    assert.ok(entry.includes('"/": async () => {'));
+    assert.ok(entry.includes('"/users": async () => {'));
+    assert.ok(entry.includes("return { page, layouts: [layout0] };"));
+    assert.ok(entry.includes("void hydrateAll(registry);"));
     assert.ok(entry.includes("enableClientNavigation(registry);"));
   } finally {
     await rm(root, { recursive: true, force: true });

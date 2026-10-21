@@ -7,7 +7,8 @@ export interface ClientRegistryEntry {
   readonly layouts: readonly PageModule[];
 }
 
-export type ClientRegistry = Record<string, ClientRegistryEntry>;
+export type ClientRegistryLoader = () => Promise<ClientRegistryEntry>;
+export type ClientRegistry = Record<string, ClientRegistryEntry | ClientRegistryLoader>;
 
 export interface HydrationPayload {
   readonly path: string;
@@ -254,11 +255,17 @@ function viewTransitionsSupported(): boolean {
   );
 }
 
-function buildElement(registry: ClientRegistry, payload: HydrationPayload): ReactElement | null {
-  const entry = registry[payload.path];
-  if (entry === undefined) {
+async function buildElement(
+  registry: ClientRegistry,
+  payload: HydrationPayload,
+): Promise<ReactElement | null> {
+  const registered = registry[payload.path];
+  if (registered === undefined) {
     return null;
   }
+  // Route-level code splitting: entri boleh berupa loader dinamis. Entri statis tetap
+  // didukung untuk aplikasi yang belum memakai codegen terbaru.
+  const entry = typeof registered === "function" ? await registered() : registered;
   let element: ReactElement = createElement(entry.page.default as ElementType, {
     data: payload.data,
     params: payload.params,
@@ -279,31 +286,38 @@ function buildElement(registry: ClientRegistry, payload: HydrationPayload): Reac
 export function hydrateAll(registry: ClientRegistry): void {
   const payload = window.__RAMONYX__;
   const container = document.getElementById(MOUNT_ID);
-  const element = payload === undefined ? null : buildElement(registry, payload);
 
-  if (container === null || payload === undefined || element === null) {
-    console.warn("[ramonyx] tidak bisa hydrate halaman ini (payload/komponen tidak ditemukan)");
-    return;
-  }
-
-  const mount = (): void => {
-    activeRoot = hydrateRoot(container, element);
-    // Marker setelah effect klien terpasang (bukan hanya hydrateRoot).
-    window.requestAnimationFrame(() => {
-      document.documentElement.classList.add("hydrated");
-    });
-  };
-  // Biarkan paint pertama (LCP) selesai sebelum pekerjaan hydration penuh.
-  const idle = (
-    window as unknown as {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => void;
+  void (async () => {
+    let element: ReactElement | null = null;
+    try {
+      element = payload === undefined ? null : await buildElement(registry, payload);
+    } catch (error) {
+      console.warn("[ramonyx] gagal memuat chunk halaman", error);
     }
-  ).requestIdleCallback;
-  if (typeof idle === "function") {
-    idle(mount, { timeout: 800 });
-  } else {
-    window.setTimeout(mount, 1);
-  }
+    if (container === null || payload === undefined || element === null) {
+      console.warn("[ramonyx] tidak bisa hydrate halaman ini (payload/komponen tidak ditemukan)");
+      return;
+    }
+
+    const mount = (): void => {
+      activeRoot = hydrateRoot(container, element);
+      // Marker setelah effect klien terpasang (bukan hanya hydrateRoot).
+      window.requestAnimationFrame(() => {
+        document.documentElement.classList.add("hydrated");
+      });
+    };
+    // Biarkan paint pertama (LCP) selesai sebelum pekerjaan hydration penuh.
+    const idle = (
+      window as unknown as {
+        requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => void;
+      }
+    ).requestIdleCallback;
+    if (typeof idle === "function") {
+      idle(mount, { timeout: 800 });
+    } else {
+      window.setTimeout(mount, 1);
+    }
+  })();
 }
 
 export interface ClientNavigation {
@@ -363,6 +377,18 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
         }
         const html = await response.text();
         prefetchCache.set(url, { html, at: Date.now() });
+        // Prefetch HTML juga memanaskan chunk route (code splitting per rute).
+        try {
+          const payload = readPayloadFromDocument(
+            new DOMParser().parseFromString(html, "text/html"),
+          );
+          const entry = payload === null ? undefined : registry[payload.path];
+          if (typeof entry === "function") {
+            void entry().catch(() => undefined);
+          }
+        } catch {
+          // prefetch modul bersifat best-effort
+        }
         while (prefetchCache.size > PREFETCH_MAX_ENTRIES) {
           const oldest = prefetchCache.keys().next().value;
           if (oldest === undefined) {
@@ -500,7 +526,7 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
       return false;
     }
 
-    const element = buildElement(registry, payload);
+    const element = await buildElement(registry, payload);
     if (element === null) {
       return false;
     }

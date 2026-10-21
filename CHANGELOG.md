@@ -18,8 +18,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
   nonce untuk tema. Landing memakai varian CSS sendiri dan `content-visibility`.
 - **Dogfooding findings** dicatat di `TODO.md` (10 temuan: edge target, View Transitions, hydration,
   canvas, CSS/layout, static actions, streaming, code splitting, tema, axe/content-visibility).
-- **Lighthouse mobile** (static export, 3 run): Performance **94–100** (median 97), LCP **1.5 s**,
-  CLS **0**, a11y **100**. Angka final ada di laporan rilis; tidak diklaim di situs.
+- **Lighthouse mobile** (static export lokal, 3 run): Performance **97 / 97 / 93** (median **97**),
+  LCP **1.5 s**, CLS **0**, a11y **100**. Satu run meleset karena variasi TBT; angka tidak diklaim di situs.
 
 ### Situs publik
 

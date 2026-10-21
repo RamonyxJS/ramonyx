@@ -45,6 +45,15 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
   seragam. Font di-preload; tema terang default, gelap via toggle/sistem. Catatan engineering
   diperbarui.
 
+### Partial hydration islands
+
+- **`<Island>` + `defineIsland`**: halaman dapat menandai batas interaktif; server merender
+  komponen di marker `data-ramonyx-island`, client hanya memanggil `hydrateRoot` pada marker
+  tersebut dan membiarkan konten statis sebagai HTML. Deteksi per halaman, props JSON, soft
+  navigation/back-forward/action re-render, dan no-JS tetap bekerja. E2E playground mencakup
+  interaksi, soft navigation, back/forward, dan no-JS; dokumentasi ada di
+  `docs/public/ssr-hydration.md`.
+
 ### Context7
 
 - Library **ramonyx_devmoon_net** aktif di Context7 (495 snippets; terverifikasi via `ctx7

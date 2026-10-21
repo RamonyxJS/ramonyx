@@ -1,6 +1,7 @@
 import type { PageActionState, PageModule } from "@ramonyx/core";
 import { createElement, type ElementType, type ReactElement } from "react";
 import { hydrateRoot, type Root } from "react-dom/client";
+import { islandComponent, islandPrefix } from "./islands.ts";
 
 export interface ClientRegistryEntry {
   readonly page: PageModule;
@@ -35,6 +36,59 @@ const HEAD_STYLESHEET_PRELOAD_ATTRIBUTE = "data-ramonyx-head-preload";
 const HEAD_DEV_ATTRIBUTES = ["data-vite-dev-id", "data-vite"] as const;
 
 let activeRoot: Root | null = null;
+let activeIslandRoots: Root[] = [];
+
+/** Halaman yang memuat marker island memakai hydration parsial; root halaman tidak di-hydrate. */
+function isIslandPage(container: HTMLElement): boolean {
+  return container.querySelector("[data-ramonyx-island]") !== null;
+}
+
+function unmountActiveIslands(): void {
+  for (const root of activeIslandRoots) {
+    root.unmount();
+  }
+  activeIslandRoots = [];
+}
+
+/** Hydrate hanya batas interaktif yang ditandai `<Island>`; marker mencegah hydration ganda. */
+function hydrateIslands(scope: ParentNode): number {
+  let hydrated = 0;
+  for (const element of scope.querySelectorAll<HTMLElement>("[data-ramonyx-island]")) {
+    if (element.dataset.ramonyxIslandHydrated === "true") {
+      continue;
+    }
+    // Marker bersarang ikut ter-hydrate sebagai bagian dari island induk; jangan buat root ganda.
+    if (element.parentElement?.closest("[data-ramonyx-island]") != null) {
+      continue;
+    }
+    const id = element.dataset.ramonyxIsland;
+    if (id === undefined) {
+      continue;
+    }
+    const component = islandComponent(id);
+    if (component === undefined) {
+      console.warn(`[ramonyx] island "${id}" belum diregistrasi; batas ini tetap statis`);
+      continue;
+    }
+    let props: object = {};
+    const serialized = element.getAttribute("data-props");
+    if (serialized !== null) {
+      try {
+        props = JSON.parse(serialized) as object;
+      } catch (error) {
+        console.warn(`[ramonyx] props island "${id}" tidak valid`, error);
+        continue;
+      }
+    }
+    const root = hydrateRoot(element, createElement(component, props), {
+      identifierPrefix: islandPrefix(id),
+    });
+    activeIslandRoots.push(root);
+    element.dataset.ramonyxIslandHydrated = "true";
+    hydrated += 1;
+  }
+  return hydrated;
+}
 
 function isDevHeadNode(element: Element): boolean {
   return HEAD_DEV_ATTRIBUTES.some((attribute) => element.hasAttribute(attribute));
@@ -300,7 +354,18 @@ export function hydrateAll(registry: ClientRegistry): void {
     }
 
     const mount = (): void => {
-      activeRoot = hydrateRoot(container, element);
+      // Navigasi bisa selesai sebelum idle callback: payload sudah berganti → jangan hydrate dokumen baru
+      // dengan elemen halaman lama.
+      if (window.__RAMONYX__ !== payload) {
+        return;
+      }
+      const islands = isIslandPage(container);
+      document.documentElement.dataset.ramonyxHydration = islands ? "islands" : "full";
+      if (islands) {
+        hydrateIslands(container);
+      } else {
+        activeRoot = hydrateRoot(container, element);
+      }
       // Marker setelah effect klien terpasang (bukan hanya hydrateRoot).
       window.requestAnimationFrame(() => {
         document.documentElement.classList.add("hydrated");
@@ -492,8 +557,16 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
     scroll: boolean,
   ): void => {
     activeRoot?.unmount();
+    activeRoot = null;
+    unmountActiveIslands();
     container.innerHTML = nextContainer.innerHTML;
-    activeRoot = hydrateRoot(container, element);
+    const islands = isIslandPage(container);
+    document.documentElement.dataset.ramonyxHydration = islands ? "islands" : "full";
+    if (islands) {
+      hydrateIslands(container);
+    } else {
+      activeRoot = hydrateRoot(container, element);
+    }
 
     // Payload global harus mencerminkan halaman AKTIF (kontrak `window.__RAMONYX__`);
     // tanpa ini, kode yang membacanya setelah soft navigation melihat data basi.
@@ -711,6 +784,7 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
       observer?.disconnect();
       prefetchCache.clear();
       controller?.abort();
+      unmountActiveIslands();
     },
   };
 }

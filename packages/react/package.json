@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
+    "./islands": "./src/islands.ts",
     "./assets": "./src/assets.ts",
     "./link": "./src/link.ts"
   },
@@ -18,7 +19,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0"
   },
-  "description": "React renderer, client navigation, hydration, Link, Image, and asset helpers for Ramonyx.",
+  "description": "React renderer, client navigation, hydration, partial hydration islands, Link, Image, and asset helpers for Ramonyx.",
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -41,7 +41,7 @@ status can no longer change. Error pages are always rendered synchronously.
 
 | Feature | Behavior |
 | --- | --- |
-| Hydration | `hydrateRoot` on the existing markup; no re-render flash |
+| Hydration | `hydrateRoot` on the existing markup; pages with islands hydrate only their marked boundaries |
 | Soft navigation | same-origin links fetch the next HTML, reconcile the head, swap the container, re-hydrate, `pushState` |
 | Code splitting | client entry dynamically imports the active route/layout chunks; other routes load on navigation/prefetch |
 | Prefetch | hover/focus/viewport prefetch HTML and warm the route chunk (LRU 8 entries, 30 s, max 2 concurrent) |
@@ -56,6 +56,48 @@ status can no longer change. Error pages are always rendered synchronously.
   the HTML and hydration payload remain complete when JavaScript is disabled. React Suspense
   deferred data is not enabled; it is tracked as `p2-deferred-data-streaming`, including the
   no-JS fallback design.
+
+## Partial hydration islands (opt-in)
+
+A page can mark interactive boundaries instead of hydrating the whole route. Register the client
+component at module scope and render an `Island` with JSON-serializable props:
+
+```tsx
+import { defineIsland, Island } from "@ramonyx/react/islands";
+import { useState } from "react";
+
+function Counter({ start }: { start: number }) {
+  const [count, setCount] = useState(start);
+  return <button onClick={() => setCount((value) => value + 1)}>Count: {count}</button>;
+}
+
+defineIsland("counter", Counter);
+
+export default function Page() {
+  return (
+    <main>
+      <p>Static server content.</p>
+      <Island id="counter" props={{ start: 2 }} />
+    </main>
+  );
+}
+```
+
+- The server renders the component inside a `data-ramonyx-island` wrapper. The client detects
+  markers and calls `hydrateRoot` only on those wrappers; the rest of the route stays static.
+- Detection is per page. **If a page contains any island, its whole route is island-hydrated** —
+  every component that relies on React state, effects, or event props on that page or layout must
+  be an `Island`. Document-level soft navigation and form interception still work for static
+  markup.
+- Island IDs are global and must be unique; props must be JSON-serializable (no functions,
+  elements, `Date`/`Map`/`Set`, or circular references). Nested islands are not supported.
+- Each island is an independent React root. React context from a static layout is not available;
+  pass data through props or mount the provider inside the island. Shared state must live outside
+  the island roots. React `useId` is supported because server and client use the same per-island
+  identifier prefix.
+- Soft navigation, prefetch, back/forward, and action re-renders hydrate the new page's islands;
+  pages without islands keep the existing full-tree hydration. No-JS output is unchanged.
+- Islands are a client-side boundary, not a server-component or data-loading feature.
 
 ## Soft navigation & head reconciliation
 

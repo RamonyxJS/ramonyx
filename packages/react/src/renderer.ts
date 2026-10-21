@@ -5,6 +5,7 @@ import { createElement, type ElementType, type ReactElement } from "react";
 // tidak dipakai agar bundel edge tidak menarik `node:stream`; build `browser` tidak dipakai
 // karena MessageChannel level-modul menahan event loop Node (proses test/CLI menggantung).
 import { renderToReadableStream, renderToString } from "react-dom/server.edge";
+import { setIslandRenderer } from "./islands.ts";
 
 function toReactElement(descriptor: ElementDescriptor): ReactElement {
   return createElement(
@@ -20,6 +21,9 @@ function toReactElement(descriptor: ElementDescriptor): ReactElement {
  * (opsional) untuk SSR streaming — diaktifkan lewat opsi `streaming` di `createPageRoutes`.
  */
 export function createReactRenderer(): Renderer {
+  // Island dirender sebagai root terisolasi dengan prefix stabil; hydrateRoot per island
+  // memakai prefix yang sama agar `useId` tidak mismatch.
+  setIslandRenderer((element, identifierPrefix) => renderToString(element, { identifierPrefix }));
   return {
     name: "react",
     async render(element) {

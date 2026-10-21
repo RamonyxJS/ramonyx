@@ -78,7 +78,7 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
   ],
   ["@ramonyx/plugin-image", pluginImage, ["imageOptimizer"]],
   ["ramonyx", ramonyx, ["route", "createHandler", "HttpError", "defineConfig", "resolveConfig"]],
-  ["@ramonyx/react", react, ["createReactRenderer"]],
+  ["@ramonyx/react", react, ["createReactRenderer", "Island", "defineIsland"]],
   ["@ramonyx/router", router, ["createRouteTable", "matchRoute", "fillHref"]],
   ["@ramonyx/schema", schema, ["validate"]],
   [

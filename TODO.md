@@ -431,7 +431,7 @@
 
 ### `p2-partial-hydration-islands` — Partial hydration / islands per komponen
 
-*tema: rendering · ukuran: L · status: open · dependensi: `p1-package-contract-coverage` · sumber: turunan DF-03/DF-08; code splitting rute sudah selesai*
+*tema: rendering · ukuran: L · status: done · dependensi: `p1-package-contract-coverage` · sumber: turunan DF-03/DF-08; code splitting rute selesai — `<Island>` + `defineIsland` dengan deteksi per halaman, e2e playground islands/no-JS/back-forward, halaman docs SSR*
 
 - **Apa**: Hidrasi hanya komponen interaktif (island) yang ditandai, sementara konten statis tetap HTML server tanpa React root penuh.
 - **Kenapa penting untuk bersaing**: Code splitting per rute menurunkan bundle awal, tetapi seluruh pohon rute masih di-hydrate; islands mengurangi JS/TBT dan memungkinkan halaman besar tetap interaktif secara selektif.
@@ -519,7 +519,7 @@
 *status: fixed · area: packages/ssr, packages/react, apps/docs · commit: `b7322c9, a4bdf41, fcd4d43`*
 
 - **Masalah**: Satu bundle/hydrate untuk seluruh halaman membuat LCP 2.4 dtk dan TBT 900 ms pada Lighthouse mobile meski konten sudah SSR.
-- **Perbaikan**: Tambah `client.load: "interaction"` + hydration idle, CSS-based hero, dan code splitting per rute. Lighthouse lokal LCP 1.7 dtk/TBT rendah. Partial hydration/islands per komponen tetap pekerjaan terpisah `p2-partial-hydration-islands`.
+- **Perbaikan**: Tambah `client.load: "interaction"` + hydration idle, CSS-based hero, dan code splitting per rute. Lighthouse lokal LCP 1.7 dtk/TBT rendah. Partial hydration/islands per komponen selesai di `p2-partial-hydration-islands`.
 
 ### `DF-04` — Canvas partikel kontinu membebani main thread
 
@@ -554,7 +554,7 @@
 *status: fixed · area: packages/compiler, packages/react · commit: `a4bdf41, fcd4d43`*
 
 - **Masalah**: `generateClientEntry` mengimpor seluruh registry halaman; landing ikut membawa komponen docs dan tidak ada pemisahan chunk per rute/island.
-- **Perbaikan**: `generateClientEntry` memakai dynamic import per halaman/layout; entry hanya memuat rute aktif, chunk terpisah, prefetch HTML menghangatkan chunk. Partial hydration/islands per komponen dilacak terpisah `p2-partial-hydration-islands`.
+- **Perbaikan**: `generateClientEntry` memakai dynamic import per halaman/layout; entry hanya memuat rute aktif, chunk terpisah, prefetch HTML menghangatkan chunk. Partial hydration/islands per komponen selesai di `p2-partial-hydration-islands`.
 
 ### `DF-09` — Tema tersimpan hilang saat hydration ditunda
 

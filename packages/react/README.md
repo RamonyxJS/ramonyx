@@ -1,6 +1,7 @@
 # @ramonyx/react
 
-React renderer, client navigation, hydration, Link, Image, and asset helpers for Ramonyx.
+React renderer, client navigation, hydration, partial hydration islands, Link, Image, and asset
+helpers for Ramonyx.
 
 Part of the Ramonyx framework. Requires Node.js 24 or newer and ESM.
 

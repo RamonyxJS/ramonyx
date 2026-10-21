@@ -20,12 +20,21 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
   nonce untuk tema. Landing memakai varian CSS sendiri dan `content-visibility`. Entry edge
   menyaring root middleware dari middleware halaman/API agar tidak berjalan dua kali (nonce CSP
   tunggal) — temuan DF-11.
-- **Dogfooding findings** dicatat di `TODO.md` (13 temuan; tiga baru: middleware ganda/CSP nonce,
-  fetch GitHub di jalur SSR → KV + cron, dan injeksi Web Analytics Cloudflare).
-- **Lighthouse mobile** (static export lokal, 3 run): Performance **97 / 97 / 93** (median **97**),
-  LCP **1.5 s**, CLS **0**, a11y **100**. **Live Worker** (3 run): Performance **95 / 96 / 97**
-  (median **96**), a11y **100**, CLS **0**, LCP **2.1–2.6 s** — TTFB jaringan Cloudflare menambah
-  LCP; static export tetap **1.5 s**. Angka tidak diklaim di situs.
+- **Soft navigation head reconciliation**: `enableClientNavigation` kini menyelaraskan `<title>`,
+  `<html lang/dir>`, meta, link, dan style saat body ditukar. Style inline distage
+  `media="not all"`, stylesheet baru dipreload, node lama dibuang setelah swap, dan style baru
+  memakai nonce CSP dokumen aktif. Ini memperbaiki halaman docs tanpa CSS setelah pindah dari
+  landing (DF-14); test regresi ada di `apps/docs/e2e/soft-navigation.spec.ts`.
+- **Landing v2 light/dark**: palet light porcelain/cobalt dan dark navy mengikuti `data-theme`;
+  wordmark SVG, marquee, chapter, dan particle field theme-aware; terminal, stats band, runtime,
+  dan closing tetap gelap sebagai kontras. Toggle tema kini mengubah warna efektif landing.
+- **Dogfooding findings** dicatat di `TODO.md` (14 temuan; empat baru: middleware ganda/CSP nonce,
+  fetch GitHub di jalur SSR → KV + cron, Web Analytics Cloudflare, dan rekonsiliasi head soft
+  navigation).
+- **Lighthouse mobile** (static export lokal split CSS, 3 run): Performance **99 / 99 / 84**
+  (median **99**), LCP **1.7 s**, CLS **0**, a11y **100**. **Live Worker** (3 run): Performance
+  **96 / 91 / 96** (median **96**), a11y **100**, CLS **0**, LCP **2.3–2.8 s** — TTFB jaringan
+  Cloudflare menambah LCP; static export tetap **1.7 s**. Angka tidak diklaim di situs.
 
 ### Situs publik
 

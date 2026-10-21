@@ -702,6 +702,15 @@
       "commit": "3875562",
       "area": "Cloudflare dashboard",
       "status": "open"
+    },
+    {
+      "id": "DF-14",
+      "title": "Soft navigation tidak merekonsiliasi <head> — halaman docs tanpa CSS",
+      "problem": "Landing memakai CSS split (`GAYA_LANDING`) sedangkan docs memakai `GAYA` penuh. Soft navigation hanya menukar isi `#ramonyx-root` dan `document.title`; style landing tetap aktif setelah pindah ke `/docs/architecture`. Sidebar menjadi daftar bullet, grid docs hilang, metadata/link markdown tidak bertambah. Hard reload memperbaikinya.",
+      "fix": "Framework `prepareHead` di `packages/react/src/client.ts` merekonsiliasi title, lang/dir, meta, link, dan style. Style inline distage `media=not all` lalu diaktifkan saat swap; stylesheet baru dipreload sebelum swap; node lama dibuang setelah swap; style baru memakai nonce CSP dokumen aktif. Marker `data-ramonyx-style` ditambahkan ke style server. CSS split landing dipertahankan karena pengukuran lokal menunjukkan full CSS menaikkan TBT/perf (median 94 vs 99 pada split); bug ditutup oleh rekonsiliasi head, bukan dengan memaksa full CSS/hard navigation. Test regresi: `apps/docs/e2e/soft-navigation.spec.ts` (CSS berbeda per rute, link alternate, back/forward, prefetch, stylesheet tambahan).",
+      "commit": "6497d41",
+      "area": "packages/react, apps/docs",
+      "status": "fixed"
     }
   ]
 }

@@ -1911,7 +1911,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T05:11:03.841Z",
+  "generatedAt": "2026-10-21T08:02:04.608Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2324,7 +2324,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T05:11:04.981Z",
+  "generatedAt": "2026-10-21T08:02:05.789Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -3928,10 +3928,38 @@ status can no longer change. Error pages are always rendered synchronously.
 | Feature | Behavior |
 | --- | --- |
 | Hydration | `hydrateRoot` on the existing markup; no re-render flash |
-| Soft navigation | same-origin links fetch the next HTML, swap the container, re-hydrate, `pushState` |
+| Soft navigation | same-origin links fetch the next HTML, reconcile the head, swap the container, re-hydrate, `pushState` |
 | Prefetch | hover/focus/viewport prefetch with a small LRU cache (8 entries, 30 s TTL, max 2 concurrent) |
 | Forms | submit intercepted when JS is available; `POST` + `303` PRG without JS |
 | Scroll | `popstate` restores scroll; new navigations start at the top |
+
+## Soft navigation & head reconciliation
+
+A soft navigation does not reload the document. Before the body is swapped, the client reconciles
+the new document's head with the active one:
+
+- `<title>` and `<html lang>`/`dir` are updated.
+- `<meta>` and `<link>` tags are matched by their identity (`name`/`property`/`rel` + target);
+  obsolete metadata and discovery links are removed.
+- Inline `<style>` tags are staged with `media="not all"` and activated at the swap, so the old
+  page keeps its styles until the new body is ready.
+- External stylesheets are preloaded before the swap; the real `<link rel="stylesheet">` is then
+  installed and the old styles/link are removed. The wait is capped at 2 seconds.
+- New inline styles reuse the **current document's CSP nonce**, never the nonce embedded in the
+  fetched document (the response's CSP header belongs to the active document).
+
+The server document marks its generated style block with `data-ramonyx-style` so the client can
+reconcile it without touching unrelated runtime nodes. Vite development styles are left alone.
+
+### Boundaries
+
+- `<script>` tags in the fetched head are not added or executed; the active client bundle remains
+  responsible for navigation and hydration. Server-rendered payload data changes through
+  `window.__RAMONYX__`, not through a new script.
+- Nodes that are not part of the server head (for example Vite HMR styles) are preserved.
+- Prefetch responses go through the same reconciliation path as normal navigation.
+- If an external stylesheet fails to load, navigation continues after the timeout and falls back
+  to the styles already in the document.
 
 ## Data loading & caching
 

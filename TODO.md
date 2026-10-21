@@ -533,3 +533,10 @@
 
 - **Masalah**: Cloudflare menyuntik `static.cloudflareinsights.com/beacon.min.js` + `/cdn-cgi/rum` ke respons landing dan memakai nonce CSP yang sama, sehingga tetap lolos `script-src`. Ini menambah dua request eksternal dan variasi Lighthouse; bukan berasal dari kode situs.
 - **Perbaikan**: Tidak diperbaiki dari repo. Bisa dimatikan di dashboard Cloudflare (Web Analytics/RUM) bila ingin mengejar LCP laboratorium <2,0 dtk di atas Worker remote; median performa live saat ini 96 dengan beacon tersebut.
+
+### `DF-14` — Soft navigation tidak merekonsiliasi <head> — halaman docs tanpa CSS
+
+*status: fixed · area: packages/react, apps/docs · commit: `6497d41`*
+
+- **Masalah**: Landing memakai CSS split (`GAYA_LANDING`) sedangkan docs memakai `GAYA` penuh. Soft navigation hanya menukar isi `#ramonyx-root` dan `document.title`; style landing tetap aktif setelah pindah ke `/docs/architecture`. Sidebar menjadi daftar bullet, grid docs hilang, metadata/link markdown tidak bertambah. Hard reload memperbaikinya.
+- **Perbaikan**: Framework `prepareHead` di `packages/react/src/client.ts` merekonsiliasi title, lang/dir, meta, link, dan style. Style inline distage `media=not all` lalu diaktifkan saat swap; stylesheet baru dipreload sebelum swap; node lama dibuang setelah swap; style baru memakai nonce CSP dokumen aktif. Marker `data-ramonyx-style` ditambahkan ke style server. CSS split landing dipertahankan karena pengukuran lokal menunjukkan full CSS menaikkan TBT/perf (median 94 vs 99 pada split); bug ditutup oleh rekonsiliasi head, bukan dengan memaksa full CSS/hard navigation. Test regresi: `apps/docs/e2e/soft-navigation.spec.ts` (CSS berbeda per rute, link alternate, back/forward, prefetch, stylesheet tambahan).

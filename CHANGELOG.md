@@ -10,16 +10,22 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
   field 2D, chapter rail + keyboard-first navigation (`D`/`A`/`G`, `?`, panah), demo routing,
   streaming trace, server action waitlist, kontrak Node/static/edge, gauge default limits, band
   runtime eksperimental, terminal MCP, dan CTA penutup. Semua konten tetap SSR dan terbaca tanpa JS.
-- **Worker**: artefak edge landing-only (`pagePaths`/`document`), docs statis sebagai Workers
-  Assets, waitlist Workers KV, dan wrapper Worker `/` + `POST /`. Build + dry-run workerd + smoke
-  lokal lulus; deploy menunggu kredensial Cloudflare (langkah di `wrangler.toml`/workflow).
+- **Worker live**: artefak edge landing-only (`pagePaths`/`document`), docs statis sebagai Workers
+  Assets, waitlist Workers KV, dan wrapper Worker `/` + `POST /` + `HEAD /`. Deploy ke
+  `ramonyx-site`; custom domain **https://ramonyx.devmoon.net/** aktif (Cloudflare membuat record
+  proxied otomatis), KV `WAITLIST`, Cache API untuk HTML landing, dan Cron Trigger `meta:stars`.
+  Smoke live: home/docs/assets/API, POST waitlist, hydration, pencarian, a11y.
 - **Framework**: `buildEdge` mendukung custom document + subset rute, `DocumentOptions.path/assets`,
   View Transitions pada soft navigation, `client.load: "interaction"` + hydration idle, bootstrap
-  nonce untuk tema. Landing memakai varian CSS sendiri dan `content-visibility`.
-- **Dogfooding findings** dicatat di `TODO.md` (10 temuan: edge target, View Transitions, hydration,
-  canvas, CSS/layout, static actions, streaming, code splitting, tema, axe/content-visibility).
+  nonce untuk tema. Landing memakai varian CSS sendiri dan `content-visibility`. Entry edge
+  menyaring root middleware dari middleware halaman/API agar tidak berjalan dua kali (nonce CSP
+  tunggal) — temuan DF-11.
+- **Dogfooding findings** dicatat di `TODO.md` (13 temuan; tiga baru: middleware ganda/CSP nonce,
+  fetch GitHub di jalur SSR → KV + cron, dan injeksi Web Analytics Cloudflare).
 - **Lighthouse mobile** (static export lokal, 3 run): Performance **97 / 97 / 93** (median **97**),
-  LCP **1.5 s**, CLS **0**, a11y **100**. Satu run meleset karena variasi TBT; angka tidak diklaim di situs.
+  LCP **1.5 s**, CLS **0**, a11y **100**. **Live Worker** (3 run): Performance **95 / 96 / 97**
+  (median **96**), a11y **100**, CLS **0**, LCP **2.1–2.6 s** — TTFB jaringan Cloudflare menambah
+  LCP; static export tetap **1.5 s**. Angka tidak diklaim di situs.
 
 ### Situs publik
 

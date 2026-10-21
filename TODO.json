@@ -635,10 +635,10 @@
       "id": "DF-06",
       "title": "GitHub Pages statis tidak bisa menjalankan action/streaming",
       "problem": "Public site di GitHub Pages tidak bisa POST server action, streaming SSR, atau KV; form waitlist tidak mungkin nyata di sana.",
-      "fix": "Arsitektur Cloudflare Worker: landing edge SSR + action di `/`, docs statis sebagai Assets, KV untuk waitlist. Build, wrapper, config, dry-run workerd, dan smoke lokal disiapkan; deploy menunggu kredensial pemilik.",
-      "commit": "5a1879b",
+      "fix": "Arsitektur Cloudflare Worker live: landing edge SSR + action di `/`, docs statis sebagai Assets, waitlist KV. Deploy 2026-10-21 ke `ramonyx-site`; custom domain `ramonyx.devmoon.net` aktif (record DNS dibuat Cloudflare), KV `WAITLIST`, Cron Trigger `meta:stars`, Cache API untuk HTML landing, dan dukungan HEAD. Smoke live: home/docs/assets/API, POST waitlist, hydration, pencarian, a11y.",
+      "commit": "5a1879b, 3d64b2c, 3875562",
       "area": "scripts, wrangler.toml, .github/workflows",
-      "status": "partial"
+      "status": "fixed"
     },
     {
       "id": "DF-07",
@@ -675,6 +675,33 @@
       "commit": "a4bdf41",
       "area": "apps/docs",
       "status": "fixed"
+    },
+    {
+      "id": "DF-11",
+      "title": "Root middleware dijalankan dua kali di entry edge — CSP nonce tidak cocok",
+      "problem": "Entry edge memasang `src/routes/middleware.ts` sebagai middleware global, sementara halaman yang sama juga membawanya di `middlewareFiles` (perilaku Node). `cspNonce` berjalan dua kali: header CSP memakai nonce A, HTML memakai nonce B. Semua inline script (payload hydration, bootstrap tema, client loader) diblokir; halaman tampak benar tanpa JS tetapi tidak hidup.",
+      "fix": "`generateServerEntry` menyaring file middleware global dari daftar middleware halaman dan API. Satu eksekusi per request; nonce header == nonce script. Diverifikasi live: hydration, Cmd+K, navigasi docs, action waitlist.",
+      "commit": "3875562",
+      "area": "packages/compiler, packages/ssr, apps/docs",
+      "status": "fixed"
+    },
+    {
+      "id": "DF-12",
+      "title": "Fetch GitHub di loader SSR menahan TTFB landing",
+      "problem": "Loader landing memanggil GitHub API dengan timeout 1,5 dtk pada isolate Worker dingin. Lighthouse live awal: performa 82–95, LCP 2,7–3,6 dtk (run dingin pertama 10,1 dtk). Data eksternal non-kritis berada di jalur kritis HTML.",
+      "fix": "Stars dipindah ke KV `meta:stars`; Cron Trigger Worker tiap jam memperbarui. Request hanya membaca KV. HTML landing di-cache Cache API 60 dtk (request pertama tetap SSR). Lighthouse live setelah perbaikan: performa 95/96/97 (median 96), a11y 100, CLS 0, LCP 2,1–2,6 dtk; static export lokal 97/LCP 1,5 dtk.",
+      "commit": "3875562",
+      "area": "scripts/build-worker.ts, apps/docs/src/landing.server.ts, wrangler.toml",
+      "status": "fixed"
+    },
+    {
+      "id": "DF-13",
+      "title": "Cloudflare Web Analytics disuntik ke HTML dengan nonce CSP",
+      "problem": "Cloudflare menyuntik `static.cloudflareinsights.com/beacon.min.js` + `/cdn-cgi/rum` ke respons landing dan memakai nonce CSP yang sama, sehingga tetap lolos `script-src`. Ini menambah dua request eksternal dan variasi Lighthouse; bukan berasal dari kode situs.",
+      "fix": "Tidak diperbaiki dari repo. Bisa dimatikan di dashboard Cloudflare (Web Analytics/RUM) bila ingin mengejar LCP laboratorium <2,0 dtk di atas Worker remote; median performa live saat ini 96 dengan beacon tersebut.",
+      "commit": "3875562",
+      "area": "Cloudflare dashboard",
+      "status": "open"
     }
   ]
 }

@@ -18,11 +18,11 @@ not_found_handling = "404-page"
 # Waitlist (Workers KV). Buat namespace:
 #   pnpm dlx wrangler kv namespace create WAITLIST
 # lalu isi id dan hapus komentar.
-# [[kv_namespaces]]
-# binding = "WAITLIST"
-# id = "REPLACE_WITH_KV_NAMESPACE_ID"
+[[kv_namespaces]]
+binding = "WAITLIST"
+id = "9a90649976b144359ece1c72e98af3ee"
 
 # Aktifkan setelah custom domain GitHub Pages dilepas:
-# [[routes]]
-# pattern = "ramonyx.devmoon.net"
-# custom_domain = true
+[[routes]]
+pattern = "ramonyx.devmoon.net"
+custom_domain = true

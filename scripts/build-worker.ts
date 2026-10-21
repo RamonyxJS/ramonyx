@@ -51,6 +51,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/" || url.pathname === "") {
+      if (request.method === "HEAD") {
+        const response = await landing.fetch(new Request(request, { method: "GET" }), env);
+        return new Response(null, { status: response.status, headers: response.headers });
+      }
       return landing.fetch(request, env);
     }
     const response = await env.ASSETS.fetch(request);

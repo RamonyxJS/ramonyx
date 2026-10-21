@@ -10,9 +10,9 @@
   hasil + acceptance di bagian "Hasil rilis 0.4.0".
 - **TERBIT — 0.4.1** (2026-10-20): remediasi snapshot MCP (`docs/public` saja) + situs publik
   berbasis kebijakan konten (ADR-0082); 17 artefak; hasil + verifikasi di "Hasil rilis 0.4.1".
-- **KANDIDAT — 0.4.2** (2026-10-21): gate kesiapan paket publik — meta `createHandler`, React
-  peer dependency, deskripsi/README 16 paket, metadata release, dan `release:verify` dari
-  tarball. Tag/publikasi menunggu hasil CI dan registry.
+- **TERBIT — 0.4.2** (2026-10-21): gate kesiapan paket publik — meta `createHandler`, React
+  peer dependency, deskripsi/README 16 paket, metadata release, `release:verify` dari tarball,
+  dan seluruh paket terverifikasi di registry dengan provenance.
 
 ## Persiapan 0.4.0 (2026-10-19)
 
@@ -24,6 +24,17 @@
 - `npm publish --dry-run` ×16 → exit 0 tanpa warning.
 - **Langkah tersisa (pemilik)**: `git tag v0.4.0 && git push origin main --tags` — **selesai**
   (lihat "Hasil rilis 0.4.0").
+
+## Hasil rilis 0.4.2 (2026-10-21)
+
+- Tag `v0.4.2` → workflow **success**: 16 paket @ 0.4.2 (provenance) + **GitHub Release 19 aset**.
+- **Gate paket**: `ramonyx` meta mengekspor `createHandler` + contract test; `@ramonyx/react`
+  memakai peer React 19; 16 deskripsi/README unik; `verify-release` memeriksa metadata tarball,
+  peer React, smoke meta, dan instalasi konsumen bersih.
+- **Registry**: seluruh 16 paket @ 0.4.2 terlihat dengan `dist.attestations`; `@ramonyx/react`
+  tanpa React di dependencies; `ramonyx` bergantung pada core + server.
+- Catatan propagasi: sebagian paket (termasuk `@ramonyx/plugin-image`) sempat tertunda di edge
+  registry sebelum terlihat; verifikasi dilakukan setelah semua tersedia.
 
 ## Hasil rilis 0.4.1 (2026-10-20)
 

@@ -97,7 +97,7 @@
 
 ### `p0-package-readiness-gate` — Gate kesiapan paket publik (API, peer, metadata, rilis)
 
-*tema: quality · ukuran: M · status: open · sumber: audit kesiapan paket 2026-10-21*
+*tema: quality · ukuran: M · status: done · sumber: audit kesiapan paket 2026-10-21; rilis 0.4.2 + registry verified*
 
 - **Apa**: Jadikan kesiapan paket publik sebagai gate rilis: kontrak API meta, peer dependency React, metadata/README npm, dan rilis yang dibangun dari main.
 - **Kenapa penting untuk bersaing**: Fitur sudah matang, tetapi adopsi publik bisa gagal karena export meta tidak cocok, React terduplikasi, metadata paket minim, atau registry tertinggal dari main.

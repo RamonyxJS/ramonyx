@@ -30,7 +30,7 @@ const edge = await buildEdge({
   streaming: true,
   clientLoad: "interaction",
   clientBootstrap:
-    'try{const t=localStorage.getItem("ramonyx-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}',
+    'try{const t=localStorage.getItem("ramonyx-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{};document.addEventListener("click",function(e){if(document.documentElement.classList.contains("hydrated"))return;const b=e.target instanceof Element?e.target.closest("[data-theme-toggle]"):null;if(!b)return;const d=document.documentElement;const n=d.dataset.theme==="dark"?"light":"dark";d.dataset.theme=n;try{localStorage.setItem("ramonyx-theme",n)}catch{}},true);',
 });
 console.log(`✓ edge: ${relative(root, edge.outputFile)} (${(edge.bytes / 1024).toFixed(1)} KB)`);
 

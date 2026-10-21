@@ -3,10 +3,15 @@
   "title": "Ramonyx TODO backlog",
   "description": "SUMBER TUNGGAL backlog prioritas menuju paritas kompetitif. TODO.md adalah hasil generate (scripts/docs/todo.ts); jangan mengedit TODO.md manual. Item berasal dari analisis kesenjangan docs/PLAN-docs-consolidation.md §3.",
   "type": "object",
-  "required": ["schemaVersion", "items"],
+  "required": [
+    "schemaVersion",
+    "items"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
     "items": {
       "type": "array",
       "minItems": 1,
@@ -27,8 +32,14 @@
         ],
         "additionalProperties": false,
         "properties": {
-          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-          "title": { "type": "string", "minLength": 5 },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 5
+          },
           "theme": {
             "enum": [
               "routing",
@@ -43,26 +54,127 @@
               "quality"
             ]
           },
-          "priority": { "enum": ["p0", "p1", "p2", "p3"] },
-          "size": { "enum": ["S", "M", "L"] },
-          "status": { "enum": ["open", "in-progress", "done"] },
-          "what": { "type": "string", "minLength": 20 },
-          "why": { "type": "string", "minLength": 20 },
+          "priority": {
+            "enum": [
+              "p0",
+              "p1",
+              "p2",
+              "p3"
+            ]
+          },
+          "size": {
+            "enum": [
+              "S",
+              "M",
+              "L"
+            ]
+          },
+          "status": {
+            "enum": [
+              "open",
+              "in-progress",
+              "done"
+            ]
+          },
+          "what": {
+            "type": "string",
+            "minLength": 20
+          },
+          "why": {
+            "type": "string",
+            "minLength": 20
+          },
           "done": {
             "type": "array",
             "minItems": 1,
-            "items": { "type": "string", "minLength": 10 }
+            "items": {
+              "type": "string",
+              "minLength": 10
+            }
           },
-          "areas": { "type": "array", "minItems": 1, "items": { "type": "string" } },
-          "adrs": { "type": "array", "items": { "type": "string" } },
-          "competitor": { "type": "string", "minLength": 10 },
+          "areas": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "adrs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "competitor": {
+            "type": "string",
+            "minLength": 10
+          },
           "dependsOn": {
             "type": "array",
-            "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]+$"
+            }
           },
-          "quickWin": { "type": "boolean" },
-          "strategic": { "type": "boolean" },
-          "source": { "type": "string" }
+          "quickWin": {
+            "type": "boolean"
+          },
+          "strategic": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dogfooding": {
+      "type": "array",
+      "description": "Temuan nyata saat dogfooding (masalah, perbaikan, commit).",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "problem",
+          "fix",
+          "commit",
+          "area",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^DF-[0-9]{2}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 5
+          },
+          "problem": {
+            "type": "string",
+            "minLength": 20
+          },
+          "fix": {
+            "type": "string",
+            "minLength": 20
+          },
+          "commit": {
+            "type": "string",
+            "minLength": 7
+          },
+          "area": {
+            "type": "string",
+            "minLength": 2
+          },
+          "status": {
+            "enum": [
+              "fixed",
+              "partial",
+              "open"
+            ]
+          }
         }
       }
     }

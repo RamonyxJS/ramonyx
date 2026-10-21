@@ -139,7 +139,7 @@ export function LandingNav({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [active, help, reduced, sections]);
+  }, [help, reduced, sections]);
 
   useEffect(() => {
     const element = dialog.current;

@@ -4,6 +4,23 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+### Landing 2.0 + Cloudflare Worker
+
+- **Landing total redesign** ("onyx engine room"): wordmark `RAMONYX` edge-to-edge, particle/grid
+  field 2D, chapter rail + keyboard-first navigation (`D`/`A`/`G`, `?`, panah), demo routing,
+  streaming trace, server action waitlist, kontrak Node/static/edge, gauge default limits, band
+  runtime eksperimental, terminal MCP, dan CTA penutup. Semua konten tetap SSR dan terbaca tanpa JS.
+- **Worker**: artefak edge landing-only (`pagePaths`/`document`), docs statis sebagai Workers
+  Assets, waitlist Workers KV, dan wrapper Worker `/` + `POST /`. Build + dry-run workerd + smoke
+  lokal lulus; deploy menunggu kredensial Cloudflare (langkah di `wrangler.toml`/workflow).
+- **Framework**: `buildEdge` mendukung custom document + subset rute, `DocumentOptions.path/assets`,
+  View Transitions pada soft navigation, `client.load: "interaction"` + hydration idle, bootstrap
+  nonce untuk tema. Landing memakai varian CSS sendiri dan `content-visibility`.
+- **Dogfooding findings** dicatat di `TODO.md` (10 temuan: edge target, View Transitions, hydration,
+  canvas, CSS/layout, static actions, streaming, code splitting, tema, axe/content-visibility).
+- **Lighthouse mobile** (static export, 3 run): Performance **94–100** (median 97), LCP **1.5 s**,
+  CLS **0**, a11y **100**. Angka final ada di laporan rilis; tidak diklaim di situs.
+
 ### Situs publik
 
 - **Redesign landing + docs** (arah "onyx strata"): kertas porselen + tinta + kobalt, display

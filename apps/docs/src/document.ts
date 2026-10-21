@@ -830,6 +830,8 @@ html.js .copy { display: inline-flex; }
 .particle-field {
   position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%;
   pointer-events: none;
+  background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--accent) 38%, transparent) 1px, transparent 1.6px);
+  background-size: 34px 34px; opacity: 0.55;
   mask-image: linear-gradient(180deg, #000 0%, #000 60%, transparent 100%);
 }
 .cursor-glow {

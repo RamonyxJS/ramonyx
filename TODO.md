@@ -438,3 +438,77 @@
   - [ ] Preview PR (atau keputusan sadar untuk tidak, dicatat)
 - **Area kode**: `.github/workflows`, `docs`
 - **Pembanding**: Semua docs resmi framework besar berada di domain sendiri.
+
+## Dogfooding findings
+
+> Temuan nyata saat membangun ulang landing + Worker; commit merujuk perbaikan di repo.
+
+### `DF-01` — Edge target mengabaikan custom document dan subset rute
+
+*status: fixed · area: packages/bundler, packages/compiler, packages/ssr · commit: `b7322c9`*
+
+- **Masalah**: `buildEdge` selalu membangun semua halaman dan memakai dokumen default. Landing di Worker akan kehilangan CSS/font dan berpotensi menarik modul docs/fs.
+- **Perbaikan**: Tambah `pagePaths`/`apiPaths`/`document` pada `buildEdge`, dukungan `document` di `generateServerEntry`, serta `DocumentOptions.path/assets` agar font ber-hash di-resolve dari asset map edge. Landing edge memakai `src/edge-document.ts`.
+
+### `DF-02` — Soft navigation belum memakai View Transitions
+
+*status: fixed · area: packages/react · commit: `b7322c9`*
+
+- **Masalah**: `enableClientNavigation` menukar DOM tanpa `document.startViewTransition`, sehingga transisi antar halaman tidak memakai API native dan fokus tidak dipindahkan.
+- **Perbaikan**: Bungkus swap dalam View Transition (feature-detect + reduced-motion fallback), fokus ke root setelah navigasi, dan tambah CSS transition name untuk topbar. Diuji di e2e keyboard.
+
+### `DF-03` — Hydration penuh memblokir LCP dan menaikkan TBT
+
+*status: partial · area: packages/ssr, packages/react, apps/docs · commit: `b7322c9, a4bdf41`*
+
+- **Masalah**: Satu bundle/hydrate untuk seluruh halaman membuat LCP 2.4 dtk dan TBT 900 ms pada Lighthouse mobile meski konten sudah SSR.
+- **Perbaikan**: Tambah `client.load: "interaction"` (bundle dimuat saat pointer/wheel/key pertama), hydration dijadwalkan idle, bootstrap tema nonce, dan CSS-based hero. Lighthouse turun ke LCP 1.5 dtk/TBT ~160 ms. Islands + code splitting per rute masih terbuka (lihat DF-08).
+
+### `DF-04` — Canvas partikel kontinu membebani main thread
+
+*status: fixed · area: apps/docs · commit: `a4bdf41`*
+
+- **Masalah**: Loop rAF 60fps dengan ratusan arc berjalan terus, menaikkan TBT meski hanya dekorasi hero.
+- **Perbaikan**: Gambar field statis saat first paint; redraw satu frame per batch pointer/scroll (tanpa loop idle). Field tetap reaktif tetapi CPU idle. TBT turun dari ~900 ms ke ~170 ms.
+
+### `DF-05` — Landing memuat CSS docs + layout halaman panjang
+
+*status: fixed · area: apps/docs, packages/ssr · commit: `a4bdf41`*
+
+- **Masalah**: Dokumen landing membawa seluruh CSS docs (~30 KB) dan seluruh chapter di-layout walau di luar viewport; style/layout menjadi blocker TBT.
+- **Perbaikan**: Dokumen memilih varian CSS landing (`path === "/"`), slice CSS docs yang tidak perlu, dan `content-visibility: auto` + `contain-intrinsic-size` untuk chapter. Runtime dark memakai background head eksplisit agar axe tetap benar.
+
+### `DF-06` — GitHub Pages statis tidak bisa menjalankan action/streaming
+
+*status: partial · area: scripts, wrangler.toml, .github/workflows · commit: `5a1879b`*
+
+- **Masalah**: Public site di GitHub Pages tidak bisa POST server action, streaming SSR, atau KV; form waitlist tidak mungkin nyata di sana.
+- **Perbaikan**: Arsitektur Cloudflare Worker: landing edge SSR + action di `/`, docs statis sebagai Assets, KV untuk waitlist. Build, wrapper, config, dry-run workerd, dan smoke lokal disiapkan; deploy menunggu kredensial pemilik.
+
+### `DF-07` — Streaming belum aktif; loader tetap memblokir render
+
+*status: partial · area: apps/docs, packages/ssr · commit: `a4bdf41`*
+
+- **Masalah**: Docs app memakai render sinkron dan loader selesai sebelum render; streaming SSR belum dimanfaatkan, dan belum ada mekanisme deferred loader/Suspense data.
+- **Perbaikan**: Aktifkan `streaming: true` di Node/static app dan edge entry (dokument marker + CSP nonce). Batasan deferred data dicatat: loader tetap resolve sebelum render; streaming hanya memecah dokumen/body, bukan loader per-boundary.
+
+### `DF-08` — Client bundle memuat semua halaman (tanpa code splitting)
+
+*status: open · area: packages/compiler, packages/react · commit: `a4bdf41`*
+
+- **Masalah**: `generateClientEntry` mengimpor seluruh registry halaman; landing ikut membawa komponen docs dan tidak ada pemisahan chunk per rute/island.
+- **Perbaikan**: Belum diperbaiki: lazy canvas saja. Dicatat sebagai backlog; solusi yang benar adalah code splitting per rute/island dan partial hydration di framework.
+
+### `DF-09` — Tema tersimpan hilang saat hydration ditunda
+
+*status: fixed · area: packages/ssr, packages/react, apps/docs · commit: `b7322c9, a4bdf41`*
+
+- **Masalah**: Setelah bundle ditunda sampai interaksi, preferensi tema di localStorage baru diterapkan setelah hydration; reload sempat kembali ke tema sistem/flash.
+- **Perbaikan**: Tambah bootstrap inline ber-nonce pada ClientOptions (dan edge build) yang menerapkan `data-theme` dari localStorage sebelum paint. Diuji reload e2e.
+
+### `DF-10` — Axe false negative pada section gelap yang di-skip
+
+*status: fixed · area: apps/docs · commit: `a4bdf41`*
+
+- **Masalah**: `content-visibility` melewati background section runtime saat offscreen; axe menghitung kontras di atas paper dan melaporkan teks band-accent gagal.
+- **Perbaikan**: Beri `.chapter-head` pada section gelap background band eksplisit (bukan hanya parent), sehingga kontras benar dan axe 100 tanpa mengorbankan skip layout.

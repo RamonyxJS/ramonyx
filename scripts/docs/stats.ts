@@ -200,7 +200,7 @@ export interface PublicStats {
   readonly tests: { readonly node: number; readonly rust: number; readonly e2eSpecFiles: number };
 }
 
-export const PUBLIC_STATS: PublicStats = ${JSON.stringify(publicStats, null, 2)};
+export const PUBLIC_STATS: PublicStats = ${JSON.stringify(publicStats, null, 2).replace(/"([A-Za-z_][A-Za-z0-9_]*)":/g, "$1:")};
 `,
 );
 console.log(

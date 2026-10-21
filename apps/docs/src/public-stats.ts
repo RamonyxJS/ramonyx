@@ -13,11 +13,11 @@ export interface PublicStats {
 }
 
 export const PUBLIC_STATS: PublicStats = {
-  "version": "0.4.1",
-  "packages": {
-    "workspace": 15,
-    "npm": 16,
-    "names": [
+  version: "0.4.1",
+  packages: {
+    workspace: 15,
+    npm: 16,
+    names: [
       "@ramonyx/adapter-runtime",
       "@ramonyx/bundler",
       "@ramonyx/compiler",
@@ -33,14 +33,14 @@ export const PUBLIC_STATS: PublicStats = {
       "@ramonyx/server",
       "@ramonyx/ssr",
       "@ramonyx/testing",
-      "create-ramonyx-app"
-    ]
+      "create-ramonyx-app",
+    ],
   },
-  "adrs": 8,
-  "docs": 21,
-  "tests": {
-    "node": 291,
-    "rust": 116,
-    "e2eSpecFiles": 9
-  }
+  adrs: 8,
+  docs: 21,
+  tests: {
+    node: 291,
+    rust: 116,
+    e2eSpecFiles: 9,
+  },
 };

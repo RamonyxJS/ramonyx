@@ -32,10 +32,7 @@ export function waitlistStore(env: EnvReader): WaitlistStore | null {
 }
 
 export function waitlistConfigured(env: EnvReader): boolean {
-  return (
-    waitlistStore(env) !== null ||
-    (env.get("WAITLIST_WEBHOOK_URL") ?? "").length > 0
-  );
+  return waitlistStore(env) !== null || (env.get("WAITLIST_WEBHOOK_URL") ?? "").length > 0;
 }
 
 function clientKey(request: Request): string {
@@ -74,7 +71,11 @@ async function emailKey(email: string): Promise<string> {
 }
 
 /** Validasi + simpan email. Tidak pernah mengembalikan email ke client. */
-export async function subscribe(emailRaw: string, request: Request, env: EnvReader): Promise<WaitlistResult> {
+export async function subscribe(
+  emailRaw: string,
+  request: Request,
+  env: EnvReader,
+): Promise<WaitlistResult> {
   const email = emailRaw.trim().toLowerCase();
   if (email.length === 0 || email.length > 254 || !EMAIL.test(email)) {
     return { ok: false, errors: { email: "Enter a valid email address." } };

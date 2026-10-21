@@ -18,10 +18,11 @@ through the framework on every docs deploy.
 
 ## Styling: hand-written CSS with design tokens (no Tailwind)
 
-The site ships a single stylesheet in the document shell (`createDocument`), built from CSS custom
-properties (color, type scale, spacing, radius, motion). The visual system is **"onyx strata"**:
-porcelain paper, ink, and a cobalt accent, with dark bands for technical sections; code panels stay
-dark in both site themes.
+The site ships CSS custom properties (color, type scale, spacing, radius, motion) from the document
+shell (`createDocument`). The visual system is **"onyx strata"**: porcelain paper, ink, and a cobalt
+accent, with dark bands for technical sections; code panels stay dark in both site themes. The
+landing uses a **landing-only CSS slice** (`DocumentOptions.path === "/"`) so docs layout rules do not
+ship to the marketing page.
 
 - **Why**: the docs app's client entry is generated from the page graph; wiring a CSS pipeline
   through the generated entry adds build coupling for little benefit at this size. Tokens give full
@@ -35,20 +36,29 @@ dark in both site themes.
 Display: **Instrument Serif** (400, roman + italic). Body/UI: **IBM Plex Sans** (400/500/600).
 Code and labels use the system monospace stack. Latin subsets live in
 `apps/docs/src/assets/fonts/` and go through the asset pipeline, so `@font-face` and the preload
-links use the hashed resolver output. `font-display: swap`; the display serif and body regular are
-preloaded. Licenses and sources: `apps/docs/FONTS.md` (SIL OFL 1.1).
+links use the hashed resolver output. The display serif is `font-display: optional` and preloaded
+(normal + italic); body Plex uses `swap`. Licenses and sources: `apps/docs/FONTS.md` (SIL OFL 1.1).
 
 - **Why**: a distinctive editorial voice without a third-party font CDN or a build-time fetch.
 - **Cost**: ~135 KB of WOFF2, served immutably with the other hashed assets.
 
-## Animation: CSS only
+## Animation and hydration
 
-One orchestrated entrance on the landing hero (staggered fade/translate) plus hover/focus
-transitions; `prefers-reduced-motion` disables both. The docs ToC uses a rAF-throttled scroll
-listener to mark the active section. No animation library and no scroll-reveal helper.
+The landing wordmark uses a CSS clip wipe; chapters get a small transform transition from one
+`IntersectionObserver` (`data-reveal`), and micro-interactions are pointer-driven. The hero particle
+field is a **2D canvas**: it paints one static frame on load and redraws **one frame per pointer/scroll
+batch** (no idle rAF loop), so it reacts without burning main-thread time. `prefers-reduced-motion`
+disables the wipe, reveals, canvas motion, and magnetic effects. The docs ToC uses a rAF-throttled
+scroll listener.
 
-- **Why**: the landing needs deliberate, sparse motion — not layout animation choreography. CSS
-  keeps the bundle ~0 KB for animation.
+Hydration is deferred: `client.load: "interaction"` loads the client bundle on the first
+pointer/wheel/key event, and `hydrateAll` runs on idle. This keeps the first paint/LCP CSS-only;
+the trade-off is that interactivity is attached after the first input. A nonce bootstrap restores a
+stored theme before paint. Long pages use `content-visibility: auto` with intrinsic sizes.
+
+- **Why**: a content landing must be readable before JS; hydration was the largest LCP/TBT cost.
+- **Open**: islands/partial hydration and route-level code splitting are not implemented; the
+  client registry still imports all pages (recorded in `TODO.md`).
 - **Alternative rejected**: Motion (Framer Motion). ~30 KB for effects we can express in CSS.
 
 ## Components: copy-in patterns, not a black-box library
@@ -77,9 +87,22 @@ tests. Works on the static GitHub Pages export with no search service.
 ## Theme
 
 Light by default; dark via `data-theme="dark"` or `prefers-color-scheme` when the user has not
-chosen. The toggle stores the choice in `localStorage` and applies it after hydration, so a stored
-override can show the system theme for one frame — accepted in exchange for not adding an inline
-script. Contrast targets WCAG AA in both themes.
+chosen. The toggle stores the choice in `localStorage`; a tiny nonce-carrying bootstrap applies it
+before paint, so a stored theme does not flash. Contrast targets WCAG AA in both themes.
+
+## Hosting: Cloudflare Worker + static assets
+
+The canonical site is a Cloudflare Worker (`pnpm build:worker`): `/` and `POST /` are the landing
+edge SSR (streaming + waitlist action), everything else is the static docs export served by Workers
+Assets. The waitlist uses a `WAITLIST` KV binding; `GITHUB_TOKEN` is optional for the stars cache.
+`wrangler.toml` and the manual `deploy-worker.yml` are in the repo; GitHub Pages remains a static
+mirror at `github.io/ramonyx` (base `/ramonyx`) without the custom domain. The edge artifact is
+built landing-only (`pagePaths: ["/"]`) with a custom document; docs stay static.
+
+- **Why**: GitHub Pages cannot execute actions or streaming; the Worker gives one origin with real
+  server actions and keeps docs cheap.
+- **Trade-off**: the landing's dynamic data is loader-based (resolved before render); deferred
+  data/Suspense streaming is not implemented.
 
 ## Testing
 

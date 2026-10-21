@@ -47,6 +47,10 @@ eksperimental (Phase 4 selesai, ADR-0001).
 - CLI devtools (`@ramonyx/devtools`, ADR-0053): di repo jalankan lewat loader —
   `node --import ./tools/register.mjs packages/devtools/src/cli.ts <dev|build|start|doctor> --app <dir>`;
   aplikasi (template) memakai `ramonyx dev|build|start` dengan konvensi `src/app.ts` `createApp()`.
+- `pnpm build:worker` — artefak Cloudflare Worker: landing edge SSR (`pagePaths ["/"]`, custom
+  document) + docs static assets; `pnpm deploy:worker` menjalankan `wrangler deploy` (manual,
+  butuh `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` dan binding KV `WAITLIST` — lihat
+  `wrangler.toml`). Domain apex Worker; Pages hanya mirror `github.io/ramonyx` (base `/ramonyx`).
 - `pnpm release` — artefak rilis (build paket → tarball npm + binary runtime + SHA256SUMS/manifest
   di `dist/`; **17 artefak** — 16 paket npm (termasuk `create-ramonyx-app`, `@ramonyx/mcp-docs-server`,
   `@ramonyx/plugin-image`) + binary runtime); `pnpm release:verify` — verifikasi

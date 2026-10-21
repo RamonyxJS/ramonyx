@@ -29,6 +29,7 @@ export function ThemeToggle() {
     <button
       type="button"
       className="tombol-ikon"
+      data-theme-toggle
       onClick={ganti}
       aria-label={label}
       title={tema === "light" ? "Dark theme" : "Light theme"}

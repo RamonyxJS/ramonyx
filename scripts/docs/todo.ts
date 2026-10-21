@@ -19,9 +19,20 @@ interface TodoItem {
   source?: string;
 }
 
+interface DogfoodEntry {
+  id: string;
+  title: string;
+  problem: string;
+  fix: string;
+  commit: string;
+  area: string;
+  status: "fixed" | "partial" | "open";
+}
+
 interface TodoFile {
   schemaVersion: 1;
   items: TodoItem[];
+  dogfooding?: DogfoodEntry[];
 }
 
 const PRIORITY_LABEL: Record<string, string> = {
@@ -98,6 +109,25 @@ export function generateTodoMd(todo: TodoFile): string {
         lines.push(`- **ADR**: ${item.adrs.join(", ")}`);
       }
       lines.push(`- **Pembanding**: ${item.competitor}`);
+      lines.push("");
+    }
+  }
+
+  const dogfooding = todo.dogfooding ?? [];
+  if (dogfooding.length > 0) {
+    lines.push("## Dogfooding findings");
+    lines.push("");
+    lines.push(
+      "> Temuan nyata saat membangun ulang landing + Worker; commit merujuk perbaikan di repo.",
+    );
+    lines.push("");
+    for (const entry of dogfooding) {
+      lines.push(`### \`${entry.id}\` — ${entry.title}`);
+      lines.push("");
+      lines.push(`*status: ${entry.status} · area: ${entry.area} · commit: \`${entry.commit}\`*`);
+      lines.push("");
+      lines.push(`- **Masalah**: ${entry.problem}`);
+      lines.push(`- **Perbaikan**: ${entry.fix}`);
       lines.push("");
     }
   }

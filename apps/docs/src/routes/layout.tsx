@@ -27,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps) {
           <div className="topbar-aksi">
             <Search />
             <ThemeToggle />
-            <a className="tombol utama" href="docs/getting-started">
+            <a className="tombol utama" href="docs/getting-started" data-prefetch="off">
               Get started
             </a>
           </div>

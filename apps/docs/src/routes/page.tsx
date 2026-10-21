@@ -1,326 +1,515 @@
 import type { PageProps } from "@ramonyx/react";
+import type { PageActionContext, PageLoaderContext } from "ramonyx";
+import type { ReactNode } from "react";
 
-import { DeployTabs } from "../components/deploy-tabs.tsx";
+import { ContractDemo } from "../components/landing/contract-demo.tsx";
+import { CursorGlow, Magnetic } from "../components/landing/interactions.tsx";
+import { LandingNav } from "../components/landing/landing-nav.tsx";
+import { LandingReveal } from "../components/landing/landing-reveal.tsx";
+import { LimitsDemo } from "../components/landing/limits-demo.tsx";
+import { ParticleField } from "../components/landing/particle-field.tsx";
+import { RouteDemo } from "../components/landing/route-demo.tsx";
+import { LANDING_SECTIONS } from "../components/landing/sections.ts";
+import { StreamDemo } from "../components/landing/stream-demo.tsx";
+import { TypedTerminal } from "../components/landing/typed-terminal.tsx";
+import { readStars, subscribe, waitlistConfigured } from "../landing.server.ts";
 import { readPublicStats } from "../machine.server.ts";
 
 export const metadata = {
   title: "Full-stack TypeScript, secure by default",
   description:
     "File routing, streaming SSR, server actions, and one contract for Node, static, and edge — with an experimental Rust/V8 runtime.",
+  canonical: "https://ramonyx.devmoon.net/",
 };
 
-export async function loader() {
+interface LandingData {
+  readonly version: string;
+  readonly packages: number;
+  readonly docs: number;
+  readonly testNode: number;
+  readonly testRust: number;
+  readonly stars: number | null;
+  readonly waitlist: boolean;
+}
+
+export async function loader({ env }: PageLoaderContext): Promise<LandingData> {
   const stats = readPublicStats();
+  const stars = await readStars(env);
   return {
     version: stats.version,
-    paket: stats.packages.npm,
+    packages: stats.packages.npm,
     docs: stats.docs,
     testNode: stats.tests.node,
     testRust: stats.tests.rust,
+    stars,
+    waitlist: waitlistConfigured(env),
   };
 }
 
-export default function Landing({
-  data,
-}: PageProps<{
-  version: string;
-  paket: number;
-  docs: number;
-  testNode: number;
-  testRust: number;
-}>) {
-  return (
-    <main className="landing" id="isi">
-      <section className="hero">
-        <div className="wrap hero-grid">
-          <div className="hero-copy">
-            <p className="kicker">
-              <span className="kicker-tanda" aria-hidden="true" />v{data.version} · Node ≥ 24 · MIT
-            </p>
-            <h1>
-              Full-stack TypeScript.
-              <br />
-              <em>Secure by default.</em>
-            </h1>
-            <p className="lede">
-              File routing, streaming SSR, server actions, and one contract for Node, static, and
-              edge — with a Rust/V8 runtime on the road.
-            </p>
-            <div className="aksi-baris">
-              <a className="tombol utama" href="docs/getting-started">
-                Start in 30 seconds
-              </a>
-              <a className="tautan-panah" href="docs/ssr-hydration">
-                How it works <span aria-hidden="true">→</span>
-              </a>
-            </div>
-            <div className="install">
-              <span className="install-prompt" aria-hidden="true">
-                $
-              </span>
-              <code>pnpm create ramonyx-app my-app</code>
-              <button className="copy" type="button" data-copy aria-label="Copy install command">
-                Copy
-              </button>
-            </div>
-          </div>
-
-          <div className="hero-visual">
-            <div className="terminal-bingkai">
-              <figure className="terminal" aria-label="Terminal example">
-                <div className="terminal-bar">
-                  <i />
-                  <i />
-                  <i />
-                  <span>~/my-app</span>
-                </div>
-                <div className="terminal-isi">
-                  <div className="baris">
-                    <span className="prompt">$</span> pnpm create ramonyx-app my-app
-                  </div>
-                  <div className="komentar">scaffold → my-app</div>
-                  <div className="baris">
-                    <span className="prompt">$</span> cd my-app &amp;&amp; pnpm dev
-                  </div>
-                  <div>
-                    <span className="komentar">vite </span> http://localhost:5173
-                  </div>
-                  <div>
-                    <span className="komentar">ssr&nbsp; </span> http://127.0.0.1:3000
-                  </div>
-                  <div className="siap">ready</div>
-                  <div className="baris">
-                    <span className="prompt">$</span> <span className="cursor" />
-                  </div>
-                </div>
-              </figure>
-            </div>
-            <div className="penjaga">
-              <span className="penjaga-label">Default limits</span>
-              <span>1 MiB body</span>
-              <span>10 s timeout</span>
-              <span>100 concurrent</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bukti" aria-label="Project facts">
-        <div className="wrap bukti-grid">
-          <div className="bukti-sel">
-            <div className="bukti-angka">v{data.version}</div>
-            <div className="bukti-label">published on npm</div>
-          </div>
-          <div className="bukti-sel">
-            <div className="bukti-angka">{data.paket}</div>
-            <div className="bukti-label">npm packages</div>
-          </div>
-          <div className="bukti-sel">
-            <div className="bukti-angka">{data.docs}</div>
-            <div className="bukti-label">documentation pages</div>
-          </div>
-          <div className="bukti-sel">
-            <div className="bukti-angka">
-              {data.testNode} · {data.testRust}
-            </div>
-            <div className="bukti-label">Node · Rust tests</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bagian">
-        <div className="wrap">
-          <div className="bagian-kepala">
-            <div className="bagian-kicker">Rendering</div>
-            <div>
-              <h2>Render on the server. Hydrate with the data.</h2>
-              <p className="bagian-intro">
-                Loaders run next to the page module, the server embeds the payload, and the client
-                hydrates without a second data request. Streaming is opt-in when you want the shell
-                sooner.
-              </p>
-            </div>
-          </div>
-
-          <div className="narasi">
-            <div className="narasi-teks">
-              <h3>One module, both sides</h3>
-              <p>
-                A page exports a <code>loader</code> and a React component. The loader output is the
-                hydration payload — no schema glue, no double fetch.
-              </p>
-              <ul className="daftar-poin">
-                <li>
-                  Streaming SSR via <code>app.streaming: true</code>
-                </li>
-                <li>Soft navigation + prefetch on the client</li>
-                <li>
-                  Error boundaries per folder, with stable <code>RMX-*</code> codes
-                </li>
-              </ul>
-            </div>
-            <figure className="kode-panel">
-              <figcaption className="kode-kepala">
-                <span className="kode-berkas">src/routes/page.tsx</span>
-                <span className="kode-bahasa">tsx</span>
-                <button className="copy" type="button" data-copy aria-label="Copy code">
-                  Copy
-                </button>
-              </figcaption>
-              {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
-              <pre tabIndex={0}>
-                <code>{`export async function loader() {
-  return { message: "Hello from the server" };
+export async function action({ request, formData, env }: PageActionContext) {
+  // Honeypot: bot mengisi field tersembunyi; jangan simpan, tetap balas sukses.
+  if (String(formData.get("company") ?? "").length > 0) {
+    return { message: "You're on the list. Only release news, no noise." };
+  }
+  const result = await subscribe(String(formData.get("email") ?? ""), request, env);
+  return result.ok
+    ? { message: result.message }
+    : { errors: result.errors ?? { email: "Could not save your email." } };
 }
 
-export default function Home({
-  data,
-}: PageProps<{ message: string }>) {
-  return <h1>{data.message}</h1>;
-}`}</code>
-              </pre>
-            </figure>
-          </div>
-        </div>
-      </section>
+const WORDMARK = ["R", "A", "M", "O", "N", "Y", "X"] as const;
 
-      <section className="bagian">
-        <div className="wrap">
-          <div className="bagian-kepala">
-            <div className="bagian-kicker">Security</div>
-            <div>
-              <h2>Limits before your code runs.</h2>
-              <p className="bagian-intro">
-                Body limits, timeouts, concurrency shedding, CSP nonces, CSRF, rate limiting, and an
-                SSRF-guarded fetch ship with the framework. Defaults are safe; every limit is
-                configurable.
-              </p>
-            </div>
-          </div>
+function Kicker({ children }: { readonly children: ReactNode }) {
+  return (
+    <p className="kicker">
+      <span className="kicker-tanda" aria-hidden="true" />
+      {children}
+    </p>
+  );
+}
 
-          <div className="narasi terbalik">
-            <div className="narasi-teks">
-              <h3>Secure by construction</h3>
-              <p>
-                The server enforces a 1 MiB body limit, a 10 s timeout, and 100 concurrent requests
-                before dispatch. The build rejects <code>node:*</code> in client modules and stubs{" "}
-                <code>*.server.ts</code> imports.
+function Points({ items }: { readonly items: readonly string[] }) {
+  return (
+    <ul className="chapter-points">
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
+export default function Landing({ data, action }: PageProps<LandingData>) {
+  const stars = data.stars === null ? "—" : new Intl.NumberFormat("en-US").format(data.stars);
+  const emailError = action?.errors?.email;
+  return (
+    <main className="landing" id="isi" data-no-prefetch>
+      <CursorGlow />
+      <LandingReveal />
+
+      <section className="hero-stage" aria-labelledby="hero-title">
+        <ParticleField />
+        <div className="hero-inner wrap">
+          <div className="hero-meta">
+            <Kicker>
+              v{data.version} · Node ≥ 24 · MIT · {stars} GitHub stars
+            </Kicker>
+            <span className="hero-meta-note">scroll to explore</span>
+          </div>
+          <div className="hero-wordmark" aria-hidden="true">
+            {WORDMARK.map((letter, index) => (
+              <span key={letter} style={{ animationDelay: `${index * 45}ms` }}>
+                {letter}
+              </span>
+            ))}
+          </div>
+          <div className="hero-grid">
+            <div className="hero-copy">
+              <h1 id="hero-title" className="hero-title">
+                Full-stack TypeScript.
+                <br />
+                <em>Secure by default.</em>
+              </h1>
+              <p className="lede">
+                File routing, streaming SSR, server actions, and one contract for Node, static, and
+                edge — with a Rust/V8 runtime on the road.
               </p>
-              <ul className="daftar-poin">
-                <li>Per-request CSP nonce in the hydration payload</li>
-                <li>Double-submit CSRF with Web Crypto</li>
-                <li>SSRF guard with DNS pinning (no rebinding window)</li>
-                <li>
-                  <a href="docs/security/overview">Security overview →</a>
-                </li>
-              </ul>
-            </div>
-            <figure className="kode-panel">
-              <figcaption className="kode-kepala">
-                <span className="kode-berkas">src/routes/middleware.ts</span>
-                <span className="kode-bahasa">ts</span>
-                <button className="copy" type="button" data-copy aria-label="Copy code">
+              <div className="hero-actions">
+                <Magnetic>
+                  <a className="tombol utama" href="docs/getting-started">
+                    Start in 30 seconds
+                  </a>
+                </Magnetic>
+                <a className="link-arrow" href="#routing">
+                  See the stack <span aria-hidden="true">↓</span>
+                </a>
+              </div>
+              <div className="install">
+                <span className="install-prompt" aria-hidden="true">
+                  $
+                </span>
+                <code>pnpm create ramonyx-app my-app</code>
+                <button className="copy" type="button" data-copy aria-label="Copy install command">
                   Copy
                 </button>
-              </figcaption>
-              {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
-              <pre tabIndex={0}>
-                <code>{`export default [
-  securityHeaders(),
-  cspNonce(),
-  rateLimit({ limit: 120, windowSeconds: 60 }),
-];`}</code>
+              </div>
+            </div>
+            <div className="hero-console">
+              <div className="console-bar">
+                <i />
+                <i />
+                <i />
+                <span>~/my-app</span>
+                <span className="console-live">live</span>
+              </div>
+              <pre>
+                <code>
+                  <span className="terminal-prompt">$</span> pnpm create ramonyx-app my-app{"\n"}
+                  <span className="console-dim">scaffold → my-app</span>
+                  {"\n"}
+                  <span className="terminal-prompt">$</span> cd my-app && pnpm dev{"\n"}
+                  <span className="console-dim">vite</span> http://localhost:5173{"\n"}
+                  <span className="console-dim">ssr </span> http://127.0.0.1:3000{"\n"}
+                  <span className="console-ready">ready</span>
+                  {"\n"}
+                  <span className="terminal-prompt">$</span> <span className="terminal-cursor" />
+                </code>
               </pre>
-            </figure>
+              <div className="console-foot">
+                <span>streaming</span>
+                <span>1 MiB · 10 s · 100</span>
+                <span>Node / static / edge</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="hero-scroll" aria-hidden="true">
+          <span />
+          scroll or press <kbd>↓</kbd>
+        </div>
+      </section>
+
+      <section className="stats-band" aria-label="Project facts">
+        <div className="wrap stats-grid">
+          <div className="stat">
+            <div className="stat-value">v{data.version}</div>
+            <div className="stat-label">published on npm</div>
+          </div>
+          <div className="stat">
+            <div className="stat-value">{stars}</div>
+            <div className="stat-label">GitHub stars</div>
+          </div>
+          <div className="stat">
+            <div className="stat-value">{data.packages}</div>
+            <div className="stat-label">npm packages</div>
+          </div>
+          <div className="stat">
+            <div className="stat-value">{data.docs}</div>
+            <div className="stat-label">documentation pages</div>
+          </div>
+          <div className="stat">
+            <div className="stat-value">
+              {data.testNode} · {data.testRust}
+            </div>
+            <div className="stat-label">Node · Rust tests</div>
           </div>
         </div>
       </section>
 
-      <section className="tarikan" aria-label="Design principle">
-        <div className="wrap tarikan-dalam">
-          <div className="bagian-kicker">Principle</div>
-          <div>
-            <p>“The safe path should be the default path.”</p>
-            <cite>Every limit is configurable; none of them is opt-in.</cite>
-          </div>
-        </div>
-      </section>
-
-      <section className="bagian">
-        <div className="wrap">
-          <div className="bagian-kepala">
-            <div className="bagian-kicker">Deployment</div>
-            <div>
-              <h2>One contract. Three targets.</h2>
-              <p className="bagian-intro">
-                The same <code>src/app.ts</code> runs as a Node server, a static export, or an edge
-                fetch handler. The asset map is inlined for edge builds; CI exercises the artifact
-                in workerd.
-              </p>
+      <div className="story-shell wrap">
+        <LandingNav sections={LANDING_SECTIONS} />
+        <div className="story">
+          <section id="routing" className="chapter">
+            <header className="chapter-head" data-reveal>
+              <span className="chapter-num">01</span>
+              <div>
+                <p className="chapter-kicker">File routing</p>
+                <h2 className="chapter-title">The filesystem is the router.</h2>
+                <p className="chapter-intro">
+                  A page is a file. A layout wraps a folder. An API route exports a method. No
+                  config manifest to maintain, no route tree to drift from the code.
+                </p>
+              </div>
+            </header>
+            <div className="chapter-stage" data-reveal>
+              <div className="chapter-copy">
+                <Points
+                  items={[
+                    "Nested layouts, route groups, dynamic [param] and catch-all [...slug]",
+                    "Per-folder middleware, error boundaries, and 404/405 semantics",
+                    "Route manifest generated at build; typed routes from the same graph",
+                  ]}
+                />
+                <a className="link-arrow" href="docs/routing">
+                  Routing reference <span aria-hidden="true">→</span>
+                </a>
+              </div>
+              <RouteDemo />
             </div>
-          </div>
-          <DeployTabs />
-        </div>
-      </section>
+          </section>
 
-      <section className="bagian bagian-gelap">
-        <div className="wrap">
-          <div className="bagian-kepala">
-            <div className="bagian-kicker">Agents</div>
-            <div>
-              <h2>Facts an agent can cite.</h2>
-              <p className="bagian-intro">
-                The machine layer publishes feature status with evidence and limitations, plus an
-                MCP server over stdio. Everything is generated from public documentation only.
-              </p>
+          <section id="streaming" className="chapter">
+            <header className="chapter-head" data-reveal>
+              <span className="chapter-num">02</span>
+              <div>
+                <p className="chapter-kicker">Streaming SSR</p>
+                <h2 className="chapter-title">The shell ships before the data.</h2>
+                <p className="chapter-intro">
+                  React renders on the server and the response is a stream. The document arrives
+                  first; the client hydrates with the exact payload the loader produced.
+                </p>
+              </div>
+            </header>
+            <div className="chapter-stage chapter-stage-reverse" data-reveal>
+              <StreamDemo />
+              <div className="chapter-copy">
+                <Points
+                  items={[
+                    "Opt-in streaming via renderToReadableStream — no browser build",
+                    "Loader data embedded once; no second fetch after hydration",
+                    "Soft navigation prefetches and swaps HTML without a full reload",
+                  ]}
+                />
+                <a className="link-arrow" href="docs/ssr-hydration">
+                  SSR & hydration <span aria-hidden="true">→</span>
+                </a>
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div className="narasi">
-            <div className="narasi-teks">
-              <h3>MCP tools, no hosting</h3>
-              <p>
-                <code>npx -y @ramonyx/mcp-docs-server</code> serves search, page reads, feature
-                status, rules, and the public ADR index to any MCP client.
-              </p>
-              <ul className="daftar-poin">
-                <li>llms.txt + llms-full.txt from public docs</li>
-                <li>features.json with evidence and honest limitations</li>
-                <li>
-                  <a href="docs/for-agents">For agents →</a>
-                </li>
-              </ul>
+          <section id="actions" className="chapter">
+            <header className="chapter-head" data-reveal>
+              <span className="chapter-num">03</span>
+              <div>
+                <p className="chapter-kicker">Server actions</p>
+                <h2 className="chapter-title">Mutations without the ceremony.</h2>
+                <p className="chapter-intro">
+                  A form posts to its page. The action validates at the trust boundary, mutates, and
+                  the page re-renders. No JavaScript required; enhanced when available.
+                </p>
+              </div>
+            </header>
+            <div className="chapter-stage" data-reveal>
+              <div className="chapter-copy">
+                <Points
+                  items={[
+                    "Standard Schema validation before the action runs",
+                    "Progressive enhancement: POST + re-render works without JS",
+                    "This waitlist writes to Workers KV through the real action",
+                  ]}
+                />
+                <div className="action-flow">
+                  {["POST /", "schema", "KV", "re-render"].map((step, index) => (
+                    <span key={step} className={index === 3 ? "is-on" : ""}>
+                      <i />
+                      {step}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="waitlist-panel">
+                <div className="visual-code-head">
+                  <span>POST /</span>
+                  <span>action</span>
+                </div>
+                {data.waitlist ? (
+                  <form method="post" className="waitlist-form" aria-label="Release waitlist">
+                    <label htmlFor="waitlist-email">Email for release notes</label>
+                    <div className="waitlist-row">
+                      <input
+                        id="waitlist-email"
+                        type="email"
+                        name="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        required
+                      />
+                      <button className="tombol utama" type="submit">
+                        Join waitlist
+                      </button>
+                    </div>
+                    <label className="hp" aria-hidden="true">
+                      Company
+                      <input name="company" tabIndex={-1} autoComplete="off" />
+                    </label>
+                    {emailError === undefined ? null : (
+                      <p className="form-error" role="alert">
+                        {emailError}
+                      </p>
+                    )}
+                    {action?.message === undefined ? null : (
+                      <p className="form-success" role="status">
+                        {action.message}
+                      </p>
+                    )}
+                    <p className="form-note">
+                      Only release news. Stored in Workers KV; no third-party form.
+                    </p>
+                  </form>
+                ) : (
+                  <div className="waitlist-static">
+                    <p>
+                      The waitlist action is wired to Workers KV. This build is running without the
+                      binding.
+                    </p>
+                    <a className="tombol" href="https://github.com/RamonyxJS/ramonyx">
+                      Star on GitHub
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
-            <figure className="kode-panel">
-              <figcaption className="kode-kepala">
-                <span className="kode-berkas">Claude Code</span>
-                <span className="kode-bahasa">bash</span>
-                <button className="copy" type="button" data-copy aria-label="Copy code">
-                  Copy
-                </button>
-              </figcaption>
-              {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
-              <pre tabIndex={0}>
-                <code>{`claude mcp add ramonyx-docs \\
+          </section>
+
+          <section id="contract" className="chapter">
+            <header className="chapter-head" data-reveal>
+              <span className="chapter-num">04</span>
+              <div>
+                <p className="chapter-kicker">Deployment</p>
+                <h2 className="chapter-title">One contract. Three targets.</h2>
+                <p className="chapter-intro">
+                  The same <code>src/app.ts</code> becomes a Node server, a static export, or a
+                  single edge fetch handler. The artifact changes; the app does not.
+                </p>
+              </div>
+            </header>
+            <ContractDemo />
+          </section>
+
+          <section id="security" className="chapter">
+            <header className="chapter-head" data-reveal>
+              <span className="chapter-num">05</span>
+              <div>
+                <p className="chapter-kicker">Secure by default</p>
+                <h2 className="chapter-title">Limits before your code runs.</h2>
+                <p className="chapter-intro">
+                  The server enforces body, time, and concurrency limits before dispatch. Security
+                  headers, CSP nonces, CSRF, and an SSRF guard ship with the framework.
+                </p>
+              </div>
+            </header>
+            <div className="chapter-stage" data-reveal>
+              <div className="chapter-copy">
+                <Points
+                  items={[
+                    "1 MiB body · 10 s timeout · 100 concurrent by default",
+                    "CSP nonce per request; double-submit CSRF; DNS-pinned SSRF guard",
+                    "Client build rejects node:* and stubs *.server.ts imports",
+                  ]}
+                />
+                <a className="link-arrow" href="docs/security/overview">
+                  Security overview <span aria-hidden="true">→</span>
+                </a>
+              </div>
+              <LimitsDemo />
+            </div>
+          </section>
+
+          <section id="runtime" className="chapter chapter-dark">
+            <header className="chapter-head" data-reveal>
+              <span className="chapter-num">06</span>
+              <div>
+                <p className="chapter-kicker">Rust/V8 runtime · experimental</p>
+                <h2 className="chapter-title">A second runtime, on purpose.</h2>
+                <p className="chapter-intro">
+                  An experimental Rust host embedding V8 with a deny-all permission model. It
+                  targets the same web-standard fetch contract; it is not part of the production
+                  promise yet.
+                </p>
+              </div>
+            </header>
+            <div className="chapter-stage" data-reveal>
+              <div className="chapter-copy">
+                <Points
+                  items={[
+                    "Deny-all default: read/write/net/env require explicit flags",
+                    "Worker and plugin isolation, quotas, and cancellation",
+                    "Runs ESM + TypeScript directly; compatibility suite in CI",
+                  ]}
+                />
+                <span className="experimental">experimental</span>
+              </div>
+              <div className="runtime-panel">
+                <div className="visual-code-head">
+                  <span>ramonyx-runtime</span>
+                  <span>deny-all</span>
+                </div>
+                {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
+                <pre tabIndex={0}>
+                  <code>
+                    <span className="terminal-prompt">$</span> cargo run -p ramonyx-runtime-cli --
+                    run src/main.ts{"\n"}
+                    <span className="console-dim">permission</span> read=— write=— net=— env=—{"\n"}
+                    <span className="console-dim">grant</span> --allow-read=./data --allow-net{"\n"}
+                    <span className="console-ready">ready</span> isolate=v8 quota=on{"\n"}
+                    <span className="terminal-prompt">$</span> <span className="terminal-cursor" />
+                  </code>
+                </pre>
+              </div>
+            </div>
+          </section>
+
+          <section id="agents" className="chapter">
+            <header className="chapter-head" data-reveal>
+              <span className="chapter-num">07</span>
+              <div>
+                <p className="chapter-kicker">For agents</p>
+                <h2 className="chapter-title">Facts an agent can cite.</h2>
+                <p className="chapter-intro">
+                  Feature status with evidence and limitations, a public ADR index, and an MCP
+                  server over stdio. Generated from public documentation only.
+                </p>
+              </div>
+            </header>
+            <div className="chapter-stage" data-reveal>
+              <div className="chapter-copy">
+                <Points
+                  items={[
+                    "features.json with implemented / partial / experimental status",
+                    "llms.txt + llms-full.txt generated from docs/public only",
+                    "MCP: search_docs, get_page, get_feature_status, get_rules, list_adrs",
+                  ]}
+                />
+                <a className="link-arrow" href="docs/for-agents">
+                  For agents <span aria-hidden="true">→</span>
+                </a>
+              </div>
+              <div className="agent-stack">
+                <TypedTerminal compact />
+                <div className="visual-code">
+                  <div className="visual-code-head">
+                    <span>Claude Code</span>
+                    <span>mcp</span>
+                  </div>
+                  {/* biome-ignore lint/a11y/noNoninteractiveTabindex: <pre> dapat di-scroll → wajib fokus keyboard */}
+                  <pre tabIndex={0}>
+                    <code>{`claude mcp add ramonyx-docs \\
   -- npx -y @ramonyx/mcp-docs-server`}</code>
-              </pre>
-            </figure>
-          </div>
-        </div>
-      </section>
-
-      <div className="strip">
-        <div className="wrap strip-dalam">
-          <span className="strip-label">Built on</span>
-          <span>React 19</span>
-          <span>Vite</span>
-          <span>pnpm</span>
-          <span>Playwright</span>
-          <span>Node ≥ 24</span>
-          <span>TypeScript strict</span>
-          <span>Rust + V8 (experimental)</span>
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
+
+      <section className="closing" aria-labelledby="closing-title">
+        <span className="closing-mark" aria-hidden="true">
+          RAMONYX
+        </span>
+        <div className="wrap closing-inner">
+          <p className="closing-kicker">
+            <span className="kicker-tanda" aria-hidden="true" />
+            One file. One command.
+          </p>
+          <h2 id="closing-title">
+            Start in <em>30 seconds.</em>
+          </h2>
+          <p className="closing-lede">
+            Scaffold the app, read the one-file tour, and ship on the target you already use.
+          </p>
+          <div className="closing-actions">
+            <Magnetic>
+              <a className="tombol utama" href="docs/getting-started">
+                Read the getting started
+              </a>
+            </Magnetic>
+            <Magnetic>
+              <a className="tombol" href="https://github.com/RamonyxJS/ramonyx">
+                Star on GitHub
+              </a>
+            </Magnetic>
+          </div>
+          <div className="install closing-install">
+            <span className="install-prompt" aria-hidden="true">
+              $
+            </span>
+            <code>pnpm create ramonyx-app my-app</code>
+            <button className="copy" type="button" data-copy aria-label="Copy install command">
+              Copy
+            </button>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

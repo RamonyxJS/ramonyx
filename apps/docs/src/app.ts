@@ -82,6 +82,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
       ...createPageRoutes({
         pages,
         renderer: createReactRenderer(),
+        streaming: true,
         document: createDocument(basePath, {
           serif: fontUrl("fonts/instrument-serif-latin.woff2"),
           serifItalic: fontUrl("fonts/instrument-serif-italic-latin.woff2"),
@@ -89,7 +90,12 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
           sans500: fontUrl("fonts/plex-sans-500-latin.woff2"),
           sans600: fontUrl("fonts/plex-sans-600-latin.woff2"),
         }),
-        client: { script: clientScript },
+        client: {
+          script: clientScript,
+          load: "interaction",
+          bootstrap:
+            'try{const t=localStorage.getItem("ramonyx-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{}',
+        },
         hooks: options.hooks,
       }),
     ],

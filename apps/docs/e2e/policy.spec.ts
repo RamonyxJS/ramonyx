@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+declare global {
+  interface Window {
+    __ramonyxLoadClient?: () => void;
+  }
+}
+
 // Gate kebijakan konten (ADR-0082): tidak ada dokumen internal di build publik.
 test("policy: ADR internal 404, pencarian internal kosong, machine internal tidak ada", async ({
   page,
@@ -23,7 +29,8 @@ test("policy: ADR internal 404, pencarian internal kosong, machine internal tida
   for (const query of ["threat-model", "IMPLEMENTATION_STATUS", "asvs-mapping"]) {
     await page.goto("/");
     // Tunggu hidrasi sebelum berinteraksi (tombol SSR belum punya handler).
-    await page.waitForFunction(() => document.documentElement.classList.contains("js"));
+    await page.evaluate(() => window.__ramonyxLoadClient?.());
+    await page.waitForFunction(() => document.documentElement.classList.contains("hydrated"));
     await page.getByRole("button", { name: /Search docs/ }).click();
     const dialog = page.getByRole("dialog", { name: "Search documentation" });
     await dialog.getByRole("searchbox").fill(query);

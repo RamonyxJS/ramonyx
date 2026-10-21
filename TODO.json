@@ -511,17 +511,17 @@
       "theme": "docs",
       "priority": "p3",
       "size": "S",
-      "status": "open",
-      "what": "Domain kustom (ramonyx.dev atau serupa) + preview deploy per PR untuk situs docs.",
+      "status": "in-progress",
+      "what": "Domain kustom `ramonyx.devmoon.net` sudah live (Worker) + preview deploy per PR atau keputusan sadar untuk tidak.",
       "why": "Profesionalisme dan kepercayaan; GitHub Pages subpath sudah jalan, jadi ini peningkatan kenyamanan, bukan kebutuhan.",
       "done": [
-        "Domain kustom aktif dengan HTTPS + redirect dari Pages",
+        "Domain kustom aktif dengan HTTPS (Worker; mirror Pages tetap tersedia)",
         "Preview PR (atau keputusan sadar untuk tidak, dicatat)"
       ],
       "areas": [".github/workflows", "docs"],
       "adrs": [],
       "competitor": "Semua docs resmi framework besar berada di domain sendiri.",
-      "source": "kandidat lama"
+      "source": "domain Worker live 2026-10-21; preview PR/decision pending"
     },
     {
       "id": "f0-extension-primitives",
@@ -583,6 +583,36 @@
       "source": "audit kebocoran + prompt situs publik",
       "strategic": true,
       "competitor": "Remix.run docs (dogfood publik), Astro content collections, Next.js docs; tidak ada kompetitor dengan karantina internal + gate tarball"
+    },
+    {
+      "id": "p0-package-readiness-gate",
+      "title": "Gate kesiapan paket publik (API, peer, metadata, rilis)",
+      "theme": "quality",
+      "priority": "p0",
+      "size": "M",
+      "status": "open",
+      "what": "Jadikan kesiapan paket publik sebagai gate rilis: kontrak API meta, peer dependency React, metadata/README npm, dan rilis yang dibangun dari main.",
+      "why": "Fitur sudah matang, tetapi adopsi publik bisa gagal karena export meta tidak cocok, React terduplikasi, metadata paket minim, atau registry tertinggal dari main.",
+      "done": ["Kontrak export `ramonyx` cocok dengan `docs/public/api/core-contract.md` — atau dokumentasi dikoreksi — dan diuji.", "`@ramonyx/react` memakai `react`/`react-dom` sebagai peerDependencies; consumer matrix React 19.x lulus.", "16 paket memiliki deskripsi dan README unik serta metadata npm valid; diverifikasi dengan `npm pack`.", "Rilis berikutnya dibangun dari `main`, lolos `release:verify`, provenance, dan verifikasi registry.", "CI memiliki gate API export/metadata paket di samping typecheck aplikasi."],
+      "areas": ["packages", "apps/create-app", "docs/public/api", "scripts", ".github/workflows"],
+      "competitor": "Next.js/SvelteKit menegakkan exports, peer dependency, dan dokumentasi paket; provenance npm menjadi standar adopsi.",
+      "source": "audit kesiapan paket 2026-10-21",
+      "strategic": true
+    },
+    {
+      "id": "p1-package-contract-coverage",
+      "title": "Kontrak API + coverage per paket",
+      "theme": "quality",
+      "priority": "p1",
+      "size": "M",
+      "status": "open",
+      "what": "Tambahkan contract test export/type surface dan baseline coverage per paket, termasuk paket meta yang saat ini belum punya test.",
+      "why": "Tanpa kontrak per paket, perubahan export atau dependency bisa lolos typecheck aplikasi tetapi merusak konsumen; coverage juga belum terukur.",
+      "done": ["Setiap paket punya contract test export/type surface minimal.", "`ramonyx` meta memiliki test yang memverifikasi re-export sesuai kontrak.", "Ada laporan coverage per paket dan ambang minimal untuk paket inti.", "CI menjalankan contract test + coverage; regresi API/paket menggagalkan build."],
+      "areas": ["packages", "scripts", ".github/workflows"],
+      "competitor": "Next.js/SvelteKit menguji package exports dan tipe publik; proyek matang menjaga coverage paket inti di CI.",
+      "source": "audit kesiapan paket 2026-10-21",
+      "dependsOn": ["p0-package-readiness-gate"]
     }
   ],
   "dogfooding": [

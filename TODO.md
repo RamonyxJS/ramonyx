@@ -9,14 +9,14 @@
 
 | Prioritas | Jumlah | Item |
 | --- | --- | --- |
-| P0 — blocker adopsi | 5 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` |
-| P1 — paritas | 9 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` |
+| P0 — blocker adopsi | 6 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` · `p0-package-readiness-gate` |
+| P1 — paritas | 10 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` · `p1-package-contract-coverage` |
 | P2 — diferensiasi & utang | 13 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` |
 | P3 — nice-to-have | 3 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` |
 
 **Quick wins** (dampak besar, usaha kecil): `p0-http-production-basics` · `p1-prefetch` · `p1-docs-tutorial` · `p2-watch-mode` · `p2-context7` · `p2-testing-docs`
 
-**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy`
+**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy` · `p0-package-readiness-gate`
 
 ## P0 — blocker adopsi
 
@@ -94,6 +94,21 @@
 - **Area kode**: `packages/core`, `packages/server`, `packages/ssr`, `packages/bundler`
 - **ADR**: ADR-0065
 - **Pembanding**: Framework besar punya lapisan ekstensi serupa (Nuxt hooks+nitro storage, Astro integrations, SvelteKit hooks) — dibuat sebelum fitur yang membutuhkannya.
+
+### `p0-package-readiness-gate` — Gate kesiapan paket publik (API, peer, metadata, rilis)
+
+*tema: quality · ukuran: M · status: open · sumber: audit kesiapan paket 2026-10-21*
+
+- **Apa**: Jadikan kesiapan paket publik sebagai gate rilis: kontrak API meta, peer dependency React, metadata/README npm, dan rilis yang dibangun dari main.
+- **Kenapa penting untuk bersaing**: Fitur sudah matang, tetapi adopsi publik bisa gagal karena export meta tidak cocok, React terduplikasi, metadata paket minim, atau registry tertinggal dari main.
+- **Selesai bila**:
+  - [ ] Kontrak export `ramonyx` cocok dengan `docs/public/api/core-contract.md` — atau dokumentasi dikoreksi — dan diuji.
+  - [ ] `@ramonyx/react` memakai `react`/`react-dom` sebagai peerDependencies; consumer matrix React 19.x lulus.
+  - [ ] 16 paket memiliki deskripsi dan README unik serta metadata npm valid; diverifikasi dengan `npm pack`.
+  - [ ] Rilis berikutnya dibangun dari `main`, lolos `release:verify`, provenance, dan verifikasi registry.
+  - [ ] CI memiliki gate API export/metadata paket di samping typecheck aplikasi.
+- **Area kode**: `packages`, `apps/create-app`, `docs/public/api`, `scripts`, `.github/workflows`
+- **Pembanding**: Next.js/SvelteKit menegakkan exports, peer dependency, dan dokumentasi paket; provenance npm menjadi standar adopsi.
 
 ## P1 — paritas
 
@@ -224,6 +239,20 @@
 - **Area kode**: `apps/docs`, `docs`, `scripts`, `packages/mcp-docs-server`
 - **ADR**: ADR-0082
 - **Pembanding**: Remix.run docs (dogfood publik), Astro content collections, Next.js docs; tidak ada kompetitor dengan karantina internal + gate tarball
+
+### `p1-package-contract-coverage` — Kontrak API + coverage per paket
+
+*tema: quality · ukuran: M · status: open · dependensi: `p0-package-readiness-gate` · sumber: audit kesiapan paket 2026-10-21*
+
+- **Apa**: Tambahkan contract test export/type surface dan baseline coverage per paket, termasuk paket meta yang saat ini belum punya test.
+- **Kenapa penting untuk bersaing**: Tanpa kontrak per paket, perubahan export atau dependency bisa lolos typecheck aplikasi tetapi merusak konsumen; coverage juga belum terukur.
+- **Selesai bila**:
+  - [ ] Setiap paket punya contract test export/type surface minimal.
+  - [ ] `ramonyx` meta memiliki test yang memverifikasi re-export sesuai kontrak.
+  - [ ] Ada laporan coverage per paket dan ambang minimal untuk paket inti.
+  - [ ] CI menjalankan contract test + coverage; regresi API/paket menggagalkan build.
+- **Area kode**: `packages`, `scripts`, `.github/workflows`
+- **Pembanding**: Next.js/SvelteKit menguji package exports dan tipe publik; proyek matang menjaga coverage paket inti di CI.
 
 ## P2 — diferensiasi & utang
 
@@ -429,12 +458,12 @@
 
 ### `p3-docs-domain` — Domain kustom + preview PR untuk situs docs
 
-*tema: docs · ukuran: S · status: open · sumber: kandidat lama*
+*tema: docs · ukuran: S · status: in-progress · sumber: domain Worker live 2026-10-21; preview PR/decision pending*
 
-- **Apa**: Domain kustom (ramonyx.dev atau serupa) + preview deploy per PR untuk situs docs.
+- **Apa**: Domain kustom `ramonyx.devmoon.net` sudah live (Worker) + preview deploy per PR atau keputusan sadar untuk tidak.
 - **Kenapa penting untuk bersaing**: Profesionalisme dan kepercayaan; GitHub Pages subpath sudah jalan, jadi ini peningkatan kenyamanan, bukan kebutuhan.
 - **Selesai bila**:
-  - [ ] Domain kustom aktif dengan HTTPS + redirect dari Pages
+  - [ ] Domain kustom aktif dengan HTTPS (Worker; mirror Pages tetap tersedia)
   - [ ] Preview PR (atau keputusan sadar untuk tidak, dicatat)
 - **Area kode**: `.github/workflows`, `docs`
 - **Pembanding**: Semua docs resmi framework besar berada di domain sendiri.

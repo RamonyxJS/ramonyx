@@ -1245,8 +1245,8 @@
     },
     {
       "id": "extension-primitives",
-      "name": "Primitif ekstensi (AppHooks, KeyValueStore + contract test, kontrak plugin experimental)",
-      "status": "experimental",
+      "name": "Primitif ekstensi (AppHooks, KeyValueStore + contract test, kontrak plugin stabil)",
+      "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
       "packages": [
@@ -1260,8 +1260,7 @@
         "tests/contracts/store.test.ts"
       ],
       "limitations": [
-        "Kontrak plugin experimental sampai >=2 plugin nyata",
-        "Store eksternal (redis) belum ada implementasinya"
+            "Store eksternal (redis) belum ada implementasinya"
       ],
       "docs": "docs/public/plugins.md"
     },
@@ -1293,7 +1292,7 @@
     {
       "id": "plugin-ecosystem",
       "name": "Plugin (vite passthrough + middleware pre-routing + hooks) dari ramonyx.config.ts",
-      "status": "partial",
+      "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
       "packages": [
@@ -1308,8 +1307,7 @@
         "docs/public/plugins.md"
       ],
       "limitations": [
-        "Kontrak stabil dideklarasikan setelah satu siklus rilis tanpa perubahan aditif (ADR-0080; TODO p2-plugin-contract-freeze)",
-        "Tanpa registry/`ramonyx add` (instalasi manual)",
+            "Tanpa registry/`ramonyx add` (instalasi manual)",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
       ],
       "docs": "docs/public/plugins.md"

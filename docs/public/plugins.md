@@ -90,8 +90,8 @@ JavaScript:
 - Heavy dependencies should be **optional peers** (`peerDependenciesMeta`) and imported lazily with
   a clear error — see how `@ramonyx/plugin-image` treats `sharp`.
 - Test the hooks directly and in a real app (`ramonyx build|dev|start`).
-- Contract stability: the plugin contract becomes **stable** after one release cycle without
-  additive changes. Until then it may gain optional hooks (always additive).
+- Contract stability: the plugin contract is **stable since 0.4.2**. Breaking changes follow
+  semver (minor/major) with migration notes; additive optional hooks remain possible.
 
 ## Limitations (honest)
 

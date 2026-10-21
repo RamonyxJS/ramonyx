@@ -551,7 +551,7 @@
       "theme": "ecosystem",
       "priority": "p2",
       "size": "S",
-      "status": "open",
+      "status": "done",
       "what": "Bila kontrak plugin tidak berubah aditif sejak 0.3.0, deklarasikan stabil di rilis berikutnya: update docs/plugins.md (hapus catatan experimental), features.json plugin-ecosystem → implemented, dan catat di CHANGELOG.",
       "why": "ADR-0080 menetapkan kriteria stabilisasi satu siklus rilis; deklarasi adalah langkah administratif terakhir agar plugin pihak ketiga punya jaminan semver.",
       "done": [
@@ -560,7 +560,7 @@
       ],
       "areas": ["docs", "packages/bundler"],
       "adrs": ["ADR-0080"],
-      "source": "turunan ADR-0080",
+      "source": "turunan ADR-0080; diverifikasi git diff v0.3.0..HEAD (plugin.ts/hooks/types tidak berubah), stabil 0.4.2",
       "competitor": "Nuxt modules (versi modul + kompatibilitas Nuxt); SvelteKit/Vite plugin ecosystem (peer deps standar)"
     },
     {

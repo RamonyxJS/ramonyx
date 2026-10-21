@@ -7,6 +7,8 @@ visibility: internal
 # ADR-0080: Stabilisasi Kontrak Plugin + Publikasi Plugin Pihak Ketiga
 
 - Status: Accepted (2026-10-19)
+- Status: Accepted (2026-10-19); **stabil dideklarasikan 0.4.2 (2026-10-21)** — verifikasi kontrak
+  plugin/hooks/types tidak berubah aditif sejak v0.3.0.
 - Tanggal: 2026-10-19
 - Sumber: TODO `p2-plugin-ecosystem` (kriteria "kontrak stabil + panduan publikasi") — lanjutan
   ADR-0065/0067 (kontrak experimental sampai ada ≥2 plugin nyata).

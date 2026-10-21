@@ -418,7 +418,7 @@
 
 ### `p2-plugin-contract-freeze` — Deklarasikan kontrak plugin stabil (setelah satu siklus rilis)
 
-*tema: ecosystem · ukuran: S · status: open · sumber: turunan ADR-0080*
+*tema: ecosystem · ukuran: S · status: done · sumber: turunan ADR-0080; diverifikasi git diff v0.3.0..HEAD (plugin.ts/hooks/types tidak berubah), stabil 0.4.2*
 
 - **Apa**: Bila kontrak plugin tidak berubah aditif sejak 0.3.0, deklarasikan stabil di rilis berikutnya: update docs/plugins.md (hapus catatan experimental), features.json plugin-ecosystem → implemented, dan catat di CHANGELOG.
 - **Kenapa penting untuk bersaing**: ADR-0080 menetapkan kriteria stabilisasi satu siklus rilis; deklarasi adalah langkah administratif terakhir agar plugin pihak ketiga punya jaminan semver.

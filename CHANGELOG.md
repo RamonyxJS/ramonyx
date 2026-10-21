@@ -63,6 +63,13 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 Rilis kesiapan paket publik.
 
 ### Paket & API
+### Plugin contract
+
+- Kontrak plugin dinyatakan **stabil sejak 0.4.2** setelah verifikasi tidak ada perubahan aditif
+  pada `packages/bundler/src/plugin.ts`, `packages/core/src/hooks.ts`, dan tipe middleware sejak
+  v0.3.0. Perubahan breaking berikutnya mengikuti semver + catatan migrasi; hook aditif tetap
+  dimungkinkan. `features.json` `plugin-ecosystem`/`extension-primitives` diperbarui.
+
 ### Kontrak & coverage paket
 
 - **Contract test publik**: `tests/package-exports.test.ts` memeriksa nilai export setiap paket,

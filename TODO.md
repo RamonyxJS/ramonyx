@@ -586,10 +586,10 @@
 
 ### `DF-13` — Cloudflare Web Analytics disuntik ke HTML dengan nonce CSP
 
-*status: open · area: Cloudflare dashboard · commit: `3875562`*
+*status: fixed · area: Cloudflare dashboard · commit: `3875562`*
 
 - **Masalah**: Cloudflare menyuntik `static.cloudflareinsights.com/beacon.min.js` + `/cdn-cgi/rum` ke respons landing dan memakai nonce CSP yang sama, sehingga tetap lolos `script-src`. Ini menambah dua request eksternal dan variasi Lighthouse; bukan berasal dari kode situs.
-- **Perbaikan**: Tidak diperbaiki dari repo. Bisa dimatikan di dashboard Cloudflare (Web Analytics/RUM) bila ingin mengejar LCP laboratorium <2,0 dtk di atas Worker remote; median performa live saat ini 96 dengan beacon tersebut.
+- **Perbaikan**: Dimatikan Web Analytics/RUM otomatis di dashboard Cloudflare (zone devmoon.net) pada 2026-10-22; cache HTML landing di-purge. Verifikasi live: halaman / dan /docs/ssr-hydration/ tidak lagi memuat static.cloudflareinsights.com maupun /cdn-cgi/rum. Lighthouse live perlu diukur ulang bila ingin mengklaim LCP <2,0 dtk.
 
 ### `DF-14` — Soft navigation tidak merekonsiliasi <head> — halaman docs tanpa CSS
 

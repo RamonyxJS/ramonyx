@@ -11,12 +11,12 @@
 | --- | --- | --- |
 | P0 — blocker adopsi | 6 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` · `p0-package-readiness-gate` |
 | P1 — paritas | 12 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` · `p1-package-contract-coverage` · `p1-framework-v1-readiness` · `p1-auth-session-complete` |
-| P2 — diferensiasi & utang | 16 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` · `p2-partial-hydration-islands` · `p2-deferred-data-streaming` · `p2-runtime-observability-complete` |
-| P3 — nice-to-have | 4 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` · `p3-runtime-production-readiness` |
+| P2 — diferensiasi & utang | 22 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` · `p2-partial-hydration-islands` · `p2-deferred-data-streaming` · `p2-runtime-observability-complete` · `p2-distributed-state-adapters` · `p2-auth-providers-authorization` · `p2-adapter-production-parity` · `p2-request-pipeline-hardening` · `p2-actions-ux` · `p2-i18n-complete` |
+| P3 — nice-to-have | 9 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` · `p3-runtime-production-readiness` · `p3-dx-complete` · `p3-media-assets-complete` · `p3-ecosystem-complete` · `p3-benchmark-ci-gate` · `p3-loader-dependencies` |
 
 **Quick wins** (dampak besar, usaha kecil): `p0-http-production-basics` · `p1-prefetch` · `p1-docs-tutorial` · `p2-watch-mode` · `p2-context7` · `p2-testing-docs`
 
-**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy` · `p0-package-readiness-gate` · `p1-framework-v1-readiness` · `p1-auth-session-complete` · `p3-runtime-production-readiness`
+**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy` · `p0-package-readiness-gate` · `p1-framework-v1-readiness` · `p1-auth-session-complete` · `p3-runtime-production-readiness` · `p2-distributed-state-adapters` · `p2-auth-providers-authorization` · `p2-adapter-production-parity` · `p2-actions-ux` · `p3-ecosystem-complete`
 
 ## P0 — blocker adopsi
 
@@ -501,6 +501,87 @@
 - **Area kode**: `runtime`, `benchmarks`, `docs/public`
 - **Pembanding**: Node OTel, Next.js instrumentation, Deno runtime metrics.
 
+### `p2-distributed-state-adapters` — Adapter state terdistribusi: session, rate limit, cache, observability
+
+*tema: quality · ukuran: L · status: open · dependensi: `p2-observability` · sumber: limitations rate-limit/session/revalidate/observability-logger; audit 2026-10-22*
+
+- **Apa**: Menyediakan kontrak dan adapter produksi untuk state per-proses: session store, rate-limit store, cache/revalidate, dan ekspor metrik/log ke OTel atau backend bersama.
+- **Kenapa penting untuk bersaing**: Default in-memory adalah pilihan aman untuk satu proses, tetapi deployment multi-instance membutuhkan store bersama agar session, limit, dan cache konsisten.
+- **Selesai bila**:
+  - [ ] Kontrak adapter session/rate-limit/cache + implementasi referensi Redis atau KV.
+  - [ ] Uji dua instance aplikasi berbagi store: login, limit, invalidasi cache konsisten.
+  - [ ] Ekspor metrik/log OTel atau JSON ke collector; dokumentasi deployment dan failure mode.
+- **Area kode**: `packages/security`, `packages/server`, `packages/core`, `docs/public`
+- **ADR**: ADR baru
+- **Pembanding**: SvelteKit adapter stores, Next.js distributed cache, Lucia session adapters.
+
+### `p2-auth-providers-authorization` — Auth lanjutan: OAuth/OIDC, user store, reset/verification, authorization
+
+*tema: security · ukuran: L · status: open · dependensi: `p1-auth-session-complete` · sumber: features.json auth-session limitations; audit 2026-10-22*
+
+- **Apa**: Melengkapi primitif auth menjadi jalur aplikasi nyata: adapter OAuth/OIDC, kontrak user store, password reset/email verification, dan model authorization berbasis role/permission.
+- **Kenapa penting untuk bersaing**: Auth 1.0 sudah aman untuk flow dasar, tetapi OAuth, verifikasi email, reset, dan authorization tetap tanggung jawab aplikasi.
+- **Selesai bila**:
+  - [ ] Adapter OAuth/OIDC + state/PKCE + test provider palsu.
+  - [ ] Kontrak user store + alur reset password dan verifikasi email dengan token sekali pakai.
+  - [ ] Authorization role/permission terdokumentasi + contoh e2e.
+  - [ ] Docs keamanan, migrasi, dan batasan provider.
+- **Area kode**: `packages/security`, `apps/playground`, `docs/public`
+- **ADR**: ADR baru
+- **Pembanding**: Auth.js, Lucia, Better Auth, SvelteKit hooks + authorization helpers.
+
+### `p2-adapter-production-parity` — Paritas adapter produksi: range, presets serverless, precompressed assets
+
+*tema: deploy · ukuran: L · status: open · sumber: limitations adapter-node/adapter-serverless-edge/compression-etag; audit 2026-10-22*
+
+- **Apa**: Menutup gap adapter Node/edge: range request, preset Vercel/Deno Deploy, dan penyajian aset pra-kompresi .br/.gz.
+- **Kenapa penting untuk bersaing**: Adapter sudah berjalan, tetapi fitur produksi umum ini masih harus dirakit sendiri oleh pengguna.
+- **Selesai bila**:
+  - [ ] Range request Node dengan test byte-range dan fallback aman.
+  - [ ] Preset build/deploy Vercel dan Deno Deploy + smoke test.
+  - [ ] Aset .br/.gz dipilih berdasarkan Accept-Encoding dan diuji e2e.
+- **Area kode**: `packages/adapter-runtime`, `packages/devtools`, `packages/bundler`, `docs/public`
+- **Pembanding**: SvelteKit adapters, Next.js output tracing, Deno Deploy presets.
+
+### `p2-request-pipeline-hardening` — Pipeline request: middleware matcher, multipart SSRF, upload streaming
+
+*tema: security · ukuran: M · status: open · sumber: limitations middleware-global/ssrf-guard/forms; audit 2026-10-22*
+
+- **Apa**: Menutup gap pipeline: middleware global dengan matcher per-path, validasi FormData/multipart pada SSRF guard, dan penanganan upload besar tanpa buffer berlebih.
+- **Kenapa penting untuk bersaing**: Aplikasi produksi biasanya butuh middleware selektif dan form upload; perilaku saat ini aman tetapi terbatas.
+- **Selesai bila**:
+  - [ ] Matcher middleware per-path dengan test urutan/kompatibilitas.
+  - [ ] SSRF guard memvalidasi URL FormData/multipart tanpa membaca body berulang.
+  - [ ] Batas upload dan streaming body teruji di Node/edge.
+- **Area kode**: `packages/server`, `packages/security`, `packages/core`, `docs/public`
+- **Pembanding**: SvelteKit hooks matchers, Next.js middleware matcher, Hono middleware.
+
+### `p2-actions-ux` — Server action UX: pending state, optimistic UI, revalidasi deklaratif
+
+*tema: data · ukuran: M · status: open · sumber: limitations mutations-server-actions; audit 2026-10-22*
+
+- **Apa**: Tambahkan primitif client untuk pending/error/optimistic UI dan revalidasi deklaratif lintas halaman tanpa merakit state manual.
+- **Kenapa penting untuk bersaing**: Action sudah progressive enhancement, tetapi aplikasi CRUD modern mengharapkan pending/optimistic behavior yang konsisten.
+- **Selesai bila**:
+  - [ ] Hook/komponen pending + error + optimistic update dengan test React.
+  - [ ] Revalidasi deklaratif per action dan lintas path terdokumentasi.
+  - [ ] E2E JS/no-JS untuk action, error, dan update daftar.
+- **Area kode**: `packages/react`, `packages/core`, `apps/playground`, `docs/public`
+- **Pembanding**: React Router fetchers, Next.js useActionState/useOptimistic, SvelteKit use:enhance.
+
+### `p2-i18n-complete` — i18n lengkap: ICU MessageFormat, deteksi/redirect, lokalisasi per-rute
+
+*tema: routing · ukuran: M · status: open · sumber: limitations i18n; audit 2026-10-22*
+
+- **Apa**: Melengkapi i18n dengan ICU MessageFormat, deteksi Accept-Language/redirect otomatis, dan metadata/konten per-rute per-locale.
+- **Kenapa penting untuk bersaing**: Routing locale sudah ada, tetapi format pesan kompleks dan deteksi otomatis masih dirakit aplikasi.
+- **Selesai bila**:
+  - [ ] Parser/formatter ICU (plural/select/date) dengan test vector.
+  - [ ] Middleware deteksi locale + redirect yang dapat dikonfigurasi; cookie preference.
+  - [ ] Metadata/hreflang per-rute per-locale + docs/e2e.
+- **Area kode**: `packages/core`, `packages/router`, `packages/ssr`, `docs/public`
+- **Pembanding**: next-intl, SvelteKit paraglide, Nuxt i18n, Astro i18n.
+
 ## P3 — nice-to-have
 
 ### `p3-i18n` — i18n routing + helper terjemahan
@@ -554,6 +635,72 @@
 - **Area kode**: `runtime`, `docs/public`, `benchmarks`, `.github/workflows`
 - **ADR**: ADR baru
 - **Pembanding**: Node/Deno/Bun production runtime docs dan compatibility guarantees.
+
+### `p3-dx-complete` — DX lengkap: typed Link, watch CLI, HMR panel, error overlay, boundary lint
+
+*tema: dx · ukuran: M · status: open · sumber: limitations typed-routes/cli-devtools/dev-server-hmr/error-messages-id/boundary-enforcement; audit 2026-10-22*
+
+- **Apa**: Menutup gap developer experience: href Link bertipe, alias route types, start --watch, panel HMR untuk API route, error overlay, dan lint boundary.
+- **Kenapa penting untuk bersaing**: Fitur dasar sudah ada, tetapi gap kecil ini menambah gesekan harian dan kesalahan tipe/rute.
+- **Selesai bila**:
+  - [ ] Link menerima href bertipe dari route manifest + test tipe.
+  - [ ] Alias import route types dan start --watch dengan restart aman.
+  - [ ] Panel HMR memetakan API route dan korelasi request; error overlay dev.
+  - [ ] Lint boundary client/server dengan pesan actionable.
+- **Area kode**: `packages/react`, `packages/devtools`, `packages/compiler`, `docs/public`
+- **Pembanding**: Next.js typed routes, Vite HMR overlay, SvelteKit dev tools.
+
+### `p3-media-assets-complete` — Media & aset lengkap: blur placeholder, AVIF, varian dev
+
+*tema: perf · ukuran: M · status: open · sumber: limitations image-optimization/asset-pipeline; audit 2026-10-22*
+
+- **Apa**: Melengkapi pipeline gambar/aset: blur placeholder, AVIF opt-in yang efisien, varian gambar di dev, dan penamaan aset dev yang konsisten.
+- **Kenapa penting untuk bersaing**: Pipeline produksi sudah bagus, tetapi pengalaman dev dan kualitas gambar masih memiliki gap yang terlihat pengguna.
+- **Selesai bila**:
+  - [ ] Placeholder blur/inline LQIP dengan anti-CLS + test.
+  - [ ] AVIF opt-in dengan cache build dan dokumentasi biaya.
+  - [ ] Varian gambar dev + nama aset dev konsisten/hash.
+- **Area kode**: `packages/plugin-image`, `packages/bundler`, `packages/react`, `docs/public`
+- **Pembanding**: Next Image, Astro Assets, Nuxt Image, SvelteKit enhanced-img.
+
+### `p3-ecosystem-complete` — Ekosistem: registry plugin, MCP HTTP, skill installer
+
+*tema: ecosystem · ukuran: L · status: open · sumber: limitations plugin-ecosystem/mcp-docs-server/agent-skill; audit 2026-10-22*
+
+- **Apa**: Menutup gap ekosistem: registry/`ramonyx add` plugin, transport HTTP untuk MCP docs, dan instalasi skill agen dari scaffolder.
+- **Kenapa penting untuk bersaing**: Kontrak plugin stabil, tetapi penemuan/instalasi masih manual dan MCP hanya stdio.
+- **Selesai bila**:
+  - [ ] Registry plugin + perintah add/hapus dengan verifikasi integritas.
+  - [ ] MCP docs HTTP transport + auth/rate limit, test handshake.
+  - [ ] Scaffolder menawarkan instalasi skill/agent docs secara opt-in.
+- **Area kode**: `packages/devtools`, `packages/mcp-docs-server`, `apps/create-app`, `docs/public`
+- **Pembanding**: Astro integrations, Next.js plugin ecosystem, MCP transports.
+
+### `p3-benchmark-ci-gate` — Benchmark CI blocking dengan baseline runner konsisten
+
+*tema: quality · ukuran: M · status: open · dependensi: `p1-framework-v1-readiness` · sumber: limitations benchmark-gates; bench:gate lokal lulus 2026-10-22*
+
+- **Apa**: Menyediakan runner/baseline konsisten agar regresi HTTP/SSR dapat memblokir CI, bukan hanya report-only lintas-runner.
+- **Kenapa penting untuk bersaing**: Gate lokal per-lingkungan sudah ada, tetapi CI GitHub-hosted tidak stabil untuk strict; self-hosted/runner pool diperlukan.
+- **Selesai bila**:
+  - [ ] Runner self-hosted atau pool dengan baseline per-lingkungan ter-commit.
+  - [ ] CI menjalankan strict gate dan gagal pada regresi > toleransi.
+  - [ ] Dokumentasi operasional, refresh baseline, dan fallback report-only.
+- **Area kode**: `.github/workflows`, `benchmarks`, `docs/public`
+- **Pembanding**: Turbopack bench, SvelteKit bench, Nuxt bundle metrics — gate CI.
+
+### `p3-loader-dependencies` — Loader dependencies dan data pipeline lanjutan
+
+*tema: data · ukuran: M · status: open · sumber: limitations data-loaders; audit 2026-10-22*
+
+- **Apa**: Tambahkan deklarasi dependensi antar-loader/route dan dukungan data non-GET yang eksplisit tanpa mengorbankan payload hydration.
+- **Kenapa penting untuk bersaing**: Loader saat ini GET-only dan tidak memiliki dependency graph; aplikasi besar perlu deduplikasi/urutan data yang jelas.
+- **Selesai bila**:
+  - [ ] Dependency graph loader + deduplikasi per request.
+  - [ ] Kontrak data non-GET/streaming yang tetap no-JS-safe.
+  - [ ] Test integrasi multi-route + docs.
+- **Area kode**: `packages/ssr`, `packages/core`, `packages/react`, `docs/public`
+- **Pembanding**: React Router loaders, Next.js parallel routes, SvelteKit load dependencies.
 
 ## Dogfooding findings
 

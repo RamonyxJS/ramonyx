@@ -750,6 +750,216 @@
       "source": "features.json: 11 fitur runtime experimental",
       "dependsOn": ["p2-runtime-observability-complete"],
       "strategic": true
+    },
+    {
+      "id": "p2-distributed-state-adapters",
+      "title": "Adapter state terdistribusi: session, rate limit, cache, observability",
+      "theme": "quality",
+      "priority": "p2",
+      "size": "L",
+      "status": "open",
+      "what": "Menyediakan kontrak dan adapter produksi untuk state per-proses: session store, rate-limit store, cache/revalidate, dan ekspor metrik/log ke OTel atau backend bersama.",
+      "why": "Default in-memory adalah pilihan aman untuk satu proses, tetapi deployment multi-instance membutuhkan store bersama agar session, limit, dan cache konsisten.",
+      "done": [
+        "Kontrak adapter session/rate-limit/cache + implementasi referensi Redis atau KV.",
+        "Uji dua instance aplikasi berbagi store: login, limit, invalidasi cache konsisten.",
+        "Ekspor metrik/log OTel atau JSON ke collector; dokumentasi deployment dan failure mode."
+      ],
+      "areas": ["packages/security", "packages/server", "packages/core", "docs/public"],
+      "adrs": ["ADR baru"],
+      "competitor": "SvelteKit adapter stores, Next.js distributed cache, Lucia session adapters.",
+      "source": "limitations rate-limit/session/revalidate/observability-logger; audit 2026-10-22",
+      "dependsOn": ["p2-observability"],
+      "strategic": true
+    },
+    {
+      "id": "p2-auth-providers-authorization",
+      "title": "Auth lanjutan: OAuth/OIDC, user store, reset/verification, authorization",
+      "theme": "security",
+      "priority": "p2",
+      "size": "L",
+      "status": "open",
+      "what": "Melengkapi primitif auth menjadi jalur aplikasi nyata: adapter OAuth/OIDC, kontrak user store, password reset/email verification, dan model authorization berbasis role/permission.",
+      "why": "Auth 1.0 sudah aman untuk flow dasar, tetapi OAuth, verifikasi email, reset, dan authorization tetap tanggung jawab aplikasi.",
+      "done": [
+        "Adapter OAuth/OIDC + state/PKCE + test provider palsu.",
+        "Kontrak user store + alur reset password dan verifikasi email dengan token sekali pakai.",
+        "Authorization role/permission terdokumentasi + contoh e2e.",
+        "Docs keamanan, migrasi, dan batasan provider."
+      ],
+      "areas": ["packages/security", "apps/playground", "docs/public"],
+      "adrs": ["ADR baru"],
+      "competitor": "Auth.js, Lucia, Better Auth, SvelteKit hooks + authorization helpers.",
+      "source": "features.json auth-session limitations; audit 2026-10-22",
+      "dependsOn": ["p1-auth-session-complete"],
+      "strategic": true
+    },
+    {
+      "id": "p2-adapter-production-parity",
+      "title": "Paritas adapter produksi: range, presets serverless, precompressed assets",
+      "theme": "deploy",
+      "priority": "p2",
+      "size": "L",
+      "status": "open",
+      "what": "Menutup gap adapter Node/edge: range request, preset Vercel/Deno Deploy, dan penyajian aset pra-kompresi .br/.gz.",
+      "why": "Adapter sudah berjalan, tetapi fitur produksi umum ini masih harus dirakit sendiri oleh pengguna.",
+      "done": [
+        "Range request Node dengan test byte-range dan fallback aman.",
+        "Preset build/deploy Vercel dan Deno Deploy + smoke test.",
+        "Aset .br/.gz dipilih berdasarkan Accept-Encoding dan diuji e2e."
+      ],
+      "areas": ["packages/adapter-runtime", "packages/devtools", "packages/bundler", "docs/public"],
+      "competitor": "SvelteKit adapters, Next.js output tracing, Deno Deploy presets.",
+      "source": "limitations adapter-node/adapter-serverless-edge/compression-etag; audit 2026-10-22",
+      "strategic": true
+    },
+    {
+      "id": "p2-request-pipeline-hardening",
+      "title": "Pipeline request: middleware matcher, multipart SSRF, upload streaming",
+      "theme": "security",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Menutup gap pipeline: middleware global dengan matcher per-path, validasi FormData/multipart pada SSRF guard, dan penanganan upload besar tanpa buffer berlebih.",
+      "why": "Aplikasi produksi biasanya butuh middleware selektif dan form upload; perilaku saat ini aman tetapi terbatas.",
+      "done": [
+        "Matcher middleware per-path dengan test urutan/kompatibilitas.",
+        "SSRF guard memvalidasi URL FormData/multipart tanpa membaca body berulang.",
+        "Batas upload dan streaming body teruji di Node/edge."
+      ],
+      "areas": ["packages/server", "packages/security", "packages/core", "docs/public"],
+      "competitor": "SvelteKit hooks matchers, Next.js middleware matcher, Hono middleware.",
+      "source": "limitations middleware-global/ssrf-guard/forms; audit 2026-10-22"
+    },
+    {
+      "id": "p2-actions-ux",
+      "title": "Server action UX: pending state, optimistic UI, revalidasi deklaratif",
+      "theme": "data",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Tambahkan primitif client untuk pending/error/optimistic UI dan revalidasi deklaratif lintas halaman tanpa merakit state manual.",
+      "why": "Action sudah progressive enhancement, tetapi aplikasi CRUD modern mengharapkan pending/optimistic behavior yang konsisten.",
+      "done": [
+        "Hook/komponen pending + error + optimistic update dengan test React.",
+        "Revalidasi deklaratif per action dan lintas path terdokumentasi.",
+        "E2E JS/no-JS untuk action, error, dan update daftar."
+      ],
+      "areas": ["packages/react", "packages/core", "apps/playground", "docs/public"],
+      "competitor": "React Router fetchers, Next.js useActionState/useOptimistic, SvelteKit use:enhance.",
+      "source": "limitations mutations-server-actions; audit 2026-10-22",
+      "strategic": true
+    },
+    {
+      "id": "p2-i18n-complete",
+      "title": "i18n lengkap: ICU MessageFormat, deteksi/redirect, lokalisasi per-rute",
+      "theme": "routing",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Melengkapi i18n dengan ICU MessageFormat, deteksi Accept-Language/redirect otomatis, dan metadata/konten per-rute per-locale.",
+      "why": "Routing locale sudah ada, tetapi format pesan kompleks dan deteksi otomatis masih dirakit aplikasi.",
+      "done": [
+        "Parser/formatter ICU (plural/select/date) dengan test vector.",
+        "Middleware deteksi locale + redirect yang dapat dikonfigurasi; cookie preference.",
+        "Metadata/hreflang per-rute per-locale + docs/e2e."
+      ],
+      "areas": ["packages/core", "packages/router", "packages/ssr", "docs/public"],
+      "competitor": "next-intl, SvelteKit paraglide, Nuxt i18n, Astro i18n.",
+      "source": "limitations i18n; audit 2026-10-22"
+    },
+    {
+      "id": "p3-dx-complete",
+      "title": "DX lengkap: typed Link, watch CLI, HMR panel, error overlay, boundary lint",
+      "theme": "dx",
+      "priority": "p3",
+      "size": "M",
+      "status": "open",
+      "what": "Menutup gap developer experience: href Link bertipe, alias route types, start --watch, panel HMR untuk API route, error overlay, dan lint boundary.",
+      "why": "Fitur dasar sudah ada, tetapi gap kecil ini menambah gesekan harian dan kesalahan tipe/rute.",
+      "done": [
+        "Link menerima href bertipe dari route manifest + test tipe.",
+        "Alias import route types dan start --watch dengan restart aman.",
+        "Panel HMR memetakan API route dan korelasi request; error overlay dev.",
+        "Lint boundary client/server dengan pesan actionable."
+      ],
+      "areas": ["packages/react", "packages/devtools", "packages/compiler", "docs/public"],
+      "competitor": "Next.js typed routes, Vite HMR overlay, SvelteKit dev tools.",
+      "source": "limitations typed-routes/cli-devtools/dev-server-hmr/error-messages-id/boundary-enforcement; audit 2026-10-22"
+    },
+    {
+      "id": "p3-media-assets-complete",
+      "title": "Media & aset lengkap: blur placeholder, AVIF, varian dev",
+      "theme": "perf",
+      "priority": "p3",
+      "size": "M",
+      "status": "open",
+      "what": "Melengkapi pipeline gambar/aset: blur placeholder, AVIF opt-in yang efisien, varian gambar di dev, dan penamaan aset dev yang konsisten.",
+      "why": "Pipeline produksi sudah bagus, tetapi pengalaman dev dan kualitas gambar masih memiliki gap yang terlihat pengguna.",
+      "done": [
+        "Placeholder blur/inline LQIP dengan anti-CLS + test.",
+        "AVIF opt-in dengan cache build dan dokumentasi biaya.",
+        "Varian gambar dev + nama aset dev konsisten/hash."
+      ],
+      "areas": ["packages/plugin-image", "packages/bundler", "packages/react", "docs/public"],
+      "competitor": "Next Image, Astro Assets, Nuxt Image, SvelteKit enhanced-img.",
+      "source": "limitations image-optimization/asset-pipeline; audit 2026-10-22"
+    },
+    {
+      "id": "p3-ecosystem-complete",
+      "title": "Ekosistem: registry plugin, MCP HTTP, skill installer",
+      "theme": "ecosystem",
+      "priority": "p3",
+      "size": "L",
+      "status": "open",
+      "what": "Menutup gap ekosistem: registry/`ramonyx add` plugin, transport HTTP untuk MCP docs, dan instalasi skill agen dari scaffolder.",
+      "why": "Kontrak plugin stabil, tetapi penemuan/instalasi masih manual dan MCP hanya stdio.",
+      "done": [
+        "Registry plugin + perintah add/hapus dengan verifikasi integritas.",
+        "MCP docs HTTP transport + auth/rate limit, test handshake.",
+        "Scaffolder menawarkan instalasi skill/agent docs secara opt-in."
+      ],
+      "areas": ["packages/devtools", "packages/mcp-docs-server", "apps/create-app", "docs/public"],
+      "competitor": "Astro integrations, Next.js plugin ecosystem, MCP transports.",
+      "source": "limitations plugin-ecosystem/mcp-docs-server/agent-skill; audit 2026-10-22",
+      "strategic": true
+    },
+    {
+      "id": "p3-benchmark-ci-gate",
+      "title": "Benchmark CI blocking dengan baseline runner konsisten",
+      "theme": "quality",
+      "priority": "p3",
+      "size": "M",
+      "status": "open",
+      "what": "Menyediakan runner/baseline konsisten agar regresi HTTP/SSR dapat memblokir CI, bukan hanya report-only lintas-runner.",
+      "why": "Gate lokal per-lingkungan sudah ada, tetapi CI GitHub-hosted tidak stabil untuk strict; self-hosted/runner pool diperlukan.",
+      "done": [
+        "Runner self-hosted atau pool dengan baseline per-lingkungan ter-commit.",
+        "CI menjalankan strict gate dan gagal pada regresi > toleransi.",
+        "Dokumentasi operasional, refresh baseline, dan fallback report-only."
+      ],
+      "areas": [".github/workflows", "benchmarks", "docs/public"],
+      "competitor": "Turbopack bench, SvelteKit bench, Nuxt bundle metrics — gate CI.",
+      "source": "limitations benchmark-gates; bench:gate lokal lulus 2026-10-22",
+      "dependsOn": ["p1-framework-v1-readiness"]
+    },
+    {
+      "id": "p3-loader-dependencies",
+      "title": "Loader dependencies dan data pipeline lanjutan",
+      "theme": "data",
+      "priority": "p3",
+      "size": "M",
+      "status": "open",
+      "what": "Tambahkan deklarasi dependensi antar-loader/route dan dukungan data non-GET yang eksplisit tanpa mengorbankan payload hydration.",
+      "why": "Loader saat ini GET-only dan tidak memiliki dependency graph; aplikasi besar perlu deduplikasi/urutan data yang jelas.",
+      "done": [
+        "Dependency graph loader + deduplikasi per request.",
+        "Kontrak data non-GET/streaming yang tetap no-JS-safe.",
+        "Test integrasi multi-route + docs."
+      ],
+      "areas": ["packages/ssr", "packages/core", "packages/react", "docs/public"],
+      "competitor": "React Router loaders, Next.js parallel routes, SvelteKit load dependencies.",
+      "source": "limitations data-loaders; audit 2026-10-22"
     }
   ],
   "dogfooding": [

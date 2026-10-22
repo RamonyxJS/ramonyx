@@ -4,6 +4,10 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-10-22
+
+Rilis data deferred no-JS-safe + penutupan temuan Cloudflare Web Analytics (DF-13).
+
 ### Deferred loader data
 
 - **`defer()` + React Suspense**: loader dapat memulai data non-kritis tanpa menahan shell;

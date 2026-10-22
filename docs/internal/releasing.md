@@ -16,6 +16,20 @@
 - **TERBIT — 0.5.0** (2026-10-21): partial hydration islands (`@ramonyx/react/islands`),
   route code splitting, rekonsiliasi head soft navigation, dan pembaruan situs/docs.
   16 paket @ 0.5.0 + provenance; GitHub Release 19 aset.
+- **PERSIAPAN — 0.6.0** (2026-10-22): data deferred no-JS-safe (`defer` + Suspense, state JSON
+  hydration) + DF-13 (Cloudflare Web Analytics/RUM dimatikan). Bump 16 paket + template; verifikasi
+  rilis penuh sebelum tag.
+
+## Persiapan 0.6.0 (2026-10-22)
+
+- Fitur: `defer()` + React Suspense; fallback server no-JS, state JSON ber-nonce, hydration
+  client, soft navigation/action sinkron; e2e playground streaming/hydration/back-forward.
+- DF-13: Web Analytics/RUM otomatis dimatikan di dashboard Cloudflare; verifikasi live tanpa
+  beacon/RUM.
+- Bump: `Cargo.toml` + 15 paket `packages/*` + `apps/create-app` → **0.6.0**; template
+  `^0.6.0`; CHANGELOG `[0.6.0]`; README/AGENTS status.
+- Gate: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm docs:stats`, `pnpm docs:generate`,
+  `pnpm docs:validate`; lalu `pnpm release` + `pnpm release:verify` + dry-run publish 16 tarball.
 
 ## Persiapan 0.5.0 (2026-10-21)
 

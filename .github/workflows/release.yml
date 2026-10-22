@@ -160,17 +160,23 @@ jobs:
             meta="$(tar -xzOf "$tarball" package/package.json)"
             name="$(printf '%s' "$meta" | node -e "const m=JSON.parse(require('node:fs').readFileSync(0,'utf8'));process.stdout.write(m.name)")"
             version="$(printf '%s' "$meta" | node -e "const m=JSON.parse(require('node:fs').readFileSync(0,'utf8'));process.stdout.write(m.version)")"
-            if npm view "${name}@${version}" version >/dev/null 2>&1; then
+            if timeout 30 npm view "${name}@${version}" version >/dev/null 2>&1; then
               echo "  ↷ ${name}@${version} sudah ada di registry — dilewati"
               continue
             fi
             published=0
             for attempt in 1 2 3; do
               echo "  → ${name}@${version} (attempt ${attempt})"
-              if timeout 120 npm publish "$tarball" --access public --tag "$DIST_TAG" "${PROVENANCE[@]}"; then
+              if timeout 120 npm publish "$tarball" --access public --tag "$DIST_TAG" "${PROVENANCE[@]}" > /tmp/npm-publish.log 2>&1; then
                 published=1
                 break
               fi
+              if grep -Eq 'E409|previously staged version|EPUBLISHCONFLICT' /tmp/npm-publish.log; then
+                echo "  ↷ ${name}@${version} sudah ada/staged — dilewati"
+                published=1
+                break
+              fi
+              tail -20 /tmp/npm-publish.log
               sleep 5
             done
             if [ "$published" -ne 1 ]; then

@@ -24,7 +24,16 @@ export async function loader({ assets, locale }: { assets: AssetResolver; locale
     greeting: t("greeting"),
     heroAlt: t("heroAlt"),
     locale: aktif,
-    links: ["/users", "/form", "/sesi", "/tentang", "/deferred", "/islands", "/api/hello"],
+    links: [
+      "/users",
+      "/form",
+      "/sesi",
+      "/catatan",
+      "/tentang",
+      "/deferred",
+      "/islands",
+      "/api/hello",
+    ],
     loaderRun: hitunganLoader,
     // Varian gambar dari plugin image (ADR-0079): src + srcset + <source> webp + dimensi.
     hero: assets.image("img/hero.png"),

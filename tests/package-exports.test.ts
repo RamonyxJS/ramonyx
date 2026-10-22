@@ -9,6 +9,7 @@ import * as devtools from "../packages/devtools/src/index.ts";
 import * as mcp from "../packages/mcp-docs-server/src/index.ts";
 import * as pluginImage from "../packages/plugin-image/src/index.ts";
 import * as ramonyx from "../packages/ramonyx/src/index.ts";
+import * as reactActions from "../packages/react/src/actions.ts";
 import * as reactAssets from "../packages/react/src/assets.ts";
 import * as reactClient from "../packages/react/src/client.ts";
 import * as react from "../packages/react/src/index.ts";
@@ -99,7 +100,23 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
     ramonyx,
     ["route", "createHandler", "HttpError", "defineConfig", "resolveConfig", "defer", "Deferred"],
   ],
-  ["@ramonyx/react", react, ["createReactRenderer", "Island", "defineIsland"]],
+  [
+    "@ramonyx/react/actions",
+    reactActions,
+    ["PendingButton", "useActionStatus", "useOptimisticForm"],
+  ],
+  [
+    "@ramonyx/react",
+    react,
+    [
+      "createReactRenderer",
+      "Island",
+      "defineIsland",
+      "PendingButton",
+      "useActionStatus",
+      "useOptimisticForm",
+    ],
+  ],
   ["@ramonyx/router", router, ["createRouteTable", "matchRoute", "fillHref"]],
   ["@ramonyx/schema", schema, ["validate"]],
   [

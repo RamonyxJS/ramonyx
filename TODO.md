@@ -598,7 +598,7 @@
 
 ### `p2-actions-ux` — Pending, optimistic UI, dan revalidasi action deklaratif
 
-*tema: data · ukuran: M · status: open · dependensi: `p1-framework-v1-readiness` · sumber: limitations mutations-server-actions; audit 2026-10-22*
+*tema: data · ukuran: M · status: done · dependensi: `p1-framework-v1-readiness` · sumber: limitations mutations-server-actions; audit 2026-10-22*
 
 - **Apa**: Primitif React untuk pending/error/optimistic state dan deklarasi revalidasi lintas path setelah action.
 - **Kenapa penting untuk bersaing**: Action sudah progressive enhancement, tetapi UX CRUD modern masih perlu state manual yang berulang.

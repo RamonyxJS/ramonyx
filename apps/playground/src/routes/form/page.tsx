@@ -1,4 +1,5 @@
 import type { PageProps } from "@ramonyx/react";
+import { PendingButton, useOptimisticForm } from "@ramonyx/react";
 import type { PageActionContext } from "ramonyx";
 
 export const metadata = { title: "Form — Ramonyx Playground" };
@@ -13,16 +14,26 @@ export function action({ formData }: PageActionContext) {
 }
 
 export default function FormPage({ action }: PageProps<unknown>) {
+  const [optimistic, setOptimistic] = useOptimisticForm({ nama: "" });
   return (
     <section>
       <h1>Form dengan action</h1>
       <p>Kirim tanpa JavaScript pun berfungsi (POST native → HTML dirender ulang oleh server).</p>
-      <form method="post">
+      <form
+        method="post"
+        onSubmit={(event) => {
+          const data = new FormData(event.currentTarget);
+          setOptimistic({ nama: String(data.get("nama") ?? "") });
+        }}
+      >
         <label>
           Nama: <input name="nama" defaultValue="" />
         </label>
-        <button type="submit">Kirim</button>
+        <PendingButton>Kirim</PendingButton>
       </form>
+      {optimistic.nama.length > 0 ? (
+        <p data-testid="optimistic">Optimistis: {optimistic.nama}</p>
+      ) : null}
       {action?.errors?.nama !== undefined ? (
         <p role="alert" style={{ color: "crimson" }}>
           {action.errors.nama}

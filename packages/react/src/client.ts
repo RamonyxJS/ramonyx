@@ -792,6 +792,9 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
     const current = new AbortController();
     controller = current;
 
+    form.dataset.ramonyxPending = "true";
+    form.setAttribute("aria-busy", "true");
+    document.dispatchEvent(new CustomEvent("ramonyx:actionstart", { detail: { form } }));
     try {
       const body = new FormData(form, submitter instanceof HTMLElement ? submitter : undefined);
       const response = await fetch(url, {
@@ -816,6 +819,10 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
         return;
       }
       form.submit();
+    } finally {
+      delete form.dataset.ramonyxPending;
+      form.removeAttribute("aria-busy");
+      document.dispatchEvent(new CustomEvent("ramonyx:actionend", { detail: { form } }));
     }
   };
 

@@ -821,18 +821,25 @@
     },
     {
       "id": "forms",
-      "name": "Form handling (action + FormData + actionSchema + progressive enhancement)",
+      "name": "Form handling (action + schema + pending/optimistic UI + progressive enhancement)",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
       "packages": [
-        "@ramonyx/ssr"
+        "@ramonyx/ssr",
+        "@ramonyx/react"
       ],
       "evidence": [
         "packages/ssr/src/pages.ts",
         "packages/core/src/page.ts",
         "packages/core/test/page.test.ts",
-        "docs/public/engineering/adr/0057-server-actions.md"
+        "docs/public/engineering/adr/0057-server-actions.md",
+        "packages/react/src/actions.ts",
+        "packages/react/test/actions.test.tsx",
+        "apps/playground/src/routes/catatan/page.tsx",
+        "apps/playground/e2e/catatan.spec.ts",
+        "apps/playground/e2e/form.spec.ts",
+        "docs/public/ssr-hydration.md"
       ],
       "limitations": [
         "Upload file besar belum dioptimasi (multipart di-buffer FormData)"
@@ -1306,7 +1313,9 @@
         "docs/public/engineering/adr/0066-revalidate.md",
         "packages/adapter-runtime/src/redis.ts",
         "packages/adapter-runtime/test/redis.test.ts",
-        "docs/public/state-and-adapters.md"
+        "docs/public/state-and-adapters.md",
+        "packages/core/src/page.ts",
+        "apps/playground/src/routes/catatan/page.tsx"
       ],
       "limitations": [
         "Default in-memory; Redis adapter opt-in di @ramonyx/adapter-runtime",

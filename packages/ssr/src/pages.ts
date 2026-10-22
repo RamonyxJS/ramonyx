@@ -839,6 +839,23 @@ async function runAction(
         json: <T = unknown>() => request.clone().json() as Promise<T>,
         revalidate: revalidateContext,
       })) ?? {};
+    if (
+      result.errors === undefined &&
+      cache !== undefined &&
+      page.page.actionRevalidate !== undefined
+    ) {
+      const options = page.page.actionRevalidate;
+      const removed = await cache.revalidate({
+        ...options,
+        reason: options.reason ?? "action-declarative",
+      });
+      hooks?.onInvalidate?.({
+        paths: options.paths,
+        tags: options.tags,
+        reason: options.reason ?? "action-declarative",
+      });
+      void removed;
+    }
     if (typeof result.redirect === "string" && result.redirect.length > 0) {
       // PRG: 303 agar refresh tidak mengirim ulang POST (progressive enhancement).
       return new Response(null, {

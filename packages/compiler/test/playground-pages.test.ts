@@ -17,6 +17,7 @@ test("memindai halaman playground", async () => {
       "/",
       "/tentang",
       "/[...notFound]",
+      "/catatan",
       "/deferred",
       "/form",
       "/islands",

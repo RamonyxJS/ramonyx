@@ -135,6 +135,11 @@ export interface PageModule {
   readonly cacheTags?: readonly string[];
   /** Validasi FormData (Standard Schema) sebelum action dijalankan. */
   readonly actionSchema?: StandardSchema<unknown, unknown>;
+  /**
+   * Revalidasi deklaratif setelah action sukses (tanpa memanggil `context.revalidate` manual).
+   * Path/tag tidak dijalankan bila action mengembalikan errors.
+   */
+  readonly actionRevalidate?: RevalidateOptions;
 }
 
 /** Hasil pemindaian halaman oleh `@ramonyx/compiler`, siap dirender `@ramonyx/ssr`. */

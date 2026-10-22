@@ -896,7 +896,7 @@
       "theme": "data",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Primitif React untuk pending/error/optimistic state dan deklarasi revalidasi lintas path setelah action.",
       "why": "Action sudah progressive enhancement, tetapi UX CRUD modern masih perlu state manual yang berulang.",
       "done": [

@@ -44,3 +44,22 @@ test("form action: progressive enhancement — berfungsi tanpa JavaScript", asyn
     await context.close();
   }
 });
+
+test("form action: pending + optimistic UI selama request", async ({ page }) => {
+  await page.route("**/form", async (route) => {
+    if (route.request().method() === "POST") {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    await route.continue();
+  });
+  await page.goto("/form");
+  await page.waitForFunction(() => document.documentElement.classList.contains("hydrated"));
+  await page.fill('input[name="nama"]', "Ramonyx");
+  await page.locator('button[type="submit"]').click();
+
+  await expect(page.getByTestId("optimistic")).toContainText("Ramonyx");
+  await expect(page.locator('button[type="submit"]')).toHaveAttribute("aria-busy", "true");
+  await expect(page.locator('button[type="submit"]')).toHaveText("Mengirim…");
+  await expect(page.getByRole("status")).toHaveText("Halo, Ramonyx!");
+  await expect(page.locator('button[type="submit"]')).not.toHaveAttribute("aria-busy", "true");
+});

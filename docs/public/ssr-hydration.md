@@ -212,6 +212,45 @@ export async function action({ formData, revalidate }) {
 }
 ```
 
+### Pending, optimistic UI, and declarative revalidation
+
+`@ramonyx/react` provides small opt-in primitives for actions:
+
+```tsx
+import { PendingButton, useActionStatus, useOptimisticForm } from "@ramonyx/react";
+
+const [optimistic, setOptimistic] = useOptimisticForm({ name: "" });
+
+<form
+  method="post"
+  onSubmit={(event) => {
+    const data = new FormData(event.currentTarget);
+    setOptimistic({ name: String(data.get("name") ?? "") });
+  }}
+>
+  <input name="name" />
+  <PendingButton pendingText="Saving…">Save</PendingButton>
+</form>;
+
+{optimistic.name ? <p>Optimistic: {optimistic.name}</p> : null}
+```
+
+- The client sets `aria-busy` on the form and dispatches `ramonyx:actionstart` /
+  `ramonyx:actionend`; `useActionStatus()` (and `PendingButton`) follow those events.
+- `useOptimisticForm()` keeps local optimistic values until the server action re-render replaces
+  them with authoritative data.
+- Native form POST still works with JavaScript disabled; these primitives simply do nothing.
+- To invalidate other data after a successful action, declare it in the page module:
+
+```ts
+export const cacheTags = ["notes"];
+export const actionRevalidate = { tags: ["notes"] };
+```
+
+The server invalidates those tags after a successful action (and fires `onInvalidate`); actions
+that return `errors` do not invalidate. This complements `context.revalidate()` for action-local
+logic.
+
 ## Related primitives
 
 - `AppHooks` (`onRequestStart/End`, `onLoaderEnd`, `onRenderEnd`, `onInvalidate`) for instrumentation.

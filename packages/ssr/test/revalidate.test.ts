@@ -201,3 +201,35 @@ test("revalidate: tanpa opsi cache → perilaku lama (loader selalu jalan)", asy
   await handler(new Request("http://test.local/polos"));
   assert.equal(panggilan, 2);
 });
+
+test("revalidate: actionRevalidate deklaratif setelah action sukses (error tidak invalidasi)", async () => {
+  const cache = createCache();
+  await cache.store.set("produk:1", { nama: "lama" }, { tags: ["produk"] });
+  const invalidations: unknown[] = [];
+  const page = basePage("/katalog", {
+    default: Page,
+    actionRevalidate: { tags: ["produk"], reason: "katalog-berubah" },
+    action: ({ formData }) =>
+      formData.get("gagal") === "1" ? { errors: { form: "gagal" } } : { message: "ok" },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({
+      pages: [page],
+      renderer: fakeRenderer(),
+      cache,
+      hooks: { onInvalidate: (event) => invalidations.push(event) },
+    }),
+  });
+
+  const gagal = new FormData();
+  gagal.set("gagal", "1");
+  await handler(new Request("http://test.local/katalog", { method: "POST", body: gagal }));
+  assert.ok(await cache.store.get("produk:1"), "errors tidak menginvalidasi cache");
+  assert.equal(invalidations.length, 0);
+
+  await handler(new Request("http://test.local/katalog", { method: "POST", body: new FormData() }));
+  assert.equal(await cache.store.get("produk:1"), undefined, "sukses menginvalidasi tag");
+  assert.deepEqual(invalidations, [
+    { paths: undefined, tags: ["produk"], reason: "katalog-berubah" },
+  ]);
+});

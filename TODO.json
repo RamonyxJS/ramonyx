@@ -671,7 +671,7 @@
       "theme": "quality",
       "priority": "p1",
       "size": "L",
-      "status": "open",
+      "status": "in-progress",
       "what": "Menetapkan dan memenuhi kriteria 1.0 untuk baseline Node: tidak ada fitur publik partial, API stabil dengan kebijakan migrasi, keamanan/soak teruji, benchmark blocking, dan dokumentasi upgrade. Runtime Rust tetap jalur terpisah.",
       "why": "Rilis 0.6.0 adalah alpha dan fitur auth-session masih partial; tanpa gerbang eksplisit klaim 100% matang akan melampaui bukti yang tersedia.",
       "done": [
@@ -684,7 +684,7 @@
       "areas": ["packages", "docs", "benchmarks", ".github/workflows"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js/Nuxt/SvelteKit jalur stabil 1.x dengan kebijakan deprecasi dan upgrade guide.",
-      "source": "audit kematangan pasca 0.6.0: auth-session partial + runtime Rust experimental; TODO lama sudah done",
+      "source": "audit kematangan pasca 0.7.0: API stability policy + contract test selesai; security/soak review menemukan F-1 (RSS growth) — lihat docs/internal/security/v1-readiness-review.md; benchmark/release 1.0 belum",
       "dependsOn": ["p1-auth-session-complete"],
       "strategic": true
     },

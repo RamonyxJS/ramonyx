@@ -11,6 +11,7 @@ tepi kepercayaan, dan benchmark/gate reproducible.
 > `pnpm create ramonyx-app aplikasi-saya` → `pnpm dev|build|start` (CLI `ramonyx`).
 > Verifikasi registry end-to-end: scaffold → install → build → start → SSR + API.
 > Checklist rilis (internal): [docs/internal/releasing.md](docs/internal/releasing.md).
+> API stability: [docs/public/api/versioning.md](docs/public/api/versioning.md).
 
 ## Mulai cepat
 

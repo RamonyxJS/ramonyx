@@ -63,8 +63,8 @@
 - **Deferred dari tarball**: paket core/ssr/react ter-stage dengan API deferred; smoke tarball
   memeriksa island + prefix `useId`.
 - **Template**: `create-ramonyx-app` memakai rentang `^0.6.0`; scaffold + build/start terverifikasi.
-- Registry: dist-tag `latest` = 0.6.0; verifikasi seluruh 16 paket + `dist.attestations` dilakukan
-  setelah propagasi edge registry.
+- Registry: seluruh 16 paket @ 0.6.0 terlihat dengan `dist.attestations`; dist-tag `latest`
+  = 0.6.0. GitHub Release: https://github.com/RamonyxJS/ramonyx/releases/tag/v0.6.0 (19 aset).
 
 ## Hasil rilis 0.5.0 (2026-10-21)
 

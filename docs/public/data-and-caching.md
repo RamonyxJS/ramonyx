@@ -30,7 +30,8 @@ per-user responses out of a shared cache by construction.
 
 The default cache is in-memory (single process). The store interface (`KeyValueStore`) is pluggable
 — implement `get/set/delete/invalidateTags` for Redis or another backend and pass it to
-`createCache({ store })`. The contract has a shared test suite in the repo.
+`createCache({ store })`. The contract has a shared test suite in the repo. See
+[State & Adapters](state-and-adapters.md) for TTL, atomic operations, and failure-mode guidance.
 
 ## On-demand invalidation
 

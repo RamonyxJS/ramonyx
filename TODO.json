@@ -757,7 +757,7 @@
       "theme": "quality",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Definisikan kontrak SessionStore, RateLimitStore, CacheStore, dan ObservabilitySink terlebih dahulu, lengkap dengan adapter in-memory dan conformance test bersama.",
       "why": "Fondasi ini mencegah session, rate limit, cache, dan observability dirakit ulang saat menambah Redis/KV atau multi-instance.",
       "done": [

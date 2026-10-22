@@ -851,11 +851,14 @@
       "evidence": [
         "packages/server/src/observability.ts",
         "packages/server/test/observability.test.ts",
-        "apps/playground/src/app.ts"
+        "apps/playground/src/app.ts",
+        "packages/core/src/state.ts",
+        "packages/core/test/state.test.ts",
+        "docs/public/state-and-adapters.md"
       ],
       "limitations": [
         "In-memory per proses (tanpa agregasi multi-instance)",
-        "Tanpa tracing OTel native/histogram"
+        "Sink JSON-lines disediakan; tracing OTel native/histogram belum"
       ],
       "docs": "docs/public/observability.md"
     },

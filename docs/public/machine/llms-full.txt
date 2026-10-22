@@ -865,11 +865,14 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "evidence": [
         "packages/server/src/observability.ts",
         "packages/server/test/observability.test.ts",
-        "apps/playground/src/app.ts"
+        "apps/playground/src/app.ts",
+        "packages/core/src/state.ts",
+        "packages/core/test/state.test.ts",
+        "docs/public/state-and-adapters.md"
       ],
       "limitations": [
         "In-memory per proses (tanpa agregasi multi-instance)",
-        "Tanpa tracing OTel native/histogram"
+        "Sink JSON-lines disediakan; tracing OTel native/histogram belum"
       ],
       "docs": "docs/public/observability.md"
     },
@@ -1931,7 +1934,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T06:16:13.122Z",
+  "generatedAt": "2026-10-22T06:25:02.844Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2055,6 +2058,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "TROUBLESHOOTING_URL",
         "cacheControl",
         "createCache",
+        "createJsonObservabilitySink",
+        "createMemoryObservabilitySink",
         "createMemoryStore",
         "defer",
         "defineConfig",
@@ -2078,6 +2083,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "AssetResolver",
         "Cache",
         "CacheControlOptions",
+        "CacheStore",
         "CreateCacheOptions",
         "DeferredState",
         "DeferredWire",
@@ -2089,11 +2095,18 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "KeyValueStore",
         "LoaderEndEvent",
         "Logger",
+        "MemoryObservabilitySink",
+        "MemoryObservabilitySinkOptions",
+        "MemoryStore",
         "MemoryStoreOptions",
         "Middleware",
         "MiddlewareContext",
+        "ObservabilityAttribute",
+        "ObservabilityEvent",
+        "ObservabilitySink",
         "RamonyxConfig",
         "RamonyxConfigInput",
+        "RateLimitStore",
         "RenderEndEvent",
         "RequestEndEvent",
         "RequestStartEvent",
@@ -2397,7 +2410,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T06:16:14.525Z",
+  "generatedAt": "2026-10-22T06:25:04.078Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2471,8 +2484,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "1.0.0",
-  "generatedAt": "2026-10-22T06:15:24.741Z",
-  "commit": "82ae87dbffe42e6b9527599f8a381b002d80d7cf",
+  "generatedAt": "2026-10-22T06:24:19.326Z",
+  "commit": "fe2aaf06784d6023c1786b8ee4e310b589312ac0",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2497,9 +2510,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     ]
   },
   "adrs": 8,
-  "docs": 22,
+  "docs": 23,
   "tests": {
-    "node": 334,
+    "node": 338,
     "rust": 116,
     "e2eSpecFiles": 11
   }
@@ -3050,7 +3063,8 @@ per-user responses out of a shared cache by construction.
 
 The default cache is in-memory (single process). The store interface (`KeyValueStore`) is pluggable
 — implement `get/set/delete/invalidateTags` for Redis or another backend and pass it to
-`createCache({ store })`. The contract has a shared test suite in the repo.
+`createCache({ store })`. The contract has a shared test suite in the repo. See
+[State & Adapters](state-and-adapters.md) for TTL, atomic operations, and failure-mode guidance.
 
 ## On-demand invalidation
 
@@ -3608,6 +3622,8 @@ the framework only emits method/path/status/duration/trace id.
 - `createMetricsRoute(metrics, { path: "/metrics" })` serves the snapshot as JSON.
 - Schedule `metrics.snapshot()` exports to OTLP/Prometheus from your platform, or pull `/metrics`.
 - Counters are cumulative since process start (per instance).
+- Pass an `ObservabilitySink` to `createMetrics({ sink })` for JSON-lines or an OTel adapter; see
+  [State & Adapters](state-and-adapters.md). A failing sink is isolated from requests.
 
 ## Notes & limitations
 
@@ -4146,7 +4162,8 @@ shared store for multi-instance production.
 Action results can return `headers`; `set-cookie` headers are applied to the re-render.
 
 Rate limiting can share the same `KeyValueStore` via `rateLimit({ store })`; `increment` is used
-for atomic fixed-window counters.
+for atomic fixed-window counters. See [State & Adapters](state-and-adapters.md) for lifecycle and
+failure-mode guidance.
 
 ## CSRF
 
@@ -4424,6 +4441,101 @@ export async function action({ formData, revalidate }) {
 - `AppHooks` (`onRequestStart/End`, `onLoaderEnd`, `onRenderEnd`, `onInvalidate`) for instrumentation.
 - `traceId()`, `requestLogging()`, `createMetrics()` from `@ramonyx/server` for observability.
 - Asset resolver + `Image` for hashed assets, responsive images, and anti-CLS dimensions.
+
+## docs/public/state-and-adapters.md
+
+# State & Adapters
+
+Ramonyx separates **state contracts** from implementations. The default implementations are
+in-memory so a new app starts without infrastructure; production can swap in a shared store without
+changing application code.
+
+## Contracts
+
+| Contract | Used by | Required behavior |
+| --- | --- | --- |
+| `KeyValueStore` / `CacheStore` | loader cache, revalidation | `get`, `set` with TTL/tags, `delete`, `invalidateTags`; optional atomic `take` and `increment` |
+| `SessionStore` | `createSession({ store })` | `get`, `set`, `delete`; expiry is enforced by the store/cookie |
+| `RateLimitStore` | `rateLimit({ store })` | atomic `increment(key, { windowSeconds })` |
+| `ObservabilitySink` | `createMetrics({ sink })` | `record(event)`; must be fast and must not make requests fail |
+
+In-memory references:
+
+```ts
+import {
+  createMemoryStore,
+  createMemoryObservabilitySink,
+} from "ramonyx";
+import { createMemorySessionStore } from "@ramonyx/security";
+
+const store = createMemoryStore();                 // CacheStore + RateLimitStore
+const sessions = createMemorySessionStore();       // SessionStore
+const sink = createMemoryObservabilitySink();      // ObservabilitySink
+```
+
+The shared `KeyValueStore` contract is covered by `tests/contracts/store.contract.ts`; the
+session/rate-limit/user/token adapters add their own focused tests.
+
+## Lifetimes and failure modes
+
+- **In-memory defaults are per process.** Multi-instance deployments must use a shared adapter;
+  otherwise sessions, rate limits, and cache invalidation diverge between instances.
+- **TTL is owned by the store.** Framework entries carry an absolute `expiresAt` where relevant,
+  but adapters must honor `ttlSeconds`. Clock skew between application and store shifts expiry.
+- **Atomic operations are explicit.** `increment` must be atomic for rate limiting; `take` must be
+  atomic for one-time tokens. `createAuthTokens` uses `take` when available and documents the
+  best-effort fallback for older adapters.
+- **Fail fast, do not silently fall back.** A store outage should surface as an error, not switch
+  to process-local state (which would silently weaken sessions/limits). The observability sink is
+  the exception: `createMetrics` swallows sink errors so a collector outage cannot break traffic.
+- **No automatic retries for non-idempotent operations.** Retrying an increment can over-count;
+  retries/timeouts belong to the adapter with operation-aware semantics.
+- **Cache tags are indexes.** `invalidateTags` must remove matching entries and their index
+  references, otherwise deleted data remains reachable by the next tag invalidation.
+
+## Observability sink
+
+```ts
+import { createJsonObservabilitySink } from "ramonyx";
+import { createMetrics } from "@ramonyx/server";
+
+const metrics = createMetrics({
+  sink: createJsonObservabilitySink((line) => process.stdout.write(line)),
+});
+```
+
+Events are `request.end`, `loader.end`, `render.end`, and `cache.invalidate`, with primitive
+attributes (path, status, duration, cached, streaming, invalidation reason/tags). JSON-lines is
+directly consumable by OTel/Fluent Bit/Vector agents; an OTel SDK exporter can implement the same
+`ObservabilitySink` interface.
+
+Sinks should enqueue or write non-blocking. Hooks are synchronous and must stay cheap; do not call
+a remote collector inline.
+
+## Wiring a shared adapter
+
+```ts
+import { createCache } from "ramonyx";
+import {
+  createKeyValueSessionStore,
+  createKeyValueUserStore,
+  rateLimit,
+} from "@ramonyx/security";
+
+const cache = createCache({ store });                       // KeyValueStore
+const session = createSession({ secret, store: createKeyValueSessionStore(store) });
+const users = createKeyValueUserStore(store);
+const limiter = rateLimit({ limit: 60, windowMs: 60_000, store });
+```
+
+`store` is any object satisfying `KeyValueStore`. Redis/KV adapters still need to provide TTL,
+atomic increment, atomic take, tag indexes, reconnect behavior, and deployment-specific failure
+handling; those production adapters are tracked separately from the in-memory contract.
+
+## Defaults in examples
+
+The playground and templates keep the in-memory adapters, so `pnpm dev` and `pnpm build` work
+without Redis or a database. Opt in to shared adapters only when the deployment is multi-instance.
 
 ## docs/public/testing.md
 

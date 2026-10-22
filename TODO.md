@@ -503,7 +503,7 @@
 
 ### `p2-state-contracts` — Kontrak state terdistribusi + adapter in-memory
 
-*tema: quality · ukuran: M · status: open · sumber: fondasi limitations state; audit 2026-10-22*
+*tema: quality · ukuran: M · status: done · sumber: fondasi limitations state; audit 2026-10-22*
 
 - **Apa**: Definisikan kontrak SessionStore, RateLimitStore, CacheStore, dan ObservabilitySink terlebih dahulu, lengkap dengan adapter in-memory dan conformance test bersama.
 - **Kenapa penting untuk bersaing**: Fondasi ini mencegah session, rate limit, cache, dan observability dirakit ulang saat menambah Redis/KV atau multi-instance.

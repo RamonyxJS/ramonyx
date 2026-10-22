@@ -75,6 +75,8 @@ the framework only emits method/path/status/duration/trace id.
 - `createMetricsRoute(metrics, { path: "/metrics" })` serves the snapshot as JSON.
 - Schedule `metrics.snapshot()` exports to OTLP/Prometheus from your platform, or pull `/metrics`.
 - Counters are cumulative since process start (per instance).
+- Pass an `ObservabilitySink` to `createMetrics({ sink })` for JSON-lines or an OTel adapter; see
+  [State & Adapters](state-and-adapters.md). A failing sink is isolated from requests.
 
 ## Notes & limitations
 

@@ -39,6 +39,12 @@ export interface MemoryStoreOptions {
   readonly sweepIntervalMs?: number;
 }
 
+/** Store in-memory dengan increment/take yang selalu tersedia. */
+export interface MemoryStore extends KeyValueStore {
+  readonly increment: NonNullable<KeyValueStore["increment"]>;
+  readonly take: NonNullable<KeyValueStore["take"]>;
+}
+
 interface MemoryEntry {
   value: unknown;
   expiresAt: number | null;
@@ -50,7 +56,7 @@ interface MemoryEntry {
  * Store in-memory proses (default). Cocok untuk single-instance; untuk multi-instance gunakan
  * implementasi eksternal (antarmuka sama). Kontrak perilaku diuji `tests/contracts/store.test.ts`.
  */
-export function createMemoryStore(options: MemoryStoreOptions = {}): KeyValueStore {
+export function createMemoryStore(options: MemoryStoreOptions = {}): MemoryStore {
   const maxEntries = options.maxEntries ?? 1000;
   const sweepIntervalMs = options.sweepIntervalMs ?? 60_000;
   const entries = new Map<string, MemoryEntry>();

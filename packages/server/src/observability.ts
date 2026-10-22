@@ -2,7 +2,13 @@
 // mekanisme yang sudah ada (middleware global + AppHooks, ADR-0065/0067). Edge-safe (Web Crypto,
 // tanpa `node:*`).
 
-import { type AppHooks, type Middleware, type RouteEntry, route } from "@ramonyx/core";
+import {
+  type AppHooks,
+  type Middleware,
+  type ObservabilitySink,
+  type RouteEntry,
+  route,
+} from "@ramonyx/core";
 
 const DEFAULT_TRACE_HEADER = "x-request-id";
 
@@ -96,8 +102,27 @@ export interface Metrics {
   snapshot(): MetricsSnapshot;
 }
 
+export interface MetricsOptions {
+  /** Sink OTel/JSON; kegagalan sink tidak boleh menggagalkan request. */
+  readonly sink?: ObservabilitySink;
+}
+
 /** Kumpulkan metrik dasar dari hook aplikasi (ADR-0065). */
-export function createMetrics(): Metrics {
+export function createMetrics(options: MetricsOptions = {}): Metrics {
+  const sink = options.sink;
+  const emit = (event: Parameters<ObservabilitySink["record"]>[0]): void => {
+    if (sink === undefined) {
+      return;
+    }
+    try {
+      const result = sink.record(event);
+      if (result !== undefined) {
+        void Promise.resolve(result).catch(() => {});
+      }
+    } catch {
+      // Observability tidak boleh menjatuhkan request.
+    }
+  };
   let requestTotal = 0;
   let requestDurSum = 0;
   let requestDurMax = 0;
@@ -118,6 +143,10 @@ export function createMetrics(): Metrics {
   return {
     hooks: {
       onRequestEnd: (event) => {
+        emit({
+          name: "request.end",
+          attributes: { path: event.path, status: event.status, durationMs: event.durationMs },
+        });
         requestTotal += 1;
         requestDurSum += event.durationMs;
         requestDurMax = Math.max(requestDurMax, event.durationMs);
@@ -125,6 +154,10 @@ export function createMetrics(): Metrics {
         byStatusClass[kelas] = (byStatusClass[kelas] ?? 0) + 1;
       },
       onLoaderEnd: (event) => {
+        emit({
+          name: "loader.end",
+          attributes: { path: event.path, durationMs: event.durationMs, cached: event.cached },
+        });
         loaderCount += 1;
         if (event.cached) {
           loaderCached += 1;
@@ -133,6 +166,15 @@ export function createMetrics(): Metrics {
         loaderDurMax = Math.max(loaderDurMax, event.durationMs);
       },
       onRenderEnd: (event) => {
+        emit({
+          name: "render.end",
+          attributes: {
+            path: event.path,
+            durationMs: event.durationMs,
+            status: event.status,
+            streaming: event.streaming,
+          },
+        });
         renderCount += 1;
         if (event.streaming) {
           renderStreaming += 1;
@@ -140,7 +182,15 @@ export function createMetrics(): Metrics {
         renderDurSum += event.durationMs;
         renderDurMax = Math.max(renderDurMax, event.durationMs);
       },
-      onInvalidate: () => {
+      onInvalidate: (event) => {
+        emit({
+          name: "cache.invalidate",
+          attributes: {
+            reason: event.reason,
+            paths: event.paths?.join(","),
+            tags: event.tags?.join(","),
+          },
+        });
         invalidations += 1;
       },
     },

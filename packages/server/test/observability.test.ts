@@ -102,3 +102,37 @@ test("createMetrics: snapshot dari hook (request/loader/render/invalidasi) + rou
   const viaRoute = (await routeResponse.json()) as { requests: { total: number } };
   assert.ok(viaRoute.requests.total >= 2, "snapshot lewat route JSON");
 });
+
+test("createMetrics: sink OTel/JSON menerima event dan error sink tidak fatal", async () => {
+  const { createMemoryObservabilitySink } = await import("@ramonyx/core");
+  const sink = createMemoryObservabilitySink();
+  const metrics = createMetrics({ sink });
+  const handler = createHandler({
+    hooks: metrics.hooks,
+    routes: [
+      { method: "GET", path: "/ok", definition: { handler: () => Response.json({ ok: true }) } },
+    ],
+  });
+  const response = await handler(new Request("http://uji/ok"));
+  assert.equal(response.status, 200);
+  metrics.hooks.onLoaderEnd?.({ path: "/ok", durationMs: 2, cached: false });
+  metrics.hooks.onRenderEnd?.({ path: "/ok", durationMs: 3, status: 200, streaming: false });
+  metrics.hooks.onInvalidate?.({ tags: ["produk"], reason: "manual" });
+  assert.deepEqual(
+    sink.events().map((event) => event.name),
+    ["request.end", "loader.end", "render.end", "cache.invalidate"],
+  );
+
+  const broken = createMetrics({
+    sink: {
+      record() {
+        throw new Error("collector down");
+      },
+    },
+  });
+  const brokenHandler = createHandler({
+    hooks: broken.hooks,
+    routes: [{ method: "GET", path: "/ok", definition: { handler: () => new Response("ok") } }],
+  });
+  assert.equal((await brokenHandler(new Request("http://uji/ok"))).status, 200);
+});

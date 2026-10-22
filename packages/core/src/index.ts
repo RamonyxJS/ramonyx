@@ -44,7 +44,26 @@ export { fillRouteParams, hasDynamicSegment } from "./params.ts";
 export type { Cache, CreateCacheOptions, RevalidateOptions } from "./revalidate.ts";
 export { createCache, pathTag, routeTag } from "./revalidate.ts";
 export { route } from "./route.ts";
-export type { KeyValueStore, MemoryStoreOptions, StoreEntry, StoreSetOptions } from "./store.ts";
+export type {
+  CacheStore,
+  MemoryObservabilitySink,
+  MemoryObservabilitySinkOptions,
+  ObservabilityAttribute,
+  ObservabilityEvent,
+  ObservabilitySink,
+  RateLimitStore,
+} from "./state.ts";
+export {
+  createJsonObservabilitySink,
+  createMemoryObservabilitySink,
+} from "./state.ts";
+export type {
+  KeyValueStore,
+  MemoryStore,
+  MemoryStoreOptions,
+  StoreEntry,
+  StoreSetOptions,
+} from "./store.ts";
 export { createMemoryStore } from "./store.ts";
 export type {
   AssetResolver,

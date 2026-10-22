@@ -1,4 +1,4 @@
-import { type KeyValueStore, type Middleware, REMOTE_ADDRESS_HEADER } from "@ramonyx/core";
+import { type Middleware, type RateLimitStore, REMOTE_ADDRESS_HEADER } from "@ramonyx/core";
 
 export interface RateLimitOptions {
   /** Jumlah request maksimum per key per window. */
@@ -18,7 +18,7 @@ export interface RateLimitOptions {
   /** Sumber waktu (untuk test deterministik). Default `Date.now`. */
   readonly now?: () => number;
   /** Store bersama (mis. KeyValueStore Redis/KV) untuk rate limit multi-instance. */
-  readonly store?: Pick<KeyValueStore, "increment">;
+  readonly store?: RateLimitStore;
 }
 
 interface WindowEntry {

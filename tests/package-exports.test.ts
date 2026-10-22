@@ -64,6 +64,8 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
       "resolveConfig",
       "createCache",
       "createMemoryStore",
+      "createMemoryObservabilitySink",
+      "createJsonObservabilitySink",
       "mergeHooks",
       "formDataToObject",
       "createTranslator",

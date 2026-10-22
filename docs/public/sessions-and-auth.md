@@ -224,7 +224,8 @@ shared store for multi-instance production.
 Action results can return `headers`; `set-cookie` headers are applied to the re-render.
 
 Rate limiting can share the same `KeyValueStore` via `rateLimit({ store })`; `increment` is used
-for atomic fixed-window counters.
+for atomic fixed-window counters. See [State & Adapters](state-and-adapters.md) for lifecycle and
+failure-mode guidance.
 
 ## CSRF
 

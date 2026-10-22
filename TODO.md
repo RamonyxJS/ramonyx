@@ -10,13 +10,13 @@
 | Prioritas | Jumlah | Item |
 | --- | --- | --- |
 | P0 — blocker adopsi | 6 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` · `p0-package-readiness-gate` |
-| P1 — paritas | 10 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` · `p1-package-contract-coverage` |
-| P2 — diferensiasi & utang | 15 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` · `p2-partial-hydration-islands` · `p2-deferred-data-streaming` |
-| P3 — nice-to-have | 3 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` |
+| P1 — paritas | 12 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` · `p1-package-contract-coverage` · `p1-framework-v1-readiness` · `p1-auth-session-complete` |
+| P2 — diferensiasi & utang | 16 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` · `p2-partial-hydration-islands` · `p2-deferred-data-streaming` · `p2-runtime-observability-complete` |
+| P3 — nice-to-have | 4 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` · `p3-runtime-production-readiness` |
 
 **Quick wins** (dampak besar, usaha kecil): `p0-http-production-basics` · `p1-prefetch` · `p1-docs-tutorial` · `p2-watch-mode` · `p2-context7` · `p2-testing-docs`
 
-**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy` · `p0-package-readiness-gate`
+**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy` · `p0-package-readiness-gate` · `p1-framework-v1-readiness` · `p1-auth-session-complete` · `p3-runtime-production-readiness`
 
 ## P0 — blocker adopsi
 
@@ -254,6 +254,37 @@
 - **Area kode**: `packages`, `scripts`, `.github/workflows`
 - **Pembanding**: Next.js/SvelteKit menguji package exports dan tipe publik; proyek matang menjaga coverage paket inti di CI.
 
+### `p1-framework-v1-readiness` — Gerbang kesiapan framework Node 1.0 (100% matang)
+
+*tema: quality · ukuran: L · status: open · dependensi: `p1-auth-session-complete` · sumber: audit kematangan pasca 0.6.0: auth-session partial + runtime Rust experimental; TODO lama sudah done*
+
+- **Apa**: Menetapkan dan memenuhi kriteria 1.0 untuk baseline Node: tidak ada fitur publik partial, API stabil dengan kebijakan migrasi, keamanan/soak teruji, benchmark blocking, dan dokumentasi upgrade. Runtime Rust tetap jalur terpisah.
+- **Kenapa penting untuk bersaing**: Rilis 0.6.0 adalah alpha dan fitur auth-session masih partial; tanpa gerbang eksplisit klaim 100% matang akan melampaui bukti yang tersedia.
+- **Selesai bila**:
+  - [ ] Semua fitur publik baseline Node berstatus implemented (auth-session partial diselesaikan); runtime Rust tetap eksperimental atau dipromosikan lewat jalur terpisah.
+  - [ ] API publik dibekukan dengan semver + migration/deprecation policy dan contract test.
+  - [ ] Security review, abuse-case, dan soak panjang lulus; temuan kritis ditutup.
+  - [ ] Benchmark gate blocking per-lingkungan + Web Vitals budget dan docs upgrade guide.
+  - [ ] Rilis 1.0.0 terverifikasi registry + GitHub Release; tidak ada TODO/dogfooding open atau partial.
+- **Area kode**: `packages`, `docs`, `benchmarks`, `.github/workflows`
+- **ADR**: ADR baru
+- **Pembanding**: Next.js/Nuxt/SvelteKit jalur stabil 1.x dengan kebijakan deprecasi dan upgrade guide.
+
+### `p1-auth-session-complete` — Lengkapi auth/session menjadi alur produksi
+
+*tema: security · ukuran: M · status: open · dependensi: `p1-auth-session` · sumber: features.json `auth-session` partial; p1-auth-session selesai primitif ADR-0062*
+
+- **Apa**: Naikkan primitif auth-session dari partial ke alur siap produksi: siklus session lengkap, perlindungan fixation, verifikasi kredensial yang aman, alur login/logout/register, CSRF/rate limit, dan error generik.
+- **Kenapa penting untuk bersaing**: features.json menandai `auth-session` partial; primitif saja belum cukup untuk aplikasi nyata dan klaim keamanan 1.0.
+- **Selesai bila**:
+  - [ ] Session lifecycle lengkap (create/rotate/revoke, expiry, fixation protection) + test.
+  - [ ] Alur login/logout/register referensi dengan CSRF, rate limit, cookie aman, dan error generik.
+  - [ ] Verifikasi kredensial edge-safe (Web Crypto/PBKDF2 atau integrasi provider) dengan test vektor.
+  - [ ] E2E auth dengan dan tanpa JS + dokumentasi keamanan dan migrasi.
+- **Area kode**: `packages/security`, `packages/core`, `apps/playground`, `docs/public`
+- **ADR**: ADR baru
+- **Pembanding**: Auth.js, Lucia, Better Auth, SvelteKit hooks + cookie sessions.
+
 ## P2 — diferensiasi & utang
 
 ### `p2-plugin-ecosystem` — Ekosistem plugin/module tingkat framework
@@ -457,6 +488,19 @@
 - **Area kode**: `packages/ssr`, `packages/react`
 - **Pembanding**: React Router streaming/defer; Next.js Suspense; SvelteKit streaming promises.
 
+### `p2-runtime-observability-complete` — Lengkapi metrik observability runtime Rust
+
+*tema: quality · ukuran: M · status: open · dependensi: `p2-observability` · sumber: features.json `observability-metrics` partial; p2-observability selesai untuk Node*
+
+- **Apa**: Menuntaskan fitur `observability-metrics` partial: timing per fase/op, CPU/RSS/queue/worker, startup, error counters, dan ekspor JSON/OTel untuk runtime Rust.
+- **Kenapa penting untuk bersaing**: Runtime eksperimental belum punya visibility yang cukup untuk soak/production decision; observability Node sudah selesai di @ramonyx/server.
+- **Selesai bila**:
+  - [ ] Metrik runtime mencakup fase startup, op, CPU, RSS, worker/plugin, dan error.
+  - [ ] Ekspor JSON/OTel + test + dokumentasi operasional.
+  - [ ] Baseline benchmark startup/runtime diperbarui dan dibandingkan.
+- **Area kode**: `runtime`, `benchmarks`, `docs/public`
+- **Pembanding**: Node OTel, Next.js instrumentation, Deno runtime metrics.
+
 ## P3 — nice-to-have
 
 ### `p3-i18n` — i18n routing + helper terjemahan
@@ -495,6 +539,21 @@
   - [ ] Preview PR (atau keputusan sadar untuk tidak, dicatat)
 - **Area kode**: `.github/workflows`, `docs`
 - **Pembanding**: Semua docs resmi framework besar berada di domain sendiri.
+
+### `p3-runtime-production-readiness` — Exit criteria runtime Rust: eksperimental → produksi
+
+*tema: deploy · ukuran: L · status: open · dependensi: `p2-runtime-observability-complete` · sumber: features.json: 11 fitur runtime experimental*
+
+- **Apa**: Menetapkan dan memenuhi kriteria produksi runtime Rust: compatibility matrix, isolation/security review, resource limits, soak, HTTP/TLS decision, dan dokumentasi deployment.
+- **Kenapa penting untuk bersaing**: 11 fitur runtime masih berstatus experimental; 100% matang harus berarti production-ready atau keputusan eksplisit untuk tetap di luar baseline.
+- **Selesai bila**:
+  - [ ] ADR exit criteria runtime (termasuk keputusan HTTP/2/TLS server dan isolasi proses/OS).
+  - [ ] Compatibility suite + soak 24 jam + resource limit/security tests lulus.
+  - [ ] Security review plugin/proses/sandbox; temuan kritis ditutup.
+  - [ ] Dokumentasi deployment/limitasi + status features.json diperbarui.
+- **Area kode**: `runtime`, `docs/public`, `benchmarks`, `.github/workflows`
+- **ADR**: ADR baru
+- **Pembanding**: Node/Deno/Bun production runtime docs dan compatibility guarantees.
 
 ## Dogfooding findings
 

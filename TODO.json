@@ -664,6 +664,92 @@
       "competitor": "React Router streaming/defer; Next.js Suspense; SvelteKit streaming promises.",
       "source": "turunan DF-07; `defer` + Suspense, state JSON nonce, fallback no-JS, e2e playground streaming/hydration/back-forward",
       "dependsOn": ["p1-package-contract-coverage"]
+    },
+    {
+      "id": "p1-framework-v1-readiness",
+      "title": "Gerbang kesiapan framework Node 1.0 (100% matang)",
+      "theme": "quality",
+      "priority": "p1",
+      "size": "L",
+      "status": "open",
+      "what": "Menetapkan dan memenuhi kriteria 1.0 untuk baseline Node: tidak ada fitur publik partial, API stabil dengan kebijakan migrasi, keamanan/soak teruji, benchmark blocking, dan dokumentasi upgrade. Runtime Rust tetap jalur terpisah.",
+      "why": "Rilis 0.6.0 adalah alpha dan fitur auth-session masih partial; tanpa gerbang eksplisit klaim 100% matang akan melampaui bukti yang tersedia.",
+      "done": [
+        "Semua fitur publik baseline Node berstatus implemented (auth-session partial diselesaikan); runtime Rust tetap eksperimental atau dipromosikan lewat jalur terpisah.",
+        "API publik dibekukan dengan semver + migration/deprecation policy dan contract test.",
+        "Security review, abuse-case, dan soak panjang lulus; temuan kritis ditutup.",
+        "Benchmark gate blocking per-lingkungan + Web Vitals budget dan docs upgrade guide.",
+        "Rilis 1.0.0 terverifikasi registry + GitHub Release; tidak ada TODO/dogfooding open atau partial."
+      ],
+      "areas": ["packages", "docs", "benchmarks", ".github/workflows"],
+      "adrs": ["ADR baru"],
+      "competitor": "Next.js/Nuxt/SvelteKit jalur stabil 1.x dengan kebijakan deprecasi dan upgrade guide.",
+      "source": "audit kematangan pasca 0.6.0: auth-session partial + runtime Rust experimental; TODO lama sudah done",
+      "dependsOn": ["p1-auth-session-complete"],
+      "strategic": true
+    },
+    {
+      "id": "p1-auth-session-complete",
+      "title": "Lengkapi auth/session menjadi alur produksi",
+      "theme": "security",
+      "priority": "p1",
+      "size": "M",
+      "status": "open",
+      "what": "Naikkan primitif auth-session dari partial ke alur siap produksi: siklus session lengkap, perlindungan fixation, verifikasi kredensial yang aman, alur login/logout/register, CSRF/rate limit, dan error generik.",
+      "why": "features.json menandai `auth-session` partial; primitif saja belum cukup untuk aplikasi nyata dan klaim keamanan 1.0.",
+      "done": [
+        "Session lifecycle lengkap (create/rotate/revoke, expiry, fixation protection) + test.",
+        "Alur login/logout/register referensi dengan CSRF, rate limit, cookie aman, dan error generik.",
+        "Verifikasi kredensial edge-safe (Web Crypto/PBKDF2 atau integrasi provider) dengan test vektor.",
+        "E2E auth dengan dan tanpa JS + dokumentasi keamanan dan migrasi."
+      ],
+      "areas": ["packages/security", "packages/core", "apps/playground", "docs/public"],
+      "adrs": ["ADR baru"],
+      "competitor": "Auth.js, Lucia, Better Auth, SvelteKit hooks + cookie sessions.",
+      "source": "features.json `auth-session` partial; p1-auth-session selesai primitif ADR-0062",
+      "dependsOn": ["p1-auth-session"],
+      "strategic": true
+    },
+    {
+      "id": "p2-runtime-observability-complete",
+      "title": "Lengkapi metrik observability runtime Rust",
+      "theme": "quality",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Menuntaskan fitur `observability-metrics` partial: timing per fase/op, CPU/RSS/queue/worker, startup, error counters, dan ekspor JSON/OTel untuk runtime Rust.",
+      "why": "Runtime eksperimental belum punya visibility yang cukup untuk soak/production decision; observability Node sudah selesai di @ramonyx/server.",
+      "done": [
+        "Metrik runtime mencakup fase startup, op, CPU, RSS, worker/plugin, dan error.",
+        "Ekspor JSON/OTel + test + dokumentasi operasional.",
+        "Baseline benchmark startup/runtime diperbarui dan dibandingkan."
+      ],
+      "areas": ["runtime", "benchmarks", "docs/public"],
+      "competitor": "Node OTel, Next.js instrumentation, Deno runtime metrics.",
+      "source": "features.json `observability-metrics` partial; p2-observability selesai untuk Node",
+      "dependsOn": ["p2-observability"]
+    },
+    {
+      "id": "p3-runtime-production-readiness",
+      "title": "Exit criteria runtime Rust: eksperimental → produksi",
+      "theme": "deploy",
+      "priority": "p3",
+      "size": "L",
+      "status": "open",
+      "what": "Menetapkan dan memenuhi kriteria produksi runtime Rust: compatibility matrix, isolation/security review, resource limits, soak, HTTP/TLS decision, dan dokumentasi deployment.",
+      "why": "11 fitur runtime masih berstatus experimental; 100% matang harus berarti production-ready atau keputusan eksplisit untuk tetap di luar baseline.",
+      "done": [
+        "ADR exit criteria runtime (termasuk keputusan HTTP/2/TLS server dan isolasi proses/OS).",
+        "Compatibility suite + soak 24 jam + resource limit/security tests lulus.",
+        "Security review plugin/proses/sandbox; temuan kritis ditutup.",
+        "Dokumentasi deployment/limitasi + status features.json diperbarui."
+      ],
+      "areas": ["runtime", "docs/public", "benchmarks", ".github/workflows"],
+      "adrs": ["ADR baru"],
+      "competitor": "Node/Deno/Bun production runtime docs dan compatibility guarantees.",
+      "source": "features.json: 11 fitur runtime experimental",
+      "dependsOn": ["p2-runtime-observability-complete"],
+      "strategic": true
     }
   ],
   "dogfooding": [

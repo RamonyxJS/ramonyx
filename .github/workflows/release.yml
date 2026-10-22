@@ -84,17 +84,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "Ramonyx ${GITHUB_REF_NAME}" \
-            --notes-file CHANGELOG.md \
-            dist/npm/*.tgz dist/runtime/*.tar.gz dist/SHA256SUMS dist/release-manifest.json
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" \
+              dist/npm/*.tgz dist/runtime/*.tar.gz dist/SHA256SUMS dist/release-manifest.json \
+              --clobber
+          else
+            gh release create "${GITHUB_REF_NAME}" \
+              --title "Ramonyx ${GITHUB_REF_NAME}" \
+              --notes-file CHANGELOG.md \
+              dist/npm/*.tgz dist/runtime/*.tar.gz dist/SHA256SUMS dist/release-manifest.json
+          fi
 
   publish-npm:
     name: Publikasi npm (butuh NPM_TOKEN)
     needs: artifacts
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     permissions:
       contents: read
       id-token: write # provenance npm (hanya berlaku untuk repo publik)
@@ -112,6 +118,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           TAG_NAME: ${{ github.ref_name }}
           PUBLIC_REPO: ${{ github.event.repository.visibility == 'public' }}
+          npm_config_fetch_timeout: "30000"
+          npm_config_fetch_retries: "2"
+          npm_config_fetch_retry_mintimeout: "5000"
+          npm_config_fetch_retry_maxtimeout: "20000"
         run: |
           set -euo pipefail
           if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
@@ -154,5 +164,17 @@ jobs:
               echo "  ↷ ${name}@${version} sudah ada di registry — dilewati"
               continue
             fi
-            npm publish "$tarball" --access public --tag "$DIST_TAG" "${PROVENANCE[@]}"
+            published=0
+            for attempt in 1 2 3; do
+              echo "  → ${name}@${version} (attempt ${attempt})"
+              if timeout 120 npm publish "$tarball" --access public --tag "$DIST_TAG" "${PROVENANCE[@]}"; then
+                published=1
+                break
+              fi
+              sleep 5
+            done
+            if [ "$published" -ne 1 ]; then
+              echo "  ✖ ${name}@${version} gagal dipublikasikan setelah 3 percobaan"
+              exit 1
+            fi
           done

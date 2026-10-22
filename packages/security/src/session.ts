@@ -2,6 +2,7 @@
 // di cookie; mode store menyimpan data di server dan cookie hanya berisi ID sesi bertanda tangan,
 // sehingga rotasi/revocation tersedia. Semua implementasi edge-safe (Web Crypto).
 
+import type { KeyValueStore } from "@ramonyx/core";
 import {
   type CookieOptions,
   expireCookie,
@@ -75,6 +76,28 @@ export function createMemorySessionStore(options: MemorySessionStoreOptions = {}
     },
     async delete(id) {
       entries.delete(id);
+    },
+  };
+}
+
+/** Adapter SessionStore di atas KeyValueStore (Redis/KV/cache) — cookie hanya membawa ID. */
+export function createKeyValueSessionStore(store: KeyValueStore): SessionStore {
+  const key = (id: string): string => `session:${id}`;
+  return {
+    async get(id) {
+      const entry = await store.get<{ data: SessionData; expiresAt: number }>(key(id));
+      return entry?.value ?? null;
+    },
+    async set(id, session) {
+      const ttlSeconds = Math.ceil((session.expiresAt - Date.now()) / 1000);
+      if (ttlSeconds <= 0) {
+        await store.delete(key(id));
+        return;
+      }
+      await store.set(key(id), session, { ttlSeconds });
+    },
+    async delete(id) {
+      await store.delete(key(id));
     },
   };
 }

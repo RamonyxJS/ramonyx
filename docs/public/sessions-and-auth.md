@@ -49,6 +49,8 @@ store the hash string (not the password) in your user store.
   non-secret data. Signed data is **not encrypted**.
 - **Store-backed**: the cookie contains only a signed session ID; data lives in a
   `SessionStore`. This enables rotation and server-side revocation.
+  `createKeyValueSessionStore(store)` adapts any `KeyValueStore` (Redis/KV/cache) to this
+  contract.
 
 ```ts
 import { createMemorySessionStore, createSession } from "@ramonyx/security";
@@ -75,6 +77,9 @@ malformed data, and expired store records. The in-memory store is for developmen
 shared store for multi-instance production.
 
 Action results can return `headers`; `set-cookie` headers are applied to the re-render.
+
+Rate limiting can share the same `KeyValueStore` via `rateLimit({ store })`; `increment` is used
+for atomic fixed-window counters.
 
 ## CSRF
 

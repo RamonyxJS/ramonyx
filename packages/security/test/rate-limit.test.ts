@@ -88,3 +88,21 @@ test("maxKeys: key tertua dibuang agar memori terbatas", async () => {
 
   clock = 0; // memastikan tidak ada dependensi waktu tersembunyi
 });
+
+test("rate limit: store bersama membatasi dua instance secara konsisten", async () => {
+  const { createMemoryStore, REMOTE_ADDRESS_HEADER } = await import("@ramonyx/core");
+  const { rateLimit } = await import("../src/index.ts");
+  const store = createMemoryStore();
+  const make = () => rateLimit({ limit: 2, windowMs: 60_000, store });
+  const request = new Request("http://test.local/", {
+    headers: { [REMOTE_ADDRESS_HEADER]: "1.2.3.4" },
+  });
+  const context = {
+    request,
+    env: { get: () => undefined },
+    log: { debug() {}, info() {}, warn() {}, error() {} },
+  };
+  assert.equal((await make()(context, async () => new Response("ok"))).status, 200);
+  assert.equal((await make()(context, async () => new Response("ok"))).status, 200);
+  assert.equal((await make()(context, async () => new Response("ok"))).status, 429);
+});

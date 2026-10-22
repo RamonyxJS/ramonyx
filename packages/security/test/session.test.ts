@@ -92,3 +92,19 @@ test("session stateless: rotate tetap dapat dibaca (tanpa revocation server-side
   const newRequest = new Request("http://test.local/", { headers: { cookie: newCookie } });
   assert.deepEqual(await session.read(newRequest), { a: 2 });
 });
+
+test("session KeyValueStore adapter: roundtrip dan expiry memakai store bersama", async () => {
+  const { createMemoryStore } = await import("@ramonyx/core");
+  const { createKeyValueSessionStore } = await import("../src/index.ts");
+  const now = Date.now();
+  const store = createMemoryStore();
+  const session = createSession({
+    secret: "secret-kv",
+    cookieName: "sesi",
+    now: () => now,
+    store: createKeyValueSessionStore(store),
+  });
+  const cookie = (await session.commit({ pengguna: "rina" })).split(";")[0] ?? "";
+  const request = new Request("http://test.local/", { headers: { cookie } });
+  assert.deepEqual(await session.read(request), { pengguna: "rina" });
+});

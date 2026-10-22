@@ -97,6 +97,7 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
       "rateLimit",
       "createSession",
       "createMemorySessionStore",
+      "createKeyValueSessionStore",
       "hashPassword",
       "verifyPassword",
       "CSRF_REQUEST_HEADER",

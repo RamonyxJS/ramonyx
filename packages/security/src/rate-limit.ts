@@ -1,4 +1,4 @@
-import { type Middleware, REMOTE_ADDRESS_HEADER } from "@ramonyx/core";
+import { type KeyValueStore, type Middleware, REMOTE_ADDRESS_HEADER } from "@ramonyx/core";
 
 export interface RateLimitOptions {
   /** Jumlah request maksimum per key per window. */
@@ -17,6 +17,8 @@ export interface RateLimitOptions {
   readonly maxKeys?: number;
   /** Sumber waktu (untuk test deterministik). Default `Date.now`. */
   readonly now?: () => number;
+  /** Store bersama (mis. KeyValueStore Redis/KV) untuk rate limit multi-instance. */
+  readonly store?: Pick<KeyValueStore, "increment">;
 }
 
 interface WindowEntry {
@@ -37,6 +39,7 @@ export function rateLimit(options: RateLimitOptions): Middleware {
   const trustProxy = options.trustProxy ?? false;
   const maxKeys = options.maxKeys ?? 10_000;
   const now = options.now ?? (() => Date.now());
+  const sharedIncrement = options.store?.increment?.bind(options.store);
   const windows = new Map<string, WindowEntry>();
 
   const keyFor = (request: Request): string => {
@@ -76,6 +79,22 @@ export function rateLimit(options: RateLimitOptions): Middleware {
     prune(timestamp);
 
     const key = keyFor(context.request);
+    if (sharedIncrement !== undefined) {
+      const count = await sharedIncrement(`ratelimit:${key}`, {
+        windowSeconds: Math.ceil(windowMs / 1000),
+      });
+      if (count > limit) {
+        return new Response(JSON.stringify({ error: "Too Many Requests" }), {
+          status: 429,
+          headers: {
+            "content-type": "application/json; charset=utf-8",
+            "retry-after": String(Math.max(1, Math.ceil(windowMs / 1000))),
+            "x-ratelimit-limit": String(limit),
+          },
+        });
+      }
+      return next();
+    }
     let entry = windows.get(key);
     if (entry === undefined || entry.resetAt <= timestamp) {
       entry = { count: 0, resetAt: timestamp + windowMs };

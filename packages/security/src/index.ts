@@ -29,4 +29,8 @@ export type {
   SessionStore,
   StoredSession,
 } from "./session.ts";
-export { createMemorySessionStore, createSession } from "./session.ts";
+export {
+  createKeyValueSessionStore,
+  createMemorySessionStore,
+  createSession,
+} from "./session.ts";

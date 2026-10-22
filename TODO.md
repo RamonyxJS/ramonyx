@@ -265,7 +265,7 @@
   - [ ] API publik dibekukan dengan semver + migration/deprecation policy dan contract test.
   - [ ] Security review, abuse-case, dan soak panjang lulus; temuan kritis ditutup.
   - [ ] Benchmark gate blocking per-lingkungan + Web Vitals budget dan docs upgrade guide.
-  - [ ] Rilis 1.0.0 terverifikasi registry + GitHub Release; tidak ada TODO/dogfooding open atau partial.
+  - [ ] Rilis 1.0.0 terverifikasi registry + GitHub Release; tidak ada TODO/dogfooding open atau partial untuk baseline Node (runtime Rust tetap jalur eksperimental terpisah).
 - **Area kode**: `packages`, `docs`, `benchmarks`, `.github/workflows`
 - **ADR**: ADR baru
 - **Pembanding**: Next.js/Nuxt/SvelteKit jalur stabil 1.x dengan kebijakan deprecasi dan upgrade guide.

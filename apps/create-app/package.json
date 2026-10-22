@@ -1,6 +1,6 @@
 {
   "name": "create-ramonyx-app",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Scaffolder aplikasi Ramonyx (rilis via staging `scripts/release.mjs` → paket `create-ramonyx-app`, ADR-0049).",
   "license": "MIT",

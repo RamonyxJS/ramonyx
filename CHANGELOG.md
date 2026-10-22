@@ -4,6 +4,19 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-10-22
+
+Rilis **Node framework 1.0**: auth/session produksi, API stability policy, security/soak review,
+per-environment benchmark gate, dan budget Web Vitals. Runtime Rust/V8 tetap eksperimental dan
+tidak termasuk klaim stabilitas Node 1.0.
+
+### 1.0 readiness
+
+- Auth/session production flow (0.7.0): PBKDF2, store/rotation/revocation, CSRF no-JS.
+- API stability policy and contract test (`docs/public/api/versioning.md`).
+- Security abuse/soak review + dependency audit; F-1 RSS diagnosis (V8 allocator, no JS leak).
+- `pnpm bench:gate` passes on the baseline environment; CI enforces absolute Web Vitals budgets.
+
 ## [0.7.0] — 2026-10-22
 
 Rilis auth/session produksi: PBKDF2 password hashing, session store/rotation/revocation, CSRF

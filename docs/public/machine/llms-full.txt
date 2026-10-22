@@ -1923,11 +1923,11 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T04:57:28.822Z",
+  "generatedAt": "2026-10-22T05:07:00.004Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
         "createConsoleLogger",
@@ -1950,7 +1950,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/bundler",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
@@ -2000,7 +2000,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/compiler",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/compiler/src/index.ts",
       "values": [
         "HTTP_METHODS",
@@ -2026,7 +2026,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/core",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/core/src/index.ts",
       "values": [
         "DEFERRED_MARKER",
@@ -2105,7 +2105,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/devtools",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
         "loadConfigFile",
@@ -2120,7 +2120,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/mcp-docs-server",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/mcp-docs-server/src/index.ts",
       "values": [
         "MCP_PROTOCOL_VERSION",
@@ -2139,7 +2139,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/plugin-image",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/plugin-image/src/index.ts",
       "values": [
         "imageOptimizer"
@@ -2149,7 +2149,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "ramonyx",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "Deferred",
@@ -2199,7 +2199,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/react",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/react/src/index.ts",
       "values": [
         "Island",
@@ -2216,7 +2216,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/router",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/router/src/index.ts",
       "values": [
         "createRouteTable",
@@ -2231,7 +2231,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/schema",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/schema/src/index.ts",
       "values": [
         "validate"
@@ -2251,7 +2251,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/security",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/security/src/index.ts",
       "values": [
         "CSRF_REQUEST_HEADER",
@@ -2289,7 +2289,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/server",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/server/src/index.ts",
       "values": [
         "createHandler",
@@ -2313,7 +2313,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/ssr",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/ssr/src/index.ts",
       "values": [
         "PAYLOAD_SCRIPT_ID",
@@ -2341,7 +2341,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/testing",
-      "version": "0.7.0",
+      "version": "1.0.0",
       "source": "packages/testing/src/index.ts",
       "values": [
         "createTestServer",
@@ -2359,7 +2359,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T04:57:29.615Z",
+  "generatedAt": "2026-10-22T05:07:00.897Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2432,9 +2432,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "version": "0.7.0",
-  "generatedAt": "2026-10-22T04:56:46.324Z",
-  "commit": "8fcec4c3282b4e1fcccd3e190fc36a2079d7164f",
+  "version": "1.0.0",
+  "generatedAt": "2026-10-22T05:06:17.332Z",
+  "commit": "c4796e28347bf96831c9a46a1c2b542097e1f7a9",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,

@@ -50,9 +50,10 @@ formal dan uji plateau lebih panjang; jangan memakai delta RSS mentah sebagai sa
 
 ## Gate lain yang belum selesai
 
-- Benchmark regression masih report-only; baseline runner konsisten/self-hosted belum tersedia
-  (ADR-0045/0074). `pnpm bench:gate` dicoba pada 2026-10-22; HTTP strict masih gagal di mesin
-  ambient (p50 73→95 ms, rps 658→505) sehingga gate tidak diklaim lulus. Baseline tidak diubah.
+- Benchmark regression masih report-only di CI lintas-runner; gate pra-rilis per-lingkungan
+  `pnpm bench:gate` **lulus** pada 2026-10-22 di mesin baseline: HTTP p50 57→43 ms, p90 73→61 ms,
+  p99 135→104 ms, rps 815→1045; seluruh metrik SSR dalam toleransi. Budget Web Vitals absolut
+  juga lulus (LCP 88 ms, FCP 88 ms, TTFB 19,6 ms, CLS 0).
 - Rilis 1.0.0 dan upgrade guide belum diterbitkan; API stability policy sudah ditambahkan di
   `docs/public/api/versioning.md` dan contract test diperluas untuk auth/security.
 - Runtime Rust tetap jalur eksperimental terpisah; keputusan produksi ada di item TODO P3.

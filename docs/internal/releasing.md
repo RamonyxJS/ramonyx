@@ -22,6 +22,17 @@
 - **TERBIT — 0.7.0** (2026-10-22): auth/session produksi — PBKDF2, session store/rotation/
   revocation, CSRF form no-JS, demo login/register/logout. 16 paket @ 0.7.0 + provenance;
   GitHub Release 19 aset.
+- **PERSIAPAN — 1.0.0** (2026-10-22): Node baseline stabil — auth/API/security/benchmark gate
+  selesai; runtime Rust tetap eksperimental. Bump 16 paket + template; verifikasi rilis penuh
+  sebelum tag.
+
+## Persiapan 1.0.0 (2026-10-22)
+
+- Gate: `pnpm bench:gate` lulus di mesin baseline; `VITALS_BUDGET_STRICT=1` lulus; security/soak
+  review + API stability policy selesai.
+- Bump: `Cargo.toml` + 15 paket `packages/*` + `apps/create-app` → **1.0.0**; template
+  `^1.0.0`; CHANGELOG `[1.0.0]`; README/AGENTS status.
+- Runtime Rust tetap eksperimental; item observability/runtime tidak menjadi blocker Node 1.0.
 
 ## Persiapan 0.7.0 (2026-10-22)
 

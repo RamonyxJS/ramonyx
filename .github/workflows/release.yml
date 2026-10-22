@@ -45,8 +45,9 @@ jobs:
           toolchain: ${{ steps.rust.outputs.channel }}
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
-      - name: Aktifkan pnpm (corepack)
-        run: corepack enable pnpm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
       - name: Install
         run: pnpm install --frozen-lockfile
       - name: Cek tag vs versi (Cargo.toml = sumber versi)

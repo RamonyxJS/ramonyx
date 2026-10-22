@@ -665,9 +665,7 @@
         "packages/adapter-runtime/src/node.ts",
         "packages/adapter-runtime/test/node.test.ts"
       ],
-      "limitations": [
-        "Range request belum"
-      ],
+      "limitations": [],
       "docs": "docs/public/deployment.md"
     },
     {
@@ -704,10 +702,10 @@
         "scripts/edge-smoke.ts",
         "apps/create-app/test/create-app.test.ts",
         "docs/public/deployment.md",
-        "docs/public/engineering/adr/0058-edge-target.md"
+        "docs/public/engineering/adr/0058-edge-target.md",
+        "packages/devtools/src/commands.ts"
       ],
       "limitations": [
-        "Preset Vercel/Deno Deploy belum",
         "Deploy ke akun platform tetap langkah pengguna (tanpa kredensial di CI)"
       ],
       "docs": "docs/public/deployment.md"
@@ -1205,7 +1203,7 @@
     },
     {
       "id": "static-assets",
-      "name": "Middleware aset statis (serveStatic: ETag/304, immutable, guard traversal)",
+      "name": "Middleware aset statis (ETag/304, range, precompressed, guard traversal)",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p0",
@@ -1215,7 +1213,9 @@
       "evidence": [
         "packages/adapter-runtime/src/static.ts",
         "packages/adapter-runtime/test/static.test.ts",
-        "docs/public/engineering/adr/0069-assets.md"
+        "docs/public/engineering/adr/0069-assets.md",
+        "docs/public/deployment.md",
+        "docs/public/assets-and-images.md"
       ],
       "limitations": [],
       "docs": "docs/public/assets-and-images.md"

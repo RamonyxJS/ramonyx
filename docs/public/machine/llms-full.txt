@@ -679,9 +679,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "packages/adapter-runtime/src/node.ts",
         "packages/adapter-runtime/test/node.test.ts"
       ],
-      "limitations": [
-        "Range request belum"
-      ],
+      "limitations": [],
       "docs": "docs/public/deployment.md"
     },
     {
@@ -718,10 +716,10 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "scripts/edge-smoke.ts",
         "apps/create-app/test/create-app.test.ts",
         "docs/public/deployment.md",
-        "docs/public/engineering/adr/0058-edge-target.md"
+        "docs/public/engineering/adr/0058-edge-target.md",
+        "packages/devtools/src/commands.ts"
       ],
       "limitations": [
-        "Preset Vercel/Deno Deploy belum",
         "Deploy ke akun platform tetap langkah pengguna (tanpa kredensial di CI)"
       ],
       "docs": "docs/public/deployment.md"
@@ -1219,7 +1217,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "id": "static-assets",
-      "name": "Middleware aset statis (serveStatic: ETag/304, immutable, guard traversal)",
+      "name": "Middleware aset statis (ETag/304, range, precompressed, guard traversal)",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p0",
@@ -1229,7 +1227,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "evidence": [
         "packages/adapter-runtime/src/static.ts",
         "packages/adapter-runtime/test/static.test.ts",
-        "docs/public/engineering/adr/0069-assets.md"
+        "docs/public/engineering/adr/0069-assets.md",
+        "docs/public/deployment.md",
+        "docs/public/assets-and-images.md"
       ],
       "limitations": [],
       "docs": "docs/public/assets-and-images.md"
@@ -1951,7 +1951,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T07:02:48.088Z",
+  "generatedAt": "2026-10-22T07:10:18.407Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2441,8 +2441,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T07:02:50.005Z",
-  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
+  "generatedAt": "2026-10-22T07:10:20.055Z",
+  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
       "name": "dev",
@@ -2498,7 +2498,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     {
       "flag": "--target",
       "argument": "nama",
-      "description": "(build) Target tambahan: \"edge\" → dist/edge (serverless/edge)"
+      "description": "(build) Target: edge | vercel | deno (dist/<target>, fetch handler)"
     },
     {
       "flag": "--watch",
@@ -2515,8 +2515,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "1.0.0",
-  "generatedAt": "2026-10-22T07:01:54.102Z",
-  "commit": "bf9c44eb5261d05b1879d3b47d062099de86d1e3",
+  "generatedAt": "2026-10-22T07:09:18.222Z",
+  "commit": "c184d40a546c100fd9854d548879165766dfd5fc",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2543,7 +2543,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
   "adrs": 8,
   "docs": 23,
   "tests": {
-    "node": 345,
+    "node": 348,
     "rust": 116,
     "e2eSpecFiles": 12
   }
@@ -2940,6 +2940,14 @@ export const metadata = {
 - No blur placeholders (LQIP) or on-demand dev variants yet.
 - Image optimization only runs for raster formats (PNG/JPEG/WebP/AVIF/TIFF).
 
+
+## Static serving
+
+`serveStatic()` supports `Range: bytes=…` (`206`, suffix/open-ended ranges, `416` for
+unsatisfiable), ETag/304, and precompressed `.br`/`.gz` siblings selected from
+`Accept-Encoding` with a `Vary: accept-encoding` header. Range requests use the identity file;
+precompressed files must be generated by your build/deploy pipeline.
+
 ## docs/public/benchmarks.md
 
 # Benchmarks
@@ -3193,6 +3201,8 @@ ramonyx build --static     # → dist/static
 
 ```bash
 ramonyx build --target edge   # → dist/edge/index.js
+ramonyx build --target vercel # → dist/vercel (api/index.js + vercel.json)
+ramonyx build --target deno   # → dist/deno (main.ts + index.js)
 ```
 
 The artifact exports `{ fetch }` — the standard edge contract:

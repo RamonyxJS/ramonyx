@@ -44,7 +44,7 @@ Opsi:
   --port <n>        Override port server SSR
   --dev-port <n>    Override port Vite (default 5173)
   --static          (build) Prerender rute statis + getStaticPaths → dist/static
-  --target <nama>   (build) Target tambahan: "edge" → dist/edge (serverless/edge)
+  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)
   --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)
 
 Konvensi:
@@ -201,15 +201,34 @@ async function buildOnce(appDir: string, plugins: LoadedPlugins, flags: Flags): 
   console.log(`✓ client bundle: ${result.scriptPath} (${result.outDir})`);
 
   if (flags.target !== undefined) {
-    if (flags.target !== "edge") {
-      throw new Error(`target tidak dikenal: "${flags.target}" (yang tersedia: edge)`);
+    const target = flags.target;
+    if (target !== "edge" && target !== "vercel" && target !== "deno") {
+      throw new Error(`target tidak dikenal: "${target}" (yang tersedia: edge, vercel, deno)`);
     }
     if (flags.static === true) {
-      throw new Error("--target edge dan --static tidak dapat digabung (artefak berbeda)");
+      throw new Error("--target dan --static tidak dapat digabung (artefak berbeda)");
     }
-    const edge = await buildEdge({ appDir, plugins: plugins.vite });
+    const outDir = join(appDir, "dist", target);
+    const edge = await buildEdge({ appDir, outDir, plugins: plugins.vite });
+    if (target === "vercel") {
+      await mkdir(join(outDir, "api"), { recursive: true });
+      await writeFile(
+        join(outDir, "api", "index.js"),
+        'import app from "../index.js";\nexport default app.fetch;\nexport const config = { runtime: "edge" };\n',
+      );
+      await writeFile(
+        join(outDir, "vercel.json"),
+        `${JSON.stringify({ rewrites: [{ source: "/(.*)", destination: "/api/index" }] }, null, 2)}\n`,
+      );
+    }
+    if (target === "deno") {
+      await writeFile(
+        join(outDir, "main.ts"),
+        'import app from "./index.js";\n\nDeno.serve(app.fetch);\n',
+      );
+    }
     console.log(
-      `✓ edge: ${edge.outputFile} (${(edge.bytes / 1024).toFixed(1)} KB) — kontrak fetch handler (ADR-0058)`,
+      `✓ ${target}: ${edge.outputFile} (${(edge.bytes / 1024).toFixed(1)} KB) — kontrak fetch handler (ADR-0058)`,
     );
     return;
   }

@@ -45,11 +45,84 @@ export interface ServeStaticOptions {
   readonly maxAgeSeconds?: number;
   /** Header tambahan untuk semua respons aset. */
   readonly headers?: Readonly<Record<string, string>>;
+  /** Pilih `.br`/`.gz` sibling bila klien mendukung; default true. */
+  readonly precompressed?: boolean;
 }
 
 function normalizePrefix(prefix: string): string {
   const withLeading = prefix.startsWith("/") ? prefix : `/${prefix}`;
   return withLeading.endsWith("/") ? withLeading : `${withLeading}/`;
+}
+
+function acceptsEncoding(header: string | null, encoding: string): boolean {
+  if (header === null) {
+    return false;
+  }
+  let wildcard = false;
+  for (const part of header.split(",")) {
+    const [nameRaw, ...params] = part.trim().toLowerCase().split(";");
+    const name = nameRaw?.trim() ?? "";
+    let quality = 1;
+    for (const param of params) {
+      const [key, value] = param.trim().split("=");
+      if (key === "q" && value !== undefined) {
+        const parsed = Number.parseFloat(value);
+        quality = Number.isFinite(parsed) ? parsed : 0;
+      }
+    }
+    if (name === "*") {
+      wildcard = quality > 0;
+    }
+    if (name === encoding) {
+      return quality > 0;
+    }
+  }
+  return wildcard;
+}
+
+type ByteRange = { readonly start: number; readonly end: number };
+
+/** Parse satu range byte; `null` = abaikan (multi/format lain), `"unsatisfiable"` = 416. */
+function parseRange(header: string | null, size: number): ByteRange | null | "unsatisfiable" {
+  if (header === null || !header.toLowerCase().startsWith("bytes=")) {
+    return null;
+  }
+  const spec = header.slice("bytes=".length).trim();
+  if (spec.includes(",")) {
+    return null;
+  }
+  const match = /^(\d*)-(\d*)$/.exec(spec);
+  if (match === null || (match[1] === "" && match[2] === "")) {
+    return null;
+  }
+  if (match[1] === "") {
+    const suffix = Number(match[2]);
+    if (!Number.isSafeInteger(suffix) || suffix <= 0) {
+      return "unsatisfiable";
+    }
+    return { start: Math.max(0, size - suffix), end: size - 1 };
+  }
+  const start = Number(match[1]);
+  if (!Number.isSafeInteger(start) || start >= size) {
+    return "unsatisfiable";
+  }
+  const requestedEnd = match[2] === "" ? size - 1 : Number(match[2]);
+  if (!Number.isSafeInteger(requestedEnd) || requestedEnd < start) {
+    return "unsatisfiable";
+  }
+  return { start, end: Math.min(requestedEnd, size - 1) };
+}
+
+function appendVary(headers: Record<string, string>, value: string): void {
+  const current = headers.vary;
+  if (current === undefined) {
+    headers.vary = value;
+    return;
+  }
+  const values = current.split(",").map((entry) => entry.trim().toLowerCase());
+  if (!values.includes(value.toLowerCase())) {
+    headers.vary = `${current}, ${value}`;
+  }
 }
 
 /** Perbandingan ETag lemah (abaikan `W/`). */
@@ -124,22 +197,73 @@ export function serveStatic(options: ServeStaticOptions): Middleware {
       return next();
     }
 
-    const etag = `W/"${info.size.toString(16)}-${Math.round(info.mtimeMs).toString(16)}"`;
+    const rangeHeader = context.request.headers.get("range");
+    const range = rangeHeader === null ? null : parseRange(rangeHeader, info.size);
+    let selectedPath = filePath;
+    let selectedInfo = info;
+    let contentEncoding: "br" | "gz" | undefined;
+    if (
+      range === null &&
+      options.precompressed !== false &&
+      (acceptsEncoding(context.request.headers.get("accept-encoding"), "br") ||
+        acceptsEncoding(context.request.headers.get("accept-encoding"), "gzip"))
+    ) {
+      const br = `${filePath}.br`;
+      const gz = `${filePath}.gz`;
+      const candidate = acceptsEncoding(context.request.headers.get("accept-encoding"), "br")
+        ? br
+        : gz;
+      try {
+        const candidateInfo = await stat(candidate);
+        if (candidateInfo.isFile()) {
+          selectedPath = candidate;
+          selectedInfo = candidateInfo;
+          contentEncoding = candidate === br ? "br" : "gz";
+        }
+      } catch {
+        // Tidak ada sibling terkompresi; layani berkas asli.
+      }
+    }
+
+    const etag = `W/"${selectedInfo.size.toString(16)}-${Math.round(selectedInfo.mtimeMs).toString(16)}"`;
     const headers: Record<string, string> = {
       "content-type": CONTENT_TYPES[extname(filePath).toLowerCase()] ?? "application/octet-stream",
       "cache-control": cacheControl,
       etag,
+      "accept-ranges": "bytes",
       ...options.headers,
     };
+    if (contentEncoding !== undefined) {
+      headers["content-encoding"] = contentEncoding;
+      appendVary(headers, "accept-encoding");
+    }
 
     const ifNoneMatch = context.request.headers.get("if-none-match");
     if (ifNoneMatch !== null && etagMatches(ifNoneMatch, etag)) {
       return new Response(null, { status: 304, headers });
     }
-    if (method === "HEAD") {
-      return new Response(null, { status: 200, headers });
+
+    if (range === "unsatisfiable") {
+      return new Response(null, {
+        status: 416,
+        headers: { ...headers, "content-range": `bytes */${info.size}` },
+      });
+    }
+    if (range === null) {
+      headers["content-length"] = String(selectedInfo.size);
+      if (method === "HEAD") {
+        return new Response(null, { status: 200, headers });
+      }
+      return new Response(await readFile(selectedPath), { headers });
     }
 
-    return new Response(await readFile(filePath), { headers });
+    const length = range.end - range.start + 1;
+    headers["content-length"] = String(length);
+    headers["content-range"] = `bytes ${range.start}-${range.end}/${info.size}`;
+    if (method === "HEAD") {
+      return new Response(null, { status: 206, headers });
+    }
+    const bytes = await readFile(filePath);
+    return new Response(bytes.subarray(range.start, range.end + 1), { status: 206, headers });
   };
 }

@@ -877,7 +877,7 @@
       "theme": "deploy",
       "priority": "p2",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Range request Node, preset Vercel/Deno Deploy, dan pemilihan aset .br/.gz berdasarkan Accept-Encoding.",
       "why": "Adapter sudah berjalan tetapi fitur produksi dasar ini masih harus dirakit pengguna.",
       "done": [

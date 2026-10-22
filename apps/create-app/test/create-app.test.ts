@@ -623,3 +623,42 @@ test("scaffold agent docs bersifat opt-in", () => {
   );
   assert.match(readFileSync(join(denganAgent, "AGENTS.md"), "utf8"), /Ramonyx/);
 });
+
+test("preset deploy vercel/deno: artefak + fetch handler", () => {
+  mkdirSync(workDir, { recursive: true });
+  const target = join(workDir, "app-presets");
+  runCli([target]);
+
+  const vercel = runDevtools(target, ["build", "--target", "vercel"]);
+  assert.match(vercel, /vercel:/);
+  for (const relative of [
+    "dist/vercel/index.js",
+    "dist/vercel/api/index.js",
+    "dist/vercel/vercel.json",
+  ]) {
+    assert.ok(existsSync(join(target, relative)), `${relative} ada`);
+  }
+  assert.match(
+    readFileSync(join(target, "dist/vercel/api/index.js"), "utf8"),
+    /export default app\.fetch/,
+  );
+
+  writeFileSync(
+    join(target, "preset-smoke.mjs"),
+    `import handler from "./dist/vercel/api/index.js";
+const response = await handler(new Request("http://uji/"));
+if (response.status !== 200) throw new Error("status: " + response.status);
+const html = await response.text();
+if (!html.includes("Halo dari SSR Ramonyx")) throw new Error("SSR tidak jalan");
+console.log("PRESET VERCEL OK");\n`,
+  );
+  assert.match(runNode("preset-smoke.mjs", target), /PRESET VERCEL OK/);
+
+  const deno = runDevtools(target, ["build", "--target", "deno"]);
+  assert.match(deno, /deno:/);
+  assert.ok(existsSync(join(target, "dist/deno/index.js")), "deno bundle ada");
+  assert.match(
+    readFileSync(join(target, "dist/deno/main.ts"), "utf8"),
+    /Deno\.serve\(app\.fetch\)/,
+  );
+});

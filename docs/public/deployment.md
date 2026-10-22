@@ -39,6 +39,8 @@ ramonyx build --static     # → dist/static
 
 ```bash
 ramonyx build --target edge   # → dist/edge/index.js
+ramonyx build --target vercel # → dist/vercel (api/index.js + vercel.json)
+ramonyx build --target deno   # → dist/deno (main.ts + index.js)
 ```
 
 The artifact exports `{ fetch }` — the standard edge contract:

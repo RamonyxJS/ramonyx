@@ -114,3 +114,73 @@ test("serveStatic: prefix kustom + header tambahan", async () => {
     assert.equal(outside.status, 404);
   });
 });
+
+test("serveStatic: range byte (206, suffix, open-ended, 416)", async () => {
+  await withFiles({ "app.js": "0123456789" }, async (dir) => {
+    const middleware = serveStatic({ dir, precompressed: false });
+    const range = await invoke(middleware, "http://x/assets/app.js", {
+      headers: { range: "bytes=2-5" },
+    });
+    assert.equal(range.status, 206);
+    assert.equal(range.headers.get("content-range"), "bytes 2-5/10");
+    assert.equal(range.headers.get("content-length"), "4");
+    assert.equal(range.headers.get("accept-ranges"), "bytes");
+    assert.equal(await range.text(), "2345");
+
+    const suffix = await invoke(middleware, "http://x/assets/app.js", {
+      headers: { range: "bytes=-3" },
+    });
+    assert.equal(suffix.status, 206);
+    assert.equal(await suffix.text(), "789");
+
+    const open = await invoke(middleware, "http://x/assets/app.js", {
+      headers: { range: "bytes=8-" },
+    });
+    assert.equal(open.status, 206);
+    assert.equal(await open.text(), "89");
+
+    const invalid = await invoke(middleware, "http://x/assets/app.js", {
+      headers: { range: "bytes=99-" },
+    });
+    assert.equal(invalid.status, 416);
+    assert.equal(invalid.headers.get("content-range"), "bytes */10");
+
+    const multi = await invoke(middleware, "http://x/assets/app.js", {
+      headers: { range: "bytes=0-1,4-5" },
+    });
+    assert.equal(multi.status, 200, "multi-range diabaikan → full response");
+  });
+});
+
+test("serveStatic: precompressed .br/.gz dipilih via Accept-Encoding", async () => {
+  await withFiles(
+    { "app.js": "original", "app.js.br": "brotli-bytes", "app.js.gz": "gzip-bytes" },
+    async (dir) => {
+      const middleware = serveStatic({ dir });
+      const br = await invoke(middleware, "http://x/assets/app.js", {
+        headers: { "accept-encoding": "gzip, br" },
+      });
+      assert.equal(br.headers.get("content-encoding"), "br");
+      assert.equal(br.headers.get("vary"), "accept-encoding");
+      assert.equal(br.headers.get("content-type"), "text/javascript; charset=utf-8");
+      assert.equal(await br.text(), "brotli-bytes");
+
+      const gzip = await invoke(middleware, "http://x/assets/app.js", {
+        headers: { "accept-encoding": "gzip" },
+      });
+      assert.equal(gzip.headers.get("content-encoding"), "gz");
+      assert.equal(await gzip.text(), "gzip-bytes");
+
+      const plain = await invoke(middleware, "http://x/assets/app.js");
+      assert.equal(plain.headers.get("content-encoding"), null);
+      assert.equal(await plain.text(), "original");
+
+      const ranged = await invoke(middleware, "http://x/assets/app.js", {
+        headers: { range: "bytes=0-2", "accept-encoding": "br" },
+      });
+      assert.equal(ranged.status, 206);
+      assert.equal(ranged.headers.get("content-encoding"), null);
+      assert.equal(await ranged.text(), "ori");
+    },
+  );
+});

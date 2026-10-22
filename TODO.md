@@ -585,7 +585,7 @@
 
 ### `p2-adapter-parity` — Paritas adapter: range, preset serverless, aset precompressed
 
-*tema: deploy · ukuran: L · status: open · sumber: limitations adapter-node/adapter-serverless-edge/compression-etag; audit 2026-10-22*
+*tema: deploy · ukuran: L · status: done · sumber: limitations adapter-node/adapter-serverless-edge/compression-etag; audit 2026-10-22*
 
 - **Apa**: Range request Node, preset Vercel/Deno Deploy, dan pemilihan aset .br/.gz berdasarkan Accept-Encoding.
 - **Kenapa penting untuk bersaing**: Adapter sudah berjalan tetapi fitur produksi dasar ini masih harus dirakit pengguna.

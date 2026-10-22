@@ -4,9 +4,9 @@ Framework full-stack TypeScript (Node ≥ 24) + runtime Rust/V8 **eksperimental*
 SSR React (+ streaming), hydration + soft navigation, middleware security, validasi schema di
 tepi kepercayaan, dan benchmark/gate reproducible.
 
-> **Status: alpha 0.6.0 — terbit di npm** (2026-10-22, 16 paket `@ramonyx/*` + `ramonyx` +
+> **Status: alpha 0.7.0 — terbit di npm** (2026-10-22, 16 paket `@ramonyx/*` + `ramonyx` +
 > `create-ramonyx-app`, **dengan provenance**) — lihat
-> [Rilis v0.6.0](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.6.0).
+> [Rilis v0.7.0](https://github.com/RamonyxJS/ramonyx/releases/tag/v0.7.0).
 > Framework Node adalah baseline produksi; runtime Rust/V8 eksperimental. Aplikasi baru:
 > `pnpm create ramonyx-app aplikasi-saya` → `pnpm dev|build|start` (CLI `ramonyx`).
 > Verifikasi registry end-to-end: scaffold → install → build → start → SSR + API.

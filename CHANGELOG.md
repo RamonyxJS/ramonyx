@@ -4,6 +4,11 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-10-22
+
+Rilis auth/session produksi: PBKDF2 password hashing, session store/rotation/revocation, CSRF
+form no-JS, dan alur login/register/logout referensi.
+
 ### Auth & session
 
 - **Auth primitives production flow**: PBKDF2 password hashing + verification, server-side

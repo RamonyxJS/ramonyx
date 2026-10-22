@@ -19,6 +19,18 @@
 - **TERBIT — 0.6.0** (2026-10-22): data deferred no-JS-safe (`defer` + Suspense, state JSON
   hydration) + DF-13 (Cloudflare Web Analytics/RUM dimatikan). 16 paket @ 0.6.0 + provenance;
   GitHub Release 19 aset.
+- **PERSIAPAN — 0.7.0** (2026-10-22): auth/session produksi — PBKDF2, session store/rotation/
+  revocation, CSRF form no-JS, demo login/register/logout. Bump 16 paket + template; verifikasi
+  rilis penuh sebelum tag.
+
+## Persiapan 0.7.0 (2026-10-22)
+
+- Fitur: `hashPassword`/`verifyPassword`, `createMemorySessionStore`, session `rotate`/`revoke`,
+  CSRF `_csrf` field + header, auth demo `/sesi`; e2e JS/no-JS.
+- Bump: `Cargo.toml` + 15 paket `packages/*` + `apps/create-app` → **0.7.0**; template
+  `^0.7.0`; CHANGELOG `[0.7.0]`; README/AGENTS status.
+- Gate: `pnpm lint`, `typecheck`, `test`, `docs:stats`, `docs:generate`, `docs:validate`; lalu
+  `pnpm release` + `pnpm release:verify` + dry-run publish 16 tarball.
 
 ## Persiapan 0.6.0 (2026-10-22)
 

@@ -9,7 +9,7 @@ The public API is the set of value/type exports declared by each package's `expo
 root `src/index.ts`. Subpaths are part of the surface too (`@ramonyx/react/client`,
 `@ramonyx/react/islands`, `@ramonyx/security/ssrf`, and so on).
 
-Internal modules, generated `dist/` files, and `docs/internal/` are not public APIs.
+Internal modules, generated `dist/` files, and internal documentation are not public APIs.
 
 ## Compatibility policy
 

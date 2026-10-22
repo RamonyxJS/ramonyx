@@ -26,7 +26,14 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
   [
     "@ramonyx/adapter-runtime",
     adapterRuntime,
-    ["createConsoleLogger", "createMemoryHost", "createNodeHost", "serveStatic"],
+    [
+      "createConsoleLogger",
+      "createMemoryHost",
+      "createNodeHost",
+      "serveStatic",
+      "connectRedisStore",
+      "createRedisStore",
+    ],
   ],
   [
     "@ramonyx/bundler",

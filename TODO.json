@@ -777,7 +777,7 @@
       "theme": "quality",
       "priority": "p2",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Implementasikan adapter produksi berbasis Redis/KV di atas kontrak state, plus sink OTel/JSON untuk metrik dan log.",
       "why": "Deployment multi-instance membutuhkan state bersama dan observability yang konsisten; ini menutup gap rate-limit/session/revalidate/observability.",
       "done": [

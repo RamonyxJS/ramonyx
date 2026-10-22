@@ -868,7 +868,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "apps/playground/src/app.ts",
         "packages/core/src/state.ts",
         "packages/core/test/state.test.ts",
-        "docs/public/state-and-adapters.md"
+        "docs/public/state-and-adapters.md",
+        "packages/adapter-runtime/src/redis.ts"
       ],
       "limitations": [
         "In-memory per proses (tanpa agregasi multi-instance)",
@@ -1313,10 +1314,13 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "packages/ssr/test/revalidate.test.ts",
         "packages/core/test/revalidate.test.ts",
         "docs/public/data-and-caching.md",
-        "docs/public/engineering/adr/0066-revalidate.md"
+        "docs/public/engineering/adr/0066-revalidate.md",
+        "packages/adapter-runtime/src/redis.ts",
+        "packages/adapter-runtime/test/redis.test.ts",
+        "docs/public/state-and-adapters.md"
       ],
       "limitations": [
-        "In-memory per proses (store eksternal belum ada implementasinya)",
+        "Default in-memory; Redis adapter opt-in di @ramonyx/adapter-runtime",
         "Query string/cookie melewati cache (disengaja)",
         "Tanpa purge CDN"
       ],
@@ -1341,7 +1345,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       ],
       "limitations": [
         "Tanpa registry/`ramonyx add` (instalasi manual)",
-        "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
+        "Hook plugin butuh createApp aplikasi meneruskan opsi hooks",
+        "Cache plugin default in-memory; adapter Redis opt-in lewat KeyValueStore"
       ],
       "docs": "docs/public/plugins.md"
     },
@@ -1934,16 +1939,18 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T06:25:02.844Z",
+  "generatedAt": "2026-10-22T06:33:07.017Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
       "version": "1.0.0",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
+        "connectRedisStore",
         "createConsoleLogger",
         "createMemoryHost",
         "createNodeHost",
+        "createRedisStore",
         "serveStatic"
       ],
       "types": [
@@ -1952,6 +1959,11 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "MemoryHostOptions",
         "MemoryServer",
         "NodeHostOptions",
+        "RedisClientLike",
+        "RedisConnectionOptions",
+        "RedisStore",
+        "RedisStoreConnection",
+        "RedisStoreOptions",
         "RunningServer",
         "RuntimeHost",
         "ServeOptions",
@@ -2410,7 +2422,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T06:25:04.078Z",
+  "generatedAt": "2026-10-22T06:33:08.853Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2484,8 +2496,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "1.0.0",
-  "generatedAt": "2026-10-22T06:24:19.326Z",
-  "commit": "fe2aaf06784d6023c1786b8ee4e310b589312ac0",
+  "generatedAt": "2026-10-22T06:32:05.674Z",
+  "commit": "dd891f762b8fa1eff0456a2026dc6f39015e7c71",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2512,7 +2524,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
   "adrs": 8,
   "docs": 23,
   "tests": {
-    "node": 338,
+    "node": 340,
     "rust": 116,
     "e2eSpecFiles": 11
   }
@@ -4531,6 +4543,49 @@ const limiter = rateLimit({ limit: 60, windowMs: 60_000, store });
 `store` is any object satisfying `KeyValueStore`. Redis/KV adapters still need to provide TTL,
 atomic increment, atomic take, tag indexes, reconnect behavior, and deployment-specific failure
 handling; those production adapters are tracked separately from the in-memory contract.
+
+## Redis adapter (Node)
+
+`@ramonyx/adapter-runtime` provides a Redis-backed `KeyValueStore` for Node deployments:
+
+```ts
+import { connectRedisStore } from "@ramonyx/adapter-runtime";
+
+const redis = await connectRedisStore({
+  url: env.get("REDIS_URL")!,
+  prefix: "app:",
+  onError: (error) => logger.error("redis", { error: error.message }),
+});
+try {
+  const cache = createCache({ store: redis.store });
+  const session = createSession({
+    secret: env.get("SESSION_SECRET")!,
+    store: createKeyValueSessionStore(redis.store),
+  });
+  const limiter = rateLimit({ limit: 60, windowMs: 60_000, store: redis.store });
+  // ...serve
+} finally {
+  await redis.close();
+}
+```
+
+Behavior:
+
+- Values are JSON envelopes; TTL uses Redis `SET EX` and tag membership uses Redis sets.
+- `increment` and one-time `take` use Lua scripts so two instances cannot both succeed.
+- `connectRedisStore` enables node-redis reconnect with capped exponential backoff. Errors are
+  surfaced through `onError` and operations reject; there is **no local fallback** that would
+  silently split sessions/limits between processes.
+- The adapter is Node-only and lives in `@ramonyx/adapter-runtime`; the core/security contracts
+  remain edge-safe. Cloudflare KV and other eventually-consistent stores do not provide atomic
+  increment/take, so they need a purpose-built adapter rather than pretending to satisfy
+  `RateLimitStore`/one-time-token semantics.
+- Prefixes isolate applications sharing one Redis database. Tag sets are cleaned on delete/take and
+  lazily cleaned during invalidation.
+
+The integration test starts a local `redis-server`, uses two independent connections, and verifies
+shared sessions, shared rate limits, atomic one-time tokens, cache invalidation, TTL, and fail-fast
+error propagation. It is skipped when `redis-server` is unavailable.
 
 ## Defaults in examples
 

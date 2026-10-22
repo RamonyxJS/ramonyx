@@ -854,7 +854,8 @@
         "apps/playground/src/app.ts",
         "packages/core/src/state.ts",
         "packages/core/test/state.test.ts",
-        "docs/public/state-and-adapters.md"
+        "docs/public/state-and-adapters.md",
+        "packages/adapter-runtime/src/redis.ts"
       ],
       "limitations": [
         "In-memory per proses (tanpa agregasi multi-instance)",
@@ -1299,10 +1300,13 @@
         "packages/ssr/test/revalidate.test.ts",
         "packages/core/test/revalidate.test.ts",
         "docs/public/data-and-caching.md",
-        "docs/public/engineering/adr/0066-revalidate.md"
+        "docs/public/engineering/adr/0066-revalidate.md",
+        "packages/adapter-runtime/src/redis.ts",
+        "packages/adapter-runtime/test/redis.test.ts",
+        "docs/public/state-and-adapters.md"
       ],
       "limitations": [
-        "In-memory per proses (store eksternal belum ada implementasinya)",
+        "Default in-memory; Redis adapter opt-in di @ramonyx/adapter-runtime",
         "Query string/cookie melewati cache (disengaja)",
         "Tanpa purge CDN"
       ],
@@ -1327,7 +1331,8 @@
       ],
       "limitations": [
         "Tanpa registry/`ramonyx add` (instalasi manual)",
-        "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
+        "Hook plugin butuh createApp aplikasi meneruskan opsi hooks",
+        "Cache plugin default in-memory; adapter Redis opt-in lewat KeyValueStore"
       ],
       "docs": "docs/public/plugins.md"
     },

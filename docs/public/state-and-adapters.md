@@ -86,6 +86,49 @@ const limiter = rateLimit({ limit: 60, windowMs: 60_000, store });
 atomic increment, atomic take, tag indexes, reconnect behavior, and deployment-specific failure
 handling; those production adapters are tracked separately from the in-memory contract.
 
+## Redis adapter (Node)
+
+`@ramonyx/adapter-runtime` provides a Redis-backed `KeyValueStore` for Node deployments:
+
+```ts
+import { connectRedisStore } from "@ramonyx/adapter-runtime";
+
+const redis = await connectRedisStore({
+  url: env.get("REDIS_URL")!,
+  prefix: "app:",
+  onError: (error) => logger.error("redis", { error: error.message }),
+});
+try {
+  const cache = createCache({ store: redis.store });
+  const session = createSession({
+    secret: env.get("SESSION_SECRET")!,
+    store: createKeyValueSessionStore(redis.store),
+  });
+  const limiter = rateLimit({ limit: 60, windowMs: 60_000, store: redis.store });
+  // ...serve
+} finally {
+  await redis.close();
+}
+```
+
+Behavior:
+
+- Values are JSON envelopes; TTL uses Redis `SET EX` and tag membership uses Redis sets.
+- `increment` and one-time `take` use Lua scripts so two instances cannot both succeed.
+- `connectRedisStore` enables node-redis reconnect with capped exponential backoff. Errors are
+  surfaced through `onError` and operations reject; there is **no local fallback** that would
+  silently split sessions/limits between processes.
+- The adapter is Node-only and lives in `@ramonyx/adapter-runtime`; the core/security contracts
+  remain edge-safe. Cloudflare KV and other eventually-consistent stores do not provide atomic
+  increment/take, so they need a purpose-built adapter rather than pretending to satisfy
+  `RateLimitStore`/one-time-token semantics.
+- Prefixes isolate applications sharing one Redis database. Tag sets are cleaned on delete/take and
+  lazily cleaned during invalidation.
+
+The integration test starts a local `redis-server`, uses two independent connections, and verifies
+shared sessions, shared rate limits, atomic one-time tokens, cache invalidation, TTL, and fail-fast
+error propagation. It is skipped when `redis-server` is unavailable.
+
 ## Defaults in examples
 
 The playground and templates keep the in-memory adapters, so `pnpm dev` and `pnpm build` work

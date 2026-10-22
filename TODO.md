@@ -517,7 +517,7 @@
 
 ### `p2-state-shared-adapters` — Adapter Redis/KV untuk session, rate limit, cache, dan metrik
 
-*tema: quality · ukuran: L · status: open · dependensi: `p2-state-contracts` · sumber: limitations rate-limit/session/revalidate/observability-logger; audit 2026-10-22*
+*tema: quality · ukuran: L · status: done · dependensi: `p2-state-contracts` · sumber: limitations rate-limit/session/revalidate/observability-logger; audit 2026-10-22*
 
 - **Apa**: Implementasikan adapter produksi berbasis Redis/KV di atas kontrak state, plus sink OTel/JSON untuk metrik dan log.
 - **Kenapa penting untuk bersaing**: Deployment multi-instance membutuhkan state bersama dan observability yang konsisten; ini menutup gap rate-limit/session/revalidate/observability.

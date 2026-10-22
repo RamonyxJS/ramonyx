@@ -8,7 +8,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@ramonyx/core": "workspace:*"
+    "@ramonyx/core": "workspace:*",
+    "redis": "5.12.1"
   },
   "description": "Node.js runtime adapter for Ramonyx: HTTP host, static assets, compression, and ETag."
 }

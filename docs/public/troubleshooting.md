@@ -87,3 +87,12 @@ The edge target rejects Node built-ins. `guardedFetch` lives in a Node-only subp
 - Development error pages include the stack and source file; production pages never do.
 - The CLI `ramonyx doctor` prints config, route count, and build status.
 - See [Testing](testing.md) for reproducing issues in-process.
+
+
+## Client/server boundaries
+
+`ramonyx build` (and `buildClient`) statically rejects page/layout/error modules that import
+`node:*`, `server-only`, or `*.server.ts`, before Vite attempts the bundle. Move database/secrets
+code into a `*.server.ts` module and import it only from a loader, action, or API route. The error
+names the offending file and specifier; the compiler also exposes `lintClientBoundaries(pages)` if
+you want the check in your own tooling.

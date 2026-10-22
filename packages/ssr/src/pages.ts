@@ -2,6 +2,7 @@ import {
   type AppHooks,
   type AssetResolver,
   type Cache,
+  createLoaderGraph,
   fillRouteParams,
   formDataToObject,
   HttpError,
@@ -437,6 +438,7 @@ async function renderPage(
 ): Promise<Response> {
   const log = context.log;
   const params = context.params as Record<string, string>;
+  const loaderGraph = createLoaderGraph();
   const concretePath = fillRouteParams(page.path, params) ?? page.path;
   const docLocale = documentLocaleAttributes(locale, i18n);
 
@@ -456,6 +458,7 @@ async function renderPage(
           log,
           assets,
           locale,
+          load: (key, fn) => loaderGraph.load(key, fn),
         });
         hooks?.onLoaderEnd?.({
           path: page.path,
@@ -853,6 +856,7 @@ async function runAction(
 ): Promise<Response> {
   const params = context.params as Record<string, string>;
   const request = context.request;
+  const loaderGraph = createLoaderGraph();
   let formData: FormData;
   try {
     formData = await readFormData(request, maxBodyBytes);
@@ -899,6 +903,7 @@ async function runAction(
         env: context.env,
         log: context.log,
         locale,
+        load: (key, fn) => loaderGraph.load(key, fn),
         json: <T = unknown>() => request.clone().json() as Promise<T>,
         revalidate: revalidateContext,
       })) ?? {};

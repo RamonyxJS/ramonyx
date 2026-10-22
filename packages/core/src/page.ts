@@ -40,6 +40,8 @@ export interface PageLoaderContext<P = unknown, Q = unknown> {
    * (mis. dari `createAssetResolver()` di bundler). `undefined` di setup tanpa aset.
    */
   readonly assets?: AssetResolver;
+  /** Graf deduplikasi per request; key stabil, mis. `produk:42`. */
+  readonly load?: <T>(key: string, loader: () => T | Promise<T>) => Promise<T>;
 }
 
 export type PageLoader<P = unknown, Q = unknown, D = unknown> = (
@@ -56,6 +58,8 @@ export interface PageActionContext<P = Record<string, string>> {
   readonly log: Logger;
   /** Locale aktif (routing i18n — ADR-0081); `undefined` tanpa i18n. */
   readonly locale?: string;
+  /** Graf deduplikasi per request (dibagi dengan loader halaman). */
+  readonly load?: <T>(key: string, loader: () => T | Promise<T>) => Promise<T>;
   /** Body JSON (bila `content-type: application/json`) — untuk pemanggilan programatik. */
   json<T = unknown>(): Promise<T>;
   /**

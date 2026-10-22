@@ -81,7 +81,10 @@
       "evidence": [
         "packages/compiler/src/pages.ts",
         "packages/compiler/test/pages.test.ts",
-        "apps/playground/e2e/errors.spec.ts"
+        "apps/playground/e2e/errors.spec.ts",
+        "packages/react/src/dev-overlay.ts",
+        "packages/react/test/dev-overlay.test.tsx",
+        "apps/playground/src/routes/error.tsx"
       ],
       "limitations": [],
       "docs": "docs/public/ssr-hydration.md"
@@ -207,7 +210,7 @@
     },
     {
       "id": "data-loaders",
-      "name": "Data loader per halaman (GET, paralel dengan layout, JSON-serializable)",
+      "name": "Data loader per halaman (GET, dependency graph per request, JSON-serializable)",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
@@ -218,10 +221,13 @@
       "evidence": [
         "packages/core/src/page.ts",
         "packages/ssr/src/pages.ts",
-        "packages/ssr/test/pages.test.ts"
+        "packages/ssr/test/pages.test.ts",
+        "packages/core/src/loader-graph.ts",
+        "packages/core/test/loader-graph.test.ts",
+        "docs/public/data-and-caching.md"
       ],
       "limitations": [
-        "Hanya GET; belum ada loader dependensi antar-route",
+        "Hanya GET; dependency graph per request, bukan cache lintas-request",
         "Cache opsional per halaman (ADR-0066) — data loader bisa disajikan dari cache"
       ],
       "docs": "docs/public/ssr-hydration.md"
@@ -906,11 +912,12 @@
       "evidence": [
         "benchmarks/http/bench.ts",
         "benchmarks/ssr/bench.tsx",
-        "benchmarks/lib/env.ts"
+        "benchmarks/lib/env.ts",
+        "docs/public/benchmarks.md"
       ],
       "limitations": [
-        "Regresi lintas-runner di CI tetap report-only; gate pra-rilis per-lingkungan memakai `pnpm bench:gate` (strict, guard ADR-0074)",
-        "Budget Web Vitals absolut dapat diblokir via `VITALS_BUDGET_STRICT=1`; baseline mesin dev tetap perlu regenerasi di mesin tenang"
+        "Strict gate hanya pada runner self-hosted ber-label ramonyx-bench; CI hosted report-only",
+        "Web Vitals strict tetap opt-in lewat VITALS_STRICT=1"
       ],
       "docs": "docs/public/benchmarks.md"
     },
@@ -1269,7 +1276,7 @@
     },
     {
       "id": "boundary-enforcement",
-      "name": "Penegakan batas server/client (`*.server.ts` stub + tolak node:* di bundle klien)",
+      "name": "Penegakan batas server/client (lint statis + stub *.server.ts + tolak node:* di bundle)",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
@@ -1279,11 +1286,12 @@
       "evidence": [
         "packages/bundler/src/server-only.ts",
         "packages/bundler/src/build.ts",
-        "packages/bundler/test/build.test.ts"
+        "packages/bundler/test/build.test.ts",
+        "packages/compiler/src/boundaries.ts",
+        "packages/compiler/test/boundaries.test.ts",
+        "docs/public/troubleshooting.md"
       ],
-      "limitations": [
-        "Lint statis (Biome) untuk konvensi belum"
-      ],
+      "limitations": [],
       "docs": "docs/public/architecture.md"
     },
     {
@@ -1339,7 +1347,7 @@
     },
     {
       "id": "plugin-ecosystem",
-      "name": "Plugin (vite passthrough + middleware pre-routing + hooks) dari ramonyx.config.ts",
+      "name": "Plugin (hooks/middleware/assets) + registry terverifikasi + ramonyx add/remove",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
@@ -1352,10 +1360,13 @@
         "packages/bundler/src/plugin.ts",
         "packages/plugin-image/src/index.ts",
         "apps/playground/src/plugins/kunjungan.ts",
-        "docs/public/plugins.md"
+        "docs/public/plugins.md",
+        "packages/devtools/src/registry.ts",
+        "packages/devtools/test/registry.test.ts",
+        "docs/public/cli.md"
       ],
       "limitations": [
-        "Tanpa registry/`ramonyx add` (instalasi manual)",
+        "Installer memverifikasi integritas/signature, tetapi plugin tetap berjalan dengan izin aplikasi",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks",
         "Cache plugin default in-memory; adapter Redis opt-in lewat KeyValueStore"
       ],

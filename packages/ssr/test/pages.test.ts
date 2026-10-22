@@ -929,3 +929,36 @@ test("deferred: navigasi memakai render sinkron + state, dan tanpa streaming dit
   });
   assert.equal((await noStreaming(new Request("http://test.local/"))).status, 500);
 });
+
+test("loader context.load: dependency graph dedupe dalam satu request", async () => {
+  let calls = 0;
+  const page: LoadedPage = {
+    path: "/graph",
+    page: {
+      default: Page,
+      loader: async ({ load }) => {
+        const [a, b] = await Promise.all([
+          load?.("harga:1", async () => {
+            calls += 1;
+            return { harga: 100 };
+          }),
+          load?.("harga:1", async () => {
+            calls += 1;
+            return { harga: 999 };
+          }),
+        ]);
+        return { a, b };
+      },
+    },
+    layouts: [],
+    directory: "/tmp",
+  };
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+  const response = await handler(new Request("http://uji/graph"));
+  const html = await response.text();
+  assert.equal(calls, 1, "loader dependency dipanggil sekali");
+  assert.match(html, /"harga":100/);
+  assert.doesNotMatch(html, /"harga":999/);
+});

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { generateClientEntry } from "@ramonyx/compiler";
+import { generateClientEntry, lintClientBoundaries } from "@ramonyx/compiler";
 import { errorHint, type LoadedPage } from "@ramonyx/core";
 import { build, type PluginOption } from "vite";
 import { type AssetProcessor, collectAssets, DEFAULT_ASSETS_DIR } from "./assets.ts";
@@ -118,6 +118,18 @@ export async function buildClient(options: BuildClientOptions): Promise<BuildCli
   const outDir = join(options.appDir, options.outDir ?? "dist/client");
   const entryDir = join(options.appDir, ".ramonyx");
   const entryFile = join(entryDir, "client-entry.ts");
+
+  const boundaryViolations = await lintClientBoundaries(options.pages);
+  if (boundaryViolations.length > 0) {
+    throw new Error(
+      "Batas server/client dilanggar (ADR-0063): modul halaman/layout/error mengimpor API server:\n" +
+        boundaryViolations
+          .map((violation) => `  - ${violation.file} → ${violation.specifier}`)
+          .join("\n") +
+        "\nPindahkan impor tersebut ke modul `*.server.ts` yang hanya dipakai loader/action/route API. " +
+        errorHint("RMX-BUILD-1"),
+    );
+  }
 
   await assertClientFilesBrowserSafe(options.pages);
 

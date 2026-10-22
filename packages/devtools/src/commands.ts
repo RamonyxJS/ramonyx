@@ -25,6 +25,12 @@ import { withMiddleware } from "@ramonyx/server";
 import { type FetchHandler, mergeHooks, type RamonyxConfig } from "ramonyx";
 
 import { type CreateAppOptions, loadConfigFile, loadCreateApp, loadServerEntry } from "./load.ts";
+import {
+  installPlugin,
+  loadPluginRegistry,
+  removePlugin,
+  resolveRegistryEntry,
+} from "./registry.ts";
 
 const USAGE = `ramonyx — CLI pengembangan Ramonyx
 
@@ -35,6 +41,10 @@ Pemakaian:
   ramonyx build --target edge
                            Bundel server edge/serverless → dist/edge (kontrak fetch handler)
   ramonyx start            Server produksi (NODE_ENV=production, SSR)
+  ramonyx start --watch    Restart server saat src/** berubah
+  ramonyx add <nama[@versi]> --registry <path|url>
+                           Pasang plugin + verifikasi integritas/signature
+  ramonyx remove <nama>    Hapus plugin + lock entry
   ramonyx doctor           Diagnostik konfigurasi & lingkungan
   ramonyx version          Versi CLI
   ramonyx help             Bantuan ini
@@ -47,6 +57,8 @@ Opsi:
   --static          (build) Prerender rute statis + getStaticPaths → dist/static
   --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)
   --watch           (build/start) Bangun ulang atau restart server saat src/** berubah
+  --registry <path|url>  (add/remove) Registry plugin JSON
+  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature
 
 Konvensi:
   src/app.ts        mengekspor createApp(options?) → FetchHandler
@@ -62,6 +74,8 @@ interface Flags {
   readonly static?: boolean;
   readonly target?: string;
   readonly watch?: boolean;
+  readonly registry?: string;
+  readonly publicKey?: string;
 }
 
 function readVersion(): string {
@@ -75,8 +89,14 @@ function readVersion(): string {
   }
 }
 
-function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; help: boolean } {
+function parseArgs(argv: readonly string[]): {
+  command?: string;
+  flags: Flags;
+  positionals: readonly string[];
+  help: boolean;
+} {
   let command: string | undefined;
+  const positionals: string[] = [];
   let appDir = process.cwd();
   let configPath: string | undefined;
   let port: number | undefined;
@@ -84,6 +104,8 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
   let isStatic = false;
   let target: string | undefined;
   let watch = false;
+  let registry: string | undefined;
+  let publicKey: string | undefined;
   let help = false;
 
   const numeric = (value: string | undefined, flag: string): number => {
@@ -115,6 +137,14 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
       case "--watch":
         watch = true;
         break;
+      case "--registry":
+        registry = argv[++index];
+        if (registry === undefined) throw new Error("--registry butuh nilai");
+        break;
+      case "--public-key":
+        publicKey = argv[++index];
+        if (publicKey === undefined) throw new Error("--public-key butuh nilai");
+        break;
       case "--target":
         target = argv[++index];
         if (target === undefined || target.length === 0) {
@@ -129,16 +159,28 @@ function parseArgs(argv: readonly string[]): { command?: string; flags: Flags; h
         if (arg.startsWith("-")) {
           throw new Error(`flag tidak dikenal: ${arg}`);
         }
-        if (command !== undefined) {
-          throw new Error(`argumen tak terduga: ${arg}`);
+        if (command === undefined) {
+          command = arg;
+        } else {
+          positionals.push(arg);
         }
-        command = arg;
     }
   }
 
   return {
     command,
-    flags: { appDir, configPath, port, devPort, static: isStatic, target, watch },
+    flags: {
+      appDir,
+      configPath,
+      port,
+      devPort,
+      static: isStatic,
+      target,
+      watch,
+      registry,
+      publicKey,
+    },
+    positionals,
     help,
   };
 }
@@ -521,10 +563,40 @@ async function commandDoctor(flags: Flags): Promise<number> {
   return 0;
 }
 
+async function commandAdd(flags: Flags, positionals: readonly string[]): Promise<number> {
+  const spec = positionals[0];
+  const source = flags.registry ?? process.env.RAMONYX_PLUGIN_REGISTRY;
+  if (spec === undefined || source === undefined) {
+    console.error("error: add butuh nama plugin dan --registry <path|url> (atau env).");
+    return 1;
+  }
+  const registry = await loadPluginRegistry(source);
+  const entry = resolveRegistryEntry(registry, spec);
+  const publicKey =
+    flags.publicKey === undefined
+      ? process.env.RAMONYX_PLUGIN_PUBLIC_KEY
+      : readFileSync(flags.publicKey, "utf8");
+  await installPlugin(flags.appDir, entry, publicKey === undefined ? {} : { publicKey });
+  console.log(`✓ plugin ${entry.name}@${entry.version} terpasang + tercatat di plugins.lock.json`);
+  console.log("  Tambahkan plugin ke ramonyx.config.ts untuk mengaktifkannya.");
+  return 0;
+}
+
+async function commandRemove(flags: Flags, positionals: readonly string[]): Promise<number> {
+  const name = positionals[0];
+  if (name === undefined) {
+    console.error("error: remove butuh nama plugin.");
+    return 1;
+  }
+  await removePlugin(flags.appDir, name);
+  console.log(`✓ plugin ${name} dihapus dari dependencies + plugins.lock.json`);
+  return 0;
+}
+
 /** Titik masuk programatik (dipakai bin `ramonyx`; juga dapat diuji langsung). */
 export async function runCli(argv: readonly string[]): Promise<number> {
   try {
-    const { command, flags, help } = parseArgs(argv);
+    const { command, flags, positionals, help } = parseArgs(argv);
     if (help || command === undefined || command === "help") {
       console.log(USAGE);
       return 0;
@@ -541,6 +613,10 @@ export async function runCli(argv: readonly string[]): Promise<number> {
         return await commandDev(flags);
       case "doctor":
         return await commandDoctor(flags);
+      case "add":
+        return await commandAdd(flags, positionals);
+      case "remove":
+        return await commandRemove(flags, positionals);
       default:
         console.error(`error: perintah tidak dikenal: ${command}\n`);
         console.log(USAGE);

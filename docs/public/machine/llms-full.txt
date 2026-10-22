@@ -95,7 +95,10 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "evidence": [
         "packages/compiler/src/pages.ts",
         "packages/compiler/test/pages.test.ts",
-        "apps/playground/e2e/errors.spec.ts"
+        "apps/playground/e2e/errors.spec.ts",
+        "packages/react/src/dev-overlay.ts",
+        "packages/react/test/dev-overlay.test.tsx",
+        "apps/playground/src/routes/error.tsx"
       ],
       "limitations": [],
       "docs": "docs/public/ssr-hydration.md"
@@ -221,7 +224,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "id": "data-loaders",
-      "name": "Data loader per halaman (GET, paralel dengan layout, JSON-serializable)",
+      "name": "Data loader per halaman (GET, dependency graph per request, JSON-serializable)",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",
@@ -232,10 +235,13 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "evidence": [
         "packages/core/src/page.ts",
         "packages/ssr/src/pages.ts",
-        "packages/ssr/test/pages.test.ts"
+        "packages/ssr/test/pages.test.ts",
+        "packages/core/src/loader-graph.ts",
+        "packages/core/test/loader-graph.test.ts",
+        "docs/public/data-and-caching.md"
       ],
       "limitations": [
-        "Hanya GET; belum ada loader dependensi antar-route",
+        "Hanya GET; dependency graph per request, bukan cache lintas-request",
         "Cache opsional per halaman (ADR-0066) — data loader bisa disajikan dari cache"
       ],
       "docs": "docs/public/ssr-hydration.md"
@@ -920,11 +926,12 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "evidence": [
         "benchmarks/http/bench.ts",
         "benchmarks/ssr/bench.tsx",
-        "benchmarks/lib/env.ts"
+        "benchmarks/lib/env.ts",
+        "docs/public/benchmarks.md"
       ],
       "limitations": [
-        "Regresi lintas-runner di CI tetap report-only; gate pra-rilis per-lingkungan memakai `pnpm bench:gate` (strict, guard ADR-0074)",
-        "Budget Web Vitals absolut dapat diblokir via `VITALS_BUDGET_STRICT=1`; baseline mesin dev tetap perlu regenerasi di mesin tenang"
+        "Strict gate hanya pada runner self-hosted ber-label ramonyx-bench; CI hosted report-only",
+        "Web Vitals strict tetap opt-in lewat VITALS_STRICT=1"
       ],
       "docs": "docs/public/benchmarks.md"
     },
@@ -1283,7 +1290,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "id": "boundary-enforcement",
-      "name": "Penegakan batas server/client (`*.server.ts` stub + tolak node:* di bundle klien)",
+      "name": "Penegakan batas server/client (lint statis + stub *.server.ts + tolak node:* di bundle)",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
@@ -1293,11 +1300,12 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "evidence": [
         "packages/bundler/src/server-only.ts",
         "packages/bundler/src/build.ts",
-        "packages/bundler/test/build.test.ts"
+        "packages/bundler/test/build.test.ts",
+        "packages/compiler/src/boundaries.ts",
+        "packages/compiler/test/boundaries.test.ts",
+        "docs/public/troubleshooting.md"
       ],
-      "limitations": [
-        "Lint statis (Biome) untuk konvensi belum"
-      ],
+      "limitations": [],
       "docs": "docs/public/architecture.md"
     },
     {
@@ -1353,7 +1361,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "id": "plugin-ecosystem",
-      "name": "Plugin (vite passthrough + middleware pre-routing + hooks) dari ramonyx.config.ts",
+      "name": "Plugin (hooks/middleware/assets) + registry terverifikasi + ramonyx add/remove",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p2",
@@ -1366,10 +1374,13 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "packages/bundler/src/plugin.ts",
         "packages/plugin-image/src/index.ts",
         "apps/playground/src/plugins/kunjungan.ts",
-        "docs/public/plugins.md"
+        "docs/public/plugins.md",
+        "packages/devtools/src/registry.ts",
+        "packages/devtools/test/registry.test.ts",
+        "docs/public/cli.md"
       ],
       "limitations": [
-        "Tanpa registry/`ramonyx add` (instalasi manual)",
+        "Installer memverifikasi integritas/signature, tetapi plugin tetap berjalan dengan izin aplikasi",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks",
         "Cache plugin default in-memory; adapter Redis opt-in lewat KeyValueStore"
       ],
@@ -1964,7 +1975,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T07:45:28.597Z",
+  "generatedAt": "2026-10-22T07:58:30.719Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2057,12 +2068,14 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "generateClientEntry",
         "generateRouteTypes",
         "generateServerEntry",
+        "lintClientBoundaries",
         "listApiRoutes",
         "loadPageRoutes",
         "nativeImporter"
       ],
       "types": [
         "ApiRouteFile",
+        "BoundaryViolation",
         "CreateRouteManifestOptions",
         "GenerateClientEntryOptions",
         "GenerateServerEntryOptions",
@@ -2096,6 +2109,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "cacheControl",
         "createCache",
         "createJsonObservabilitySink",
+        "createLoaderGraph",
         "createMemoryObservabilitySink",
         "createMemoryStore",
         "defer",
@@ -2131,6 +2145,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "InvalidateEvent",
         "KeyValueStore",
         "LoaderEndEvent",
+        "LoaderGraph",
         "Logger",
         "MemoryObservabilitySink",
         "MemoryObservabilitySinkOptions",
@@ -2166,13 +2181,25 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "version": "1.0.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
+        "installPlugin",
         "loadConfigFile",
         "loadCreateApp",
-        "runCli"
+        "loadPluginRegistry",
+        "pluginIntegrity",
+        "removePlugin",
+        "resolveRegistryEntry",
+        "runCli",
+        "verifyPluginTarball"
       ],
       "types": [
         "CreateApp",
-        "CreateAppOptions"
+        "CreateAppOptions",
+        "InstallPluginOptions",
+        "PluginCommandRunner",
+        "PluginLockFile",
+        "PluginRegistry",
+        "PluginRegistryEntry",
+        "RegistryOptions"
       ],
       "reexports": []
     },
@@ -2261,6 +2288,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "version": "1.0.0",
       "source": "packages/react/src/index.ts",
       "values": [
+        "DevErrorOverlay",
         "Island",
         "PendingButton",
         "createReactRenderer",
@@ -2271,6 +2299,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "types": [
         "ActionStatus",
         "ActionStatusOptions",
+        "DevErrorOverlayProps",
         "ErrorPageProps",
         "IslandProps",
         "LayoutProps",
@@ -2456,8 +2485,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T07:45:30.479Z",
-  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
+  "generatedAt": "2026-10-22T07:58:32.619Z",
+  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
       "name": "dev",
@@ -2519,6 +2548,16 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "flag": "--watch",
       "argument": null,
       "description": "(build/start) Bangun ulang atau restart server saat src/** berubah"
+    },
+    {
+      "flag": "--registry",
+      "argument": "path|url",
+      "description": "(add/remove) Registry plugin JSON"
+    },
+    {
+      "flag": "--public-key",
+      "argument": "path",
+      "description": "(add) Public key Ed25519 PEM untuk verifikasi signature"
     }
   ]
 }
@@ -2530,8 +2569,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "1.0.0",
-  "generatedAt": "2026-10-22T07:44:16.759Z",
-  "commit": "1c0510ba9c86248d4169cf5de62b1d3d603cf669",
+  "generatedAt": "2026-10-22T07:57:13.091Z",
+  "commit": "956881c4891aae42199d905a82aa6c56a091196e",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2558,7 +2597,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
   "adrs": 8,
   "docs": 23,
   "tests": {
-    "node": 364,
+    "node": 372,
     "rust": 116,
     "e2eSpecFiles": 12
   }
@@ -3007,8 +3046,20 @@ A baseline is only meaningful on the machine that produced it. Baselines are sto
 environments** — it prints the mismatching fields instead of pretending.
 
 - Development baselines are committed for the maintainer machine.
-- CI runs benchmarks **report-only**: GitHub-hosted runners vary too much for a blocking gate.
+- GitHub-hosted CI runs benchmarks **report-only**: runners vary too much for a blocking gate.
+- The dedicated `.github/workflows/bench-strict.yml` workflow runs `pnpm bench:gate` on a
+  self-hosted runner labeled `ramonyx-bench`. It blocks only on that matching environment and waits
+  for the runner when it is offline; normal PRs keep the report-only fallback in `ci.yml`.
 - `VITALS_STRICT=1` turns the Web Vitals comparison into a gate; use it only on a stable runner.
+
+## Refresh procedure (strict runner)
+
+1. Run `pnpm bench` and `pnpm bench:ssr` on the self-hosted runner with the app idle.
+2. Inspect the median/spread; commit the per-environment baseline files under
+   `benchmarks/results/baselines/`.
+3. Run `pnpm bench:gate` on the same runner to confirm the new baseline passes.
+4. Keep the report-only artifacts from `ci.yml`; never copy a baseline between machines or CPU
+   models (the guard rejects it).
 
 ## Rules
 
@@ -3032,6 +3083,8 @@ ramonyx build --target edge   # server/edge bundle → dist/edge ({ fetch } cont
 ramonyx build --watch    # rebuild on file changes (covers --static/--target)
 ramonyx start            # production SSR (NODE_ENV=production)
 ramonyx start --watch    # restart the server when src/** changes
+ramonyx add <name> --registry <path|url>  # verified plugin install + lock
+ramonyx remove <name>    # remove plugin + lock entry
 ramonyx doctor           # config + routes + build diagnostics
 ramonyx version | help
 ```
@@ -3047,6 +3100,8 @@ ramonyx version | help
 | `--static` | build | Prerender static routes (`getStaticPaths` for dynamic routes) → `dist/static` |
 | `--target <name>` | build | Extra target; `edge` → `dist/edge` |
 | `--watch` | build/start | Build: rebuild on changes (debounced, safe queue). Start: restart a supervised server process with clean shutdown. |
+| `--registry <path\|url>` | add/remove | Plugin registry JSON (or `RAMONYX_PLUGIN_REGISTRY`) |
+| `--public-key <path>` | add | Ed25519 public key PEM (or `RAMONYX_PLUGIN_PUBLIC_KEY`) |
 
 ## Conventions
 
@@ -3111,6 +3166,27 @@ export async function loader({ params }) {
 
 Loader data is JSON-serializable and available to the component as `data` (and to the client via
 the hydration payload).
+
+### Request-scoped dependency graph
+
+Every loader/action receives `load(key, fn)`. The graph is created per request, so the same
+resource is computed once even when loader code calls it multiple times or nested services do:
+
+```ts
+export async function loader({ params, load }) {
+  const [product, reviews] = await Promise.all([
+    load(`produk:${params.id}`, () => db.products.find(params.id)),
+    load(`ulasan:${params.id}`, () => db.reviews.forProduct(params.id)),
+  ]);
+  return { product, reviews };
+}
+```
+
+Keys must be stable and deterministic; do not include secrets or user-specific values unless the
+loader is request-scoped (it is — the graph is discarded after the response). The graph deduplicates
+concurrent calls and keeps the promise for the duration of the request; failed dependencies are not
+silently retried. A page still owns its loader — the graph is for shared/nested data, not a global
+cross-request cache (use the cache/revalidate API for that).
 
 ## Cache semantics
 
@@ -3809,6 +3885,44 @@ export const plugin = definePlugin({
 Derived files are hashed automatically and recorded as `variants` in the manifest, so
 `assets.image()` and `Image` can render them.
 
+## Registry and `ramonyx add`
+
+A registry is a JSON file (local path or HTTPS URL):
+
+```json
+{
+  "schemaVersion": 1,
+  "plugins": [
+    {
+      "name": "ramonyx-plugin-analytics",
+      "version": "1.2.0",
+      "description": "Privacy-friendly analytics",
+      "tarball": "https://registry.example/plugins/analytics-1.2.0.tgz",
+      "integrity": "sha512-…",
+      "signature": "base64-ed25519-signature"
+    }
+  ]
+}
+```
+
+```bash
+ramonyx add ramonyx-plugin-analytics@1.2.0 --registry ./plugins.json
+ramonyx add @scope/plugin --registry https://registry.example/index.json --public-key ./publisher.pem
+ramonyx remove ramonyx-plugin-analytics
+```
+
+`add` downloads the tarball, verifies `sha512-…` integrity, optionally verifies an Ed25519
+signature over `name@version\nintegrity`, then delegates to the app's package manager. On success it
+atomically writes `plugins.lock.json`; if the lock write fails it rolls back the dependency. Add
+the imported plugin to `ramonyx.config.ts` after installing; the lock records exactly what was
+verified. `remove` removes the dependency and the lock entry.
+
+- Signature-required entries without `--public-key` are rejected; a wrong signature never installs.
+- Registry URLs and tarballs are network trust boundaries — pin HTTPS and publish immutable
+  versions.
+- Package managers still run install scripts for plugins you choose to install; review the tarball
+  and use `ignore-scripts`/allowlists where your policy requires it.
+
 ## Publishing a plugin
 
 Third-party plugins live in `node_modules`, where Node does **not** strip TypeScript. Ship compiled
@@ -3833,7 +3947,8 @@ JavaScript:
 
 ## Limitations (honest)
 
-- No plugin registry or `ramonyx add` — install with your package manager.
+- The registry installer verifies artifacts and dependencies but does not sandbox plugin code; a
+  plugin runs with the app's permissions.
 - No per-route/per-loader plugin hooks (pre-routing middleware + app hooks only).
 - Plugin order is config order; there is no explicit priority field.
 
@@ -4374,7 +4489,17 @@ status can no longer change. Error pages are always rendered synchronously.
 
 - `layout.tsx` wraps pages in the folder and above; layouts receive `children`.
 - `error.tsx` receives `{ error: { status, message, details? } }`. `details` (stack + source file)
-  is only included outside production.
+  is only included outside production. Render the optional `DevErrorOverlay` to show a
+  non-production overlay with the stack and a `vscode://file/...` link:
+
+  ```tsx
+  import { DevErrorOverlay } from "@ramonyx/react";
+
+  {error.details === undefined ? null : <DevErrorOverlay details={error.details} />}
+  ```
+
+  The component is not injected automatically; a production error page that ignores `details`
+  never renders it.
 - Unknown paths fall through to a catch-all page (the template ships `[...slug]` with
   `metadata.status = 404`).
 
@@ -4908,6 +5033,15 @@ The edge target rejects Node built-ins. `guardedFetch` lives in a Node-only subp
 - Development error pages include the stack and source file; production pages never do.
 - The CLI `ramonyx doctor` prints config, route count, and build status.
 - See [Testing](testing.md) for reproducing issues in-process.
+
+
+## Client/server boundaries
+
+`ramonyx build` (and `buildClient`) statically rejects page/layout/error modules that import
+`node:*`, `server-only`, or `*.server.ts`, before Vite attempts the bundle. Move database/secrets
+code into a `*.server.ts` module and import it only from a loader, action, or API route. The error
+names the offending file and specifier; the compiler also exposes `lintClientBoundaries(pages)` if
+you want the check in your own tooling.
 
 ## docs/public/typed-routes.md
 

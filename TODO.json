@@ -971,7 +971,7 @@
       "theme": "dx",
       "priority": "p3",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Overlay error dev yang actionable dan lint statis untuk impor/boundary client-server.",
       "why": "Halaman error ber-detail sudah ada, tetapi DX modern mengharapkan overlay langsung dan pencegahan boundary leak saat menulis kode.",
       "done": [
@@ -1025,7 +1025,7 @@
       "theme": "ecosystem",
       "priority": "p3",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Registry plugin dengan verifikasi integritas + perintah add/hapus, dibangun di atas kontrak plugin yang stabil.",
       "why": "Kontrak plugin stabil, tetapi penemuan dan instalasi masih manual.",
       "done": [
@@ -1045,7 +1045,7 @@
       "theme": "quality",
       "priority": "p3",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Runner self-hosted/pool dengan baseline per-lingkungan agar strict HTTP/SSR dapat memblokir CI.",
       "why": "Gate lokal sudah lulus, tetapi CI GitHub-hosted tetap report-only karena variasi hardware.",
       "done": [
@@ -1064,7 +1064,7 @@
       "theme": "data",
       "priority": "p3",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Deklarasi dependency antar-loader/route, deduplikasi per request, dan kontrak data non-GET yang tetap no-JS-safe.",
       "why": "Loader GET-only tanpa dependency graph mulai menyulitkan aplikasi besar.",
       "done": [

@@ -33,7 +33,17 @@ status can no longer change. Error pages are always rendered synchronously.
 
 - `layout.tsx` wraps pages in the folder and above; layouts receive `children`.
 - `error.tsx` receives `{ error: { status, message, details? } }`. `details` (stack + source file)
-  is only included outside production.
+  is only included outside production. Render the optional `DevErrorOverlay` to show a
+  non-production overlay with the stack and a `vscode://file/...` link:
+
+  ```tsx
+  import { DevErrorOverlay } from "@ramonyx/react";
+
+  {error.details === undefined ? null : <DevErrorOverlay details={error.details} />}
+  ```
+
+  The component is not injected automatically; a production error page that ignores `details`
+  never renders it.
 - Unknown paths fall through to a catch-all page (the template ships `[...slug]` with
   `metadata.status = 404`).
 

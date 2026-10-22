@@ -36,8 +36,20 @@ A baseline is only meaningful on the machine that produced it. Baselines are sto
 environments** — it prints the mismatching fields instead of pretending.
 
 - Development baselines are committed for the maintainer machine.
-- CI runs benchmarks **report-only**: GitHub-hosted runners vary too much for a blocking gate.
+- GitHub-hosted CI runs benchmarks **report-only**: runners vary too much for a blocking gate.
+- The dedicated `.github/workflows/bench-strict.yml` workflow runs `pnpm bench:gate` on a
+  self-hosted runner labeled `ramonyx-bench`. It blocks only on that matching environment and waits
+  for the runner when it is offline; normal PRs keep the report-only fallback in `ci.yml`.
 - `VITALS_STRICT=1` turns the Web Vitals comparison into a gate; use it only on a stable runner.
+
+## Refresh procedure (strict runner)
+
+1. Run `pnpm bench` and `pnpm bench:ssr` on the self-hosted runner with the app idle.
+2. Inspect the median/spread; commit the per-environment baseline files under
+   `benchmarks/results/baselines/`.
+3. Run `pnpm bench:gate` on the same runner to confirm the new baseline passes.
+4. Keep the report-only artifacts from `ci.yml`; never copy a baseline between machines or CPU
+   models (the guard rejects it).
 
 ## Rules
 

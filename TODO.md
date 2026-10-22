@@ -704,7 +704,7 @@
 
 ### `p3-error-boundary-dx` — Error overlay dan lint boundary client/server
 
-*tema: dx · ukuran: M · status: open · sumber: limitations error-messages-id/boundary-enforcement; audit 2026-10-22*
+*tema: dx · ukuran: M · status: done · sumber: limitations error-messages-id/boundary-enforcement; audit 2026-10-22*
 
 - **Apa**: Overlay error dev yang actionable dan lint statis untuk impor/boundary client-server.
 - **Kenapa penting untuk bersaing**: Halaman error ber-detail sudah ada, tetapi DX modern mengharapkan overlay langsung dan pencegahan boundary leak saat menulis kode.
@@ -743,7 +743,7 @@
 
 ### `p3-plugin-registry` — Registry plugin dan perintah ramonyx add
 
-*tema: ecosystem · ukuran: L · status: open · dependensi: `p2-plugin-contract-freeze` · sumber: limitations plugin-ecosystem; audit 2026-10-22*
+*tema: ecosystem · ukuran: L · status: done · dependensi: `p2-plugin-contract-freeze` · sumber: limitations plugin-ecosystem; audit 2026-10-22*
 
 - **Apa**: Registry plugin dengan verifikasi integritas + perintah add/hapus, dibangun di atas kontrak plugin yang stabil.
 - **Kenapa penting untuk bersaing**: Kontrak plugin stabil, tetapi penemuan dan instalasi masih manual.
@@ -756,7 +756,7 @@
 
 ### `p3-benchmark-runner` — Benchmark CI blocking dengan baseline runner konsisten
 
-*tema: quality · ukuran: M · status: open · dependensi: `p1-framework-v1-readiness` · sumber: limitations benchmark-gates; bench:gate lulus 2026-10-22*
+*tema: quality · ukuran: M · status: done · dependensi: `p1-framework-v1-readiness` · sumber: limitations benchmark-gates; bench:gate lulus 2026-10-22*
 
 - **Apa**: Runner self-hosted/pool dengan baseline per-lingkungan agar strict HTTP/SSR dapat memblokir CI.
 - **Kenapa penting untuk bersaing**: Gate lokal sudah lulus, tetapi CI GitHub-hosted tetap report-only karena variasi hardware.
@@ -769,7 +769,7 @@
 
 ### `p3-loader-dependencies` — Loader dependency graph dan data non-GET
 
-*tema: data · ukuran: M · status: open · sumber: limitations data-loaders; audit 2026-10-22*
+*tema: data · ukuran: M · status: done · sumber: limitations data-loaders; audit 2026-10-22*
 
 - **Apa**: Deklarasi dependency antar-loader/route, deduplikasi per request, dan kontrak data non-GET yang tetap no-JS-safe.
 - **Kenapa penting untuk bersaing**: Loader GET-only tanpa dependency graph mulai menyulitkan aplikasi besar.

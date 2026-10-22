@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T07:45:28.597Z",
+  "generatedAt": "2026-10-22T07:58:30.719Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -93,12 +93,14 @@
         "generateClientEntry",
         "generateRouteTypes",
         "generateServerEntry",
+        "lintClientBoundaries",
         "listApiRoutes",
         "loadPageRoutes",
         "nativeImporter"
       ],
       "types": [
         "ApiRouteFile",
+        "BoundaryViolation",
         "CreateRouteManifestOptions",
         "GenerateClientEntryOptions",
         "GenerateServerEntryOptions",
@@ -132,6 +134,7 @@
         "cacheControl",
         "createCache",
         "createJsonObservabilitySink",
+        "createLoaderGraph",
         "createMemoryObservabilitySink",
         "createMemoryStore",
         "defer",
@@ -167,6 +170,7 @@
         "InvalidateEvent",
         "KeyValueStore",
         "LoaderEndEvent",
+        "LoaderGraph",
         "Logger",
         "MemoryObservabilitySink",
         "MemoryObservabilitySinkOptions",
@@ -202,13 +206,25 @@
       "version": "1.0.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
+        "installPlugin",
         "loadConfigFile",
         "loadCreateApp",
-        "runCli"
+        "loadPluginRegistry",
+        "pluginIntegrity",
+        "removePlugin",
+        "resolveRegistryEntry",
+        "runCli",
+        "verifyPluginTarball"
       ],
       "types": [
         "CreateApp",
-        "CreateAppOptions"
+        "CreateAppOptions",
+        "InstallPluginOptions",
+        "PluginCommandRunner",
+        "PluginLockFile",
+        "PluginRegistry",
+        "PluginRegistryEntry",
+        "RegistryOptions"
       ],
       "reexports": []
     },
@@ -297,6 +313,7 @@
       "version": "1.0.0",
       "source": "packages/react/src/index.ts",
       "values": [
+        "DevErrorOverlay",
         "Island",
         "PendingButton",
         "createReactRenderer",
@@ -307,6 +324,7 @@
       "types": [
         "ActionStatus",
         "ActionStatusOptions",
+        "DevErrorOverlayProps",
         "ErrorPageProps",
         "IslandProps",
         "LayoutProps",

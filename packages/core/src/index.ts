@@ -27,6 +27,8 @@ export type {
 } from "./hooks.ts";
 export { mergeHooks } from "./hooks.ts";
 export * from "./i18n.ts";
+export type { LoaderGraph } from "./loader-graph.ts";
+export { createLoaderGraph } from "./loader-graph.ts";
 export { silentLogger } from "./logger.ts";
 export {
   formDataToObject,

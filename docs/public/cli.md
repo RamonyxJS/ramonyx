@@ -11,6 +11,8 @@ ramonyx build --target edge   # server/edge bundle → dist/edge ({ fetch } cont
 ramonyx build --watch    # rebuild on file changes (covers --static/--target)
 ramonyx start            # production SSR (NODE_ENV=production)
 ramonyx start --watch    # restart the server when src/** changes
+ramonyx add <name> --registry <path|url>  # verified plugin install + lock
+ramonyx remove <name>    # remove plugin + lock entry
 ramonyx doctor           # config + routes + build diagnostics
 ramonyx version | help
 ```
@@ -26,6 +28,8 @@ ramonyx version | help
 | `--static` | build | Prerender static routes (`getStaticPaths` for dynamic routes) → `dist/static` |
 | `--target <name>` | build | Extra target; `edge` → `dist/edge` |
 | `--watch` | build/start | Build: rebuild on changes (debounced, safe queue). Start: restart a supervised server process with clean shutdown. |
+| `--registry <path\|url>` | add/remove | Plugin registry JSON (or `RAMONYX_PLUGIN_REGISTRY`) |
+| `--public-key <path>` | add | Ed25519 public key PEM (or `RAMONYX_PLUGIN_PUBLIC_KEY`) |
 
 ## Conventions
 

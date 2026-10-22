@@ -1,3 +1,5 @@
+export type { BoundaryViolation } from "./boundaries.ts";
+export { lintClientBoundaries } from "./boundaries.ts";
 export type { GenerateClientEntryOptions } from "./client-entry.ts";
 export { generateClientEntry } from "./client-entry.ts";
 export { RouteManifestError } from "./errors.ts";

@@ -17,6 +17,27 @@ export async function loader({ params }) {
 Loader data is JSON-serializable and available to the component as `data` (and to the client via
 the hydration payload).
 
+### Request-scoped dependency graph
+
+Every loader/action receives `load(key, fn)`. The graph is created per request, so the same
+resource is computed once even when loader code calls it multiple times or nested services do:
+
+```ts
+export async function loader({ params, load }) {
+  const [product, reviews] = await Promise.all([
+    load(`produk:${params.id}`, () => db.products.find(params.id)),
+    load(`ulasan:${params.id}`, () => db.reviews.forProduct(params.id)),
+  ]);
+  return { product, reviews };
+}
+```
+
+Keys must be stable and deterministic; do not include secrets or user-specific values unless the
+loader is request-scoped (it is — the graph is discarded after the response). The graph deduplicates
+concurrent calls and keeps the promise for the duration of the request; failed dependencies are not
+silently retried. A page still owns its loader — the graph is for shared/nested data, not a global
+cross-request cache (use the cache/revalidate API for that).
+
 ## Cache semantics
 
 | Setting | Effect |

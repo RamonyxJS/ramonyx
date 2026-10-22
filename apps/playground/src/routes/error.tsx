@@ -1,4 +1,4 @@
-import type { ErrorPageProps } from "@ramonyx/react";
+import { DevErrorOverlay, type ErrorPageProps } from "@ramonyx/react";
 
 export default function RootErrorPage({ error }: ErrorPageProps) {
   return (
@@ -8,6 +8,7 @@ export default function RootErrorPage({ error }: ErrorPageProps) {
       <p>
         <a href="/">Kembali ke beranda</a>
       </p>
+      {error.details === undefined ? null : <DevErrorOverlay details={error.details} />}
     </>
   );
 }

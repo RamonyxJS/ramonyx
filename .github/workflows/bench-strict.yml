@@ -1,0 +1,44 @@
+name: Benchmark (strict, self-hosted)
+
+# Strict HTTP/SSR regression gate. GitHub-hosted runners are too noisy, so this workflow only runs
+# on the dedicated self-hosted runner label. Keep `ci.yml` report-only for forks/PRs without access.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "packages/**"
+      - "apps/playground/**"
+      - "benchmarks/**"
+      - "pnpm-lock.yaml"
+
+concurrency:
+  group: benchmark-strict
+  cancel-in-progress: true
+
+jobs:
+  strict:
+    name: bench:gate (matching runner)
+    # Provision this runner once; see docs/public/benchmarks.md. If it is offline the job waits,
+    # while ci.yml keeps the report-only fallback for normal development.
+    runs-on: [self-hosted, ramonyx-bench]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Strict HTTP + SSR gate
+        run: pnpm bench:gate
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: benchmark-strict
+          path: benchmarks/results/
+          if-no-files-found: warn

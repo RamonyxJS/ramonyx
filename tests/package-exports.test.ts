@@ -84,7 +84,19 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
       "Deferred",
     ],
   ],
-  ["@ramonyx/devtools", devtools, ["runCli", "loadConfigFile", "loadCreateApp"]],
+  [
+    "@ramonyx/devtools",
+    devtools,
+    [
+      "runCli",
+      "loadConfigFile",
+      "loadCreateApp",
+      "installPlugin",
+      "loadPluginRegistry",
+      "removePlugin",
+      "verifyPluginTarball",
+    ],
+  ],
   [
     "@ramonyx/mcp-docs-server",
     mcp,

@@ -71,6 +71,44 @@ export const plugin = definePlugin({
 Derived files are hashed automatically and recorded as `variants` in the manifest, so
 `assets.image()` and `Image` can render them.
 
+## Registry and `ramonyx add`
+
+A registry is a JSON file (local path or HTTPS URL):
+
+```json
+{
+  "schemaVersion": 1,
+  "plugins": [
+    {
+      "name": "ramonyx-plugin-analytics",
+      "version": "1.2.0",
+      "description": "Privacy-friendly analytics",
+      "tarball": "https://registry.example/plugins/analytics-1.2.0.tgz",
+      "integrity": "sha512-…",
+      "signature": "base64-ed25519-signature"
+    }
+  ]
+}
+```
+
+```bash
+ramonyx add ramonyx-plugin-analytics@1.2.0 --registry ./plugins.json
+ramonyx add @scope/plugin --registry https://registry.example/index.json --public-key ./publisher.pem
+ramonyx remove ramonyx-plugin-analytics
+```
+
+`add` downloads the tarball, verifies `sha512-…` integrity, optionally verifies an Ed25519
+signature over `name@version\nintegrity`, then delegates to the app's package manager. On success it
+atomically writes `plugins.lock.json`; if the lock write fails it rolls back the dependency. Add
+the imported plugin to `ramonyx.config.ts` after installing; the lock records exactly what was
+verified. `remove` removes the dependency and the lock entry.
+
+- Signature-required entries without `--public-key` are rejected; a wrong signature never installs.
+- Registry URLs and tarballs are network trust boundaries — pin HTTPS and publish immutable
+  versions.
+- Package managers still run install scripts for plugins you choose to install; review the tarball
+  and use `ignore-scripts`/allowlists where your policy requires it.
+
 ## Publishing a plugin
 
 Third-party plugins live in `node_modules`, where Node does **not** strip TypeScript. Ship compiled
@@ -95,6 +133,7 @@ JavaScript:
 
 ## Limitations (honest)
 
-- No plugin registry or `ramonyx add` — install with your package manager.
+- The registry installer verifies artifacts and dependencies but does not sandbox plugin code; a
+  plugin runs with the app's permissions.
 - No per-route/per-loader plugin hooks (pre-routing middleware + app hooks only).
 - Plugin order is config order; there is no explicit priority field.

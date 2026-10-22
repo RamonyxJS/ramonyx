@@ -798,7 +798,7 @@
       "theme": "security",
       "priority": "p2",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Kontrak user store produksi + alur reset password dan verifikasi email dengan token sekali pakai, memakai primitif auth/session yang sudah stabil.",
       "why": "Auth dasar sudah aman; aplikasi nyata masih harus merakit lifecycle akun dan verifikasi email sendiri.",
       "done": [
@@ -819,7 +819,7 @@
       "theme": "security",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Adapter OAuth/OIDC dengan PKCE, state/nonce, validasi issuer/audience, dan account linking ke user store.",
       "why": "Login sosial/perusahaan adalah kebutuhan produksi umum dan tidak boleh dirakit ad hoc per aplikasi.",
       "done": [
@@ -840,7 +840,7 @@
       "theme": "security",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Model role/permission ringan + guard route/action yang dapat dipakai bersama user store, tanpa mengunci aplikasi pada satu model.",
       "why": "Autentikasi tanpa authorization tetap meninggalkan keputusan akses penting di kode aplikasi yang mudah salah.",
       "done": [

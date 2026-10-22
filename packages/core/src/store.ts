@@ -18,6 +18,11 @@ export interface KeyValueStore {
   get<T>(key: string): Promise<StoreEntry<T> | undefined>;
   set<T>(key: string, value: T, options?: StoreSetOptions): Promise<void>;
   delete(key: string): Promise<void>;
+  /**
+   * Ambil lalu hapus secara atomik (mis. token sekali pakai). Opsional agar adapter lama tetap
+   * valid; konsumen keamanan sebaiknya memeriksa dukungan ini.
+   */
+  take?<T>(key: string): Promise<T | undefined>;
   /** Hapus semua entri yang memuat salah satu tag; mengembalikan jumlah entri terhapus. */
   invalidateTags(tags: readonly string[]): Promise<number>;
   /**
@@ -123,6 +128,19 @@ export function createMemoryStore(options: MemoryStoreOptions = {}): KeyValueSto
 
     async delete(key: string): Promise<void> {
       remove(key);
+    },
+
+    async take<T>(key: string): Promise<T | undefined> {
+      const entry = entries.get(key);
+      if (entry === undefined) {
+        return undefined;
+      }
+      if (!alive(entry, Date.now())) {
+        remove(key);
+        return undefined;
+      }
+      remove(key);
+      return entry.value as T;
     },
 
     async invalidateTags(tags: readonly string[]): Promise<number> {

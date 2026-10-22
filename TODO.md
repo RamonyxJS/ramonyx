@@ -531,7 +531,7 @@
 
 ### `p2-auth-user-store` — User store, reset password, dan verifikasi email
 
-*tema: security · ukuran: L · status: open · dependensi: `p2-state-contracts`, `p1-auth-session-complete` · sumber: limitations auth-session; audit 2026-10-22*
+*tema: security · ukuran: L · status: done · dependensi: `p2-state-contracts`, `p1-auth-session-complete` · sumber: limitations auth-session; audit 2026-10-22*
 
 - **Apa**: Kontrak user store produksi + alur reset password dan verifikasi email dengan token sekali pakai, memakai primitif auth/session yang sudah stabil.
 - **Kenapa penting untuk bersaing**: Auth dasar sudah aman; aplikasi nyata masih harus merakit lifecycle akun dan verifikasi email sendiri.
@@ -545,7 +545,7 @@
 
 ### `p2-auth-oauth` — OAuth/OIDC + account linking
 
-*tema: security · ukuran: M · status: open · dependensi: `p2-auth-user-store` · sumber: limitations auth-session/OAuth; audit 2026-10-22*
+*tema: security · ukuran: M · status: done · dependensi: `p2-auth-user-store` · sumber: limitations auth-session/OAuth; audit 2026-10-22*
 
 - **Apa**: Adapter OAuth/OIDC dengan PKCE, state/nonce, validasi issuer/audience, dan account linking ke user store.
 - **Kenapa penting untuk bersaing**: Login sosial/perusahaan adalah kebutuhan produksi umum dan tidak boleh dirakit ad hoc per aplikasi.
@@ -559,7 +559,7 @@
 
 ### `p2-auth-authorization` — Authorization role/permission untuk route dan action
 
-*tema: security · ukuran: M · status: open · dependensi: `p2-auth-user-store` · sumber: limitations auth-session; audit 2026-10-22*
+*tema: security · ukuran: M · status: done · dependensi: `p2-auth-user-store` · sumber: limitations auth-session; audit 2026-10-22*
 
 - **Apa**: Model role/permission ringan + guard route/action yang dapat dipakai bersama user store, tanpa mengunci aplikasi pada satu model.
 - **Kenapa penting untuk bersaing**: Autentikasi tanpa authorization tetap meninggalkan keputusan akses penting di kode aplikasi yang mudah salah.

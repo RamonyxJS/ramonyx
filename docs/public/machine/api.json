@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T06:07:52.528Z",
+  "generatedAt": "2026-10-22T06:16:13.122Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -331,10 +331,20 @@
       "version": "1.0.0",
       "source": "packages/security/src/index.ts",
       "values": [
+        "AuthorizationError",
         "CSRF_REQUEST_HEADER",
         "DEFAULT_COOKIE_OPTIONS",
+        "authorizationGuard",
+        "authorizedAction",
+        "createAuthTokens",
+        "createAuthorization",
         "createKeyValueSessionStore",
+        "createKeyValueUserStore",
         "createMemorySessionStore",
+        "createMemoryUserStore",
+        "createOAuthAccountLinker",
+        "createOAuthClient",
+        "createPkce",
         "createSession",
         "cspNonce",
         "csrfProtection",
@@ -350,10 +360,28 @@
         "verifyValue"
       ],
       "types": [
+        "AuthTokenOptions",
+        "AuthTokenService",
+        "AuthUser",
+        "AuthUserPatch",
+        "Authorization",
+        "AuthorizationGuardOptions",
+        "AuthorizationPolicy",
+        "AuthorizedActionOptions",
+        "AuthzSubject",
         "CookieOptions",
         "CspNonceOptions",
         "CsrfOptions",
         "MemorySessionStoreOptions",
+        "NewAuthUser",
+        "OAuthAccountLinker",
+        "OAuthAccountLinkerOptions",
+        "OAuthAuthorization",
+        "OAuthClient",
+        "OAuthClientOptions",
+        "OAuthConfig",
+        "OAuthProfile",
+        "OAuthTokens",
         "PasswordHashOptions",
         "RateLimitOptions",
         "SecurityHeadersOptions",
@@ -361,7 +389,8 @@
         "SessionData",
         "SessionOptions",
         "SessionStore",
-        "StoredSession"
+        "StoredSession",
+        "UserStore"
       ],
       "reexports": []
     },

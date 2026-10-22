@@ -785,7 +785,7 @@
     },
     {
       "id": "auth-session",
-      "name": "Autentikasi: password hashing, session store/rotation, CSRF (HMAC, edge-safe)",
+      "name": "Autentikasi: user store, password, session, CSRF, OAuth/OIDC, authorization",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
@@ -793,10 +793,16 @@
         "@ramonyx/security"
       ],
       "evidence": [
+        "packages/security/src/auth.ts",
+        "packages/security/src/authorization.ts",
+        "packages/security/src/oauth.ts",
         "packages/security/src/cookies.ts",
         "packages/security/src/password.ts",
         "packages/security/src/session.ts",
         "packages/security/src/csrf.ts",
+        "packages/security/test/auth.test.ts",
+        "packages/security/test/auth-flow.test.ts",
+        "packages/security/test/oauth.test.ts",
         "packages/security/test/password.test.ts",
         "packages/security/test/session.test.ts",
         "packages/security/test/csrf.test.ts",
@@ -806,8 +812,10 @@
       ],
       "limitations": [
         "Cookie bertanda tangan tidak dienkripsi; jangan simpan rahasia di mode stateless",
-        "Store bawaan in-memory; produksi multi-instance butuh store bersama",
-        "Tidak ada OAuth/user store produksi/authorization model"
+        "Store default in-memory; produksi butuh store bersama; index unik adapter KV best-effort",
+        "Pengiriman email reset/verifikasi dan UI akun adalah tanggung jawab aplikasi",
+        "Validasi signature/issuer/audience/nonce ID token OIDC didelegasikan ke aplikasi/JWKS",
+        "Authorization berupa primitif; audit tetap harus dikirim ke backend log/metrik"
       ],
       "docs": "docs/public/sessions-and-auth.md"
     },
@@ -1268,7 +1276,7 @@
         "tests/contracts/store.test.ts"
       ],
       "limitations": [
-            "Store eksternal (redis) belum ada implementasinya"
+        "Store eksternal (redis) belum ada implementasinya"
       ],
       "docs": "docs/public/plugins.md"
     },
@@ -1315,7 +1323,7 @@
         "docs/public/plugins.md"
       ],
       "limitations": [
-            "Tanpa registry/`ramonyx add` (instalasi manual)",
+        "Tanpa registry/`ramonyx add` (instalasi manual)",
         "Hook plugin butuh createApp aplikasi meneruskan opsi hooks"
       ],
       "docs": "docs/public/plugins.md"

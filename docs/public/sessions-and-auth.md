@@ -1,8 +1,10 @@
 # Sessions & Auth
 
 Ramonyx ships **auth primitives**, not a turnkey user-management product: safe cookies, HMAC
-signing, password hashing, server-side session stores, and CSRF protection. OAuth providers,
-authorization models, and production user storage remain application concerns.
+signing, password hashing, user-store contracts/adapters, one-time reset/verification tokens,
+OAuth/OIDC authorization-code + PKCE, role/permission authorization, server-side session stores,
+and CSRF protection. Email delivery, provider-specific quirks, and account UI remain application
+concerns.
 
 ## Cookies
 
@@ -40,6 +42,149 @@ const valid = await verifyPassword(candidate, stored);
 The default encoding is `pbkdf2-sha256$<iterations>$<salt>$<hash>` with a random salt and 210,000
 iterations. Always return the same generic error for an unknown user and a wrong password, and
 store the hash string (not the password) in your user store.
+
+## User store
+
+`UserStore` is the persistence contract for account data. The reference implementations are:
+
+- `createMemoryUserStore()` — development/tests only.
+- `createKeyValueUserStore(store)` — any `KeyValueStore` (Redis/KV/cache). It keeps username and
+  email indexes; **the unique-index check is best-effort**, so a database with real unique
+  constraints remains the right choice under concurrent registration.
+
+```ts
+import { createKeyValueUserStore } from "@ramonyx/security";
+
+const users = createKeyValueUserStore(store);
+const user = await users.create({ username: "rina", email: "rina@example.test" });
+await users.update(user.id, { emailVerified: true });
+```
+
+A SQL adapter only needs to implement five methods: `getById`, `getByUsername`, `getByEmail`,
+`create`, `update`, and `delete`. A minimal migration for a relational database:
+
+```sql
+CREATE TABLE users (
+  id            text PRIMARY KEY,
+  username      text NOT NULL UNIQUE,
+  email         text UNIQUE,
+  password_hash text,
+  email_verified boolean NOT NULL DEFAULT false,
+  roles         text[] NOT NULL DEFAULT '{user}'
+);
+CREATE UNIQUE INDEX users_username_lower ON users (lower(username));
+CREATE UNIQUE INDEX users_email_lower ON users (lower(email)) WHERE email IS NOT NULL;
+```
+
+Normalize usernames/emails before storing them. Never expose password hashes in serializers.
+
+## Password reset and email verification
+
+`createAuthTokens({ store })` issues cryptographically random, **one-time** tokens. Only a
+SHA-256 hash is stored, with a TTL; consuming deletes the record atomically from the application's
+point of view.
+
+```ts
+import { createAuthTokens, createMemoryStore } from "@ramonyx/security";
+
+const tokens = createAuthTokens({ store: createMemoryStore() });
+const raw = await tokens.issue(user.id, "reset", 15 * 60);
+const userId = await tokens.consume(raw, "reset"); // string | null
+```
+
+Rules for the application flow:
+
+- Return the **same generic response** whether the account exists or not.
+- Send the raw token by email; never put it in logs, URLs indexed by search engines, or responses.
+- Apply `rateLimit()` to request/consume endpoints and use a short TTL (for example 15 minutes).
+- On reset, rotate/revoke active sessions and hash the new password with `hashPassword()`.
+- Mark `emailVerified` only after consuming a `"verify"` token; do not trust a query-string email.
+
+The reference HTTP tests cover generic reset responses, one-time use, password replacement, and
+one-time email verification (`packages/security/test/auth-flow.test.ts`).
+
+## OAuth / OIDC
+
+`createOAuthClient()` implements the authorization-code flow with PKCE (S256), `state`, and a
+`nonce`. It is provider-agnostic and fetches JSON; inject `fetch` in tests.
+
+```ts
+import { createOAuthClient, createOAuthAccountLinker } from "@ramonyx/security";
+
+const oauth = createOAuthClient({
+  clientId: env.get("OAUTH_CLIENT_ID")!,
+  clientSecret: env.get("OAUTH_CLIENT_SECRET"),
+  authorizationEndpoint: "https://provider.example/authorize",
+  tokenEndpoint: "https://provider.example/token",
+  userInfoEndpoint: "https://provider.example/userinfo",
+  redirectUri: "https://app.example/auth/callback",
+  scopes: ["openid", "email"],
+});
+
+const authorization = await oauth.authorize();
+// store authorization.state, authorization.nonce, authorization.codeVerifier in the session
+```
+
+On callback:
+
+1. Compare the returned `state` with the stored value (constant-time comparison is preferred).
+2. Exchange the code with `oauth.exchange(code, storedCodeVerifier)`.
+3. If an ID token is present, validate its signature/issuer/audience/nonce with your provider's
+   JWKS and OIDC library; this package deliberately does not embed a JWKS cache.
+4. Link the external identity with `createOAuthAccountLinker({ store, users }).link(profile)`.
+
+Account linking only auto-links an existing account by email when the provider asserts
+`emailVerified === true`. Unverified email claims are not stored. Unlinking removes the
+provider+subject link and leaves the local user intact. Provider callback URLs must be registered
+exactly (scheme, host, path) and secrets must come from env/bindings. OAuth errors returned to the
+browser are generic; log provider details server-side without tokens or authorization codes.
+
+## Authorization
+
+Authorization is deny-by-default and works for route middleware and action bodies:
+
+```ts
+import { authorizationGuard, createAuthorization } from "@ramonyx/security";
+
+const authz = createAuthorization({
+  roles: {
+    admin: ["user:manage", "audit:read"],
+    user: ["post:read"],
+  },
+});
+
+export const middleware = authorizationGuard({
+  authorization: authz,
+  permission: "user:manage",
+  subject: ({ request }) => sessionSubject(await readSession(request)),
+});
+```
+
+Denied routes get a generic `403`; the default audit path logs permission + path (no PII). In an
+action, either call `authz.assert(subject, "user:manage")` before mutating or wrap the action with
+`authorizedAction()`:
+
+```ts
+import { authorizedAction } from "@ramonyx/security";
+
+export const action = authorizedAction(
+  {
+    authorization: authz,
+    permission: "user:manage",
+    subject: async ({ request }) => sessionSubject(await readSession(request)),
+    audit: ({ permission }) => metrics.increment("authz.denied", { permission }),
+  },
+  async ({ params }) => {
+    await users.delete(params.id);
+    return { message: "deleted" };
+  },
+);
+```
+
+Map `AuthorizationError` to the same generic response. Direct permissions are combined with role
+grants; an unknown role or a missing subject grants nothing. Migrate from manual checks by
+centralizing the role → permission table and passing a subject built from the server-side session,
+never from request JSON.
 
 ## Sessions
 
@@ -125,9 +270,13 @@ basic rate limit. The tests cover both JavaScript and native form flows.
 ## Limitations (honest)
 
 - Signed cookies are not encrypted; do not put secrets in stateless session data.
-- The built-in session store is in-memory; production deployments need a shared store and a
-  secret-rotation strategy.
-- No OAuth providers, production user store, password reset, email verification, or authorization
-  model is included.
-- Rate limits are per-process in this implementation; use a shared limiter or edge gateway for
-  horizontally scaled deployments.
+- The default session/user stores are in-memory; production deployments need shared stores and a
+  secret-rotation strategy. The KeyValue user adapter's unique indexes are best-effort; use real
+  database constraints under concurrent registration.
+- Reset/verification email delivery and account UI are application concerns. Tokens are hashed and
+  one-time, but the app must add generic responses, rate limits, and session revocation.
+- OAuth/OIDC ID-token signature, issuer, audience, and nonce validation is delegated to the
+  application/OIDC library; state and PKCE verifiers must be stored server-side per attempt.
+- Authorization is a primitive, not a policy database or admin UI. Audit events must still be
+  shipped to your logging/metrics backend.
+- Rate limits are per-process unless a shared store with atomic `increment` is supplied.

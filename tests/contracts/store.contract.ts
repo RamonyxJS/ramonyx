@@ -66,4 +66,17 @@ export function runStoreContract(name: string, createStore: () => KeyValueStore)
     await sleep(1100);
     assert.equal(await store.increment("klien", { windowSeconds: 1 }), 1, "window baru → reset");
   });
+
+  test(`[${name}] take (opsional): ambil-lalu-hapus atomik + TTL`, async () => {
+    const store = createStore();
+    if (store.take === undefined) {
+      return;
+    }
+    await store.set("token", { user: "u1" });
+    assert.deepEqual(await store.take("token"), { user: "u1" });
+    assert.equal(await store.get("token"), undefined, "take menghapus entri");
+    await store.set("token", "nilai", { ttlSeconds: 0.3 });
+    await sleep(400);
+    assert.equal(await store.take("token"), undefined, "entri kedaluwarsa tidak diambil");
+  });
 }

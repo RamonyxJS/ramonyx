@@ -44,7 +44,7 @@ jobs:
           NODE_ENV: production
         run: node --import ./tools/register.mjs apps/docs/export.ts --base /ramonyx --origin https://ramonyx.devmoon.net
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: apps/docs/dist/static
 

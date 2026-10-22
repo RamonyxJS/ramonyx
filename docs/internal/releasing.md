@@ -16,9 +16,9 @@
 - **TERBIT — 0.5.0** (2026-10-21): partial hydration islands (`@ramonyx/react/islands`),
   route code splitting, rekonsiliasi head soft navigation, dan pembaruan situs/docs.
   16 paket @ 0.5.0 + provenance; GitHub Release 19 aset.
-- **PERSIAPAN — 0.6.0** (2026-10-22): data deferred no-JS-safe (`defer` + Suspense, state JSON
-  hydration) + DF-13 (Cloudflare Web Analytics/RUM dimatikan). Bump 16 paket + template; verifikasi
-  rilis penuh sebelum tag.
+- **TERBIT — 0.6.0** (2026-10-22): data deferred no-JS-safe (`defer` + Suspense, state JSON
+  hydration) + DF-13 (Cloudflare Web Analytics/RUM dimatikan). 16 paket @ 0.6.0 + provenance;
+  GitHub Release 19 aset.
 
 ## Persiapan 0.6.0 (2026-10-22)
 
@@ -52,6 +52,19 @@
 - `npm publish --dry-run` ×16 → exit 0 tanpa warning.
 - **Langkah tersisa (pemilik)**: `git tag v0.4.0 && git push origin main --tags` — **selesai**
   (lihat "Hasil rilis 0.4.0").
+
+## Hasil rilis 0.6.0 (2026-10-22)
+
+- Tag `v0.6.0` → workflow **success**: 16 paket @ 0.6.0 (provenance) + **GitHub Release 19 aset**;
+  binary runtime `ramonyx-runtime-0.6.0-x86_64-unknown-linux-gnu.tar.gz`.
+- **Gate**: `pnpm lint`, `typecheck`, `test` (311 Node), `docs:validate`; `pnpm release` (17 artefak)
+  + `pnpm release:verify` (konsumen bersih, scaffold build/start, MCP, runtime) + dry-run publish
+  (dry-run lokal sempat terhenti karena gangguan DNS; workflow CI memverifikasi ulang).
+- **Deferred dari tarball**: paket core/ssr/react ter-stage dengan API deferred; smoke tarball
+  memeriksa island + prefix `useId`.
+- **Template**: `create-ramonyx-app` memakai rentang `^0.6.0`; scaffold + build/start terverifikasi.
+- Registry: dist-tag `latest` = 0.6.0; verifikasi seluruh 16 paket + `dist.attestations` dilakukan
+  setelah propagasi edge registry.
 
 ## Hasil rilis 0.5.0 (2026-10-21)
 

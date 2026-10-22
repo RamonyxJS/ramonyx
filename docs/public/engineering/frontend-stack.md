@@ -22,7 +22,9 @@ The site ships CSS custom properties (color, type scale, spacing, radius, motion
 shell (`createDocument`). The visual system is **"onyx strata"**: porcelain paper, ink, and a cobalt
 accent, with dark bands for technical sections; code panels stay dark in both site themes. The
 landing uses a **landing-only CSS slice** (`DocumentOptions.path === "/"`) so docs layout rules do not
-ship to the marketing page.
+ship to the marketing page. Docs v2 extends the landing's porcelain/cobalt tokens with a dark
+"field manual" rail, numbered chapters, a blueprint hero, and a terminal route map; the content
+column keeps a strict reading measure and the right rail remains a scroll-spy table of contents.
 
 - **Why**: the docs app's client entry is generated from the page graph; wiring a CSS pipeline
   through the generated entry adds build coupling for little benefit at this size. Tokens give full
@@ -57,8 +59,8 @@ the trade-off is that interactivity is attached after the first input. A nonce b
 stored theme before paint. Long pages use `content-visibility: auto` with intrinsic sizes.
 
 - **Why**: a content landing must be readable before JS; hydration was the largest LCP/TBT cost.
-- **Open**: islands/partial hydration and route-level code splitting are not implemented; the
-  client registry still imports all pages (recorded in `TODO.md`).
+- **Implemented**: islands/partial hydration (`<Island>`) and route-level client chunks are in
+  place; unchanged routes are prefetched as HTML and hydrated after idle/interaction.
 - **Alternative rejected**: Motion (Framer Motion). ~30 KB for effects we can express in CSS.
 
 ## Components: copy-in patterns, not a black-box library
@@ -102,7 +104,7 @@ built landing-only (`pagePaths: ["/"]`) with a custom document; docs stay static
 - **Why**: GitHub Pages cannot execute actions or streaming; the Worker gives one origin with real
   server actions and keeps docs cheap.
 - **Trade-off**: the landing's dynamic data is loader-based (resolved before render); deferred
-  data/Suspense remains a future item because a naive fallback breaks no-JS readability.
+  data/Suspense is supported with a server-rendered fallback for no-JS readers.
 - **Route chunks**: the client entry dynamically imports the active page/layout; route code is
   loaded on navigation and prefetch, not all at startup.
 

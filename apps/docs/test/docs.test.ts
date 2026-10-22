@@ -21,6 +21,12 @@ test("markdown: frontmatter dibuang, heading ber-id, blok kode ber-nama berkas",
   assert.doesNotMatch(html, /visibility: public/, "frontmatter tidak dirender");
   assert.match(html, /<h1 id="judul"/);
   assert.match(html, /<h2 id="bagian"/);
+  const denganSlug = renderMarkdown("# Halaman\n\n## Bagian\n", { slug: "getting-started" });
+  assert.match(
+    denganSlug.html,
+    /class="jangkar" href="docs\/getting-started#bagian"/,
+    "anchor heading tetap di halaman docs (base href tidak membawanya ke root)",
+  );
   assert.ok(
     rendered.toc.some((item) => item.id === "bagian"),
     "ToC memuat h2",
@@ -118,6 +124,8 @@ test("app publik: landing, docs, legacy alias, machine publik, pencarian, 404", 
   assert.match(pageHtml, /Getting Started/);
   assert.match(pageHtml, /<article class="dokumen"/);
   assert.match(pageHtml, /Edit this page on GitHub/);
+  assert.doesNotMatch(pageHtml, /href="docs\/\[\.\.\.slug\]/, "link tidak memakai pola rute");
+  assert.match(pageHtml, /class="lewati" href="docs\/getting-started#isi"/);
 
   // Alias lama tetap melayani dokumen publik.
   const legacy = await app(new Request("http://uji/dokumen/getting-started"));
@@ -258,6 +266,16 @@ test("export statis: halaman publik + artefak agen + nol konten internal", async
 
   const doc = readFileSync(join(out, "docs", "getting-started", "index.html"), "utf8");
   assert.ok(doc.includes('href="docs/'), "tautan dokumen relatif");
+  assert.match(
+    doc,
+    /href="docs\/getting-started#a-page-with-a-loader"/,
+    "anchor heading memakai path docs (bukan root karena <base>)",
+  );
+  assert.match(
+    doc,
+    /class="lewati" href="docs\/getting-started#isi"/,
+    "skip link tetap di halaman docs",
+  );
   assert.ok(
     doc.includes('<link rel="alternate" type="text/markdown" href="docs/getting-started.md" />'),
     "link markdown per halaman",

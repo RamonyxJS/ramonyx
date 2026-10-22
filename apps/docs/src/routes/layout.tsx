@@ -10,9 +10,11 @@ export default function RootLayout({ children, path }: LayoutProps) {
   return (
     <div className="shell">
       {isContext7DocsPath(path ?? "") ? <Context7Note /> : null}
-      <a className="lewati" href="#isi">
-        Skip to content
-      </a>
+      {path === "/" ? (
+        <a className="lewati" href="#isi">
+          Skip to content
+        </a>
+      ) : null}
       <CodeCopy />
       <header className="topbar">
         <div className="wrap topbar-dalam">
@@ -42,8 +44,8 @@ export default function RootLayout({ children, path }: LayoutProps) {
           <div>
             <span className="kaki-nama">Ramonyx</span>
             <p className="kaki-tagline">
-              Full-stack TypeScript with safe defaults, one contract for Node, static, and edge, and
-              a Rust/V8 runtime on the road.
+              Full-stack TypeScript with safe defaults and one contract for Node, static, and edge.
+              The Rust/V8 runtime remains experimental.
             </p>
           </div>
           <nav className="kaki-kolom" aria-label="Documentation">

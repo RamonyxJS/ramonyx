@@ -99,6 +99,7 @@ export function renderMarkdown(source: string, options: { slug?: string } = {}):
 
   const toc: TocItem[] = [];
   const dipakai = new Set<string>();
+  const halaman = options.slug === undefined ? "" : `${DOC_BASE}${options.slug}`;
 
   const renderer = new marked.Renderer();
   renderer.heading = function ({ tokens, depth }: Tokens.Heading) {
@@ -116,7 +117,7 @@ export function renderMarkdown(source: string, options: { slug?: string } = {}):
     if (depth === 2 || depth === 3) {
       toc.push({ id, text, depth });
     }
-    return `<h${depth} id="${id}"><a class="jangkar" href="#${id}" aria-hidden="true" tabindex="-1">#</a>${html}</h${depth}>`;
+    return `<h${depth} id="${id}"><a class="jangkar" href="${halaman}#${id}" aria-hidden="true" tabindex="-1">#</a>${html}</h${depth}>`;
   };
 
   renderer.code = ({ text, lang }: Tokens.Code) => {

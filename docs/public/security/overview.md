@@ -81,6 +81,6 @@ OS-level sandbox (Landlock) for plugins. It is not part of the production promis
 - Rate limiting and load shedding are process-local; multi-instance deployments need a shared
   store.
 - CSP is wired through `@ramonyx/security`; if you replace it, you own the policy.
-- CSRF protection covers double-submit verification; hidden-field verification for non-JS form
-  flows is not implemented.
+- CSRF protection covers double-submit verification and the hidden `_csrf` field for no-JS form
+  flows; token rotation on action re-renders is automatic.
 - The experimental runtime has not had an external security audit.

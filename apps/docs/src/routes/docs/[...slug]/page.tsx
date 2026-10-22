@@ -44,7 +44,7 @@ export default function DokumenPage({
     <DocsShell slug={data.slug}>
       <div className="docs-tata">
         <div>
-          <TocMobile items={data.toc} />
+          <TocMobile items={data.toc} slug={data.slug} />
           {/* biome-ignore lint/security/noDangerouslySetInnerHtml: HTML dari markdown publik repo sendiri */}
           <article className="dokumen" dangerouslySetInnerHTML={{ __html: data.html }} />
           <a
@@ -72,7 +72,7 @@ export default function DokumenPage({
             </div>
           </nav>
         </div>
-        <Toc items={data.toc} />
+        <Toc items={data.toc} slug={data.slug} />
       </div>
     </DocsShell>
   );

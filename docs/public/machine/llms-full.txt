@@ -1975,7 +1975,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T07:58:30.719Z",
+  "generatedAt": "2026-10-22T09:18:50.515Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2485,7 +2485,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T07:58:32.619Z",
+  "generatedAt": "2026-10-22T09:18:42.050Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2569,8 +2569,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "1.0.0",
-  "generatedAt": "2026-10-22T07:57:13.091Z",
-  "commit": "956881c4891aae42199d905a82aa6c56a091196e",
+  "generatedAt": "2026-10-22T09:17:20.575Z",
+  "commit": "efb50fa2c782f8bc3a7558094d0a8f1064e33007",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2844,15 +2844,15 @@ Response
 | `@ramonyx/router` | route matching, params, 404/405 |
 | `@ramonyx/server` | HTTP wiring, limits, rate limit, observability |
 | `@ramonyx/schema` | Standard Schema validation + error mapping |
-| `@ramonyx/adapter-runtime` | runtime contract, Node + in-memory hosts, static serving |
+| `@ramonyx/adapter-runtime` | runtime contract, Node + in-memory hosts, static serving, Redis adapter |
 | `@ramonyx/ssr` | page rendering, streaming, SEO helpers, locale routing |
 | `@ramonyx/react` | React renderer, `Image`, `Link` |
 | `@ramonyx/compiler` | page/API manifests, codegen, dev loader |
 | `@ramonyx/bundler` | Vite builds, dev server, assets, plugins |
-| `@ramonyx/security` | headers, CSP, CSRF, rate limit, cookies/sessions, SSRF guard |
+| `@ramonyx/security` | headers/CSP/CSRF, shared rate limits, sessions/user store, OAuth, authorization, SSRF |
 | `@ramonyx/testing` | in-memory test server |
-| `@ramonyx/devtools` | the `ramonyx` CLI |
-| `@ramonyx/mcp-docs-server` | MCP server over stdio for agents |
+| `@ramonyx/devtools` | the `ramonyx` CLI, plugin registry installer, benchmarks workflow support |
+| `@ramonyx/mcp-docs-server` | MCP docs server over stdio/HTTP for agents |
 | `@ramonyx/plugin-image` | build-time image variants (optional `sharp`) |
 
 ## Server ↔ client boundary
@@ -3933,7 +3933,7 @@ JavaScript:
   "name": "ramonyx-plugin-analytics",
   "type": "module",
   "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
-  "peerDependencies": { "@ramonyx/bundler": "^0.4.0", "ramonyx": "^0.4.0" },
+  "peerDependencies": { "@ramonyx/bundler": "^1.0.0", "ramonyx": "^1.0.0" },
   "engines": { "node": ">=24" }
 }
 ```
@@ -4062,13 +4062,14 @@ export default [
 | Handler/loader/render | 10 s | `503` + `request.signal` aborted |
 | Concurrent requests | 100 | `503` + `Retry-After` |
 
-Override per app via `createHandler({ maxBodyBytes, timeoutMs, maxConcurrent })`.
+Override per app via `createHandler({ maxBodyBytes, timeoutMs, maxConcurrent })`. Page actions also
+accept `createPageRoutes({ maxBodyBytes })` (default 1 MiB) for streamed multipart/form bodies.
 
 ## Typed routes
 
-`ramonyx build` and `ramonyx dev` generate `.ramonyx/routes.ts` with a typed `routeHref()` helper
-and a `RouteParamsMap`, so wrong paths or params fail at type-check time. Import it by relative
-path from your app code.
+`ramonyx build` and `ramonyx dev` generate `.ramonyx/routes.ts` with a typed `routeHref()` helper,
+a generated `Link`, and a `RouteParamsMap`, so wrong paths or params fail at type-check time. Import
+from the stable `#routes` alias configured by the template.
 
 ## i18n routing
 
@@ -4162,8 +4163,8 @@ OS-level sandbox (Landlock) for plugins. It is not part of the production promis
 - Rate limiting and load shedding are process-local; multi-instance deployments need a shared
   store.
 - CSP is wired through `@ramonyx/security`; if you replace it, you own the policy.
-- CSRF protection covers double-submit verification; hidden-field verification for non-JS form
-  flows is not implemented.
+- CSRF protection covers double-submit verification and the hidden `_csrf` field for no-JS form
+  flows; token rotation on action re-renders is automatic.
 - The experimental runtime has not had an external security audit.
 
 ## docs/public/sessions-and-auth.md
@@ -5120,9 +5121,9 @@ A map of implemented capabilities to their documentation. Status: ✅ implemente
 | File routing (pages, nested layouts, route groups) | [Routing](routing.md) |
 | Dynamic params `[id]` and catch-all `[...slug]` | [Routing](routing.md) |
 | API routes with method exports + 404/405 | [Routing](routing.md) |
-| Global + per-folder middleware | [Routing](routing.md) |
-| Error boundaries (`error.tsx`) + stable `RMX-*` codes | [Troubleshooting](troubleshooting.md) |
-| Request limits (body 1 MiB, 10 s timeout, 100 concurrent) | [Routing](routing.md) |
+| Global + per-folder middleware; `matchMiddleware` per path | [Routing](routing.md) |
+| Error boundaries (`error.tsx`) + dev overlay + stable `RMX-*` codes | [SSR & Hydration](ssr-hydration.md) · [Troubleshooting](troubleshooting.md) |
+| Request limits (body 1 MiB, 10 s timeout, 100 concurrent) + streaming action limit | [Routing](routing.md) |
 | Config pass-through (`ramonyx.config.ts`) | [CLI](cli.md) |
 
 ## Rendering & data
@@ -5131,14 +5132,17 @@ A map of implemented capabilities to their documentation. Status: ✅ implemente
 | --- | --- |
 | SSR React (sync + streaming opt-in) | [SSR & Hydration](ssr-hydration.md) |
 | Hydration payload + soft navigation + prefetch | [SSR & Hydration](ssr-hydration.md) |
-| Loaders (`params`, `query`, `env`, `assets`, `locale`) | [SSR & Hydration](ssr-hydration.md) |
+| Loaders (`params`, `query`, `env`, `assets`, `locale`, `load`) | [SSR & Hydration](ssr-hydration.md) |
+| Request-scoped loader dependency graph + dedupe | [Data & Caching](data-and-caching.md) |
 | Server actions + schema validation + 303 PRG | [SSR & Hydration](ssr-hydration.md) |
+| Pending/optimistic action UI + declarative `actionRevalidate` | [SSR & Hydration](ssr-hydration.md) |
 | Loader cache with TTL + stale-while-revalidate + tags | [Data & Caching](data-and-caching.md) |
 | On-demand invalidation (`revalidate`) | [Data & Caching](data-and-caching.md) |
 | Metadata/SEO (sitemap, robots, canonical) | [SSR & Hydration](ssr-hydration.md) |
-| i18n routing + translation helpers | [Internationalization](i18n.md) |
-| Typed routes (`routeHref`) | [Typed Routes](typed-routes.md) |
-| Streaming SSR | [SSR & Hydration](ssr-hydration.md) |
+| ICU messages, locale detection/redirect, hreflang | [Internationalization](i18n.md) |
+| Typed routes (`routeHref`, typed `Link`, `#routes`) | [Typed Routes](typed-routes.md) |
+| Streaming SSR + deferred no-JS fallback | [SSR & Hydration](ssr-hydration.md) |
+| State contracts + in-memory/Redis adapters | [State & Adapters](state-and-adapters.md) |
 
 ## Security
 
@@ -5147,9 +5151,10 @@ A map of implemented capabilities to their documentation. Status: ✅ implemente
 | Security headers + CSP nonce | [Security overview](security/overview.md) |
 | CSRF double-submit | [Sessions & Auth](sessions-and-auth.md) |
 | Rate limiting per client | [Security overview](security/overview.md) |
-| SSRF guard with DNS pinning (`guardedFetch`) | [Security overview](security/overview.md) |
-| Safe cookies + HMAC-signed sessions | [Sessions & Auth](sessions-and-auth.md) |
-| Server/client boundary enforcement | [Architecture](architecture.md) |
+| SSRF guard with DNS pinning + FormData URL checks | [Security overview](security/overview.md) |
+| Safe cookies + HMAC-signed sessions + shared stores | [Sessions & Auth](sessions-and-auth.md) |
+| User store, reset/verification, OAuth/OIDC, authorization | [Sessions & Auth](sessions-and-auth.md) |
+| Static boundary lint + client/server enforcement | [Architecture](architecture.md) |
 | Body/timeout/concurrency/output limits | [Routing](routing.md) |
 
 ## Assets & media
@@ -5158,24 +5163,25 @@ A map of implemented capabilities to their documentation. Status: ✅ implemente
 | --- | --- |
 | `src/assets/**` hashing + manifest + resolver | [Assets & Images](assets-and-images.md) |
 | `Image` (anti-CLS, lazy, `<picture>`) | [Assets & Images](assets-and-images.md) |
-| Build-time image variants (WebP; AVIF opt-in) | [Assets & Images](assets-and-images.md) |
+| Build-time image variants (WebP; AVIF opt-in) + blur placeholder | [Assets & Images](assets-and-images.md) |
+| Range requests + precompressed `.br`/`.gz` serving | [Deployment](deployment.md) |
 | Font preload helper | [Assets & Images](assets-and-images.md) |
 
 ## Tooling & deployment
 
 | Capability | Docs |
 | --- | --- |
-| CLI (`dev`, `build`, `start`, `doctor`, `watch`) | [CLI](cli.md) |
+| CLI (`dev`, `build`, `start --watch`, `add/remove`, `doctor`) | [CLI](cli.md) |
 | Dev server + HMR | [CLI](cli.md) |
 | Devtools panel (dev-only) | [Devtools Panel](devtools.md) |
 | Scaffolder (`create-ramonyx-app`) | [Getting Started](getting-started.md) |
 | Typed routes codegen | [Typed Routes](typed-routes.md) |
 | Observability (trace id, logs, metrics) | [Observability](observability.md) |
 | Static export / SSG | [Deployment](deployment.md) |
-| Edge/serverless target | [Deployment](deployment.md) |
-| Compression + ETag + immutable assets | [Deployment](deployment.md) |
+| Edge/serverless target + Vercel/Deno presets | [Deployment](deployment.md) |
+| Compression + ETag + immutable/range/precompressed assets | [Deployment](deployment.md) |
 | Source maps (client + packages) | [Troubleshooting](troubleshooting.md) |
-| Benchmark protocol | [Benchmarks](benchmarks.md) |
+| Strict self-hosted benchmark gate + report-only fallback | [Benchmarks](benchmarks.md) |
 | Test utilities | [Testing](testing.md) |
 
 ## Extensibility
@@ -5183,9 +5189,9 @@ A map of implemented capabilities to their documentation. Status: ✅ implemente
 | Capability | Docs |
 | --- | --- |
 | Plugins (Vite, middleware, hooks, assets) | [Plugins](plugins.md) |
-| Plugin publishing conventions | [Plugins](plugins.md) |
+| Verified registry + `ramonyx add/remove` + publishing | [Plugins](plugins.md) |
 | Image plugin (`sharp` optional peer) | [Assets & Images](assets-and-images.md) |
-| MCP docs server + `llms.txt` | [For Agents](for-agents.md) |
+| MCP docs server (stdio + HTTP) + `llms.txt` | [For Agents](for-agents.md) |
 
 ## Experimental runtime (Rust + V8)
 

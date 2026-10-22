@@ -106,13 +106,14 @@ export default [
 | Handler/loader/render | 10 s | `503` + `request.signal` aborted |
 | Concurrent requests | 100 | `503` + `Retry-After` |
 
-Override per app via `createHandler({ maxBodyBytes, timeoutMs, maxConcurrent })`.
+Override per app via `createHandler({ maxBodyBytes, timeoutMs, maxConcurrent })`. Page actions also
+accept `createPageRoutes({ maxBodyBytes })` (default 1 MiB) for streamed multipart/form bodies.
 
 ## Typed routes
 
-`ramonyx build` and `ramonyx dev` generate `.ramonyx/routes.ts` with a typed `routeHref()` helper
-and a `RouteParamsMap`, so wrong paths or params fail at type-check time. Import it by relative
-path from your app code.
+`ramonyx build` and `ramonyx dev` generate `.ramonyx/routes.ts` with a typed `routeHref()` helper,
+a generated `Link`, and a `RouteParamsMap`, so wrong paths or params fail at type-check time. Import
+from the stable `#routes` alias configured by the template.
 
 ## i18n routing
 

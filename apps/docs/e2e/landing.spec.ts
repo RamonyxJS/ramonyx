@@ -66,7 +66,7 @@ test("docs: halaman, ToC, prev/next, copy kode, dan alias lama", async ({ page, 
   if (await toc.count()) {
     const firstAnchor = toc.getByRole("link").first();
     await firstAnchor.click();
-    await expect(page).toHaveURL(/#.+/);
+    await expect(page).toHaveURL(/\/docs\/getting-started#.+/);
   }
 
   // Copy kode (blok pertama di halaman).

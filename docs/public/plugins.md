@@ -119,7 +119,7 @@ JavaScript:
   "name": "ramonyx-plugin-analytics",
   "type": "module",
   "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
-  "peerDependencies": { "@ramonyx/bundler": "^0.4.0", "ramonyx": "^0.4.0" },
+  "peerDependencies": { "@ramonyx/bundler": "^1.0.0", "ramonyx": "^1.0.0" },
   "engines": { "node": ">=24" }
 }
 ```

@@ -36,15 +36,15 @@ Response
 | `@ramonyx/router` | route matching, params, 404/405 |
 | `@ramonyx/server` | HTTP wiring, limits, rate limit, observability |
 | `@ramonyx/schema` | Standard Schema validation + error mapping |
-| `@ramonyx/adapter-runtime` | runtime contract, Node + in-memory hosts, static serving |
+| `@ramonyx/adapter-runtime` | runtime contract, Node + in-memory hosts, static serving, Redis adapter |
 | `@ramonyx/ssr` | page rendering, streaming, SEO helpers, locale routing |
 | `@ramonyx/react` | React renderer, `Image`, `Link` |
 | `@ramonyx/compiler` | page/API manifests, codegen, dev loader |
 | `@ramonyx/bundler` | Vite builds, dev server, assets, plugins |
-| `@ramonyx/security` | headers, CSP, CSRF, rate limit, cookies/sessions, SSRF guard |
+| `@ramonyx/security` | headers/CSP/CSRF, shared rate limits, sessions/user store, OAuth, authorization, SSRF |
 | `@ramonyx/testing` | in-memory test server |
-| `@ramonyx/devtools` | the `ramonyx` CLI |
-| `@ramonyx/mcp-docs-server` | MCP server over stdio for agents |
+| `@ramonyx/devtools` | the `ramonyx` CLI, plugin registry installer, benchmarks workflow support |
+| `@ramonyx/mcp-docs-server` | MCP docs server over stdio/HTTP for agents |
 | `@ramonyx/plugin-image` | build-time image variants (optional `sharp`) |
 
 ## Server ↔ client boundary

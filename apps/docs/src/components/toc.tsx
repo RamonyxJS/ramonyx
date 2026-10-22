@@ -7,13 +7,21 @@ export interface TocItem {
   readonly depth: number;
 }
 
-function Daftar({ items, aktif }: { readonly items: readonly TocItem[]; readonly aktif?: string }) {
+function Daftar({
+  items,
+  slug,
+  aktif,
+}: {
+  readonly items: readonly TocItem[];
+  readonly slug: string;
+  readonly aktif?: string;
+}) {
   return (
     <ul>
       {items.map((item) => (
         <li key={item.id} className={item.depth === 3 ? "kedalaman-3" : undefined}>
           <a
-            href={`#${item.id}`}
+            href={`docs/${slug}#${item.id}`}
             {...(aktif === item.id ? { "aria-current": "location" as const } : {})}
           >
             {item.text}
@@ -25,7 +33,13 @@ function Daftar({ items, aktif }: { readonly items: readonly TocItem[]; readonly
 }
 
 /** ToC desktop dengan penanda bagian aktif (scroll). */
-export function Toc({ items }: { readonly items: readonly TocItem[] }) {
+export function Toc({
+  items,
+  slug,
+}: {
+  readonly items: readonly TocItem[];
+  readonly slug: string;
+}) {
   const [aktif, setAktif] = useState<string>(items[0]?.id ?? "");
 
   useEffect(() => {
@@ -68,20 +82,26 @@ export function Toc({ items }: { readonly items: readonly TocItem[] }) {
   return (
     <aside className="toc" aria-label="On this page">
       <div className="toc-judul">On this page</div>
-      <Daftar items={items} aktif={aktif} />
+      <Daftar items={items} slug={slug} aktif={aktif} />
     </aside>
   );
 }
 
 /** ToC mobile (details) — diletakkan di atas artikel. */
-export function TocMobile({ items }: { readonly items: readonly TocItem[] }) {
+export function TocMobile({
+  items,
+  slug,
+}: {
+  readonly items: readonly TocItem[];
+  readonly slug: string;
+}) {
   if (items.length === 0) {
     return null;
   }
   return (
     <details className="toc-mobile">
       <summary>On this page</summary>
-      <Daftar items={items} />
+      <Daftar items={items} slug={slug} />
     </details>
   );
 }

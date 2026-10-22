@@ -186,7 +186,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
               </h1>
               <p className="lede">
                 File routing, streaming SSR, server actions, and one contract for Node, static, and
-                edge — with a Rust/V8 runtime on the road.
+                edge — with an experimental Rust/V8 runtime in the lab.
               </p>
               <div className="hero-actions">
                 <Magnetic>

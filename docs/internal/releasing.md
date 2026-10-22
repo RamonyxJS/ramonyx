@@ -19,9 +19,9 @@
 - **TERBIT — 0.6.0** (2026-10-22): data deferred no-JS-safe (`defer` + Suspense, state JSON
   hydration) + DF-13 (Cloudflare Web Analytics/RUM dimatikan). 16 paket @ 0.6.0 + provenance;
   GitHub Release 19 aset.
-- **PERSIAPAN — 0.7.0** (2026-10-22): auth/session produksi — PBKDF2, session store/rotation/
-  revocation, CSRF form no-JS, demo login/register/logout. Bump 16 paket + template; verifikasi
-  rilis penuh sebelum tag.
+- **TERBIT — 0.7.0** (2026-10-22): auth/session produksi — PBKDF2, session store/rotation/
+  revocation, CSRF form no-JS, demo login/register/logout. 16 paket @ 0.7.0 + provenance;
+  GitHub Release 19 aset.
 
 ## Persiapan 0.7.0 (2026-10-22)
 
@@ -64,6 +64,18 @@
 - `npm publish --dry-run` ×16 → exit 0 tanpa warning.
 - **Langkah tersisa (pemilik)**: `git tag v0.4.0 && git push origin main --tags` — **selesai**
   (lihat "Hasil rilis 0.4.0").
+
+## Hasil rilis 0.7.0 (2026-10-22)
+
+- Tag `v0.7.0` → release workflow **success**: 16 paket @ 0.7.0 (provenance) + **GitHub Release
+  19 aset**; binary runtime `ramonyx-runtime-0.7.0-x86_64-unknown-linux-gnu.tar.gz`.
+- **CI root cause**: Corepack gagal mengunduh pnpm 12.14.0 dari npm registry pada runner.
+  Workflow diganti ke `pnpm/action-setup@v4`, lalu CI + Pages hijau.
+- **Publish hardening**: job timeout 40 menit, fetch timeout/retry, per-package retry, dan E409
+  dianggap sudah terbit; publish sempat parsial lalu dilanjutkan tanpa menimpa paket.
+- Registry: 16 paket @ 0.7.0 dengan `dist.attestations`; dist-tag `latest` = 0.7.0.
+- **Gate**: 319 Node tests, lint/typecheck/coverage/docs; `release:verify` lulus (scaffold,
+  MCP, runtime).
 
 ## Hasil rilis 0.6.0 (2026-10-22)
 

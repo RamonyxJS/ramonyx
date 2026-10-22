@@ -1930,7 +1930,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T02:57:53.683Z",
+  "generatedAt": "2026-10-22T04:13:38.036Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2366,7 +2366,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T02:57:55.074Z",
+  "generatedAt": "2026-10-22T04:13:39.484Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2440,8 +2440,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "0.7.0",
-  "generatedAt": "2026-10-22T02:57:03.605Z",
-  "commit": "61beae48e4fe86d9c2cd5d2f3b67c9f4a0559aaf",
+  "generatedAt": "2026-10-22T04:12:51.775Z",
+  "commit": "8180661095e6fa9742f9e6ebd3e008415fe474a9",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,

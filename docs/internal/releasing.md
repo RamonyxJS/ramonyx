@@ -22,9 +22,9 @@
 - **TERBIT — 0.7.0** (2026-10-22): auth/session produksi — PBKDF2, session store/rotation/
   revocation, CSRF form no-JS, demo login/register/logout. 16 paket @ 0.7.0 + provenance;
   GitHub Release 19 aset.
-- **PERSIAPAN — 1.0.0** (2026-10-22): Node baseline stabil — auth/API/security/benchmark gate
-  selesai; runtime Rust tetap eksperimental. Bump 16 paket + template; verifikasi rilis penuh
-  sebelum tag.
+- **TERBIT — 1.0.0** (2026-10-22): Node baseline stabil — auth/API/security/benchmark gate
+  selesai; 16 paket @ 1.0.0 + provenance; GitHub Release 19 aset. Runtime Rust tetap
+  eksperimental.
 
 ## Persiapan 1.0.0 (2026-10-22)
 
@@ -76,6 +76,17 @@
 - `npm publish --dry-run` ×16 → exit 0 tanpa warning.
 - **Langkah tersisa (pemilik)**: `git tag v0.4.0 && git push origin main --tags` — **selesai**
   (lihat "Hasil rilis 0.4.0").
+
+## Hasil rilis 1.0.0 (2026-10-22)
+
+- Tag `v1.0.0` → release workflow **success**: 16 paket @ 1.0.0 (provenance) + **GitHub Release
+  19 aset**; binary runtime `ramonyx-runtime-1.0.0-x86_64-unknown-linux-gnu.tar.gz`.
+- **Gate**: API stability policy + contract test; auth/session production flow; security abuse/
+  soak + audit; F-1 diagnosed; `pnpm bench:gate` lulus (HTTP p50 57→43 ms, rps 815→1045; SSR
+  dalam toleransi); `VITALS_BUDGET_STRICT=1` lulus.
+- **Registry**: seluruh 16 paket @ 1.0.0 terlihat dengan `dist.attestations`; latest = 1.0.0.
+- **Node baseline** adalah klaim stabil; runtime Rust tetap eksperimental dan tidak termasuk
+  klaim tersebut.
 
 ## Hasil rilis 0.7.0 (2026-10-22)
 

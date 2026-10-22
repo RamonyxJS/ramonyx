@@ -256,7 +256,7 @@
 
 ### `p1-framework-v1-readiness` — Gerbang kesiapan framework Node 1.0 (100% matang)
 
-*tema: quality · ukuran: L · status: in-progress · dependensi: `p1-auth-session-complete` · sumber: audit kematangan pasca 0.7.0: API stability + contract test selesai; F-1 terdiagnosis (heapUsed 422→21 MB setelah GC; RSS allocator V8, bukan retensi JS); bench:gate + CI VITALS_BUDGET_STRICT ditambahkan; HTTP strict gagal di mesin ambient (load avg 1.58), perlu baseline tenang; release 1.0 belum*
+*tema: quality · ukuran: L · status: done · dependensi: `p1-auth-session-complete` · sumber: selesai 1.0.0: API stability + contract test; security/abuse/soak + audit; F-1 terdiagnosis (heapUsed 422→21 MB setelah GC, RSS allocator); bench:gate lulus di baseline (HTTP p50 57→43, rps 815→1045; SSR dalam toleransi); VITALS_BUDGET_STRICT; 16 paket 1.0.0 + provenance. Runtime Rust tetap jalur eksperimental terpisah.*
 
 - **Apa**: Menetapkan dan memenuhi kriteria 1.0 untuk baseline Node: tidak ada fitur publik partial, API stabil dengan kebijakan migrasi, keamanan/soak teruji, benchmark blocking, dan dokumentasi upgrade. Runtime Rust tetap jalur terpisah.
 - **Kenapa penting untuk bersaing**: Rilis 0.6.0 adalah alpha dan fitur auth-session masih partial; tanpa gerbang eksplisit klaim 100% matang akan melampaui bukti yang tersedia.

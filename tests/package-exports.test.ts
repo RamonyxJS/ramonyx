@@ -85,7 +85,13 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
   [
     "@ramonyx/mcp-docs-server",
     mcp,
-    ["createDocsIndex", "createMcpServer", "runStdioServer", "resolveDocsRoot"],
+    [
+      "createDocsIndex",
+      "createMcpHttpHandler",
+      "createMcpServer",
+      "runStdioServer",
+      "resolveDocsRoot",
+    ],
   ],
   ["@ramonyx/plugin-image", pluginImage, ["imageOptimizer"]],
   [

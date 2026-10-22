@@ -606,3 +606,20 @@ export default defineConfig({
   const bundle = readFileSync(join(target, "dist/client", manifest.client), "utf8");
   assert.ok(bundle.includes("UJI-PLUGIN"), "plugin Vite diteruskan ke build klien");
 });
+
+test("scaffold agent docs bersifat opt-in", () => {
+  mkdirSync(workDir, { recursive: true });
+  const biasa = join(workDir, "tanpa-agent");
+  runCli([biasa]);
+  assert.ok(!existsSync(join(biasa, "AGENTS.md")), "default tidak menulis AGENTS.md");
+
+  const denganAgent = join(workDir, "dengan-agent");
+  const output = runCli([denganAgent, "--with-agent-docs"]);
+  assert.match(output, /Agent docs/);
+  assert.ok(existsSync(join(denganAgent, "AGENTS.md")), "AGENTS.md opt-in ada");
+  assert.ok(
+    existsSync(join(denganAgent, ".opencode", "skills", "ramonyx", "SKILL.md")),
+    "skill agent opt-in ada",
+  );
+  assert.match(readFileSync(join(denganAgent, "AGENTS.md"), "utf8"), /Ramonyx/);
+});

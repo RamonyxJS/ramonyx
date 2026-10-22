@@ -730,7 +730,7 @@
 
 ### `p3-mcp-http-skill` — MCP HTTP transport dan skill installer
 
-*tema: ecosystem · ukuran: M · status: open · sumber: limitations mcp-docs-server/agent-skill; audit 2026-10-22*
+*tema: ecosystem · ukuran: M · status: done · sumber: limitations mcp-docs-server/agent-skill; audit 2026-10-22*
 
 - **Apa**: Transport HTTP untuk MCP docs server dan instalasi skill/agent docs opt-in dari scaffolder.
 - **Kenapa penting untuk bersaing**: MCP stdio dan skill manual sudah berfungsi, tetapi integrasi agen modern membutuhkan HTTP dan instalasi yang mulus.

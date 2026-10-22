@@ -58,6 +58,34 @@ repo. Inside the repository you can point it at the working tree:
 node --import ./tools/register.mjs packages/mcp-docs-server/src/cli.ts --docs docs/public
 ```
 
+### HTTP transport
+
+For hosted MCP clients, use the edge-safe HTTP handler (POST JSON-RPC):
+
+```ts
+import { createMcpHttpHandler } from "@ramonyx/mcp-docs-server";
+
+const mcp = createMcpHttpHandler({
+  token: env.get("MCP_TOKEN"),                 // optional bearer auth
+  rateLimit: { limit: 60, windowMs: 60_000 },  // in-memory; use gateway for multi-instance
+  maxBodyBytes: 1_048_576,
+});
+
+// In a Node/edge handler:
+const response = await mcp(request);
+```
+
+The handler returns `401` for a bad/missing bearer token, `429` with `Retry-After`, `405` for
+non-POST, and `202` for notifications. Put it behind TLS and your own authentication when exposed
+publicly; the built-in rate limit is per process and trusts `x-forwarded-for` only behind a
+controlled proxy.
+
+### Scaffolder opt-in
+
+`pnpm create ramonyx-app <dir> --with-agent-docs` writes `AGENTS.md` and
+`.opencode/skills/ramonyx/SKILL.md` in addition to the minimal app. Without the flag, the template
+contains no agent-specific files.
+
 ## Ground rules for agents
 
 1. **Facts over guesses.** Feature status comes from `features.json`; numbers from `stats.json`.

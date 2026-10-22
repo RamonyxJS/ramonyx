@@ -198,6 +198,9 @@ function stageCreateApp(releaseVersion) {
     `--outfile=${join(staging, "dist", "cli.js")}`,
   ]);
   cpSync(join(sourceDir, "template"), join(staging, "template"), { recursive: true });
+  cpSync(join(sourceDir, "template-agent"), join(staging, "template-agent"), {
+    recursive: true,
+  });
   cpSync(join(root, "LICENSE"), join(staging, "LICENSE"));
   writeFileSync(join(staging, "README.md"), createAppReadme(releaseVersion));
 
@@ -208,7 +211,7 @@ function stageCreateApp(releaseVersion) {
     license: "MIT",
     type: "module",
     bin: { "create-ramonyx-app": "dist/cli.js" },
-    files: ["dist", "template", "README.md", "LICENSE"],
+    files: ["dist", "template", "template-agent", "README.md", "LICENSE"],
     engines: { node: ">=24" },
     publishConfig: { access: "public" },
     repository: REPOSITORY,

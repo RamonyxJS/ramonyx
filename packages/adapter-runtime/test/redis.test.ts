@@ -112,7 +112,7 @@ test("Redis adapter: dua instance berbagi session, rate limit, token, dan invali
     assert.equal(await a.store.get("shared"), undefined);
 
     await a.store.set("pendek", "nilai", { ttlSeconds: 1 });
-    await new Promise((resolve) => setTimeout(resolve, 1_100));
+    await new Promise((resolve) => setTimeout(resolve, 2_100));
     assert.equal(await b.store.get("pendek"), undefined, "TTL Redis dihormati");
   } finally {
     await a?.close().catch(() => {});

@@ -9,7 +9,9 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const templateDir = join(dirname(fileURLToPath(import.meta.url)), "..", "template");
+const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+const templateDir = join(packageRoot, "template");
+const agentTemplateDir = join(packageRoot, "template-agent");
 
 const USAGE = `create-ramonyx-app — buat aplikasi Ramonyx baru
 
@@ -19,8 +21,9 @@ Penggunaan:
   pnpm create:app <dir>              # di dalam repo (workspace)
 
 Opsi:
-  --force, -f   Timpa berkas template walau direktori tujuan tidak kosong
-  --help, -h    Tampilkan bantuan ini
+  --force, -f       Timpa berkas template walau direktori tujuan tidak kosong
+  --with-agent-docs Sertakan AGENTS.md + skill agent opt-in (tidak default)
+  --help, -h        Tampilkan bantuan ini
 `;
 
 function usage(exitCode: number): never {
@@ -31,11 +34,14 @@ function usage(exitCode: number): never {
 
 const args = process.argv.slice(2);
 let force = false;
+let withAgentDocs = false;
 let target: string | undefined;
 
 for (const arg of args) {
   if (arg === "--force" || arg === "-f") {
     force = true;
+  } else if (arg === "--with-agent-docs") {
+    withAgentDocs = true;
   } else if (arg === "--help" || arg === "-h") {
     usage(0);
   } else if (arg.startsWith("-")) {
@@ -87,6 +93,9 @@ function copy(source: string, destination: string): void {
 }
 
 copy(templateDir, targetDir);
+if (withAgentDocs) {
+  copy(agentTemplateDir, targetDir);
+}
 
 console.log(`✓ App "${appName}" dibuat di ${targetDir}
 
@@ -95,4 +104,8 @@ Langkah berikutnya:
   cd ${target}
   pnpm install   # atau npm install
   pnpm start     # http://127.0.0.1:3000
-`);
+${
+  withAgentDocs
+    ? "\nAgent docs: AGENTS.md + .opencode/skills/ramonyx/SKILL.md sudah disertakan.\n"
+    : ""
+}`);

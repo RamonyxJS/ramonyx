@@ -474,3 +474,115 @@ export async function runStdioServer(options: StdioServerOptions = {}): Promise<
     }
   }
 }
+
+export interface McpHttpOptions extends McpServerOptions {
+  /** Bearer token statis; bila diisi, semua request wajib `Authorization: Bearer <token>`. */
+  readonly token?: string;
+  /** Autorisasi kustom (mis. sesi/OIDC); dipanggil setelah bearer check. */
+  readonly authorize?: (request: Request) => boolean | Promise<boolean>;
+  /** Rate limit fixed-window in-memory per key (default IP dari x-forwarded-for). */
+  readonly rateLimit?: {
+    readonly limit: number;
+    readonly windowMs: number;
+    readonly key?: (request: Request) => string;
+  };
+  /** Batas body JSON-RPC; default 1 MiB. */
+  readonly maxBodyBytes?: number;
+}
+
+const MCP_HTTP_MAX_BODY = 1_048_576;
+
+function bearerToken(request: Request): string | null {
+  const header = request.headers.get("authorization");
+  if (header === null || !header.startsWith("Bearer ")) {
+    return null;
+  }
+  return header.slice("Bearer ".length);
+}
+
+function clientKey(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded !== null && forwarded.length > 0) {
+    return forwarded.split(",")[0]?.trim() || "unknown";
+  }
+  return request.headers.get("x-real-ip") ?? "unknown";
+}
+
+/**
+ * Transport HTTP untuk MCP docs server (POST JSON-RPC). Cocok dipasang di Node/edge handler;
+ * autentikasi bearer opsional, rate limit in-memory, dan `202` untuk notifikasi.
+ */
+export function createMcpHttpHandler(
+  options: McpHttpOptions = {},
+): (request: Request) => Promise<Response> {
+  const server = createMcpServer(options);
+  const maxBody = options.maxBodyBytes ?? MCP_HTTP_MAX_BODY;
+  const windows = new Map<string, { count: number; start: number }>();
+
+  return async (request) => {
+    if (request.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
+        status: 405,
+        headers: { "content-type": "application/json", allow: "POST" },
+      });
+    }
+
+    if (options.token !== undefined && bearerToken(request) !== options.token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "content-type": "application/json", "www-authenticate": "Bearer" },
+      });
+    }
+    if (options.authorize !== undefined && !(await options.authorize(request))) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { "content-type": "application/json" },
+      });
+    }
+
+    if (options.rateLimit !== undefined) {
+      const key = options.rateLimit.key?.(request) ?? clientKey(request);
+      const now = Date.now();
+      const current = windows.get(key);
+      const entry =
+        current === undefined || now - current.start >= options.rateLimit.windowMs
+          ? { count: 0, start: now }
+          : current;
+      entry.count += 1;
+      windows.set(key, entry);
+      if (entry.count > options.rateLimit.limit) {
+        return new Response(JSON.stringify({ error: "Too Many Requests" }), {
+          status: 429,
+          headers: {
+            "content-type": "application/json",
+            "retry-after": String(Math.max(1, Math.ceil(options.rateLimit.windowMs / 1_000))),
+          },
+        });
+      }
+    }
+
+    const declared = Number(request.headers.get("content-length") ?? "0");
+    if (Number.isFinite(declared) && declared > maxBody) {
+      return new Response(JSON.stringify({ error: "Payload Too Large" }), {
+        status: 413,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    const text = await request.text();
+    if (new TextEncoder().encode(text).byteLength > maxBody) {
+      return new Response(JSON.stringify({ error: "Payload Too Large" }), {
+        status: 413,
+        headers: { "content-type": "application/json" },
+      });
+    }
+
+    const response = server.handleLine(text);
+    if (response === null) {
+      return new Response(null, { status: 202 });
+    }
+    return new Response(response, {
+      status: 200,
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
+  };
+}

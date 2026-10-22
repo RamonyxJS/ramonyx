@@ -1199,10 +1199,13 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "packages/mcp-docs-server/src/cli.ts",
         "packages/mcp-docs-server/test/server.test.ts",
         "packages/mcp-docs-server/test/stdio.test.ts",
-        "docs/public/engineering/adr/0078-mcp-docs-server.md"
+        "docs/public/engineering/adr/0078-mcp-docs-server.md",
+        "packages/mcp-docs-server/test/http.test.ts",
+        "docs/public/for-agents.md"
       ],
       "limitations": [
-        "Subset protokol: stdio saja (tanpa HTTP/prompts/sampling/batching)",
+        "Subset protokol: tools/resources + HTTP/stdio (tanpa prompts/sampling/batching)",
+        "Rate limit HTTP in-memory; auth bearer statis/kustom, bukan OAuth server",
         "Snapshot docs = versi paket (docs repo terbaru butuh --docs dari clone)"
       ],
       "docs": "docs/public/for-agents.md"
@@ -1939,7 +1942,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T06:33:07.017Z",
+  "generatedAt": "2026-10-22T06:43:13.284Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2158,6 +2161,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "values": [
         "MCP_PROTOCOL_VERSION",
         "createDocsIndex",
+        "createMcpHttpHandler",
         "createMcpServer",
         "resolveDocsRoot",
         "runStdioServer"
@@ -2422,7 +2426,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T06:33:08.853Z",
+  "generatedAt": "2026-10-22T06:43:15.742Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2496,8 +2500,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "1.0.0",
-  "generatedAt": "2026-10-22T06:32:05.674Z",
-  "commit": "dd891f762b8fa1eff0456a2026dc6f39015e7c71",
+  "generatedAt": "2026-10-22T06:42:15.869Z",
+  "commit": "16b1a6b129b1add2b4aa504e97f9065f2391d612",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2524,7 +2528,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
   "adrs": 8,
   "docs": 23,
   "tests": {
-    "node": 340,
+    "node": 343,
     "rust": 116,
     "e2eSpecFiles": 11
   }
@@ -3319,6 +3323,34 @@ repo. Inside the repository you can point it at the working tree:
 ```bash
 node --import ./tools/register.mjs packages/mcp-docs-server/src/cli.ts --docs docs/public
 ```
+
+### HTTP transport
+
+For hosted MCP clients, use the edge-safe HTTP handler (POST JSON-RPC):
+
+```ts
+import { createMcpHttpHandler } from "@ramonyx/mcp-docs-server";
+
+const mcp = createMcpHttpHandler({
+  token: env.get("MCP_TOKEN"),                 // optional bearer auth
+  rateLimit: { limit: 60, windowMs: 60_000 },  // in-memory; use gateway for multi-instance
+  maxBodyBytes: 1_048_576,
+});
+
+// In a Node/edge handler:
+const response = await mcp(request);
+```
+
+The handler returns `401` for a bad/missing bearer token, `429` with `Retry-After`, `405` for
+non-POST, and `202` for notifications. Put it behind TLS and your own authentication when exposed
+publicly; the built-in rate limit is per process and trusts `x-forwarded-for` only behind a
+controlled proxy.
+
+### Scaffolder opt-in
+
+`pnpm create ramonyx-app <dir> --with-agent-docs` writes `AGENTS.md` and
+`.opencode/skills/ramonyx/SKILL.md` in addition to the minimal app. Without the flag, the template
+contains no agent-specific files.
 
 ## Ground rules for agents
 

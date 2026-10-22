@@ -1185,10 +1185,13 @@
         "packages/mcp-docs-server/src/cli.ts",
         "packages/mcp-docs-server/test/server.test.ts",
         "packages/mcp-docs-server/test/stdio.test.ts",
-        "docs/public/engineering/adr/0078-mcp-docs-server.md"
+        "docs/public/engineering/adr/0078-mcp-docs-server.md",
+        "packages/mcp-docs-server/test/http.test.ts",
+        "docs/public/for-agents.md"
       ],
       "limitations": [
-        "Subset protokol: stdio saja (tanpa HTTP/prompts/sampling/batching)",
+        "Subset protokol: tools/resources + HTTP/stdio (tanpa prompts/sampling/batching)",
+        "Rate limit HTTP in-memory; auth bearer statis/kustom, bukan OAuth server",
         "Snapshot docs = versi paket (docs repo terbaru butuh --docs dari clone)"
       ],
       "docs": "docs/public/for-agents.md"

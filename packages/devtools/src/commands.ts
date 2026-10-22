@@ -438,8 +438,6 @@ async function commandStartWatch(flags: Flags): Promise<number> {
     child = null;
   };
 
-  spawnServer();
-
   let timer: NodeJS.Timeout | undefined;
   let restarting = false;
   const restart = async (): Promise<void> => {
@@ -460,6 +458,9 @@ async function commandStartWatch(flags: Flags): Promise<number> {
       void restart();
     }, 200);
   });
+  // Daftarkan watcher sebelum child server siap, agar perubahan yang terjadi tepat setelah
+  // server siap tidak hilang karena race startup.
+  spawnServer();
   console.log("watch: memantau src/** — server restart otomatis (Ctrl+C untuk keluar)");
 
   await new Promise<void>((resolve) => {

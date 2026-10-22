@@ -75,8 +75,8 @@ export function runStoreContract(name: string, createStore: () => KeyValueStore)
     await store.set("token", { user: "u1" });
     assert.deepEqual(await store.take("token"), { user: "u1" });
     assert.equal(await store.get("token"), undefined, "take menghapus entri");
-    await store.set("token", "nilai", { ttlSeconds: 0.3 });
-    await sleep(400);
+    await store.set("token", "nilai", { ttlSeconds: 1 });
+    await sleep(1_200);
     assert.equal(await store.take("token"), undefined, "entri kedaluwarsa tidak diambil");
   });
 }

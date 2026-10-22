@@ -1,7 +1,8 @@
 # Framework 1.0 Readiness — Security & Soak Review
 
 Tanggal: 2026-10-22 · Lingkup: baseline Node + auth/session/CSRF + abuse/soak.
-Status: **belum lulus penuh** — ada satu temuan stabilitas yang harus diselesaikan sebelum 1.0.
+Status: **F-1 terdiagnosis** (allocator/retensi RSS, bukan kebocoran heap JS); gate 1.0 masih
+terbuka untuk benchmark blocking dan rilis 1.0.
 
 ## Kontrol yang ditinjau
 
@@ -28,18 +29,24 @@ pnpm test
 - Soak 300 dtk, 50 koneksi, ±525 req/dtk: **0 error, 0 timeout, 0 respons 5xx**.
 - Headroom limit tetap berjalan (body/timeout/concurrency).
 
-## Temuan F-1 — pertumbuhan RSS soak
+## Temuan F-1 — pertumbuhan RSS soak (diselidiki)
 
 RSS proses server naik dari **231 MB → 637 MB** (puncak 678 MB, delta 406 MB) selama 300 detik;
-`heapUsed` akhir ±422 MB, `heapTotal` ±517 MB. Tidak ada error atau 5xx. Ini bisa berupa
-pertumbuhan heap V8 normal di bawah beban tanpa GC, tetapi belum dibuktikan plateau setelah
-snapshot/forced-GC. **Tidak boleh diklaim "memory stabil" sebelum ada bukti tambahan.**
+`heapUsed` akhir ±422 MB, `heapTotal` ±517 MB. Tidak ada error atau 5xx.
 
-Tindakan yang diperlukan:
+**Diagnosis lanjutan (60 detik, server `--expose-gc` + probe `/__gc`):**
 
-1. Heapshot/forced-GC pada akhir soak untuk membedakan retensi objek vs kapasitas heap.
-2. Uji soak lebih panjang / bertahap dan tetapkan batas pertumbuhan yang dapat diterima.
-3. Jika ada retensi, perbaiki dan ulangi abuse+soak sebelum 1.0.
+- Full playground: RSS 130 → 436 MB; setelah `global.gc()` **heapUsed 422 → 21 MB**,
+  `heapTotal` 25 MB, RSS tetap 432 MB.
+- Minimal API: RSS 118 → 383 MB; setelah GC **heapUsed 16 MB**, RSS 380 MB.
+
+**Kesimpulan:** tidak ada retensi objek JavaScript yang terlihat; angka `heapUsed` turun drastis
+setelah GC. Pertumbuhan RSS adalah **kapasitas/allocator V8 yang tidak dikembalikan ke OS**, bukan
+bukti kebocoran heap framework. Benchmark soak yang hanya memakai RSS memang menyesatkan; angka
+RSS tetap dicatat sebagai caveat, bukan klaim stabilitas memori absolut.
+
+**Tindakan lanjutan untuk 1.0:** jika ingin klaim RSS stabil, tambahkan probe post-GC ke harness
+formal dan uji plateau lebih panjang; jangan memakai delta RSS mentah sebagai satu-satunya gate.
 
 ## Gate lain yang belum selesai
 

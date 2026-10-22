@@ -15,10 +15,7 @@
         "packages/compiler/src/pages.ts",
         "packages/compiler/test/pages.test.ts"
       ],
-      "limitations": [
-        "Route groups `(grup)` belum ada",
-        "Middleware per-folder belum ada"
-      ],
+      "limitations": [],
       "docs": "docs/public/routing.md"
     },
     {
@@ -471,9 +468,7 @@
       "evidence": [
         "packages/bundler/src/build.ts"
       ],
-      "limitations": [
-        "Belum ada code splitting per rute"
-      ],
+      "limitations": [],
       "docs": "docs/public/ssr-hydration.md"
     },
     {
@@ -619,9 +614,7 @@
         "packages/bundler/test/prerender.test.ts",
         "packages/devtools/src/commands.ts"
       ],
-      "limitations": [
-        "Revalidasi/ISR belum (p1-revalidate)"
-      ],
+      "limitations": [],
       "docs": "docs/public/deployment.md"
     },
     {
@@ -1116,7 +1109,7 @@
         "apps/docs/test/docs.test.ts"
       ],
       "limitations": [
-        "Di-host di GitHub Pages dengan domain kustom (CNAME)"
+        "Canonical site is a Worker; GitHub Pages is a subpath mirror"
       ],
       "docs": null
     },
@@ -1146,7 +1139,7 @@
         "docs/public/machine/llms-full.txt"
       ],
       "limitations": [
-        "Belum ada markdown per halaman untuk paket npm (hanya situs)"
+        "Per-page markdown is generated for the site; the npm MCP snapshot carries the docs tree"
       ],
       "docs": "docs/public/for-agents.md"
     },

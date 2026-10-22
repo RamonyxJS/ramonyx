@@ -29,10 +29,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "packages/compiler/src/pages.ts",
         "packages/compiler/test/pages.test.ts"
       ],
-      "limitations": [
-        "Route groups `(grup)` belum ada",
-        "Middleware per-folder belum ada"
-      ],
+      "limitations": [],
       "docs": "docs/public/routing.md"
     },
     {
@@ -485,9 +482,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "evidence": [
         "packages/bundler/src/build.ts"
       ],
-      "limitations": [
-        "Belum ada code splitting per rute"
-      ],
+      "limitations": [],
       "docs": "docs/public/ssr-hydration.md"
     },
     {
@@ -633,9 +628,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "packages/bundler/test/prerender.test.ts",
         "packages/devtools/src/commands.ts"
       ],
-      "limitations": [
-        "Revalidasi/ISR belum (p1-revalidate)"
-      ],
+      "limitations": [],
       "docs": "docs/public/deployment.md"
     },
     {
@@ -1130,7 +1123,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "apps/docs/test/docs.test.ts"
       ],
       "limitations": [
-        "Di-host di GitHub Pages dengan domain kustom (CNAME)"
+        "Canonical site is a Worker; GitHub Pages is a subpath mirror"
       ],
       "docs": null
     },
@@ -1160,7 +1153,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "docs/public/machine/llms-full.txt"
       ],
       "limitations": [
-        "Belum ada markdown per halaman untuk paket npm (hanya situs)"
+        "Per-page markdown is generated for the site; the npm MCP snapshot carries the docs tree"
       ],
       "docs": "docs/public/for-agents.md"
     },
@@ -1930,7 +1923,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T04:37:58.066Z",
+  "generatedAt": "2026-10-22T04:45:42.987Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2366,7 +2359,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T04:37:59.568Z",
+  "generatedAt": "2026-10-22T04:45:43.859Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target tambahan: \"edge\" → dist/edge (serverless/edge)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2440,8 +2433,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "0.7.0",
-  "generatedAt": "2026-10-22T04:12:51.775Z",
-  "commit": "8180661095e6fa9742f9e6ebd3e008415fe474a9",
+  "generatedAt": "2026-10-22T04:44:53.222Z",
+  "commit": "397cfb1bd0e3e89b685deecbd1991e22995a00fc",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2466,7 +2459,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     ]
   },
   "adrs": 8,
-  "docs": 21,
+  "docs": 22,
   "tests": {
     "node": 319,
     "rust": 116,

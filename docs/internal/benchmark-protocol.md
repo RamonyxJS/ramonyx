@@ -25,6 +25,10 @@
   (menulis baseline lingkungan itu) → commit berkasnya. Satu berkas = satu lingkungan.
 - Baseline lama (`phase1-baseline.json`, `ssr-baseline.json`) dipertahankan sebagai fallback
   pembanding bila baseline lingkungan belum ada (dicatat di output).
+- Gate pra-rilis **blocking per-lingkungan**: `pnpm bench:gate` menjalankan HTTP + SSR
+  `--strict`; guard mesin menolak bila baseline bukan lingkungan yang sama. CI lintas-runner
+  tetap report-only; **budget Web Vitals absolut** di e2e dapat diblokir dengan
+  `VITALS_BUDGET_STRICT=1` (dipakai CI).
 - Gate: `pnpm bench:report` / `pnpm bench:ssr:report` (report-only, CI). `--strict` sahih
   **hanya** di lingkungan baseline — guard menolak lintas lingkungan (platform/arch/node/cpu).
 - Keputusan CI: **tetap report-only** (GitHub-hosted runner tidak menjamin hardware sama antar-run).

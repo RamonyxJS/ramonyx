@@ -77,6 +77,8 @@ jobs:
       - name: Install Chromium (Playwright)
         run: pnpm exec playwright install --with-deps chromium
       - name: E2E (browser)
+        env:
+          VITALS_BUDGET_STRICT: "1"
         run: pnpm test:e2e
       - name: Docs site E2E (publik, a11y, kebijakan konten — blocking)
         run: pnpm test:docs

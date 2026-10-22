@@ -159,4 +159,8 @@ test("baseline Web Vitals beranda (artefak + perbandingan report-only, protokol 
       false,
     );
   }
+  if (process.env.VITALS_BUDGET_STRICT === "1") {
+    const breached = report.budgets.filter((budget) => !budget.ok);
+    expect(breached, `Web Vitals melewati budget absolut (VITALS_BUDGET_STRICT=1)`).toEqual([]);
+  }
 });

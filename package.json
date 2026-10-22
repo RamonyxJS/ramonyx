@@ -28,6 +28,7 @@
     "docs:stats": "node --import ./tools/register.mjs scripts/docs/stats.ts",
     "bench:report": "node --import ./tools/register.mjs benchmarks/http/bench.ts --out benchmarks/results/latest-http.json --compare --tolerance-pct 25",
     "bench:ssr:report": "NODE_ENV=production node --expose-gc --import ./tools/register.mjs benchmarks/ssr/bench.tsx --out benchmarks/results/latest-ssr.json --compare --tolerance-pct 25",
+    "bench:gate": "pnpm bench:report --strict && pnpm bench:ssr:report --strict",
     "docs:export": "NODE_ENV=production node --import ./tools/register.mjs apps/docs/export.ts",
     "test:edge": "node --import ./tools/register.mjs scripts/edge-smoke.ts",
     "bench:image": "node benchmarks/vitals/image-pipeline.mjs",

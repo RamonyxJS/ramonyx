@@ -684,7 +684,7 @@
       "areas": ["packages", "docs", "benchmarks", ".github/workflows"],
       "adrs": ["ADR baru"],
       "competitor": "Next.js/Nuxt/SvelteKit jalur stabil 1.x dengan kebijakan deprecasi dan upgrade guide.",
-      "source": "audit kematangan pasca 0.7.0: API stability policy + contract test selesai; F-1 diselidiki — heapUsed 422→21 MB setelah forced GC, RSS adalah allocator V8 (bukan retensi JS); benchmark blocking + release 1.0 belum",
+      "source": "audit kematangan pasca 0.7.0: API stability + contract test selesai; F-1 terdiagnosis (heapUsed 422→21 MB setelah GC; RSS allocator V8, bukan retensi JS); bench:gate + CI VITALS_BUDGET_STRICT ditambahkan; HTTP strict gagal di mesin ambient (load avg 1.58), perlu baseline tenang; release 1.0 belum",
       "dependsOn": ["p1-auth-session-complete"],
       "strategic": true
     },

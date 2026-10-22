@@ -879,8 +879,8 @@
         "benchmarks/lib/env.ts"
       ],
       "limitations": [
-        "Report-only di CI (runner GitHub-hosted bervariasi); --strict sahih hanya di lingkungan baseline (guard ADR-0074)",
-        "Baseline mesin dev noisy (ambient load) — regenerasi di mesin tenang"
+        "Regresi lintas-runner di CI tetap report-only; gate pra-rilis per-lingkungan memakai `pnpm bench:gate` (strict, guard ADR-0074)",
+        "Budget Web Vitals absolut dapat diblokir via `VITALS_BUDGET_STRICT=1`; baseline mesin dev tetap perlu regenerasi di mesin tenang"
       ],
       "docs": "docs/public/benchmarks.md"
     },

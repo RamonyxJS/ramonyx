@@ -40,8 +40,9 @@
   beacon/RUM.
 - Bump: `Cargo.toml` + 15 paket `packages/*` + `apps/create-app` → **0.6.0**; template
   `^0.6.0`; CHANGELOG `[0.6.0]`; README/AGENTS status.
-- Gate: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm docs:stats`, `pnpm docs:generate`,
-  `pnpm docs:validate`; lalu `pnpm release` + `pnpm release:verify` + dry-run publish 16 tarball.
+- Gate: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm bench:gate`, `VITALS_BUDGET_STRICT=1 pnpm test:e2e`,
+  `pnpm docs:stats`, `pnpm docs:generate`, `pnpm docs:validate`; lalu `pnpm release` +
+  `pnpm release:verify` + dry-run publish 16 tarball.
 
 ## Persiapan 0.5.0 (2026-10-21)
 

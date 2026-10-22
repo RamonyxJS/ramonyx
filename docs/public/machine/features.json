@@ -792,8 +792,8 @@
     },
     {
       "id": "auth-session",
-      "name": "Primitif autentikasi: cookie bertanda tangan + session (HMAC, edge-safe)",
-      "status": "partial",
+      "name": "Autentikasi: password hashing, session store/rotation, CSRF (HMAC, edge-safe)",
+      "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
       "packages": [
@@ -801,13 +801,20 @@
       ],
       "evidence": [
         "packages/security/src/cookies.ts",
+        "packages/security/src/password.ts",
         "packages/security/src/session.ts",
+        "packages/security/src/csrf.ts",
+        "packages/security/test/password.test.ts",
         "packages/security/test/session.test.ts",
-        "apps/playground/src/routes/sesi/page.tsx"
+        "packages/security/test/csrf.test.ts",
+        "apps/playground/src/routes/sesi/page.tsx",
+        "apps/playground/src/routes/sesi/middleware.ts",
+        "apps/playground/e2e/session.spec.ts"
       ],
       "limitations": [
-        "Ditandatangani, bukan dienkripsi",
-        "Tanpa rotasi secret otomatis / store bawaan / UI login"
+        "Cookie bertanda tangan tidak dienkripsi; jangan simpan rahasia di mode stateless",
+        "Store bawaan in-memory; produksi multi-instance butuh store bersama",
+        "Tidak ada OAuth/user store produksi/authorization model"
       ],
       "docs": "docs/public/sessions-and-auth.md"
     },

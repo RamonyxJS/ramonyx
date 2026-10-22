@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T02:11:10.973Z",
+  "generatedAt": "2026-10-22T02:36:18.184Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -331,28 +331,36 @@
       "version": "0.6.0",
       "source": "packages/security/src/index.ts",
       "values": [
+        "CSRF_REQUEST_HEADER",
         "DEFAULT_COOKIE_OPTIONS",
+        "createMemorySessionStore",
         "createSession",
         "cspNonce",
         "csrfProtection",
         "defaultContentSecurityPolicy",
         "expireCookie",
+        "hashPassword",
         "parseCookies",
         "rateLimit",
         "securityHeaders",
         "serializeCookie",
         "signValue",
+        "verifyPassword",
         "verifyValue"
       ],
       "types": [
         "CookieOptions",
         "CspNonceOptions",
         "CsrfOptions",
+        "MemorySessionStoreOptions",
+        "PasswordHashOptions",
         "RateLimitOptions",
         "SecurityHeadersOptions",
         "Session",
         "SessionData",
-        "SessionOptions"
+        "SessionOptions",
+        "SessionStore",
+        "StoredSession"
       ],
       "reexports": []
     },

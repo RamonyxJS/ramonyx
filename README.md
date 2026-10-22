@@ -40,7 +40,8 @@ corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
   `src/app.ts` `createApp(options?)` (+ `src/server.ts` opsional untuk entry kustom).
 - **Server**: middleware `next(request?)`, timeout 10 dtk → 503, batas body 1 MiB → 413, load
   shedding (concurrency 100), rate limit per klien, validasi schema (Standard Schema) di tepi.
-- **Security**: security headers, CSP nonce, CSRF double-submit, SSRF guard (`@ramonyx/security`).
+- **Security**: security headers, CSP nonce, CSRF double-submit (header + no-JS form field),
+  PBKDF2 password hashing, session store/rotation/revocation, SSRF guard (`@ramonyx/security`).
 - **Data & aset**: revalidasi/ISR-lite (`export const revalidate` + cache tags, ADR-0066);
   pipeline aset `src/assets/**` (hash + manifest, ADR-0069) + **varian gambar WebP/AVIF** via
   plugin (`@ramonyx/plugin-image`, `sharp` opsional) → `assets.image()` + `Image` `<picture>`.

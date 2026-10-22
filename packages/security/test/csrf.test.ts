@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { type MiddlewareContext, silentLogger } from "@ramonyx/core";
-import { csrfProtection } from "../src/index.ts";
+import { CSRF_REQUEST_HEADER, csrfProtection } from "../src/index.ts";
 
 function context(request: Request): MiddlewareContext {
   return { request, env: { get: () => undefined }, log: silentLogger };
@@ -84,4 +84,49 @@ test("opsi secure → cookie memuat Secure; nama cookie/header bisa dikustom", a
     headers: { cookie: `xsrf=${token}`, "x-xsrf-token": token },
   });
   assert.equal((await middleware(context(postRequest), nextOk)).status, 200);
+});
+
+test("GET menyediakan token aktif ke loader SSR tanpa membocorkan header klien", async () => {
+  const token = "d".repeat(64);
+  const request = new Request("http://t/", {
+    headers: { cookie: `ramonyx-csrf=${token}`, "x-ramonyx-csrf-token": "palsu" },
+  });
+  const response = await csrfProtection()(context(request), async (nextRequest) => {
+    assert.equal(nextRequest?.headers.get(CSRF_REQUEST_HEADER), token);
+    return new Response("ok");
+  });
+  assert.equal(response.status, 200);
+});
+
+test("POST form tanpa JS memakai field _csrf; body tetap dapat dibaca handler", async () => {
+  const token = "e".repeat(64);
+  const body = new URLSearchParams({ _csrf: token, nama: "Rina" });
+  const request = new Request("http://t/", {
+    method: "POST",
+    headers: {
+      cookie: `ramonyx-csrf=${token}`,
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body,
+  });
+  const response = await csrfProtection()(context(request), async (nextRequest) => {
+    const form = await (nextRequest ?? request).formData();
+    assert.equal(form.get("nama"), "Rina");
+    return new Response("ok");
+  });
+  assert.equal(response.status, 200);
+  assert.equal(await response.text(), "ok");
+});
+
+test("POST form dengan token salah tetap 403", async () => {
+  const token = "f".repeat(64);
+  const request = new Request("http://t/", {
+    method: "POST",
+    headers: {
+      cookie: `ramonyx-csrf=${token}`,
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({ _csrf: "salah" }),
+  });
+  assert.equal((await csrfProtection()(context(request), nextOk)).status, 403);
 });

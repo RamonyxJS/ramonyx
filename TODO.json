@@ -694,7 +694,7 @@
       "theme": "security",
       "priority": "p1",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Naikkan primitif auth-session dari partial ke alur siap produksi: siklus session lengkap, perlindungan fixation, verifikasi kredensial yang aman, alur login/logout/register, CSRF/rate limit, dan error generik.",
       "why": "features.json menandai `auth-session` partial; primitif saja belum cukup untuk aplikasi nyata dan klaim keamanan 1.0.",
       "done": [
@@ -706,7 +706,7 @@
       "areas": ["packages/security", "packages/core", "apps/playground", "docs/public"],
       "adrs": ["ADR baru"],
       "competitor": "Auth.js, Lucia, Better Auth, SvelteKit hooks + cookie sessions.",
-      "source": "features.json `auth-session` partial; p1-auth-session selesai primitif ADR-0062",
+      "source": "selesai: PBKDF2 password hashing, session store/rotation/revoke, CSRF form + header, demo /sesi + e2e JS/no-JS; features.json auth-session implemented",
       "dependsOn": ["p1-auth-session"],
       "strategic": true
     },

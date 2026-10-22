@@ -272,7 +272,7 @@
 
 ### `p1-auth-session-complete` — Lengkapi auth/session menjadi alur produksi
 
-*tema: security · ukuran: M · status: open · dependensi: `p1-auth-session` · sumber: features.json `auth-session` partial; p1-auth-session selesai primitif ADR-0062*
+*tema: security · ukuran: M · status: done · dependensi: `p1-auth-session` · sumber: selesai: PBKDF2 password hashing, session store/rotation/revoke, CSRF form + header, demo /sesi + e2e JS/no-JS; features.json auth-session implemented*
 
 - **Apa**: Naikkan primitif auth-session dari partial ke alur siap produksi: siklus session lengkap, perlindungan fixation, verifikasi kredensial yang aman, alur login/logout/register, CSRF/rate limit, dan error generik.
 - **Kenapa penting untuk bersaing**: features.json menandai `auth-session` partial; primitif saja belum cukup untuk aplikasi nyata dan klaim keamanan 1.0.

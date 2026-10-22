@@ -4,6 +4,14 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+### Auth & session
+
+- **Auth primitives production flow**: PBKDF2 password hashing + verification, server-side
+  session store with rotation/revocation and expiry, CSRF protection for header (JS) and `_csrf`
+  form field (no-JS), and a playground login/register/logout reference tested with and without
+  JavaScript. Generic auth errors and rate limiting are included; OAuth/authorization remain
+  application concerns.
+
 ## [0.6.0] — 2026-10-22
 
 Rilis data deferred no-JS-safe + penutupan temuan Cloudflare Web Analytics (DF-13).

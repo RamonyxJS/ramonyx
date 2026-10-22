@@ -4,6 +4,7 @@
 // `ramonyx.config.ts`; route di `src/routes`. Semua impor berkas pengguna lewat loader
 // paket (lihat `load.ts`).
 
+import { type ChildProcess, spawn } from "node:child_process";
 import { existsSync, readFileSync, watch } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -45,7 +46,7 @@ Opsi:
   --dev-port <n>    Override port Vite (default 5173)
   --static          (build) Prerender rute statis + getStaticPaths → dist/static
   --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)
-  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)
+  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah
 
 Konvensi:
   src/app.ts        mengekspor createApp(options?) → FetchHandler
@@ -353,7 +354,92 @@ async function commandBuild(flags: Flags): Promise<number> {
   return 0;
 }
 
+/** Supervisor `start --watch`: restart proses server (module cache bersih) saat src berubah. */
+async function commandStartWatch(flags: Flags): Promise<number> {
+  const appDir = flags.appDir;
+  const baseArgs = process.argv.slice(1).filter((arg) => arg !== "--watch");
+  let child: ChildProcess | null = null;
+  let menghentikan = false;
+
+  const spawnServer = (): void => {
+    if (menghentikan) {
+      return;
+    }
+    child = spawn(process.execPath, [...process.execArgv, ...baseArgs], {
+      cwd: process.cwd(),
+      env: process.env,
+      stdio: "inherit",
+    });
+    child.once("exit", () => {
+      child = null;
+    });
+    child.once("error", (error) => {
+      console.error(`watch: gagal menjalankan server — ${error.message}`);
+    });
+  };
+
+  const stopServer = async (): Promise<void> => {
+    const running = child;
+    if (running === null) {
+      return;
+    }
+    const exited = new Promise<void>((resolve) => {
+      running.once("exit", () => resolve());
+      setTimeout(() => resolve(), 5_000);
+    });
+    running.kill("SIGTERM");
+    await exited;
+    if (running.exitCode === null && running.signalCode === null) {
+      running.kill("SIGKILL");
+      await exited;
+    }
+    child = null;
+  };
+
+  spawnServer();
+
+  let timer: NodeJS.Timeout | undefined;
+  let restarting = false;
+  const restart = async (): Promise<void> => {
+    if (restarting || menghentikan) {
+      return;
+    }
+    restarting = true;
+    console.log("watch: perubahan src terdeteksi — restart server");
+    await stopServer();
+    spawnServer();
+    restarting = false;
+  };
+  const watcher = watch(join(appDir, "src"), { recursive: true }, () => {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      void restart();
+    }, 200);
+  });
+  console.log("watch: memantau src/** — server restart otomatis (Ctrl+C untuk keluar)");
+
+  await new Promise<void>((resolve) => {
+    const berhenti = (): void => {
+      menghentikan = true;
+      watcher.close();
+      if (timer !== undefined) {
+        clearTimeout(timer);
+      }
+      void stopServer().finally(() => resolve());
+    };
+    process.once("SIGINT", berhenti);
+    process.once("SIGTERM", berhenti);
+  });
+  console.log("watch: berhenti");
+  return 0;
+}
+
 async function commandStart(flags: Flags): Promise<number> {
+  if (flags.watch === true) {
+    return await commandStartWatch(flags);
+  }
   // React produksi: harus diset SEBELUM `src/app.ts` (dan react) diimpor.
   process.env.NODE_ENV ??= "production";
   const { config } = await loadConfigFile(flags.appDir, flags.configPath);

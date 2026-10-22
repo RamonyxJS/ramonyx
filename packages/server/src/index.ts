@@ -1,5 +1,10 @@
 export type { CreateHandlerOptions } from "./handler.ts";
-export { createHandler, withMiddleware } from "./handler.ts";
+export {
+  createHandler,
+  type MiddlewareMatcher,
+  matchMiddleware,
+  withMiddleware,
+} from "./handler.ts";
 export type {
   Metrics,
   MetricsSnapshot,

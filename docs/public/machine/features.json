@@ -97,7 +97,8 @@
       ],
       "evidence": [
         "packages/server/src/handler.ts",
-        "packages/server/test/pipeline.test.ts"
+        "packages/server/test/pipeline.test.ts",
+        "packages/server/test/middleware-match.test.ts"
       ],
       "limitations": [
         "Tanpa matcher per-path (semua request)"
@@ -377,7 +378,8 @@
       ],
       "evidence": [
         "packages/security/src/ssrf.ts",
-        "packages/security/test/ssrf.test.ts"
+        "packages/security/test/ssrf.test.ts",
+        "docs/public/security/overview.md"
       ],
       "limitations": [
         "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)",
@@ -514,7 +516,11 @@
       "evidence": [
         "packages/devtools/src/commands.ts",
         "packages/devtools/src/load.ts",
-        "apps/create-app/test/create-app.test.ts"
+        "apps/create-app/test/create-app.test.ts",
+        "packages/bundler/src/devtools.ts",
+        "packages/bundler/test/devtools.test.ts",
+        "docs/public/devtools.md",
+        "docs/public/cli.md"
       ],
       "limitations": [
         "`start --watch` (restart server) belum",
@@ -553,12 +559,13 @@
         "packages/router/src/routes.ts",
         "packages/compiler/src/pages.ts",
         "packages/react/src/link.ts",
-        "packages/router/test/typed-routes.test.ts"
+        "packages/router/test/typed-routes.test.ts",
+        "packages/react/test/typed-link.test.tsx",
+        "packages/compiler/test/playground-pages.test.ts",
+        "apps/create-app/template/tsconfig.json",
+        "docs/public/typed-routes.md"
       ],
-      "limitations": [
-        "Impor via path relatif ke .ramonyx/routes.ts (belum ada alias)",
-        "href Link tetap string (URL konkret rute dinamis)"
-      ],
+      "limitations": [],
       "docs": "docs/public/typed-routes.md"
     },
     {
@@ -731,7 +738,7 @@
     },
     {
       "id": "image-optimization",
-      "name": "Aset: komponen Image (anti-CLS, lazy) — tanpa resize/format modern (M1)",
+      "name": "Aset: Image anti-CLS + varian resize/WebP/AVIF + blur placeholder (ADR-0079)",
       "status": "implemented",
       "since": "0.3.0",
       "priority": "p3",
@@ -748,11 +755,14 @@
         "apps/playground/e2e/image.spec.ts",
         "benchmarks/results/image-pipeline-vitals.json",
         "docs/public/assets-and-images.md",
-        "docs/public/engineering/adr/0069-assets.md"
+        "docs/public/engineering/adr/0069-assets.md",
+        "packages/bundler/src/manifest.ts",
+        "packages/core/src/assets.ts"
       ],
       "limitations": [
         "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
-        "avif opt-in (jauh lebih lambat saat build); tanpa placeholder blur"
+        "AVIF opt-in (jauh lebih lambat saat build)",
+        "Placeholder blur dibuat saat build; varian on-demand di dev belum ada"
       ],
       "docs": "docs/public/assets-and-images.md"
     },
@@ -772,12 +782,13 @@
         "packages/core/test/i18n.test.ts",
         "packages/ssr/test/i18n.test.ts",
         "apps/playground/e2e/i18n.spec.ts",
-        "docs/public/engineering/adr/0081-i18n.md"
+        "docs/public/engineering/adr/0081-i18n.md",
+        "docs/public/i18n.md"
       ],
       "limitations": [
-        "Tanpa ICU MessageFormat (interpolasi + plural Intl saja)",
-        "Tanpa deteksi/redirect otomatis — pola middleware + cookie (docs/i18n.md)",
-        "Rute didaftarkan per locale (linear); lokalisasi per-rute belum didukung"
+        "ICU subset: tanpa custom formatter/tag, offset, atau spellout",
+        "Locale detection hanya redirect helper; strategi cache/CDN tetap milik aplikasi",
+        "Satu rute per locale (linear); lokalisasi per-rute belum didukung"
       ],
       "docs": "docs/public/i18n.md"
     },
@@ -837,7 +848,9 @@
         "apps/playground/src/routes/catatan/page.tsx",
         "apps/playground/e2e/catatan.spec.ts",
         "apps/playground/e2e/form.spec.ts",
-        "docs/public/ssr-hydration.md"
+        "docs/public/ssr-hydration.md",
+        "packages/ssr/test/action-body-limit.test.ts",
+        "apps/create-app/test/create-app.test.ts"
       ],
       "limitations": [
         "Upload file besar belum dioptimasi (multipart di-buffer FormData)"

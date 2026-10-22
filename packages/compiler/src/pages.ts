@@ -131,6 +131,7 @@ export function generateRouteTypes(pages: readonly LoadedPage[]): string {
   return [
     "// File ini digenerate otomatis oleh @ramonyx/compiler (typed routes — ADR-0073).",
     "// Jangan diedit manual; jalankan `ramonyx build`/`ramonyx dev` untuk memperbarui.",
+    'import { createLink } from "@ramonyx/react/link";',
     'import { fillHref } from "@ramonyx/router";',
     "",
     "export type RouteParamsMap = {",
@@ -145,6 +146,9 @@ export function generateRouteTypes(pages: readonly LoadedPage[]): string {
     "): string {",
     "  return fillHref(path, args[0] as Record<string, string> | undefined);",
     "}",
+    "",
+    "/** Link bertipe dari manifest rute. */",
+    "export const Link = createLink<RouteParamsMap>();",
     "",
   ].join("\n");
 }

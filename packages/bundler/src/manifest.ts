@@ -25,6 +25,8 @@ export interface AssetEntry {
   /** Dimensi intrinsik (dari prosesor — ADR-0079); dipakai `Image` anti-CLS. */
   readonly width?: number;
   readonly height?: number;
+  /** Data URI blur/LQIP (plugin image) untuk background anti-CLS. */
+  readonly placeholder?: string;
   /** Varian resize/format (ADR-0079). */
   readonly variants?: readonly AssetVariantEntry[];
 }

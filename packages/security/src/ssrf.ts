@@ -145,17 +145,105 @@ async function resolveAndValidate(url: URL, options: GuardedFetchOptions): Promi
   return { address: first.address, family: first.family };
 }
 
+function isHttpUrl(value: string): URL | null {
+  if (!/^https?:\/\//i.test(value.trim())) {
+    return null;
+  }
+  try {
+    return new URL(value.trim());
+  } catch {
+    return null;
+  }
+}
+
+/** Validasi URL absolut di field string FormData (tanpa membaca body request asal). */
+export async function validateFormDataUrls(
+  formData: FormData,
+  options: GuardedFetchOptions = {},
+): Promise<void> {
+  for (const value of formData.values()) {
+    if (typeof value !== "string") {
+      continue;
+    }
+    const url = isHttpUrl(value);
+    if (url !== null) {
+      await resolveAndValidate(url, options);
+    }
+  }
+}
+
+/**
+ * Validasi URL pada request multipart/urlencoded melalui clone body (request asli tetap utuh).
+ * Berguna sebelum meneruskan form ke `guardedFetch`.
+ */
+export async function validateRequestFormDataUrls(
+  request: Request,
+  options: GuardedFetchOptions = {},
+): Promise<void> {
+  const type = (request.headers.get("content-type") ?? "").toLowerCase();
+  if (
+    !type.includes("multipart/form-data") &&
+    !type.includes("application/x-www-form-urlencoded")
+  ) {
+    return;
+  }
+  const formData = await request.clone().formData();
+  await validateFormDataUrls(formData, options);
+}
+
+function escapePart(value: string): string {
+  return value.replace(/["\r\n]/g, "_");
+}
+
+/** Serialisasi FormData ke multipart (satu kali; file dibaca per entri). */
+async function formDataBody(formData: FormData): Promise<{
+  readonly data: Uint8Array;
+  readonly contentType: string;
+}> {
+  const boundary = `----Ramonyx${crypto.randomUUID().replaceAll("-", "")}`;
+  const encoder = new TextEncoder();
+  const chunks: Uint8Array[] = [];
+  for (const [name, value] of formData.entries()) {
+    if (typeof value === "string") {
+      chunks.push(
+        encoder.encode(
+          `--${boundary}\r\nContent-Disposition: form-data; name="${escapePart(name)}"\r\n\r\n${value}\r\n`,
+        ),
+      );
+      continue;
+    }
+    const filename = value.name.length > 0 ? value.name : "blob";
+    chunks.push(
+      encoder.encode(
+        `--${boundary}\r\nContent-Disposition: form-data; name="${escapePart(name)}"; filename="${escapePart(filename)}"\r\nContent-Type: ${value.type || "application/octet-stream"}\r\n\r\n`,
+      ),
+    );
+    chunks.push(new Uint8Array(await value.arrayBuffer()));
+    chunks.push(encoder.encode("\r\n"));
+  }
+  chunks.push(encoder.encode(`--${boundary}--\r\n`));
+  const size = chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
+  const data = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    data.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { data, contentType: `multipart/form-data; boundary=${boundary}` };
+}
+
 function collectHeaders(init: RequestInit): Headers {
   return new Headers(init.headers);
 }
 
 /** Body `RequestInit` → data yang bisa dikirim `node:http` (stream/string/bytes). */
-function toNodeBody(
+async function toNodeBody(
   body: RequestInit["body"],
-):
+): Promise<
   | { kind: "none" }
   | { kind: "buffer"; data: Buffer; contentType?: string }
-  | { kind: "stream"; stream: ReadableStream } {
+  | { kind: "stream"; stream: ReadableStream }
+> {
   if (body === null || body === undefined) {
     return { kind: "none" };
   }
@@ -178,8 +266,12 @@ function toNodeBody(
   if (body instanceof ReadableStream) {
     return { kind: "stream", stream: body };
   }
+  if (body instanceof FormData) {
+    const encoded = await formDataBody(body);
+    return { kind: "buffer", data: Buffer.from(encoded.data), contentType: encoded.contentType };
+  }
   throw new SsrfError(
-    "guardedFetch: tipe body belum didukung (gunakan string/bytes/URLSearchParams/ReadableStream; FormData menyusul).",
+    "guardedFetch: tipe body belum didukung (gunakan string/bytes/URLSearchParams/ReadableStream/FormData).",
   );
 }
 
@@ -202,9 +294,9 @@ async function pinnedFetch(url: URL, pin: Pin | null, init: RequestInit): Promis
     );
   }
 
+  const body = await toNodeBody(init.body);
   return new Promise<Response>((resolve, reject) => {
     const headers = collectHeaders(init);
-    const body = toNodeBody(init.body);
     if (body.kind === "buffer") {
       headers.set("content-length", String(body.data.byteLength));
       if (body.contentType !== undefined && !headers.has("content-type")) {
@@ -306,6 +398,9 @@ export async function guardedFetch(
   init: RequestInit = {},
   options: GuardedFetchOptions = {},
 ): Promise<Response> {
+  if (init.body instanceof FormData) {
+    await validateFormDataUrls(init.body, options);
+  }
   const maxRedirects = options.maxRedirects ?? 0;
   let current = input instanceof URL ? input : new URL(input);
 

@@ -859,7 +859,7 @@
       "theme": "security",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Matcher middleware global per-path, validasi URL di FormData/multipart untuk SSRF guard, dan penanganan upload besar tanpa buffer berlebih.",
       "why": "Pipeline request adalah jalur semua trafik; gap kecil di sini memaksa workaround middleware dan membatasi form upload produksi.",
       "done": [
@@ -916,7 +916,7 @@
       "theme": "routing",
       "priority": "p2",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "ICU MessageFormat (plural/select/date), deteksi Accept-Language + redirect/cookie, dan metadata/konten per-rute per-locale.",
       "why": "Routing locale sudah ada; format pesan kompleks dan deteksi otomatis masih menjadi pekerjaan aplikasi.",
       "done": [
@@ -934,7 +934,7 @@
       "theme": "dx",
       "priority": "p3",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Link menerima href bertipe dari route manifest dan route types dapat diimpor lewat alias stabil, bukan path relatif.",
       "why": "Typed routes sudah ada tetapi belum menutup kesalahan href dan impor path yang mengganggu DX.",
       "done": [
@@ -953,7 +953,7 @@
       "theme": "dx",
       "priority": "p3",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "`ramonyx start --watch` yang aman dan panel HMR yang memetakan API route serta korelasi request secara akurat.",
       "why": "Dev loop masih memerlukan restart manual dan panel saat ini hanya memetakan halaman.",
       "done": [
@@ -989,7 +989,7 @@
       "theme": "perf",
       "priority": "p3",
       "size": "M",
-      "status": "open",
+      "status": "done",
       "what": "Blur/LQIP placeholder, AVIF opt-in yang efisien, varian gambar dev, dan nama aset dev yang konsisten.",
       "why": "Pipeline produksi sudah baik; kualitas visual dan pengalaman dev masih memiliki gap.",
       "done": [

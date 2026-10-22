@@ -13,7 +13,7 @@ ramonyx dev
 
 | Section | Data source | Notes |
 | --- | --- | --- |
-| **Routes** | Page manifest | Updated when route files change (same watcher as client entry regeneration) |
+| **Routes** | Page + API manifest | Shows `page`/`api` kind and API methods; updated when route files change |
 | **Bundles & assets** | `dist/client/ramonyx.assets.json` + file sizes | Empty until the app has been built — the panel does not build for you |
 | **Recent requests** | Collector middleware + `AppHooks` | Last 50 requests; method, path, status, total, loader, render, cache, hydration |
 
@@ -31,9 +31,8 @@ ramonyx dev
 
 ## Limitations (honest)
 
-- Loader/render events do not carry a request id; the panel correlates them to the **last open
-  request with the same path**. Good enough for low-concurrency development.
-- Page routes only (API routes are not listed separately).
+- Loader/render correlation uses Node `AsyncLocalStorage`, so concurrent requests with the same
+  path do not overwrite each other's timings.
 - Requests short-circuited by plugin middleware are still recorded (the collector is outermost), but
   Vite asset requests and `/__ramonyx/*` calls are not.
 - Not a production observability tool — use [Observability](observability.md) for that.

@@ -21,6 +21,7 @@ test("gambar: <picture> + source webp + srcset ter-resize, gambar termuat di bro
   await expect(img).toHaveAttribute("sizes", "(max-width: 768px) 100vw, 640px");
   await expect(img).toHaveAttribute("width", "800");
   await expect(img).toHaveAttribute("height", "600");
+  await expect(img).toHaveAttribute("style", /background-image:\s*url\("data:image\/webp;base64,/);
 
   // Browser benar-benar memuat berkas varian (200, bukan 404) dan dimensinya sesuai.
   await img.scrollIntoViewIfNeeded();

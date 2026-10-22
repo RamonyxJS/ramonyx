@@ -54,6 +54,8 @@ export interface CreatePageRoutesOptions {
   readonly client?: ClientOptions;
   /** Batas ukuran dokumen HTML per halaman (default 2 MiB) → 500 bila lewat. */
   readonly maxDocumentBytes?: number;
+  /** Batas body form action (default 1 MiB); body streaming lebih besar → 413. */
+  readonly maxBodyBytes?: number;
   /**
    * Aktifkan SSR streaming (butuh `renderer.renderStream`; default false — ADR-0047).
    * Aliran body dikirim ke klien saat siap; error setelah byte pertama terkirim akan
@@ -89,6 +91,7 @@ export interface CreatePageRoutesOptions {
 }
 
 const DEFAULT_MAX_DOCUMENT_BYTES = 2_097_152;
+const DEFAULT_MAX_BODY_BYTES = 1_048_576;
 
 /**
  * Penanda posisi body saat streaming; dokumen dipecah pada penanda ini sehingga kontrak
@@ -711,16 +714,67 @@ async function renderPage(
   }
 }
 
-async function readFormData(request: Request): Promise<FormData> {
-  const type = (request.headers.get("content-type") ?? "").toLowerCase();
-  if (type.includes("multipart/form-data") || type.includes("application/x-www-form-urlencoded")) {
-    try {
-      return await request.formData();
-    } catch {
-      return new FormData();
-    }
+class PayloadTooLargeError extends Error {
+  constructor() {
+    super("Payload Too Large");
+    this.name = "PayloadTooLargeError";
   }
-  return new FormData();
+}
+
+/** Batasi body form secara streaming agar multipart besar tidak di-buffer FormData. */
+async function readFormData(request: Request, maxBytes: number): Promise<FormData> {
+  const type = (request.headers.get("content-type") ?? "").toLowerCase();
+  if (
+    !type.includes("multipart/form-data") &&
+    !type.includes("application/x-www-form-urlencoded")
+  ) {
+    return new FormData();
+  }
+  const declared = Number(request.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    throw new PayloadTooLargeError();
+  }
+  if (request.body === null) {
+    return new FormData();
+  }
+
+  let total = 0;
+  const reader = request.body.getReader();
+  const limited = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        if (done) {
+          controller.close();
+          return;
+        }
+        total += value.byteLength;
+        if (total > maxBytes) {
+          await reader.cancel().catch(() => undefined);
+          controller.error(new PayloadTooLargeError());
+          return;
+        }
+        controller.enqueue(value);
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+    cancel(reason) {
+      return reader.cancel(reason);
+    },
+  });
+  try {
+    const limitedRequest = new Request(request, {
+      body: limited,
+      duplex: "half",
+    } as RequestInit);
+    return await limitedRequest.formData();
+  } catch (error) {
+    if (error instanceof PayloadTooLargeError) {
+      throw error;
+    }
+    return new FormData();
+  }
 }
 
 /** Issue validasi → pesan per field (kunci = segmen path pertama, `_` untuk akar). */
@@ -795,10 +849,19 @@ async function runAction(
   errorDetails?: boolean,
   i18n?: I18nRoutingOptions,
   locale?: string,
+  maxBodyBytes = DEFAULT_MAX_BODY_BYTES,
 ): Promise<Response> {
   const params = context.params as Record<string, string>;
   const request = context.request;
-  const formData = await readFormData(request);
+  let formData: FormData;
+  try {
+    formData = await readFormData(request, maxBodyBytes);
+  } catch (error) {
+    if (error instanceof PayloadTooLargeError) {
+      return new Response("Payload Too Large", { status: 413 });
+    }
+    throw error;
+  }
 
   let actionState: PageActionState | undefined;
   let status: number | undefined;
@@ -917,6 +980,7 @@ async function runAction(
 export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[] {
   const documentRenderer = options.document ?? defaultDocument;
   const maxDocumentBytes = options.maxDocumentBytes ?? DEFAULT_MAX_DOCUMENT_BYTES;
+  const maxBodyBytes = options.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
   const streaming = options.streaming === true;
   // Default: detail error aktif di dev (overlay DX — ADR-0072); aman di edge (tanpa process).
   const errorDetails =
@@ -979,6 +1043,7 @@ export function createPageRoutes(options: CreatePageRoutesOptions): RouteEntry[]
               errorDetails,
               i18n,
               locale,
+              maxBodyBytes,
             ),
         }),
       });

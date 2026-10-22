@@ -10,6 +10,7 @@ ramonyx build --static   # client bundle + prerender pages → dist/static
 ramonyx build --target edge   # server/edge bundle → dist/edge ({ fetch } contract)
 ramonyx build --watch    # rebuild on file changes (covers --static/--target)
 ramonyx start            # production SSR (NODE_ENV=production)
+ramonyx start --watch    # restart the server when src/** changes
 ramonyx doctor           # config + routes + build diagnostics
 ramonyx version | help
 ```
@@ -24,7 +25,7 @@ ramonyx version | help
 | `--dev-port <n>` | dev | Override the Vite port (default 5173) |
 | `--static` | build | Prerender static routes (`getStaticPaths` for dynamic routes) → `dist/static` |
 | `--target <name>` | build | Extra target; `edge` → `dist/edge` |
-| `--watch` | build | Rebuild on changes (debounced, safe queue) |
+| `--watch` | build/start | Build: rebuild on changes (debounced, safe queue). Start: restart a supervised server process with clean shutdown. |
 
 ## Conventions
 
@@ -38,6 +39,9 @@ ramonyx.config.ts      default export { app?, server? } (optional)
 - `ramonyx dev|start` prefers `src/server.ts` when present, otherwise `src/app.ts`.
 - Plugins from `ramonyx.config.ts` are loaded by the CLI (Vite, middleware, hooks, assets).
 - `ramonyx start` sets `NODE_ENV=production` if unset; reactivity/React production build depends on it.
+- `start --watch` is a supervisor: the server runs in a child process so changed modules are not
+  cached; SIGINT/SIGTERM stops both watcher and child. Rebuild the client separately when client
+  sources change.
 - `--static` and `--target edge` cannot be combined (different artifacts).
 
 ## Examples

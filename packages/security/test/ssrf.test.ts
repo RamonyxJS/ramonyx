@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { test } from "node:test";
-import { guardedFetch, SsrfError } from "../src/ssrf.ts";
+import {
+  guardedFetch,
+  SsrfError,
+  validateFormDataUrls,
+  validateRequestFormDataUrls,
+} from "../src/ssrf.ts";
 
 test("alamat privat/loopback/link-local literal ditolak sebelum fetch", async () => {
   const targets = [
@@ -158,5 +163,73 @@ test("body string/URLSearchParams dikirim lewat jalur pinned (allowHosts)", asyn
     await new Promise<void>((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),
     );
+  }
+});
+
+test("FormData: URL privat ditolak, request asli tidak dikonsumsi", async () => {
+  const form = new FormData();
+  form.set("callback", "http://127.0.0.1/admin");
+  form.set("catatan", "bukan URL");
+  await assert.rejects(validateFormDataUrls(form), SsrfError);
+
+  const request = new Request("http://test.local/kirim", { method: "POST", body: form });
+  await assert.rejects(
+    validateRequestFormDataUrls(request, {
+      dnsLookup: async () => [{ address: "203.0.113.8", family: 4 }],
+    }),
+    SsrfError,
+  );
+  // clone() hanya membaca salinan; body request asli tetap dapat dipakai handler.
+  const asli = await request.formData();
+  assert.equal(asli.get("catatan"), "bukan URL");
+});
+
+test("FormData: URL publik lolos dengan DNS kustom (sekali resolve)", async () => {
+  const lookups: string[] = [];
+  const form = new FormData();
+  form.set("target", "https://api.contoh.test/v1");
+  await validateFormDataUrls(form, {
+    dnsLookup: async (hostname) => {
+      lookups.push(hostname);
+      return [{ address: "203.0.113.9", family: 4 }];
+    },
+  });
+  assert.deepEqual(lookups, ["api.contoh.test"]);
+});
+
+test("FormData body: multipart terkirim ke pinned fetch (text + file)", async () => {
+  const diterima: { body: string; contentType: string | undefined }[] = [];
+  const server = createServer((request, response) => {
+    const chunks: Buffer[] = [];
+    request.on("data", (chunk: Buffer) => chunks.push(chunk));
+    request.on("end", () => {
+      diterima.push({
+        body: Buffer.concat(chunks).toString(),
+        contentType: request.headers["content-type"],
+      });
+      response.writeHead(200);
+      response.end("ok");
+    });
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  const port = typeof address === "object" && address !== null ? address.port : 0;
+  try {
+    const form = new FormData();
+    form.set("nama", "Rina");
+    form.set("berkas", new File(["isi-berkas"], "catatan.txt", { type: "text/plain" }));
+    const response = await guardedFetch(
+      `http://127.0.0.1:${port}/unggah`,
+      { method: "POST", body: form },
+      { allowHosts: ["127.0.0.1"] },
+    );
+    assert.equal(response.status, 200);
+    const sent = diterima[0];
+    assert.match(sent?.contentType ?? "", /^multipart\/form-data; boundary=/);
+    assert.match(sent?.body ?? "", /name="nama"\r\n\r\nRina/);
+    assert.match(sent?.body ?? "", /filename="catatan.txt"/);
+    assert.match(sent?.body ?? "", /isi-berkas/);
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 });

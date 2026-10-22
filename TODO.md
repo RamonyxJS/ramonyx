@@ -572,7 +572,7 @@
 
 ### `p2-request-pipeline` — Middleware matcher, multipart SSRF, dan upload streaming
 
-*tema: security · ukuran: M · status: open · sumber: limitations middleware-global/ssrf-guard/forms; audit 2026-10-22*
+*tema: security · ukuran: M · status: done · sumber: limitations middleware-global/ssrf-guard/forms; audit 2026-10-22*
 
 - **Apa**: Matcher middleware global per-path, validasi URL di FormData/multipart untuk SSRF guard, dan penanganan upload besar tanpa buffer berlebih.
 - **Kenapa penting untuk bersaing**: Pipeline request adalah jalur semua trafik; gap kecil di sini memaksa workaround middleware dan membatasi form upload produksi.
@@ -611,7 +611,7 @@
 
 ### `p2-i18n-complete` — i18n lengkap: ICU, deteksi/redirect, metadata per-locale
 
-*tema: routing · ukuran: M · status: open · sumber: limitations i18n; audit 2026-10-22*
+*tema: routing · ukuran: M · status: done · sumber: limitations i18n; audit 2026-10-22*
 
 - **Apa**: ICU MessageFormat (plural/select/date), deteksi Accept-Language + redirect/cookie, dan metadata/konten per-rute per-locale.
 - **Kenapa penting untuk bersaing**: Routing locale sudah ada; format pesan kompleks dan deteksi otomatis masih menjadi pekerjaan aplikasi.
@@ -678,7 +678,7 @@
 
 ### `p3-typed-routes` — Typed Link href dan alias route manifest
 
-*tema: dx · ukuran: M · status: open · dependensi: `p1-typed-routes` · sumber: limitations typed-routes; audit 2026-10-22*
+*tema: dx · ukuran: M · status: done · dependensi: `p1-typed-routes` · sumber: limitations typed-routes; audit 2026-10-22*
 
 - **Apa**: Link menerima href bertipe dari route manifest dan route types dapat diimpor lewat alias stabil, bukan path relatif.
 - **Kenapa penting untuk bersaing**: Typed routes sudah ada tetapi belum menutup kesalahan href dan impor path yang mengganggu DX.
@@ -691,7 +691,7 @@
 
 ### `p3-cli-hmr` — CLI watch dan HMR panel untuk API route
 
-*tema: dx · ukuran: M · status: open · sumber: limitations cli-devtools/dev-server-hmr; audit 2026-10-22*
+*tema: dx · ukuran: M · status: done · sumber: limitations cli-devtools/dev-server-hmr; audit 2026-10-22*
 
 - **Apa**: `ramonyx start --watch` yang aman dan panel HMR yang memetakan API route serta korelasi request secara akurat.
 - **Kenapa penting untuk bersaing**: Dev loop masih memerlukan restart manual dan panel saat ini hanya memetakan halaman.
@@ -717,7 +717,7 @@
 
 ### `p3-media-complete` — Media lengkap: blur placeholder, AVIF, varian dev
 
-*tema: perf · ukuran: M · status: open · sumber: limitations image-optimization/asset-pipeline; audit 2026-10-22*
+*tema: perf · ukuran: M · status: done · sumber: limitations image-optimization/asset-pipeline; audit 2026-10-22*
 
 - **Apa**: Blur/LQIP placeholder, AVIF opt-in yang efisien, varian gambar dev, dan nama aset dev yang konsisten.
 - **Kenapa penting untuk bersaing**: Pipeline produksi sudah baik; kualitas visual dan pengalaman dev masih memiliki gap.

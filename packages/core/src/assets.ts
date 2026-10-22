@@ -19,6 +19,7 @@ export interface AssetInfo {
   readonly url: string;
   readonly width?: number;
   readonly height?: number;
+  readonly placeholder?: string;
   readonly variants?: readonly AssetVariantInfo[];
 }
 
@@ -34,6 +35,8 @@ export interface ResolvedImage {
   readonly src: string;
   readonly width?: number;
   readonly height?: number;
+  /** Data URI blur/LQIP untuk background anti-CLS. */
+  readonly placeholder?: string;
   /** `srcset` format modern (untuk `<img>` di dalam `<picture>`). */
   readonly srcSet?: string;
   /** `<source>` per format modern (avif/webp) — untuk `<picture>`. */
@@ -80,6 +83,7 @@ export function createAssetResolverFromMap(map: Readonly<Record<string, AssetInf
           src: info.url,
           ...(info.width !== undefined ? { width: info.width } : {}),
           ...(info.height !== undefined ? { height: info.height } : {}),
+          ...(info.placeholder !== undefined ? { placeholder: info.placeholder } : {}),
         };
       }
 
@@ -108,6 +112,7 @@ export function createAssetResolverFromMap(map: Readonly<Record<string, AssetInf
         src: info.url,
         ...(info.width !== undefined ? { width: info.width } : {}),
         ...(info.height !== undefined ? { height: info.height } : {}),
+        ...(info.placeholder !== undefined ? { placeholder: info.placeholder } : {}),
         ...(srcSet.length > 0 ? { srcSet } : {}),
         ...(sources.length > 0 ? { sources } : {}),
       };

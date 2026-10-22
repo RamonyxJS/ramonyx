@@ -6,6 +6,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import {
   generateClientEntry,
+  listApiRoutes,
   loadPageRoutes,
   type ModuleImporter,
   RouteManifestError,
@@ -277,13 +278,23 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
   };
 
   const regenerateEntry = async (): Promise<void> => {
-    const pages = await loadPageRoutes({ dir: routesDir, importer });
-    devtools.setRoutes(
-      pages.map((page) => ({
+    const [pages, apiRoutes] = await Promise.all([
+      loadPageRoutes({ dir: routesDir, importer }),
+      listApiRoutes({ dir: routesDir, importer }),
+    ]);
+    devtools.setRoutes([
+      ...pages.map((page) => ({
         path: page.path,
+        kind: "page" as const,
         ...(page.pageFile !== undefined ? { file: relative(appDir, page.pageFile) } : {}),
       })),
-    );
+      ...apiRoutes.map((route) => ({
+        path: route.routePath,
+        kind: "api" as const,
+        methods: route.methods,
+        file: relative(appDir, route.file),
+      })),
+    ]);
     await mkdir(entryDir, { recursive: true });
     await writeFile(entryFile, generateClientEntry(pages, { from: entryDir }));
   };

@@ -52,7 +52,9 @@ test("hook assets: meta dimensi + varian resize webp (≤ intrinsik + lebar intr
   const hasil = await plugin.assets?.(context(workDir), { path: "img/hero.png", data });
 
   assert.ok(hasil !== undefined);
-  assert.deepEqual(hasil.meta, { width: 800, height: 600 });
+  assert.equal(hasil.meta?.width, 800);
+  assert.equal(hasil.meta?.height, 600);
+  assert.match(hasil.meta?.placeholder ?? "", /^data:image\/webp;base64,/);
   const widths = (hasil.outputs ?? []).map((output) => output.width);
   assert.deepEqual(widths, [320, 640, 800], "≤ intrinsik + lebar intrinsik (srcset lengkap)");
 
@@ -129,6 +131,7 @@ test("integrasi buildClient: manifest berisi varian + resolver.image() menunjuk 
     const entry = manifest?.assets?.["img/hero.png"];
     assert.equal(entry?.width, 800);
     assert.equal(entry?.height, 600);
+    assert.match(entry?.placeholder ?? "", /^data:image\/webp;base64,/);
     const variants = entry?.variants ?? [];
     assert.deepEqual(
       variants.map((variant) => variant.width),
@@ -147,6 +150,7 @@ test("integrasi buildClient: manifest berisi varian + resolver.image() menunjuk 
     const image = resolver.image("img/hero.png");
     assert.ok(image !== undefined);
     assert.equal(image.width, 800);
+    assert.match(image.placeholder ?? "", /^data:image\/webp;base64,/);
     assert.equal(
       image.srcSet,
       variants
@@ -172,4 +176,27 @@ test("bentuk plugin: nama + hook assets (dipanggil CLI lewat loadPlugins)", () =
   assert.equal(plugin.name, "image");
   assert.equal(typeof plugin.assets, "function");
   assert.equal(plugin.vite, undefined, "build-time saja — tanpa plugin Vite");
+});
+
+test("AVIF opt-in: varian avif nyata (placeholder bisa dimatikan)", async () => {
+  await rm(workDir, { recursive: true, force: true });
+  await mkdir(workDir, { recursive: true });
+  const data = await png800();
+  const plugin = imageOptimizer({ widths: [320], formats: ["avif"], placeholder: false });
+  const hasil = await plugin.assets?.(context(workDir), { path: "img/hero.png", data });
+  assert.equal(hasil?.meta?.placeholder, undefined);
+  const avif = hasil?.outputs?.[0];
+  assert.ok(avif !== undefined);
+  assert.match(avif.path, /\.avif$/);
+  assert.match((await sharp(avif.data).metadata()).format ?? "", /^(avif|heif)$/);
+  await rm(workDir, { recursive: true, force: true });
+});
+
+test("dev fallback: nama path asli konsisten, tanpa hash/varian/dimensi", async () => {
+  await rm(workDir, { recursive: true, force: true });
+  await mkdir(workDir, { recursive: true });
+  const resolver = await createAssetResolver(workDir, { fallbackToPath: true });
+  assert.deepEqual(resolver.image("./img/hero.png"), { src: "/assets/img/hero.png" });
+  assert.equal(resolver.url("img/hero.png"), "/assets/img/hero.png");
+  await rm(workDir, { recursive: true, force: true });
 });

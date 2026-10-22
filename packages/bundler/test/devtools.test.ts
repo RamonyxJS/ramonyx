@@ -65,7 +65,7 @@ test("hydration: HTML dengan payload → 'payload'; tanpa → 'none'; non-HTML �
   assert.equal(json?.hydration, undefined);
 });
 
-test("hooks: loader/render menempel ke request terbuka dengan path sama (aproksimasi dev)", async () => {
+test("hooks: loader/render menempel ke request yang benar (termasuk path sama konkuren)", async () => {
   const collector = createDevtoolsCollector();
   let lepas: (() => void) | undefined;
   const selesai = new Promise<void>((resolve) => {
@@ -117,4 +117,18 @@ test("halaman panel: HTML mandiri memuat endpoint data (tanpa build)", () => {
   assert.match(html, /Ramonyx Devtools/);
   assert.match(html, /__ramonyx\/data/);
   assert.match(html, /dev-only/);
+});
+
+test("hooks: AsyncLocalStorage memisahkan request konkuren dengan path sama", async () => {
+  const collector = createDevtoolsCollector();
+  const jalankan = (durationMs: number, delay: number) =>
+    collector.middleware(context("/sama"), async () => {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      collector.hooks.onLoaderEnd?.({ path: "/sama", durationMs, cached: false });
+      return new Response("ok");
+    });
+  await Promise.all([jalankan(20, 30), jalankan(1, 0)]);
+  const records = collector.snapshot().requests;
+  const times = records.map((record) => record.loaderMs).sort((a, b) => Number(a) - Number(b));
+  assert.deepEqual(times, [1, 20], "timing tidak tertukar walau path sama");
 });

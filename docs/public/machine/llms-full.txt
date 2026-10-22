@@ -111,7 +111,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       ],
       "evidence": [
         "packages/server/src/handler.ts",
-        "packages/server/test/pipeline.test.ts"
+        "packages/server/test/pipeline.test.ts",
+        "packages/server/test/middleware-match.test.ts"
       ],
       "limitations": [
         "Tanpa matcher per-path (semua request)"
@@ -391,7 +392,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       ],
       "evidence": [
         "packages/security/src/ssrf.ts",
-        "packages/security/test/ssrf.test.ts"
+        "packages/security/test/ssrf.test.ts",
+        "docs/public/security/overview.md"
       ],
       "limitations": [
         "Node-only: impor via @ramonyx/security/ssrf (index edge-safe — ADR-0058)",
@@ -528,7 +530,11 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "evidence": [
         "packages/devtools/src/commands.ts",
         "packages/devtools/src/load.ts",
-        "apps/create-app/test/create-app.test.ts"
+        "apps/create-app/test/create-app.test.ts",
+        "packages/bundler/src/devtools.ts",
+        "packages/bundler/test/devtools.test.ts",
+        "docs/public/devtools.md",
+        "docs/public/cli.md"
       ],
       "limitations": [
         "`start --watch` (restart server) belum",
@@ -567,12 +573,13 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "packages/router/src/routes.ts",
         "packages/compiler/src/pages.ts",
         "packages/react/src/link.ts",
-        "packages/router/test/typed-routes.test.ts"
+        "packages/router/test/typed-routes.test.ts",
+        "packages/react/test/typed-link.test.tsx",
+        "packages/compiler/test/playground-pages.test.ts",
+        "apps/create-app/template/tsconfig.json",
+        "docs/public/typed-routes.md"
       ],
-      "limitations": [
-        "Impor via path relatif ke .ramonyx/routes.ts (belum ada alias)",
-        "href Link tetap string (URL konkret rute dinamis)"
-      ],
+      "limitations": [],
       "docs": "docs/public/typed-routes.md"
     },
     {
@@ -745,7 +752,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "id": "image-optimization",
-      "name": "Aset: komponen Image (anti-CLS, lazy) — tanpa resize/format modern (M1)",
+      "name": "Aset: Image anti-CLS + varian resize/WebP/AVIF + blur placeholder (ADR-0079)",
       "status": "implemented",
       "since": "0.3.0",
       "priority": "p3",
@@ -762,11 +769,14 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "apps/playground/e2e/image.spec.ts",
         "benchmarks/results/image-pipeline-vitals.json",
         "docs/public/assets-and-images.md",
-        "docs/public/engineering/adr/0069-assets.md"
+        "docs/public/engineering/adr/0069-assets.md",
+        "packages/bundler/src/manifest.ts",
+        "packages/core/src/assets.ts"
       ],
       "limitations": [
         "Optimasi butuh sharp (peer opsional, tidak diinstal otomatis); dev tanpa varian",
-        "avif opt-in (jauh lebih lambat saat build); tanpa placeholder blur"
+        "AVIF opt-in (jauh lebih lambat saat build)",
+        "Placeholder blur dibuat saat build; varian on-demand di dev belum ada"
       ],
       "docs": "docs/public/assets-and-images.md"
     },
@@ -786,12 +796,13 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "packages/core/test/i18n.test.ts",
         "packages/ssr/test/i18n.test.ts",
         "apps/playground/e2e/i18n.spec.ts",
-        "docs/public/engineering/adr/0081-i18n.md"
+        "docs/public/engineering/adr/0081-i18n.md",
+        "docs/public/i18n.md"
       ],
       "limitations": [
-        "Tanpa ICU MessageFormat (interpolasi + plural Intl saja)",
-        "Tanpa deteksi/redirect otomatis — pola middleware + cookie (docs/i18n.md)",
-        "Rute didaftarkan per locale (linear); lokalisasi per-rute belum didukung"
+        "ICU subset: tanpa custom formatter/tag, offset, atau spellout",
+        "Locale detection hanya redirect helper; strategi cache/CDN tetap milik aplikasi",
+        "Satu rute per locale (linear); lokalisasi per-rute belum didukung"
       ],
       "docs": "docs/public/i18n.md"
     },
@@ -851,7 +862,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "apps/playground/src/routes/catatan/page.tsx",
         "apps/playground/e2e/catatan.spec.ts",
         "apps/playground/e2e/form.spec.ts",
-        "docs/public/ssr-hydration.md"
+        "docs/public/ssr-hydration.md",
+        "packages/ssr/test/action-body-limit.test.ts",
+        "apps/create-app/test/create-app.test.ts"
       ],
       "limitations": [
         "Upload file besar belum dioptimasi (multipart di-buffer FormData)"
@@ -1951,7 +1964,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T07:10:18.407Z",
+  "generatedAt": "2026-10-22T07:45:28.597Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2374,9 +2387,11 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "version": "1.0.0",
       "source": "packages/server/src/index.ts",
       "values": [
+        "MiddlewareMatcher",
         "createHandler",
         "createMetrics",
         "createMetricsRoute",
+        "matchMiddleware",
         "parseQuery",
         "requestLogging",
         "traceId",
@@ -2441,8 +2456,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T07:10:20.055Z",
-  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
+  "generatedAt": "2026-10-22T07:45:30.479Z",
+  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
       "name": "dev",
@@ -2503,7 +2518,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     {
       "flag": "--watch",
       "argument": null,
-      "description": "(build) Bangun ulang otomatis saat berkas berubah (Ctrl+C untuk keluar)"
+      "description": "(build/start) Bangun ulang atau restart server saat src/** berubah"
     }
   ]
 }
@@ -2515,8 +2530,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "1.0.0",
-  "generatedAt": "2026-10-22T07:09:18.222Z",
-  "commit": "c184d40a546c100fd9854d548879165766dfd5fc",
+  "generatedAt": "2026-10-22T07:44:16.759Z",
+  "commit": "1c0510ba9c86248d4169cf5de62b1d3d603cf669",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2543,7 +2558,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
   "adrs": 8,
   "docs": 23,
   "tests": {
-    "node": 348,
+    "node": 364,
     "rust": 116,
     "e2eSpecFiles": 12
   }
@@ -2914,7 +2929,10 @@ export default defineConfig({
 - `sharp` is an **optional peer** — installed by the app, not by the framework.
 - Results are cached by content hash in `.ramonyx/image-cache`; unchanged images are not re-encoded.
 - The original file is always copied and used as the universal fallback.
-- Colors/dimensions are recorded in `ramonyx.assets.json` (`width`, `height`, `variants`).
+- Colors/dimensions are recorded in `ramonyx.assets.json` (`width`, `height`, `placeholder`, `variants`).
+- A tiny blurred WebP data URI is generated by default and passed through `assets.image()` as
+  `placeholder`; `Image` uses it as a CSS background until the real image paints (anti-CLS).
+  Disable with `imageOptimizer({ placeholder: false })`.
 
 `avif` can be added to `formats` for smaller files at the cost of build time. SVG is passed through
 (vector assets do not need variants).
@@ -2935,10 +2953,11 @@ export const metadata = {
 
 ## Honest limitations
 
-- Development serves `src/assets/**` as-is (no hashes, no variants); build output is the source of
-  truth for production behavior.
-- No blur placeholders (LQIP) or on-demand dev variants yet.
-- Image optimization only runs for raster formats (PNG/JPEG/WebP/AVIF/TIFF).
+- Development serves `src/assets/**` as-is (no hashes/variants); build output is the source of
+  truth for production behavior. Dev and production use the same path spelling.
+- Image optimization only runs for raster formats (PNG/JPEG/WebP/AVIF/TIFF); SVG is passed through.
+- Blur placeholders are generated at build time; on-demand dev variants are not generated.
+- AVIF is opt-in and slower; enable it only when the bandwidth win justifies build cost.
 
 
 ## Static serving
@@ -3012,6 +3031,7 @@ ramonyx build --static   # client bundle + prerender pages → dist/static
 ramonyx build --target edge   # server/edge bundle → dist/edge ({ fetch } contract)
 ramonyx build --watch    # rebuild on file changes (covers --static/--target)
 ramonyx start            # production SSR (NODE_ENV=production)
+ramonyx start --watch    # restart the server when src/** changes
 ramonyx doctor           # config + routes + build diagnostics
 ramonyx version | help
 ```
@@ -3026,7 +3046,7 @@ ramonyx version | help
 | `--dev-port <n>` | dev | Override the Vite port (default 5173) |
 | `--static` | build | Prerender static routes (`getStaticPaths` for dynamic routes) → `dist/static` |
 | `--target <name>` | build | Extra target; `edge` → `dist/edge` |
-| `--watch` | build | Rebuild on changes (debounced, safe queue) |
+| `--watch` | build/start | Build: rebuild on changes (debounced, safe queue). Start: restart a supervised server process with clean shutdown. |
 
 ## Conventions
 
@@ -3040,6 +3060,9 @@ ramonyx.config.ts      default export { app?, server? } (optional)
 - `ramonyx dev|start` prefers `src/server.ts` when present, otherwise `src/app.ts`.
 - Plugins from `ramonyx.config.ts` are loaded by the CLI (Vite, middleware, hooks, assets).
 - `ramonyx start` sets `NODE_ENV=production` if unset; reactivity/React production build depends on it.
+- `start --watch` is a supervisor: the server runs in a child process so changed modules are not
+  cached; SIGINT/SIGTERM stops both watcher and child. Rebuild the client separately when client
+  sources change.
 - `--static` and `--target edge` cannot be combined (different artifacts).
 
 ## Examples
@@ -3262,7 +3285,7 @@ ramonyx dev
 
 | Section | Data source | Notes |
 | --- | --- | --- |
-| **Routes** | Page manifest | Updated when route files change (same watcher as client entry regeneration) |
+| **Routes** | Page + API manifest | Shows `page`/`api` kind and API methods; updated when route files change |
 | **Bundles & assets** | `dist/client/ramonyx.assets.json` + file sizes | Empty until the app has been built — the panel does not build for you |
 | **Recent requests** | Collector middleware + `AppHooks` | Last 50 requests; method, path, status, total, loader, render, cache, hydration |
 
@@ -3280,9 +3303,8 @@ ramonyx dev
 
 ## Limitations (honest)
 
-- Loader/render events do not carry a request id; the panel correlates them to the **last open
-  request with the same path**. Good enough for low-concurrency development.
-- Page routes only (API routes are not listed separately).
+- Loader/render correlation uses Node `AsyncLocalStorage`, so concurrent requests with the same
+  path do not overwrite each other's timings.
 - Requests short-circuited by plugin middleware are still recorded (the collector is outermost), but
   Vite asset requests and `/__ramonyx/*` calls are not.
 - Not a production observability tool — use [Observability](observability.md) for that.
@@ -3562,10 +3584,16 @@ export async function loader({ locale }: { locale?: string }) {
 ```
 
 - **Interpolation**: `{name}` is replaced from the params object; unknown params stay as written.
-- **Plural**: object values (`one`/`other`/…) are selected with `Intl.PluralRules` using
-  `params.count`.
+- **ICU**: string messages support plural/selectordinal, select, number/percent/currency, and
+  date/time (`{count, plural, one {# item} other {# items}}`). `formatMessage()` is exported for
+  messages outside a catalog.
+- **Plural objects**: object values (`one`/`other`/…) remain supported and use
+  `Intl.PluralRules` with `params.count`.
 - **Fallback**: missing key → `fallbackMessages` → `onMissing(key)` → the key itself.
 - The helper is pure and edge-safe; it can also be used in middleware or client components.
+
+The ICU implementation is a documented subset: no custom tag/style formatters, offsets, or
+`{arg, spellout}`; malformed templates are returned unchanged instead of throwing.
 
 ## Language switcher
 
@@ -3580,37 +3608,41 @@ import { localePath } from "ramonyx";
 
 ## `Accept-Language` negotiation (middleware)
 
-The framework does **not** auto-detect or auto-redirect: explicit behavior is cache- and SEO-friendly.
-Use the helper in pre-routing middleware with a cookie:
+Use `localeDetection()` when you want automatic redirects. It checks the `locale` cookie first,
+then `Accept-Language`, then the default; by default it only acts on `/` so cached pages and SEO
+are not surprised. `strategy: "all"` extends it to other paths, and `/api`, `/assets`, `/_`, and
+`/__ramonyx` are skipped.
 
 ```ts
-import { negotiateLocale, localePath } from "ramonyx";
-import { parseCookies, serializeCookie } from "@ramonyx/security";
+import { localeDetection } from "ramonyx";
 
-const i18n = { locales: ["en", "id"], defaultLocale: "en" } as const;
-
-export async function localeMiddleware(context, next) {
-  const url = new URL(context.request.url);
-  if (url.pathname !== "/") return next();
-  const saved = parseCookies(context.request.headers.get("cookie") ?? "").locale;
-  const locale = saved ?? negotiateLocale(context.request.headers.get("accept-language"), i18n);
-  return new Response(null, {
-    status: 302,
-    headers: {
-      location: localePath("/", locale, i18n),
-      "set-cookie": serializeCookie("locale", locale, { path: "/", httpOnly: false, sameSite: "lax" }),
-    },
-  });
-}
+export const middleware = localeDetection({
+  locales: ["en", "id"],
+  defaultLocale: "en",
+  // strategy: "all",
+  // cookieName: "locale",
+  // redirectStatus: 302,
+});
 ```
+
+If you need custom behavior, compose `negotiateLocale()` and `localePath()` manually; the helper
+keeps detection explicit and configurable.
+
+## Metadata and alternate links
+
+Each locale route gets `<html lang>`/`dir`, locale-aware loader cache keys, and `<link
+rel="alternate" hreflang>` entries for every configured locale plus `x-default` (see
+`packages/ssr/test/i18n.test.ts`). Per-route metadata (title/description/canonical/OG) is read from
+the page module; use the active `locale` in loader data/content and set a locale-specific canonical
+where needed.
 
 ## Limitations (honest)
 
-- No ICU MessageFormat (interpolation + `Intl` plural categories only).
-- No automatic detection/redirect; use the middleware pattern above.
+- ICU support is a subset: no custom tag/style formatters, offsets, or spellout.
 - Catalogs are app-provided (JSON/data store) — the framework does not load files for you.
 - One route per locale (linear in the number of locales); per-route localization is not supported.
 - `hreflang` uses the page's logical path; dynamic routes follow the currently requested params.
+- `localeDetection` is a redirect helper, not a CDN/Vary strategy; cache rules remain app-owned.
 
 ## docs/public/observability.md
 
@@ -3882,6 +3914,22 @@ with `issues`.
   root → deepest order. It is edge-safe: no `node:*` imports.
 - Application-wide middleware (static files, logging, security headers) is passed to
   `createHandler({ middleware })` in `src/app.ts`.
+- Wrap global middleware with `matchMiddleware()` to scope it to a path:
+
+```ts
+import { matchMiddleware } from "@ramonyx/server";
+
+createHandler({
+  middleware: [
+    matchMiddleware("/admin/*", adminAudit),
+    matchMiddleware(/^\/api\//, apiRateLimit),
+    matchMiddleware((path) => path.endsWith(".json"), jsonHeaders),
+  ],
+});
+```
+
+Strings are exact paths, trailing `*` means prefix, RegExp is tested against the pathname, and a
+function receives the pathname. Non-matching middleware calls `next()` with the current request.
 
 ```ts
 export default [
@@ -4533,6 +4581,9 @@ const [optimistic, setOptimistic] = useOptimisticForm({ name: "" });
 - `useOptimisticForm()` keeps local optimistic values until the server action re-render replaces
   them with authoritative data.
 - Native form POST still works with JavaScript disabled; these primitives simply do nothing.
+- Page actions limit form bodies to `maxBodyBytes` (default 1 MiB) while streaming; oversized
+  chunked/multipart uploads return `413` without buffering the whole body. Tune this independently
+  from the API handler limit via `createPageRoutes({ maxBodyBytes })`.
 - To invalidate other data after a successful action, declare it in the page module:
 
 ```ts
@@ -4880,36 +4931,43 @@ export function routeHref<P extends keyof RouteParamsMap>(
   path: P,
   ...args: RouteParamsMap[P] extends undefined ? [] : [params: RouteParamsMap[P]]
 ): string;
+
+export const Link = createLink<RouteParamsMap>();
 ```
 
-Import it with a **relative path** (there is no `#routes` alias yet):
+The template and playground map `#routes` to the generated file in both TypeScript and Node
+(`package.json#imports`), so use the stable alias:
 
 ```tsx
-import { routeHref } from "../.ramonyx/routes.ts";
+import { Link, routeHref } from "#routes";
 
-routeHref("/users");                  // "/users"
+routeHref("/users");                    // "/users"
 routeHref("/users/[id]", { id: "42" }); // "/users/42"
+<Link href="/users/[id]" params={{ id: "42" }}>User 42</Link>;
 ```
 
-Wrong paths or missing params fail at type-check time. The generated file is refreshed on
-`ramonyx dev` and `ramonyx build` — no manual step.
+Wrong paths, missing dynamic params, or params on a static route fail at type-check time. The
+generated file is refreshed on `ramonyx dev` and `ramonyx build` — no manual step. Existing apps
+can add the same `#routes` mapping; the generated module is app-local, so it cannot be shipped as
+a fixed package path.
 
 ## `Link` component
 
-`Link` from `@ramonyx/react/link` renders an `<a>` and uses the client navigation/prefetch path:
+`Link` from `@ramonyx/react/link` renders an `<a>` and uses the client navigation/prefetch path.
+For typed routes, use the generated `Link` above (it calls `createLink` and fills params). The
+low-level `createLink` is exported if you need a custom route map.
 
 ```tsx
-import { Link } from "@ramonyx/react/link";
+import { createLink } from "@ramonyx/react/link";
 
-<Link href={routeHref("/users/[id]", { id: "42" })}>User 42</Link>;
+const Link = createLink<{ "/": undefined; "/users/[id]": { id: string } }>();
+<Link href="/users/[id]" params={{ id: "42" }}>User 42</Link>;
 ```
-
-`href` is a plain string; use `routeHref` to build it safely.
 
 ## Notes
 
 - The module only exists after the first `build`/`dev` run.
-- Import by relative path from your app code; a path alias is a candidate for a future release.
+- Use the `#routes` alias from the template; it is configured for TypeScript and Node/Vite.
 - The params map follows the file router: `[param]` → required single segment, `[...param]` → rest.
 - Custom codegen? The manifest is the source; `generateRouteTypes(pages)` is exported from
   `@ramonyx/compiler` if you need it in another tool.

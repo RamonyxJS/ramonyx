@@ -1,3 +1,5 @@
+import type { Middleware } from "./types.ts";
+
 // Internasionalisasi (ADR-0081) — primitif **edge-safe tanpa dependency**:
 //   - negosiasi `Accept-Language` (parse + pilih locale terbaik),
 //   - pembangun path ber-locale (untuk tautan/redirect/`hreflang`),
@@ -140,18 +142,6 @@ function lookup(messages: Messages | undefined, key: string): unknown {
   return current;
 }
 
-function interpolate(
-  template: string,
-  params: Readonly<Record<string, unknown>> | undefined,
-): string {
-  if (params === undefined) {
-    return template;
-  }
-  return template.replace(/\{(\w+)\}/g, (match, nama: string) =>
-    params[nama] !== undefined ? String(params[nama]) : match,
-  );
-}
-
 function pilihBentukPlural(
   locale: string,
   nilai: Readonly<Record<string, unknown>>,
@@ -191,17 +181,17 @@ export function createTranslator(options: CreateTranslatorOptions): Translator {
     t(key, params) {
       const nilai = ambil(key);
       if (typeof nilai === "string") {
-        return interpolate(nilai, params);
+        return formatMessage(nilai, locale, params ?? {});
       }
       if (typeof nilai === "object" && nilai !== null) {
         const count = typeof params?.count === "number" ? params.count : undefined;
         if (count === undefined) {
           const bentuk =
             (nilai as Record<string, unknown>).other ?? (nilai as Record<string, unknown>).one;
-          return typeof bentuk === "string" ? interpolate(bentuk, params) : key;
+          return typeof bentuk === "string" ? formatMessage(bentuk, locale, params ?? {}) : key;
         }
         const bentuk = pilihBentukPlural(locale, nilai as Record<string, unknown>, count);
-        return bentuk === undefined ? key : interpolate(bentuk, params);
+        return bentuk === undefined ? key : formatIcu(bentuk, locale, params ?? {}, count);
       }
       return key;
     },
@@ -223,5 +213,321 @@ export function createTranslator(options: CreateTranslatorOptions): Translator {
       }
       return formatter.format(value);
     },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// ICU MessageFormat subset: interpolation, plural/selectordinal, select, date/time/number.
+// Cukup untuk katalog aplikasi tanpa dependency; bukan implementasi ICU penuh (offset,
+// tag/style kustom tidak didukung).
+
+type IcuParams = Readonly<Record<string, unknown>>;
+
+function safeNumberFormat(locale: string, options?: Intl.NumberFormatOptions): Intl.NumberFormat {
+  return new Intl.NumberFormat(locale, options);
+}
+
+function findClosing(text: string, start: number): number {
+  let depth = 0;
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index];
+    if (char === "'") {
+      const end = text.indexOf("'", index + 1);
+      index = end === -1 ? text.length : end;
+      continue;
+    }
+    if (char === "{") {
+      depth += 1;
+    } else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return index;
+      }
+    }
+  }
+  return -1;
+}
+
+function splitTopLevel(text: string, separator: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (char === "'") {
+      const end = text.indexOf("'", index + 1);
+      index = end === -1 ? text.length : end;
+      continue;
+    }
+    if (char === "{") {
+      depth += 1;
+    } else if (char === "}") {
+      depth = Math.max(0, depth - 1);
+    } else if (char === separator && depth === 0) {
+      parts.push(text.slice(start, index));
+      start = index + 1;
+    }
+  }
+  parts.push(text.slice(start));
+  return parts;
+}
+
+function parseChoices(style: string): Map<string, string> {
+  const choices = new Map<string, string>();
+  let index = 0;
+  while (index < style.length) {
+    while (index < style.length && /[\s,]/.test(style[index] ?? "")) {
+      index += 1;
+    }
+    if (index >= style.length) {
+      break;
+    }
+    const keyStart = index;
+    while (index < style.length && !/[\s{]/.test(style[index] ?? "")) {
+      index += 1;
+    }
+    const key = style.slice(keyStart, index);
+    while (index < style.length && /\s/.test(style[index] ?? "")) {
+      index += 1;
+    }
+    if (style[index] !== "{") {
+      index += 1;
+      continue;
+    }
+    const end = findClosing(style, index);
+    if (end === -1) {
+      break;
+    }
+    choices.set(key, style.slice(index + 1, end));
+    index = end + 1;
+  }
+  return choices;
+}
+
+function formatIcuValue(
+  content: string,
+  locale: string,
+  params: IcuParams,
+  hash: number | undefined,
+): string {
+  const parts = splitTopLevel(content, ",");
+  const name = (parts[0] ?? "").trim();
+  const type = (parts[1] ?? "").trim();
+  const style = parts.slice(2).join(",").trim();
+  const value = params[name];
+
+  if (type.length === 0) {
+    return value === undefined ? `{${content}}` : String(value);
+  }
+
+  if (type === "plural" || type === "selectordinal" || type === "select") {
+    const choices = parseChoices(style);
+    let key: string;
+    if (type === "select") {
+      key = String(value);
+    } else {
+      const count = Number(value);
+      const exact = choices.get(`=${count}`);
+      if (exact !== undefined) {
+        key = `=${count}`;
+      } else {
+        try {
+          key = new Intl.PluralRules(locale, {
+            type: type === "selectordinal" ? "ordinal" : "cardinal",
+          }).select(count);
+        } catch {
+          key = count === 1 ? "one" : "other";
+        }
+      }
+    }
+    const chosen = choices.get(key) ?? choices.get("other") ?? choices.get("one");
+    const nextHash = type === "select" ? hash : Number(value);
+    return chosen === undefined ? "" : formatIcu(chosen, locale, params, nextHash);
+  }
+
+  if (type === "date" || type === "time") {
+    const date = value instanceof Date ? value : new Date(Number(value));
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+    const dateStyle =
+      style === "short" || style === "medium" || style === "long" || style === "full"
+        ? style
+        : "medium";
+    try {
+      return type === "date"
+        ? new Intl.DateTimeFormat(locale, { dateStyle }).format(date)
+        : new Intl.DateTimeFormat(locale, { timeStyle: dateStyle }).format(date);
+    } catch {
+      return String(value);
+    }
+  }
+
+  if (type === "number") {
+    const number = Number(value);
+    if (!Number.isFinite(number)) {
+      return String(value);
+    }
+    try {
+      if (style === "percent") {
+        return safeNumberFormat(locale, { style: "percent" }).format(number);
+      }
+      if (style === "integer") {
+        return safeNumberFormat(locale, { maximumFractionDigits: 0 }).format(number);
+      }
+      if (style === "currency") {
+        return safeNumberFormat(locale, {
+          style: "currency",
+          currency: typeof params.currency === "string" ? params.currency : "USD",
+        }).format(number);
+      }
+      return safeNumberFormat(locale).format(number);
+    } catch {
+      return String(value);
+    }
+  }
+
+  return value === undefined ? `{${content}}` : String(value);
+}
+
+function formatIcu(
+  template: string,
+  locale: string,
+  params: IcuParams,
+  hash: number | undefined,
+): string {
+  let result = "";
+  let index = 0;
+  while (index < template.length) {
+    const char = template[index];
+    if (char === "'") {
+      if (template[index + 1] === "'") {
+        result += "'";
+        index += 2;
+        continue;
+      }
+      const end = template.indexOf("'", index + 1);
+      if (end === -1) {
+        result += template.slice(index + 1);
+        break;
+      }
+      result += template.slice(index + 1, end);
+      index = end + 1;
+      continue;
+    }
+    if (char === "#" && hash !== undefined) {
+      result += safeNumberFormat(locale).format(hash);
+      index += 1;
+      continue;
+    }
+    if (char !== "{") {
+      result += char;
+      index += 1;
+      continue;
+    }
+    const end = findClosing(template, index);
+    if (end === -1) {
+      result += template.slice(index);
+      break;
+    }
+    result += formatIcuValue(template.slice(index + 1, end), locale, params, hash);
+    index = end + 1;
+  }
+  return result;
+}
+
+/** Format pesan ICU subset (interpolation, plural/selectordinal, select, date/time/number). */
+export function formatMessage(template: string, locale: string, params: IcuParams = {}): string {
+  try {
+    return formatIcu(template, locale, params, undefined);
+  } catch {
+    return template;
+  }
+}
+
+export interface LocaleDetectionOptions extends I18nRoutingOptions {
+  /** Nama cookie pilihan bahasa; default `locale`. */
+  readonly cookieName?: string;
+  /** Simpan pilihan ke cookie saat redirect; default true. */
+  readonly persistCookie?: boolean;
+  /** `root` (default) hanya mendeteksi di `/`; `all` juga path lain. */
+  readonly strategy?: "root" | "all";
+  /** Path yang tidak boleh di-redirect; default `/api`, `/assets`, `/_`, `/__ramonyx`. */
+  readonly skip?: (pathname: string) => boolean;
+  /** Status redirect; default 302. */
+  readonly redirectStatus?: 302 | 307 | 308;
+}
+
+function readCookie(header: string | null, name: string): string | undefined {
+  if (header === null) {
+    return undefined;
+  }
+  for (const part of header.split(";")) {
+    const [key, ...value] = part.trim().split("=");
+    if (key === name) {
+      try {
+        return decodeURIComponent(value.join("="));
+      } catch {
+        return undefined;
+      }
+    }
+  }
+  return undefined;
+}
+
+function serializeLocaleCookie(name: string, locale: string): string {
+  return `${name}=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax`;
+}
+
+/**
+ * Middleware deteksi bahasa: cookie → Accept-Language → default, lalu redirect ke path ber-locale.
+ * Default hanya di `/` agar cache/SEO tidak kaget; `strategy: "all"` memperluas ke path lain.
+ * Path API/aset/development dilewati; locale yang sudah berprefix tidak di-redirect.
+ */
+export function localeDetection(options: LocaleDetectionOptions): Middleware {
+  const cookieName = options.cookieName ?? "locale";
+  const strategy = options.strategy ?? "root";
+  const status = options.redirectStatus ?? 302;
+  const skip =
+    options.skip ??
+    ((pathname: string): boolean =>
+      pathname.startsWith("/api/") ||
+      pathname.startsWith("/assets/") ||
+      pathname.startsWith("/_") ||
+      pathname.startsWith("/__ramonyx"));
+
+  return (context, next) => {
+    let url: URL;
+    try {
+      url = new URL(context.request.url);
+    } catch {
+      return next();
+    }
+    const pathname = url.pathname;
+    if (skip(pathname)) {
+      return next();
+    }
+    const first = pathname.split("/").filter((segment) => segment.length > 0)[0];
+    if (first !== undefined && options.locales.includes(first)) {
+      return next();
+    }
+    if (strategy === "root" && pathname !== "/") {
+      return next();
+    }
+
+    const saved = readCookie(context.request.headers.get("cookie"), cookieName);
+    const locale =
+      saved !== undefined && options.locales.includes(saved)
+        ? saved
+        : negotiateLocale(context.request.headers.get("accept-language"), options);
+    const target = localePath(pathname, locale, options);
+    if (target === pathname) {
+      return next();
+    }
+    const headers: Record<string, string> = { location: `${target}${url.search}` };
+    if (options.persistCookie !== false) {
+      headers["set-cookie"] = serializeLocaleCookie(cookieName, locale);
+    }
+    return new Response(null, { status, headers });
   };
 }

@@ -5,6 +5,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   createTranslator,
+  formatMessage,
+  localeDetection,
   localePath,
   negotiateLocale,
   parseAcceptLanguage,
@@ -97,4 +99,112 @@ test("createTranslator: locale tak dikenal tetap aman (plural & format)", () => 
   });
   assert.equal(typeof t.t("item", { count: 2 }), "string");
   assert.equal(typeof t.formatNumber(10), "string");
+});
+
+test("formatMessage: plural/exact/#, select, apostrophe, dan param hilang", () => {
+  assert.equal(
+    formatMessage("{count, plural, =0 {tidak ada} one {# item} other {# item}}", "en", {
+      count: 0,
+    }),
+    "tidak ada",
+  );
+  assert.equal(
+    formatMessage("{count, plural, =0 {none} one {# item} other {# items}}", "en", { count: 1 }),
+    "1 item",
+  );
+  assert.equal(
+    formatMessage("{count, plural, =0 {none} one {# item} other {# items}}", "en", { count: 3 }),
+    "3 items",
+  );
+  assert.equal(
+    formatMessage("{gender, select, female {Dia} male {Dia} other {Mereka}}", "id", {
+      gender: "female",
+    }),
+    "Dia",
+  );
+  assert.equal(formatMessage("Halo {nama}!", "id", { nama: "Rina" }), "Halo Rina!");
+  assert.equal(
+    formatMessage("Halo {nama}!", "id", {}),
+    "Halo {nama}!",
+    "param hilang dipertahankan",
+  );
+  assert.equal(formatMessage("It''s {nama}", "en", { nama: "Rina" }), "It's Rina");
+  assert.equal(formatMessage("'{literal}'", "en"), "{literal}");
+});
+
+test("formatMessage: number, percent, currency, date/time", () => {
+  assert.equal(formatMessage("{n, number}", "en", { n: 1234.5 }), "1,234.5");
+  assert.match(formatMessage("{n, number, percent}", "en", { n: 0.25 }), /25%/);
+  assert.match(formatMessage("{n, number, currency}", "en", { n: 12, currency: "USD" }), /\$12/);
+  assert.ok(formatMessage("{d, date, short}", "en", { d: "2026-10-22T00:00:00Z" }).length > 0);
+  assert.ok(formatMessage("{d, time, short}", "en", { d: "2026-10-22T12:30:00Z" }).length > 0);
+  assert.equal(formatMessage("{n, number", "en", { n: 1 }), "{n, number", "malformed tetap aman");
+});
+
+test("createTranslator: nilai string memakai ICU MessageFormat", () => {
+  const t = createTranslator({
+    locale: "en",
+    messages: {
+      item: "{count, plural, one {# item} other {# items}}",
+      pilih: "{gender, select, female {Dia} other {Mereka}}",
+    },
+  });
+  assert.equal(t.t("item", { count: 1 }), "1 item");
+  assert.equal(t.t("item", { count: 4 }), "4 items");
+  assert.equal(t.t("pilih", { gender: "female" }), "Dia");
+  assert.equal(t.t("pilih", { gender: "other" }), "Mereka");
+});
+
+test("localeDetection: cookie → Accept-Language → default, skip API/aset", async () => {
+  const middleware = localeDetection(routing);
+  const context = (request: Request) => ({
+    request,
+    env: { get: () => undefined },
+    log: { debug() {}, info() {}, warn() {}, error() {} },
+  });
+  const next = async () => new Response("next");
+
+  const accept = await middleware(
+    context(new Request("http://x/", { headers: { "accept-language": "en-US,en;q=0.9" } })),
+    next,
+  );
+  assert.equal(accept.status, 302);
+  assert.equal(accept.headers.get("location"), "/en");
+  assert.match(accept.headers.get("set-cookie") ?? "", /locale=en/);
+
+  const cookie = await middleware(
+    context(
+      new Request("http://x/", {
+        headers: { cookie: "locale=en", "accept-language": "id" },
+      }),
+    ),
+    next,
+  );
+  assert.equal(cookie.headers.get("location"), "/en", "cookie menang atas Accept-Language");
+
+  const defaultLocale = await middleware(
+    context(new Request("http://x/", { headers: { "accept-language": "id-ID" } })),
+    next,
+  );
+  assert.equal(await defaultLocale.text(), "next", "default tanpa prefix tidak redirect");
+
+  const prefixed = await middleware(
+    context(new Request("http://x/en/tentang", { headers: { "accept-language": "id" } })),
+    next,
+  );
+  assert.equal(await prefixed.text(), "next", "path sudah ber-locale");
+
+  const api = await middleware(
+    context(new Request("http://x/api/halo", { headers: { "accept-language": "en" } })),
+    next,
+  );
+  assert.equal(await api.text(), "next", "API dilewati");
+
+  const all = localeDetection({ ...routing, strategy: "all", persistCookie: false });
+  const otherPath = await all(
+    context(new Request("http://x/tentang?q=1", { headers: { "accept-language": "en" } })),
+    next,
+  );
+  assert.equal(otherPath.headers.get("location"), "/en/tentang?q=1");
+  assert.equal(otherPath.headers.get("set-cookie"), null);
 });

@@ -318,6 +318,32 @@ const aksi = await handler(new Request("http://edge.local/", { method: "POST", b
 if (aksi.status !== 200) throw new Error("status action: " + aksi.status);
 if (!(await aksi.text()).includes("Halo, Edge!")) throw new Error("action tidak jalan");
 
+// Upload streaming di edge: body tanpa content-length yang melewati 1 MiB → 413.
+const boundary = "----edge";
+const encoder = new TextEncoder();
+const CRLF = String.fromCharCode(13, 10);
+const huge = new ReadableStream({
+  start(controller) {
+    controller.enqueue(
+      encoder.encode(
+        "--" + boundary + CRLF + 'Content-Disposition: form-data; name="nama"' + CRLF + CRLF,
+      ),
+    );
+    controller.enqueue(encoder.encode("x".repeat(1_100_000)));
+    controller.enqueue(encoder.encode(CRLF + "--" + boundary + "--" + CRLF));
+    controller.close();
+  },
+});
+const besar = await handler(
+  new Request("http://edge.local/", {
+    method: "POST",
+    headers: { "content-type": "multipart/form-data; boundary=" + boundary },
+    body: huge,
+    duplex: "half",
+  }),
+);
+if (besar.status !== 413) throw new Error("upload besar bukan 413: " + besar.status);
+
 // Binding platform (ADR-0068): env diteruskan per request — get + getRaw.
 const envRes = await handler(new Request("http://edge.local/api/env"), {
   RAHASIA: "dari-binding",
@@ -527,14 +553,21 @@ test("devtools dev: panel + data (rute/timing) tersedia di dev server — ADR-00
 
     // Rute template terdaftar (dari loadPageRoutes di dev server).
     const pertama = (await (await fetch(`${devUrl}/__ramonyx/data`)).json()) as {
-      routes: { path: string; file?: string }[];
+      routes: { path: string; file?: string; kind?: string; methods?: string[] }[];
     };
     const paths = pertama.routes.map((route) => route.path).sort();
-    assert.deepEqual(paths, ["/", "/[...slug]"], "rute template terdaftar di panel");
+    assert.deepEqual(
+      paths,
+      ["/", "/[...slug]", "/api/halo/[nama]", "/api/rahasia"],
+      "halaman + API terdaftar di panel",
+    );
     assert.ok(
       pertama.routes.every((route) => typeof route.file === "string"),
       "berkas rute ditampilkan",
     );
+    const api = pertama.routes.find((route) => route.path === "/api/halo/[nama]");
+    assert.equal(api?.kind, "api");
+    assert.ok(api?.methods?.includes("GET"), "method API terdaftar");
 
     // Request halaman lewat proxy → SSR → kolektor (hooks + middleware) mencatat timing.
     const halaman = await fetch(`${devUrl}/`);
@@ -661,4 +694,55 @@ console.log("PRESET VERCEL OK");\n`,
     readFileSync(join(target, "dist/deno/main.ts"), "utf8"),
     /Deno\.serve\(app\.fetch\)/,
   );
+});
+
+test("start --watch: restart bersih saat src berubah", async () => {
+  mkdirSync(workDir, { recursive: true });
+  const target = join(workDir, "app-start-watch");
+  runCli([target]);
+  const port = await portBebas();
+  const child = spawn(
+    process.execPath,
+    ["--import", loader, devtoolsCli, "start", "--watch", "--app", target, "--port", String(port)],
+    { cwd: target, stdio: ["ignore", "pipe", "pipe"] },
+  );
+  let keluaran = "";
+  child.stdout.on("data", (chunk: Buffer) => {
+    keluaran += chunk.toString();
+  });
+  child.stderr.on("data", (chunk: Buffer) => {
+    keluaran += chunk.toString();
+  });
+  const tunggu = async (predikat: () => boolean, timeoutMs: number): Promise<void> => {
+    const mulai = Date.now();
+    while (!predikat()) {
+      if (Date.now() - mulai > timeoutMs) {
+        throw new Error(`timeout start --watch; output:\n${keluaran}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  };
+  try {
+    await tunggu(() => /Ramonyx berjalan/.test(keluaran), 45_000);
+    const first = await fetch(`http://localhost:${port}/`);
+    assert.equal(first.status, 200);
+
+    writeFileSync(
+      join(target, "src/app.ts"),
+      `${readFileSync(join(target, "src/app.ts"), "utf8")}\n// watch restart\n`,
+    );
+    await tunggu(() => /watch: perubahan src terdeteksi/.test(keluaran), 10_000);
+    await tunggu(() => (keluaran.match(/Ramonyx berjalan/g) ?? []).length >= 2, 45_000);
+    const second = await fetch(`http://localhost:${port}/`);
+    assert.equal(second.status, 200, "server hidup setelah restart");
+  } finally {
+    child.kill("SIGTERM");
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, 5_000);
+      child.once("exit", () => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
+  }
 });

@@ -417,3 +417,33 @@ export function createHandler(options: CreateHandlerOptions): FetchHandler {
     return response;
   };
 }
+
+export type MiddlewareMatcher = string | RegExp | ((pathname: string) => boolean);
+
+/**
+ * Jalankan middleware hanya untuk path yang cocok. String tanpa `*` = exact, string berakhiran
+ * `*` = prefix, RegExp diuji terhadap pathname, atau fungsi bebas. Middleware yang tidak cocok
+ * meneruskan request apa adanya (termasuk request yang sudah diganti middleware sebelumnya).
+ */
+export function matchMiddleware(matcher: MiddlewareMatcher, middleware: Middleware): Middleware {
+  return (context, next) => {
+    let pathname: string;
+    try {
+      pathname = new URL(context.request.url).pathname;
+    } catch {
+      return next();
+    }
+    let matched = false;
+    if (typeof matcher === "string") {
+      matched = matcher.endsWith("*")
+        ? pathname.startsWith(matcher.slice(0, -1))
+        : pathname === matcher;
+    } else if (matcher instanceof RegExp) {
+      matcher.lastIndex = 0;
+      matched = matcher.test(pathname);
+    } else {
+      matched = matcher(pathname);
+    }
+    return matched ? middleware(context, next) : next();
+  };
+}

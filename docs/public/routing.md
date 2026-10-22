@@ -73,6 +73,22 @@ with `issues`.
   root → deepest order. It is edge-safe: no `node:*` imports.
 - Application-wide middleware (static files, logging, security headers) is passed to
   `createHandler({ middleware })` in `src/app.ts`.
+- Wrap global middleware with `matchMiddleware()` to scope it to a path:
+
+```ts
+import { matchMiddleware } from "@ramonyx/server";
+
+createHandler({
+  middleware: [
+    matchMiddleware("/admin/*", adminAudit),
+    matchMiddleware(/^\/api\//, apiRateLimit),
+    matchMiddleware((path) => path.endsWith(".json"), jsonHeaders),
+  ],
+});
+```
+
+Strings are exact paths, trailing `*` means prefix, RegExp is tested against the pathname, and a
+function receives the pathname. Non-matching middleware calls `next()` with the current request.
 
 ```ts
 export default [

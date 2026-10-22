@@ -240,6 +240,9 @@ const [optimistic, setOptimistic] = useOptimisticForm({ name: "" });
 - `useOptimisticForm()` keeps local optimistic values until the server action re-render replaces
   them with authoritative data.
 - Native form POST still works with JavaScript disabled; these primitives simply do nothing.
+- Page actions limit form bodies to `maxBodyBytes` (default 1 MiB) while streaming; oversized
+  chunked/multipart uploads return `413` without buffering the whole body. Tune this independently
+  from the API handler limit via `createPageRoutes({ maxBodyBytes })`.
 - To invalidate other data after a successful action, declare it in the page module:
 
 ```ts

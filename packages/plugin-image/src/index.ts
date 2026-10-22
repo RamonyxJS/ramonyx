@@ -36,6 +36,8 @@ export interface ImagePluginOptions {
   readonly cacheDir?: string;
   /** Sertakan varian selebar intrinsik (melengkapi srcset); default true. */
   readonly includeIntrinsicWidth?: boolean;
+  /** Buat blur/LQIP data URI untuk background anti-CLS; default true. */
+  readonly placeholder?: boolean;
 }
 
 const DEFAULT_WIDTHS: readonly number[] = [320, 640, 960, 1280, 1920];
@@ -140,6 +142,16 @@ export function imageOptimizer(options: ImagePluginOptions = {}) {
 
       const sharp = await loadSharp();
       const metadata = await sharp(asset.data, { failOn: "none" }).metadata();
+      const placeholder =
+        options.placeholder === false
+          ? undefined
+          : `data:image/webp;base64,${(
+              await sharp(asset.data, { failOn: "none" })
+                .resize({ width: 24, withoutEnlargement: true })
+                .blur(8)
+                .webp({ quality: 25 })
+                .toBuffer()
+            ).toString("base64")}`;
       const width = metadata.width;
       const height = metadata.height;
       if (width === undefined || height === undefined || width === 0 || height === 0) {
@@ -171,7 +183,14 @@ export function imageOptimizer(options: ImagePluginOptions = {}) {
         }
       }
 
-      return { meta: { width, height }, outputs };
+      return {
+        meta: {
+          width,
+          height,
+          ...(placeholder === undefined ? {} : { placeholder }),
+        },
+        outputs,
+      };
     },
   });
 }

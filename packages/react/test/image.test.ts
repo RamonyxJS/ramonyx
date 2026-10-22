@@ -32,6 +32,15 @@ test("Image: elemen img dengan default aman; src kosong → null", () => {
   assert.equal(eagerProps.loading, "eager");
   assert.equal(eagerProps.fetchpriority, "high");
   assert.equal(eagerProps.srcSet, "/a@2x.png 2x");
+
+  const placeholder = Image({
+    src: "/assets/hero.png",
+    alt: "Hero",
+    placeholder: "data:image/webp;base64,AAAA",
+  });
+  const style = propsOf(placeholder).style as Record<string, unknown>;
+  assert.equal(style.backgroundImage, 'url("data:image/webp;base64,AAAA")');
+  assert.equal(style.backgroundSize, "cover");
 });
 
 test("Image: sources → <picture> dengan <source> per format + sizes diteruskan", () => {

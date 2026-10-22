@@ -3,11 +3,15 @@
 // (`AppHooks` ADR-0065 + middleware ADR-0067). **Tidak pernah aktif di produksi** — hanya
 // `createDevServer` yang membuatnya.
 
+import { AsyncLocalStorage } from "node:async_hooks";
 import type { AppHooks, Middleware } from "@ramonyx/core";
 
 export interface DevtoolsRoute {
   readonly path: string;
   readonly file?: string;
+  /** `page` atau `api`; default page untuk kompatibilitas. */
+  readonly kind?: "page" | "api";
+  readonly methods?: readonly string[];
 }
 
 export interface DevtoolsAsset {
@@ -51,12 +55,12 @@ function round2(value: number): number {
 }
 
 /**
- * Kolektor devtools. Catatan kejujuran: korelasi loader/render → request memakai
- * "request terbuka terakhir dengan path sama" (event hook tidak membawa identitas request);
- * cukup untuk dev berkonkurensi rendah, didokumentasikan sebagai aproksimasi.
+ * Kolektor devtools. Korelasi loader/render → request memakai AsyncLocalStorage (Node dev),
+ * sehingga request konkuren dengan path sama tidak saling menimpa.
  */
 export function createDevtoolsCollector(): DevtoolsCollector {
   const requests: DevtoolsRequest[] = [];
+  const requestContext = new AsyncLocalStorage<DevtoolsRequest>();
   let routes: readonly DevtoolsRoute[] = [];
   let assets: readonly DevtoolsAsset[] = [];
 
@@ -85,34 +89,36 @@ export function createDevtoolsCollector(): DevtoolsCollector {
     };
     catat(record);
 
-    const response = await next();
-    record.status = response.status;
-    record.ms = round2(performance.now() - mulai);
+    return requestContext.run(record, async () => {
+      const response = await next();
+      record.status = response.status;
+      record.ms = round2(performance.now() - mulai);
 
-    const contentType = response.headers.get("content-type") ?? "";
-    if (contentType.includes("text/html")) {
-      try {
-        const html = await response.clone().text();
-        record.hydration = html.includes('id="ramonyx-payload"') ? "payload" : "none";
-      } catch {
-        // body tidak terbaca (streaming diputus) — biarkan undefined
+      const contentType = response.headers.get("content-type") ?? "";
+      if (contentType.includes("text/html")) {
+        try {
+          const html = await response.clone().text();
+          record.hydration = html.includes('id="ramonyx-payload"') ? "payload" : "none";
+        } catch {
+          // body tidak terbaca (streaming diputus) — biarkan undefined
+        }
       }
-    }
-    return response;
+      return response;
+    });
   };
 
   return {
     middleware,
     hooks: {
       onLoaderEnd: (event) => {
-        const record = terakhirDenganPath(event.path);
+        const record = requestContext.getStore() ?? terakhirDenganPath(event.path);
         if (record !== undefined) {
           record.loaderMs = round2(event.durationMs);
           record.cached = event.cached;
         }
       },
       onRenderEnd: (event) => {
-        const record = terakhirDenganPath(event.path);
+        const record = requestContext.getStore() ?? terakhirDenganPath(event.path);
         if (record !== undefined) {
           record.renderMs = round2(event.durationMs);
         }
@@ -163,7 +169,7 @@ export function devtoolsPanelHtml(): string {
   <h2>Bundel & aset</h2>
   <table id="aset"><thead><tr><th>Nama</th><th>Ukuran</th></tr></thead><tbody></tbody></table>
   <h2>Rute</h2>
-  <table id="rute"><thead><tr><th>Path</th><th>Berkas</th></tr></thead><tbody></tbody></table>
+  <table id="rute"><thead><tr><th>Jenis</th><th>Path</th><th>Method</th><th>Berkas</th></tr></thead><tbody></tbody></table>
   <h2>Request terakhir</h2>
   <table id="req"><thead><tr><th>Method</th><th>Path</th><th>Status</th><th>Total</th><th>Loader</th><th>Render</th><th>Cache</th><th>Hydration</th></tr></thead><tbody></tbody></table>
 </div>
@@ -177,7 +183,7 @@ async function segarkan() {
       .map((a) => "<tr><td><code>" + a.name + "</code></td><td>" + kb(a.bytes) + "</td></tr>")
       .join("");
     document.querySelector("#rute tbody").innerHTML = data.routes
-      .map((r) => "<tr><td><code>" + r.path + "</code></td><td class='dim'>" + (r.file ?? "–") + "</td></tr>")
+      .map((r) => "<tr><td>" + (r.kind ?? "page") + "</td><td><code>" + r.path + "</code></td><td>" + ((r.methods ?? []).join(", ") || "GET") + "</td><td class='dim'>" + (r.file ?? "–") + "</td></tr>")
       .join("");
     document.querySelector("#req tbody").innerHTML = data.requests
       .map((r) => "<tr><td>" + r.method + "</td><td><code>" + r.path + "</code></td><td class='" + ((r.status ?? 0) >= 400 ? "bad" : "ok") + "'>" + (r.status ?? "…") + "</td><td>" + fmt(r.ms) + "</td><td>" + fmt(r.loaderMs) + "</td><td>" + fmt(r.renderMs) + "</td><td>" + (r.cached === true ? "hit" : r.cached === false ? "miss" : "–") + "</td><td>" + (r.hydration === "payload" ? "payload ✓" : r.hydration === "none" ? "tidak" : "–") + "</td></tr>")

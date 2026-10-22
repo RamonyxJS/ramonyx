@@ -19,6 +19,8 @@ export interface ImageProps {
   /** Lebar intrinsik (wajib bersama `height` untuk mencegah CLS). */
   readonly width?: number;
   readonly height?: number;
+  /** Data URI blur/LQIP; dirender sebagai background sampai gambar termuat. */
+  readonly placeholder?: string;
   /** `srcset` (mis. varian @2x yang disediakan aplikasi). */
   readonly srcSet?: string;
   /**
@@ -39,6 +41,7 @@ export function Image({
   alt,
   width,
   height,
+  placeholder,
   srcSet,
   sources,
   sizes,
@@ -61,7 +64,20 @@ export function Image({
     decoding: "async",
     ...(fetchPriority !== undefined ? { fetchpriority: fetchPriority } : {}),
     ...(className !== undefined ? { className } : {}),
-    ...(style !== undefined ? { style } : {}),
+    ...(placeholder !== undefined || style !== undefined
+      ? {
+          style: {
+            ...(placeholder !== undefined
+              ? {
+                  backgroundImage: `url("${placeholder}")`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : {}),
+            ...style,
+          },
+        }
+      : {}),
   });
   if (sources === undefined || sources.length === 0) {
     return img;

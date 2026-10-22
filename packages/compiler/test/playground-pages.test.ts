@@ -58,4 +58,5 @@ test("generateRouteTypes: pola rute → params bertipe (ADR-0073)", async () => 
   assert.ok(output.includes('"/[...notFound]": { notFound: string };'), "catch-all bertipe");
   assert.ok(output.includes('"/": undefined;'), "rute tanpa param = undefined");
   assert.ok(output.includes("export function routeHref<P extends RoutePath>("), "wrapper bertipe");
+  assert.ok(output.includes("export const Link = createLink<RouteParamsMap>();"), "Link bertipe");
 });

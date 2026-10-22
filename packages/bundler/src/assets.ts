@@ -50,7 +50,12 @@ export interface AssetProcessorOutput {
 
 /** Hasil prosesor: metadata entri asli + berkas turunan. */
 export interface AssetProcessorResult {
-  readonly meta?: { readonly width?: number; readonly height?: number };
+  readonly meta?: {
+    readonly width?: number;
+    readonly height?: number;
+    /** Data URI blur/LQIP untuk background anti-CLS. */
+    readonly placeholder?: string;
+  };
   readonly outputs?: readonly AssetProcessorOutput[];
 }
 
@@ -121,7 +126,7 @@ export async function collectAssets(
     const data = await readFile(file);
     const rel = relative(assetsDir, file).split(sep).join(posix.sep);
 
-    let meta: { width?: number; height?: number } = {};
+    let meta: { width?: number; height?: number; placeholder?: string } = {};
     const outputs: AssetProcessorOutput[] = [];
     for (const processor of options.processors ?? []) {
       const hasil = await processor({ path: rel, data });
@@ -163,6 +168,7 @@ export async function collectAssets(
       bytes: data.byteLength,
       ...(meta.width !== undefined ? { width: meta.width } : {}),
       ...(meta.height !== undefined ? { height: meta.height } : {}),
+      ...(meta.placeholder !== undefined ? { placeholder: meta.placeholder } : {}),
       ...(variants.length > 0 ? { variants } : {}),
     };
   }
@@ -215,6 +221,7 @@ export function assetInfoMap(
       url: fileToUrl(entry.file, prefix),
       ...(entry.width !== undefined ? { width: entry.width } : {}),
       ...(entry.height !== undefined ? { height: entry.height } : {}),
+      ...(entry.placeholder !== undefined ? { placeholder: entry.placeholder } : {}),
       ...(entry.variants !== undefined
         ? {
             variants: entry.variants.map((variant) => ({

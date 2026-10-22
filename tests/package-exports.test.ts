@@ -77,6 +77,8 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
       "mergeHooks",
       "formDataToObject",
       "createTranslator",
+      "formatMessage",
+      "localeDetection",
       "cacheControl",
       "defer",
       "Deferred",
@@ -100,6 +102,7 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
     ramonyx,
     ["route", "createHandler", "HttpError", "defineConfig", "resolveConfig", "defer", "Deferred"],
   ],
+  ["@ramonyx/react/link", reactLink, ["Link", "createLink"]],
   [
     "@ramonyx/react/actions",
     reactActions,
@@ -154,6 +157,7 @@ const contracts: Array<[string, Record<string, unknown>, readonly string[]]> = [
     server,
     [
       "createHandler",
+      "matchMiddleware",
       "createMetrics",
       "createMetricsRoute",
       "parseQuery",

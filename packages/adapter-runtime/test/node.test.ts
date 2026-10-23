@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { request as httpRequest } from "node:http";
+import { createServer, request as httpRequest } from "node:http";
 import { test } from "node:test";
 import { brotliDecompressSync, gunzipSync } from "node:zlib";
 import { REMOTE_ADDRESS_HEADER } from "@ramonyx/core";
-import { createNodeHost } from "../src/index.ts";
+import { createConsoleLogger, createNodeHost, createNodeRequestListener } from "../src/index.ts";
 
 interface RawResponse {
   readonly status: number;
@@ -61,6 +61,7 @@ test("node host melayani HTTP nyata (method, body, status, set-cookie)", async (
 
   try {
     assert.match(server.url, /^http:\/\/localhost:\d+$/);
+    assert.equal(host.env.get("PATH"), process.env.PATH, "env host Node membaca process.env");
 
     const echo = await fetch(new URL("/echo", server.url), {
       method: "POST",
@@ -264,4 +265,64 @@ test("node host: kompresi dapat dimatikan (compression: false)", async () => {
   } finally {
     await server.close();
   }
+});
+
+test("createNodeRequestListener: request/response + error 500", async () => {
+  const errors: unknown[] = [];
+  const listener = createNodeRequestListener(
+    async (request) => {
+      if (new URL(request.url).pathname === "/boom") {
+        throw new Error("boom");
+      }
+      return new Response(`path:${new URL(request.url).pathname}`, {
+        headers: { "content-type": "text/plain" },
+      });
+    },
+    { onError: (error) => errors.push(error) },
+  );
+  const server = createServer(listener);
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  const port = typeof address === "object" && address !== null ? address.port : 0;
+  const base = `http://127.0.0.1:${port}`;
+
+  try {
+    const ok = await fetch(`${base}/halo`);
+    assert.equal(ok.status, 200);
+    assert.equal(await ok.text(), "path:/halo");
+
+    const boom = await fetch(`${base}/boom`);
+    assert.equal(boom.status, 500);
+    assert.deepEqual(await boom.json(), { error: "Internal Server Error" });
+    assert.equal(errors.length, 1);
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});
+
+test("createConsoleLogger: menulis JSON per level", () => {
+  const lines: string[] = [];
+  const original = {
+    debug: console.debug,
+    log: console.log,
+    error: console.error,
+  };
+  console.debug = (line: string) => lines.push(line);
+  console.log = (line: string) => lines.push(line);
+  console.error = (line: string) => lines.push(line);
+  try {
+    const logger = createConsoleLogger();
+    logger.debug("d", { a: 1 });
+    logger.info("i");
+    logger.warn("w");
+    logger.error("e");
+  } finally {
+    console.debug = original.debug;
+    console.log = original.log;
+    console.error = original.error;
+  }
+  assert.equal(lines.length, 4);
+  assert.match(lines[0] ?? "", /"level":"debug"/);
+  assert.match(lines[0] ?? "", /"a":1/);
+  assert.match(lines[3] ?? "", /"level":"error"/);
 });

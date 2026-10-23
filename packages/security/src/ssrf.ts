@@ -266,7 +266,7 @@ async function toNodeBody(
   if (body instanceof ReadableStream) {
     return { kind: "stream", stream: body };
   }
-  if (body instanceof FormData) {
+  if (typeof FormData !== "undefined" && body instanceof FormData) {
     const encoded = await formDataBody(body);
     return { kind: "buffer", data: Buffer.from(encoded.data), contentType: encoded.contentType };
   }
@@ -398,7 +398,7 @@ export async function guardedFetch(
   init: RequestInit = {},
   options: GuardedFetchOptions = {},
 ): Promise<Response> {
-  if (init.body instanceof FormData) {
+  if (typeof FormData !== "undefined" && init.body instanceof FormData) {
     await validateFormDataUrls(init.body, options);
   }
   const maxRedirects = options.maxRedirects ?? 0;

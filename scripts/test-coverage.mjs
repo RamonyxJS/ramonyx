@@ -32,7 +32,16 @@ const packages = [
   ["testing", 65, 95, 95],
 ];
 
-function run(label, sourceDir, testDir, lines, functions, branches, extraTests = []) {
+function run(
+  label,
+  sourceDir,
+  testDir,
+  lines,
+  functions,
+  branches,
+  extraTests = [],
+  extraArgs = [],
+) {
   console.log(`\n──────────────────────────────────────────────────────────`);
   console.log(`coverage: ${label} (lines≥${lines}, functions≥${functions}, branches≥${branches})`);
   const args = [
@@ -50,6 +59,7 @@ function run(label, sourceDir, testDir, lines, functions, branches, extraTests =
     `${testDir}/**/*.test.ts`,
     `${testDir}/**/*.test.tsx`,
     ...extraTests,
+    ...extraArgs,
   ];
   const result = spawnSync(process.execPath, args, { cwd: root, stdio: "inherit" });
   if (result.status !== 0) {
@@ -58,6 +68,7 @@ function run(label, sourceDir, testDir, lines, functions, branches, extraTests =
   }
 }
 
+const redisAvailable = spawnSync("which", ["redis-server"], { stdio: "ignore" }).status === 0;
 for (const [name, lines, functions, branches] of packages) {
   run(
     `@ramonyx/${name}`,
@@ -67,6 +78,9 @@ for (const [name, lines, functions, branches] of packages) {
     functions,
     branches,
     name === "core" ? ["tests/contracts/store.test.ts"] : [],
+    name === "adapter-runtime" && !redisAvailable
+      ? ["--test-coverage-exclude=packages/adapter-runtime/src/redis.ts"]
+      : [],
   );
 }
 run("create-ramonyx-app", "apps/create-app/src", "apps/create-app/test", 74, 95, 65);

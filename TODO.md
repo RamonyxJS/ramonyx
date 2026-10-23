@@ -22,7 +22,7 @@
 
 ### `p0-release-2-0-1` — Rilis patch 2.0.1: guard FormData, coverage listener, docs sinkron
 
-*tema: quality · ukuran: S · status: open · sumber: post-release audit 2026-10-23: tag v2.0.0 mendahului fix FormData/coverage*
+*tema: quality · ukuran: S · status: done · sumber: selesai 2026-10-23: 16 paket @ 2.0.1 + provenance, GitHub Release, Worker 0516001e-a26e-4078-80a8-df011231aeb1, registry acceptance, docs live.*
 
 - **Apa**: Terbitkan patch 2.0.1 yang memuat guard `FormData` di `guardedFetch`, test coverage `createNodeRequestListener`, dan statistik Node 382 test; sinkronkan docs/machine layer dan deploy Worker.
 - **Kenapa penting untuk bersaing**: Tag 2.0.0 sudah dibuat sebelum guard FormData dan test coverage masuk. Paket npm 2.0.0 saat ini masih memiliki bug runtime tanpa global FormData dan coverage adapter-runtime masih merah di CI.
@@ -38,7 +38,7 @@
 
 ### `p0-ci-coverage-core` — Hijaukan CI coverage @ramonyx/core (branch gate)
 
-*tema: quality · ukuran: M · status: open · sumber: CI failure 2026-10-23: core branch 81.98–84.26 vs threshold 88*
+*tema: quality · ukuran: M · status: done · sumber: selesai 2026-10-23: contract store test ditambahkan ke coverage core; baseline fitur baru (core/mcp/react/security/server/ssr/create-app) diperbarui eksplisit; test:coverage penuh hijau.*
 
 - **Apa**: Naikkan branch coverage `@ramonyx/core` dari sekitar 82–84% ke ambang 88%, atau perbarui baseline secara eksplisit dengan alasan dan test tambahan. Pastikan seluruh gate `pnpm test:coverage` hijau, bukan hanya adapter-runtime.
 - **Kenapa penting untuk bersaing**: CI main masih gagal pada coverage core setelah coverage adapter-runtime diperbaiki. Tanpa gate hijau, klaim kualitas dan rilis berikutnya tidak punya sinyal yang dapat dipercaya.

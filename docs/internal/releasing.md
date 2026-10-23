@@ -35,9 +35,25 @@
 - **TERBIT — 2.0.0** (2026-10-23): hapus mode proxy dev lama dan `--dev-port`; ADR-0083;
   `createDevServer` mewajibkan `handler`. 16 paket @ 2.0.0 dengan provenance; GitHub Release
   19 aset; Worker `8f4d7a0d-e149-4b2e-b08a-05f58f31f2bd`.
-- **PERSIAPAN — 2.0.1** (2026-10-23): patch guard `FormData` di `guardedFetch`, test listener/
-  coverage adapter, baseline coverage fitur baru, dan statistik 382 test. Bump 16 paket ke
-  **2.0.1**; tag `v2.0.1`.
+- **TERBIT — 2.0.1** (2026-10-23): patch guard `FormData` di `guardedFetch`, test listener/
+  coverage adapter, baseline coverage fitur baru, dan statistik 382 test. 16 paket @ 2.0.1;
+  GitHub Release 19 aset; Worker `0516001e-a26e-4078-80a8-df011231aeb1`.
+
+## Hasil rilis 2.0.1 (2026-10-23)
+
+- Tag `v2.0.1` → release workflow **success**: **16 paket @ 2.0.1** dengan attestations +
+  **GitHub Release 19 aset** (https://github.com/RamonyxJS/ramonyx/releases/tag/v2.0.1).
+- **Security/runtime**: `guardedFetch` memakai guard `typeof FormData`; suite Rust
+  `compat_security` hijau; Node suite 382 test.
+- **Coverage**: contract store dimasukkan ke coverage core; baseline fitur baru (core, MCP,
+  React, security, server, SSR, create-app) diperbarui eksplisit; `pnpm test:coverage` penuh
+  hijau. Adapter-runtime mengecualikan `redis.ts` saat `redis-server` tidak tersedia agar CI
+  tidak bergantung pada service eksternal.
+- **Registry acceptance**: `create-ramonyx-app@2.0.1` install/build/dev satu port; client entry
+  dan `@vite/client` 200.
+- **Deploy**: Worker `ramonyx-site` versi
+  `0516001e-a26e-4078-80a8-df011231aeb1`; smoke `/`, `/docs/cli`, `/machine/stats.json`
+  (2.0.1), `/machine/adrs.json` OK.
 
 ## Persiapan 2.0.1 (2026-10-23)
 

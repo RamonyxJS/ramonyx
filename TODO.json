@@ -1117,6 +1117,115 @@
       "areas": ["packages/ssr", "packages/core", "packages/react", "docs/public"],
       "competitor": "React Router loaders, Next.js parallel routes, SvelteKit load dependencies.",
       "source": "limitations data-loaders; audit 2026-10-22"
+    },
+    {
+      "id": "p1-integration-kit",
+      "title": "Kit integrasi resmi: database, auth, observability, email, payment, edge",
+      "theme": "ecosystem",
+      "priority": "p1",
+      "size": "L",
+      "status": "open",
+      "what": "Sediakan 5–7 integrasi resmi yang benar-benar dijalankan dan diuji: Drizzle/Prisma, Auth.js atau Better Auth, OpenTelemetry/Sentry, Resend/Postmark, Stripe, Cloudflare D1/R2/KV, serta Tailwind + shadcn/ui. Setiap integrasi berisi contoh minimal, adapter/tip yang jelas, dan smoke test.",
+      "why": "Adopsi framework ditentukan oleh kemampuan memakai stack yang sudah dikenal. Ramonyx sudah kuat di core, tetapi pengguna harus merakit database/auth/email/payment sendiri; pesaing menawarkan jalur integrasi yang terdokumentasi dan teruji.",
+      "done": [
+        "Daftar integrasi prioritas dan batas dukungan (official vs example) dipublikasikan.",
+        "Minimal 5 integrasi memiliki contoh yang dapat dijalankan dengan test/build di CI atau job terjadwal.",
+        "Setiap integrasi menjelaskan secret/binding, migrasi, dan deployment Node/edge.",
+        "Integrasi tidak menambah coupling ke core; paket eksternal tetap opsional.",
+        "Halaman docs + recipe untuk setiap integrasi, dengan link ke contoh."
+      ],
+      "areas": ["examples", "docs/public", "packages", "apps/create-app"],
+      "adrs": [],
+      "competitor": "Next.js ecosystem, Nuxt modules, SvelteKit adapters, Astro integrations.",
+      "source": "agenda adopsi 2026-10-23: integration surface sebagai blocker utama",
+      "strategic": true
+    },
+    {
+      "id": "p1-production-templates",
+      "title": "Template produksi + one-click deploy (SaaS, dashboard, API/auth, edge, docs/blog)",
+      "theme": "ecosystem",
+      "priority": "p1",
+      "size": "L",
+      "status": "open",
+      "what": "Sediakan 3–5 template produksi yang lebih lengkap dari welcome screen: SaaS starter, dashboard admin, API + auth, Cloudflare-native, dan docs/blog. Tambahkan pilihan template pada create-ramonyx-app dan tombol/instruksi deploy satu klik untuk Node, Cloudflare, Vercel, dan Deno.",
+      "why": "Pengguna menilai framework dari hasil pertama yang bisa di-deploy, bukan dari API. Template yang teruji memperpendek time-to-first-deploy dan menjadi bukti nyata integrasi.",
+      "done": [
+        "Minimal 3 template stabil, masing-masing punya build/start atau build target edge yang diuji.",
+        "create-ramonyx-app mendukung --template <id> dengan validasi nama template.",
+        "Template memakai integrasi resmi yang sudah ada, bukan duplikasi kode auth/database.",
+        "Instruksi deploy Node/Cloudflare/Vercel/Deno + environment/binding terdokumentasi.",
+        "Satu template diuji end-to-end di CI terhadap artefak build."
+      ],
+      "areas": ["apps/create-app", "examples", "docs/public/deployment.md", ".github/workflows"],
+      "adrs": [],
+      "competitor": "create-next-app examples, Nuxt templates, SvelteKit skeleton, Astro themes.",
+      "source": "agenda adopsi 2026-10-23: activation membutuhkan template yang bisa langsung deploy",
+      "strategic": true
+    },
+    {
+      "id": "p1-independent-security-audit",
+      "title": "Audit keamanan independen + publikasi temuan",
+      "theme": "security",
+      "priority": "p1",
+      "size": "M",
+      "status": "open",
+      "what": "Lakukan audit keamanan eksternal pada permukaan Node/edge: session/cookie, CSRF, SSRF, boundary client/server, plugin isolation, dan deployment Worker. Publikasikan lingkup, temuan, perbaikan, serta residual risk.",
+      "why": "Klaim secure-by-default belum cukup untuk adopsi serius tanpa review independen. Audit yang jujur menaikkan kepercayaan dan menemukan bug yang tidak terlihat oleh test internal.",
+      "done": [
+        "Auditor independen dan lingkup audit disepakati; threat model diberikan.",
+        "Temuan kritis/tinggi ditutup atau didokumentasikan sebagai residual risk.",
+        "Laporan publik berisi lingkup, metodologi, temuan, perbaikan, dan batasan.",
+        "Tidak ada klaim “aman” yang melampaui hasil audit.",
+        "Tindak lanjut dimasukkan ke TODO/ADR dan test regresi."
+      ],
+      "areas": ["docs/public/security", "packages/security", "runtime", ".github/workflows"],
+      "adrs": [],
+      "competitor": "Framework besar mempublikasikan audit/security advisories dan proses disclosure.",
+      "source": "agenda adopsi 2026-10-23: trust gap utama",
+      "strategic": true
+    },
+    {
+      "id": "p1-reproducible-benchmarks",
+      "title": "Benchmark publik reproducible + perbandingan yang adil",
+      "theme": "perf",
+      "priority": "p1",
+      "size": "L",
+      "status": "open",
+      "what": "Publikasikan benchmark HTTP/SSR yang dapat dijalankan ulang di mesin pembaca, dengan hardware, versi, metode, dan batasan. Bandingkan Ramonyx dengan minimal satu framework lain pada beban yang sama; jangan memilih hasil terbaik secara selektif.",
+      "why": "Benchmark report-only internal tidak cukup untuk klaim performa. Adopsi teknis membutuhkan angka yang bisa diverifikasi dan perbandingan yang jujur.",
+      "done": [
+        "Harness benchmark deterministik dengan dokumentasi perintah dan konfigurasi mesin.",
+        "Hasil publik memuat median, spread, hardware, versi, dan link artefak mentah.",
+        "Minimal satu perbandingan adil dengan framework lain pada aplikasi setara.",
+        "Klaim di docs/landing hanya memakai angka yang punya bukti dan tanggal.",
+        "CI/report-only tetap memblokir regresi besar tanpa mengklaim absolut."
+      ],
+      "areas": ["benchmarks", "docs/public", "apps/docs", ".github/workflows"],
+      "adrs": ["ADR-0048", "ADR-0074"],
+      "competitor": "Next.js/Nuxt/Astro benchmark publik dengan metodologi terbuka.",
+      "source": "agenda adopsi 2026-10-23: performance proof",
+      "strategic": true
+    },
+    {
+      "id": "p2-showcase-case-studies",
+      "title": "Showcase + studi kasus produksi",
+      "theme": "ecosystem",
+      "priority": "p2",
+      "size": "M",
+      "status": "open",
+      "what": "Kumpulkan 3–5 aplikasi nyata yang memakai Ramonyx, dengan studi kasus berisi masalah, arsitektur, metrik sebelum/sesudah, dan batasan. Tampilkan di situs publik dan machine layer untuk agen.",
+      "why": "Social proof lebih meyakinkan daripada daftar fitur. Studi kasus nyata membantu calon pengguna memetakan Ramonyx ke masalah mereka.",
+      "done": [
+        "Minimal 3 studi kasus nyata dipublikasikan dengan izin pemilik.",
+        "Setiap studi kasus memuat stack, pola arsitektur, hasil terukur, dan batasan.",
+        "Showcase ditautkan dari landing/docs dan machine layer.",
+        "Tidak ada metrik tanpa sumber atau testimoni tanpa verifikasi."
+      ],
+      "areas": ["docs/public", "apps/docs", "docs/public/machine"],
+      "adrs": [],
+      "competitor": "Next.js showcase, Nuxt showcase, Astro case studies.",
+      "source": "agenda adopsi 2026-10-23: proof for decision makers",
+      "strategic": true
     }
   ],
   "dogfooding": [

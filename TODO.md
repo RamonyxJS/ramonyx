@@ -10,13 +10,13 @@
 | Prioritas | Jumlah | Item |
 | --- | --- | --- |
 | P0 — blocker adopsi | 8 | `p0-release-2-0-1` · `p0-ci-coverage-core` · `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` · `p0-package-readiness-gate` |
-| P1 — paritas | 12 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` · `p1-package-contract-coverage` · `p1-framework-v1-readiness` · `p1-auth-session-complete` |
-| P2 — diferensiasi & utang | 25 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` · `p2-partial-hydration-islands` · `p2-deferred-data-streaming` · `p2-runtime-observability-complete` · `p2-state-contracts` · `p2-state-shared-adapters` · `p2-auth-user-store` · `p2-auth-oauth` · `p2-auth-authorization` · `p2-request-pipeline` · `p2-adapter-parity` · `p2-actions-ux` · `p2-i18n-complete` |
+| P1 — paritas | 16 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` · `p1-package-contract-coverage` · `p1-framework-v1-readiness` · `p1-auth-session-complete` · `p1-integration-kit` · `p1-production-templates` · `p1-independent-security-audit` · `p1-reproducible-benchmarks` |
+| P2 — diferensiasi & utang | 26 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` · `p2-partial-hydration-islands` · `p2-deferred-data-streaming` · `p2-runtime-observability-complete` · `p2-state-contracts` · `p2-state-shared-adapters` · `p2-auth-user-store` · `p2-auth-oauth` · `p2-auth-authorization` · `p2-request-pipeline` · `p2-adapter-parity` · `p2-actions-ux` · `p2-i18n-complete` · `p2-showcase-case-studies` |
 | P3 — nice-to-have | 12 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` · `p3-runtime-production-readiness` · `p3-typed-routes` · `p3-cli-hmr` · `p3-error-boundary-dx` · `p3-media-complete` · `p3-mcp-http-skill` · `p3-plugin-registry` · `p3-benchmark-runner` · `p3-loader-dependencies` |
 
 **Quick wins** (dampak besar, usaha kecil): `p0-http-production-basics` · `p1-prefetch` · `p1-docs-tutorial` · `p2-watch-mode` · `p2-context7` · `p2-testing-docs`
 
-**Strategis** (butuh keputusan arsitektur): `p0-ci-coverage-core` · `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy` · `p0-package-readiness-gate` · `p1-framework-v1-readiness` · `p1-auth-session-complete` · `p3-runtime-production-readiness` · `p2-state-contracts` · `p2-state-shared-adapters` · `p2-auth-user-store` · `p2-auth-oauth` · `p2-adapter-parity` · `p2-actions-ux` · `p3-plugin-registry`
+**Strategis** (butuh keputusan arsitektur): `p0-ci-coverage-core` · `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy` · `p0-package-readiness-gate` · `p1-framework-v1-readiness` · `p1-auth-session-complete` · `p3-runtime-production-readiness` · `p2-state-contracts` · `p2-state-shared-adapters` · `p2-auth-user-store` · `p2-auth-oauth` · `p2-adapter-parity` · `p2-actions-ux` · `p3-plugin-registry` · `p1-integration-kit` · `p1-production-templates` · `p1-independent-security-audit` · `p1-reproducible-benchmarks` · `p2-showcase-case-studies`
 
 ## P0 — blocker adopsi
 
@@ -314,6 +314,67 @@
 - **Area kode**: `packages/security`, `packages/core`, `apps/playground`, `docs/public`
 - **ADR**: ADR baru
 - **Pembanding**: Auth.js, Lucia, Better Auth, SvelteKit hooks + cookie sessions.
+
+### `p1-integration-kit` — Kit integrasi resmi: database, auth, observability, email, payment, edge
+
+*tema: ecosystem · ukuran: L · status: open · sumber: agenda adopsi 2026-10-23: integration surface sebagai blocker utama*
+
+- **Apa**: Sediakan 5–7 integrasi resmi yang benar-benar dijalankan dan diuji: Drizzle/Prisma, Auth.js atau Better Auth, OpenTelemetry/Sentry, Resend/Postmark, Stripe, Cloudflare D1/R2/KV, serta Tailwind + shadcn/ui. Setiap integrasi berisi contoh minimal, adapter/tip yang jelas, dan smoke test.
+- **Kenapa penting untuk bersaing**: Adopsi framework ditentukan oleh kemampuan memakai stack yang sudah dikenal. Ramonyx sudah kuat di core, tetapi pengguna harus merakit database/auth/email/payment sendiri; pesaing menawarkan jalur integrasi yang terdokumentasi dan teruji.
+- **Selesai bila**:
+  - [ ] Daftar integrasi prioritas dan batas dukungan (official vs example) dipublikasikan.
+  - [ ] Minimal 5 integrasi memiliki contoh yang dapat dijalankan dengan test/build di CI atau job terjadwal.
+  - [ ] Setiap integrasi menjelaskan secret/binding, migrasi, dan deployment Node/edge.
+  - [ ] Integrasi tidak menambah coupling ke core; paket eksternal tetap opsional.
+  - [ ] Halaman docs + recipe untuk setiap integrasi, dengan link ke contoh.
+- **Area kode**: `examples`, `docs/public`, `packages`, `apps/create-app`
+- **Pembanding**: Next.js ecosystem, Nuxt modules, SvelteKit adapters, Astro integrations.
+
+### `p1-production-templates` — Template produksi + one-click deploy (SaaS, dashboard, API/auth, edge, docs/blog)
+
+*tema: ecosystem · ukuran: L · status: open · sumber: agenda adopsi 2026-10-23: activation membutuhkan template yang bisa langsung deploy*
+
+- **Apa**: Sediakan 3–5 template produksi yang lebih lengkap dari welcome screen: SaaS starter, dashboard admin, API + auth, Cloudflare-native, dan docs/blog. Tambahkan pilihan template pada create-ramonyx-app dan tombol/instruksi deploy satu klik untuk Node, Cloudflare, Vercel, dan Deno.
+- **Kenapa penting untuk bersaing**: Pengguna menilai framework dari hasil pertama yang bisa di-deploy, bukan dari API. Template yang teruji memperpendek time-to-first-deploy dan menjadi bukti nyata integrasi.
+- **Selesai bila**:
+  - [ ] Minimal 3 template stabil, masing-masing punya build/start atau build target edge yang diuji.
+  - [ ] create-ramonyx-app mendukung --template <id> dengan validasi nama template.
+  - [ ] Template memakai integrasi resmi yang sudah ada, bukan duplikasi kode auth/database.
+  - [ ] Instruksi deploy Node/Cloudflare/Vercel/Deno + environment/binding terdokumentasi.
+  - [ ] Satu template diuji end-to-end di CI terhadap artefak build.
+- **Area kode**: `apps/create-app`, `examples`, `docs/public/deployment.md`, `.github/workflows`
+- **Pembanding**: create-next-app examples, Nuxt templates, SvelteKit skeleton, Astro themes.
+
+### `p1-independent-security-audit` — Audit keamanan independen + publikasi temuan
+
+*tema: security · ukuran: M · status: open · sumber: agenda adopsi 2026-10-23: trust gap utama*
+
+- **Apa**: Lakukan audit keamanan eksternal pada permukaan Node/edge: session/cookie, CSRF, SSRF, boundary client/server, plugin isolation, dan deployment Worker. Publikasikan lingkup, temuan, perbaikan, serta residual risk.
+- **Kenapa penting untuk bersaing**: Klaim secure-by-default belum cukup untuk adopsi serius tanpa review independen. Audit yang jujur menaikkan kepercayaan dan menemukan bug yang tidak terlihat oleh test internal.
+- **Selesai bila**:
+  - [ ] Auditor independen dan lingkup audit disepakati; threat model diberikan.
+  - [ ] Temuan kritis/tinggi ditutup atau didokumentasikan sebagai residual risk.
+  - [ ] Laporan publik berisi lingkup, metodologi, temuan, perbaikan, dan batasan.
+  - [ ] Tidak ada klaim “aman” yang melampaui hasil audit.
+  - [ ] Tindak lanjut dimasukkan ke TODO/ADR dan test regresi.
+- **Area kode**: `docs/public/security`, `packages/security`, `runtime`, `.github/workflows`
+- **Pembanding**: Framework besar mempublikasikan audit/security advisories dan proses disclosure.
+
+### `p1-reproducible-benchmarks` — Benchmark publik reproducible + perbandingan yang adil
+
+*tema: perf · ukuran: L · status: open · sumber: agenda adopsi 2026-10-23: performance proof*
+
+- **Apa**: Publikasikan benchmark HTTP/SSR yang dapat dijalankan ulang di mesin pembaca, dengan hardware, versi, metode, dan batasan. Bandingkan Ramonyx dengan minimal satu framework lain pada beban yang sama; jangan memilih hasil terbaik secara selektif.
+- **Kenapa penting untuk bersaing**: Benchmark report-only internal tidak cukup untuk klaim performa. Adopsi teknis membutuhkan angka yang bisa diverifikasi dan perbandingan yang jujur.
+- **Selesai bila**:
+  - [ ] Harness benchmark deterministik dengan dokumentasi perintah dan konfigurasi mesin.
+  - [ ] Hasil publik memuat median, spread, hardware, versi, dan link artefak mentah.
+  - [ ] Minimal satu perbandingan adil dengan framework lain pada aplikasi setara.
+  - [ ] Klaim di docs/landing hanya memakai angka yang punya bukti dan tanggal.
+  - [ ] CI/report-only tetap memblokir regresi besar tanpa mengklaim absolut.
+- **Area kode**: `benchmarks`, `docs/public`, `apps/docs`, `.github/workflows`
+- **ADR**: ADR-0048, ADR-0074
+- **Pembanding**: Next.js/Nuxt/Astro benchmark publik dengan metodologi terbuka.
 
 ## P2 — diferensiasi & utang
 
@@ -651,6 +712,20 @@
   - [ ] Metadata/hreflang per-rute per-locale + e2e/docs.
 - **Area kode**: `packages/core`, `packages/router`, `packages/ssr`, `docs/public`
 - **Pembanding**: next-intl, SvelteKit paraglide, Nuxt i18n, Astro i18n.
+
+### `p2-showcase-case-studies` — Showcase + studi kasus produksi
+
+*tema: ecosystem · ukuran: M · status: open · sumber: agenda adopsi 2026-10-23: proof for decision makers*
+
+- **Apa**: Kumpulkan 3–5 aplikasi nyata yang memakai Ramonyx, dengan studi kasus berisi masalah, arsitektur, metrik sebelum/sesudah, dan batasan. Tampilkan di situs publik dan machine layer untuk agen.
+- **Kenapa penting untuk bersaing**: Social proof lebih meyakinkan daripada daftar fitur. Studi kasus nyata membantu calon pengguna memetakan Ramonyx ke masalah mereka.
+- **Selesai bila**:
+  - [ ] Minimal 3 studi kasus nyata dipublikasikan dengan izin pemilik.
+  - [ ] Setiap studi kasus memuat stack, pola arsitektur, hasil terukur, dan batasan.
+  - [ ] Showcase ditautkan dari landing/docs dan machine layer.
+  - [ ] Tidak ada metrik tanpa sumber atau testimoni tanpa verifikasi.
+- **Area kode**: `docs/public`, `apps/docs`, `docs/public/machine`
+- **Pembanding**: Next.js showcase, Nuxt showcase, Astro case studies.
 
 ## P3 — nice-to-have
 

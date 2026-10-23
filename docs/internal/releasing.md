@@ -29,8 +29,23 @@
   `ramonyx ai init|sync`, eval harness) + welcome screen scaffold + dev/CLI fixes. 16 paket
   @ 1.1.0 dengan provenance; GitHub Release 19 aset; Worker `8f0a836d-116e-4a95-a75c-63bd18a20b2e`.
   Runtime Rust tetap eksperimental; suite Rust masih gagal di fixture `FormData` (dicatat).
-- **PERSIAPAN — 1.2.0** (2026-10-23): dev server single-port (Vite middleware + HMR + SSR satu
-  server), bump 16 paket + template ke **1.2.0**; gate Node/docs/release lalu tag `v1.2.0`.
+- **TERBIT — 1.2.0** (2026-10-23): dev server single-port (Vite middleware + HMR + SSR satu
+  server). 16 paket @ 1.2.0 dengan provenance; GitHub Release 19 aset; Worker
+  `4df4cfaa-559c-4984-8a8f-a24af1a3c40f`. Runtime Rust tetap eksperimental.
+
+## Hasil rilis 1.2.0 (2026-10-23)
+
+- Tag `v1.2.0` → release workflow **success**: **16 paket @ 1.2.0** dengan `dist.attestations` +
+  **GitHub Release 19 aset** (https://github.com/RamonyxJS/ramonyx/releases/tag/v1.2.0).
+- **Node gate**: 380 test Node hijau; `docs:validate`, `docs:no-leak`, `test:docs` (16 e2e), dan
+  `release:verify` (scaffold build/start/SSR, MCP handshake, runtime binary) lulus.
+- **Deploy**: Worker `ramonyx-site` versi
+  `4df4cfaa-559c-4984-8a8f-a24af1a3c40f`; smoke live `/`, `/docs/cli`,
+  `/docs/getting-started`, `/docs/devtools`, `/machine/stats.json` (v1.2.0), dan
+  `/machine/features.json` OK.
+- Registry `ramonyx` meta sempat tertunda di staged publish; versi `1.2.0` terverifikasi tersedia
+  sebelum acceptance akhir.
+- Runtime Rust tetap eksperimental; suite Rust masih gagal di fixture `FormData`, dicatat terpisah.
 
 ## Persiapan 1.2.0 (2026-10-23)
 

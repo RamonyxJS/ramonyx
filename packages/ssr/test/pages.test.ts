@@ -742,6 +742,27 @@ test("metadata: description/canonical/OG/Twitter/robots disuntikkan ke <head>", 
   assert.ok(html.includes('<meta property="og:url" content="https://contoh.dev/promo?utm=1" />'));
   assert.ok(html.includes('<meta property="og:image" content="https://contoh.dev/og.png" />'));
   assert.ok(html.includes('<meta name="twitter:card" content="summary_large_image" />'));
+  assert.match(
+    html,
+    /<link rel="icon" href="data:image\/svg\+xml,.*" type="image\/svg\+xml" \/>/,
+    "dokumen default menyediakan ikon agar tidak ada 404 favicon.ico",
+  );
+});
+
+test("metadata.head dengan ikon kustom tidak ditimpa ikon default", async () => {
+  const page = basePage("/promo", {
+    default: Page,
+    metadata: {
+      title: "Promo",
+      head: '<link rel="icon" href="/custom.ico" />',
+    },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+  const html = await (await handler(new Request("http://test.local/promo"))).text();
+  assert.match(html, /<link rel="icon" href="\/custom\.ico" \/>/);
+  assert.doesNotMatch(html, /data:image\/svg\+xml/);
 });
 
 test("metadata: tanpa metadata tidak menambah tag head", async () => {

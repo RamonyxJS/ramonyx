@@ -546,6 +546,11 @@ test("devtools dev: panel + data (rute/timing) tersedia di dev server — ADR-00
     const devUrl = /dev: (http:\/\/localhost:\d+)/.exec(keluaran)?.[1];
     assert.ok(devUrl !== undefined, "URL dev server terbaca");
 
+    // Entry klien dev harus dilayani Vite (bukan 404) agar hydration/HMR tidak putus.
+    const clientEntry = await fetch(`${devUrl}/.ramonyx/client-entry.ts`);
+    assert.equal(clientEntry.status, 200, "client-entry.ts tersedia di dev server");
+    assert.match(await clientEntry.text(), /enableClientNavigation/);
+
     // Panel HTML (dev-only).
     const panel = await fetch(`${devUrl}/__ramonyx/devtools`);
     assert.equal(panel.status, 200);

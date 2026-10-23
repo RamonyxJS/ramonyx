@@ -11,6 +11,13 @@ export function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;");
 }
 
+/**
+ * Ikon default agar browser tidak meminta `/favicon.ico` dan menghasilkan 404 di console.
+ * Aplikasi dapat menggantinya lewat `metadata.head` (`<link rel="icon" …>`).
+ */
+const DEFAULT_ICON =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f1115'/%3E%3Cpath d='M16 5l11 11-11 11L5 16z' fill='%237cc4ff'/%3E%3C/svg%3E";
+
 /** Dokumen HTML default; aplikasi boleh mengganti lewat opsi `document`. */
 export const defaultDocument: DocumentRenderer = ({
   title,
@@ -20,7 +27,10 @@ export const defaultDocument: DocumentRenderer = ({
   lang,
   dir,
 }) => {
-  const extraHead = head.length > 0 ? `\n${head}` : "";
+  const icon = /rel=["']icon["']/i.test(head)
+    ? ""
+    : `\n<link rel="icon" href="${DEFAULT_ICON}" type="image/svg+xml" />`;
+  const extraHead = `${icon}${head.length > 0 ? `\n${head}` : ""}`;
   const extraScripts = scripts.length > 0 ? `\n${scripts}` : "";
   const atributLang = ` lang="${escapeHtml(lang ?? "en")}"`;
   const atributDir = dir !== undefined ? ` dir="${dir}"` : "";

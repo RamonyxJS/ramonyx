@@ -68,7 +68,6 @@ function run(
   }
 }
 
-const redisAvailable = spawnSync("which", ["redis-server"], { stdio: "ignore" }).status === 0;
 for (const [name, lines, functions, branches] of packages) {
   run(
     `@ramonyx/${name}`,
@@ -78,7 +77,9 @@ for (const [name, lines, functions, branches] of packages) {
     functions,
     branches,
     name === "core" ? ["tests/contracts/store.test.ts"] : [],
-    name === "adapter-runtime" && !redisAvailable
+    // Redis is an optional integration (needs redis-server); its tests run in the main suite
+    // when available. Exclude it from the deterministic coverage baseline so CI is stable.
+    name === "adapter-runtime"
       ? ["--test-coverage-exclude=packages/adapter-runtime/src/redis.ts"]
       : [],
   );

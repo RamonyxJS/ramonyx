@@ -14,3 +14,4 @@ of the public site).
 | [0069](0069-assets.md) | Asset pipeline — manifest + resolver instead of a custom loader |
 | [0078](0078-mcp-docs-server.md) | MCP docs server — stdio, no hosting, public snapshot |
 | [0081](0081-i18n.md) | i18n — primitives + locale routing, no auto-detection |
+| [0083](0083-single-port-dev-server.md) | Single-port dev server — Vite middleware + HMR + SSR |

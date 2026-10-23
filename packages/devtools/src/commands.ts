@@ -65,7 +65,6 @@ Opsi:
   --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)
   --config <path>   Path config (default: <app>/ramonyx.config.ts)
   --port <n>        Override port dev/start
-  --dev-port <n>    Alias lama untuk --port (dev; deprecated)
   --static          (build) Prerender rute statis + getStaticPaths → dist/static
   --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)
   --watch           (build/start) Bangun ulang atau restart server saat src/** berubah
@@ -87,7 +86,6 @@ interface Flags {
   readonly appDir: string;
   readonly configPath?: string;
   readonly port?: number;
-  readonly devPort?: number;
   readonly static?: boolean;
   readonly target?: string;
   readonly watch?: boolean;
@@ -111,7 +109,6 @@ function parseArgs(argv: readonly string[]): {
   let appDir = process.cwd();
   let configPath: string | undefined;
   let port: number | undefined;
-  let devPort: number | undefined;
   let isStatic = false;
   let target: string | undefined;
   let watch = false;
@@ -143,9 +140,6 @@ function parseArgs(argv: readonly string[]): {
         break;
       case "--port":
         port = numeric(argv[++index], "--port");
-        break;
-      case "--dev-port":
-        devPort = numeric(argv[++index], "--dev-port");
         break;
       case "--static":
         isStatic = true;
@@ -210,7 +204,6 @@ function parseArgs(argv: readonly string[]): {
       appDir,
       configPath,
       port,
-      devPort,
       static: isStatic,
       target,
       watch,
@@ -560,7 +553,7 @@ async function commandDev(flags: Flags): Promise<number> {
     flags.appDir,
     await loadPageRoutes({ dir: join(flags.appDir, "src/routes") }),
   );
-  const port = flags.devPort ?? flags.port ?? config.server.port;
+  const port = flags.port ?? config.server.port;
   const host = createNodeHost();
   const dev = await createDevServer({
     appDir: flags.appDir,

@@ -9,7 +9,10 @@
       "statusDetail": "Accepted",
       "date": "2026-10-18",
       "decision": "Runtime MVP = Node.js; runtime Rust/V8 dibangun terpisah sebagai eksperimen Phase 4+ dan tidak boleh saling bergantung.",
-      "features": ["adapter-node", "runtime-http-server"]
+      "features": [
+        "adapter-node",
+        "runtime-http-server"
+      ]
     },
     {
       "id": "ADR-0002",
@@ -19,7 +22,9 @@
       "statusDetail": "Accepted",
       "date": "2026-10-18",
       "decision": "Baseline: TypeScript strict, ESM-only, source-first, pnpm workspaces, Node ≥24, CI lint→typecheck→test→build→security.",
-      "features": ["jsx-loader"]
+      "features": [
+        "jsx-loader"
+      ]
     },
     {
       "id": "ADR-0003",
@@ -29,7 +34,10 @@
       "statusDetail": "Accepted (keputusan pemilik, 2026-10-18)",
       "date": "2026-10-18",
       "decision": "UI lewat adapter yang dapat diganti; adapter pertama React (react + react-dom/server).",
-      "features": ["ssr-sync", "hydration"]
+      "features": [
+        "ssr-sync",
+        "hydration"
+      ]
     },
     {
       "id": "ADR-0004",
@@ -39,7 +47,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Validasi runtime memakai kontrak Standard Schema sehingga zod/valibot/arktype dapat dipakai sebagai adapter.",
-      "features": ["schema-validation"]
+      "features": [
+        "schema-validation"
+      ]
     },
     {
       "id": "ADR-0005",
@@ -49,7 +59,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Bundler awal Vite; compiler menghasilkan artefak eksplisit (client bundle, manifest rute, metadata build).",
-      "features": ["client-bundle"]
+      "features": [
+        "client-bundle"
+      ]
     },
     {
       "id": "ADR-0006",
@@ -59,7 +71,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Loader dev/test memakai esbuild sendiri (JSX automatic) karena Node type stripping tidak memproses JSX; paket framework tetap tanpa JSX.",
-      "features": ["jsx-loader"]
+      "features": [
+        "jsx-loader"
+      ]
     },
     {
       "id": "ADR-0007",
@@ -69,7 +83,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Hydration lewat payload inline `window.__RAMONYX__` + satu bundle client + `hydrateRoot`; halaman error tidak di-hydrate.",
-      "features": ["hydration"]
+      "features": [
+        "hydration"
+      ]
     },
     {
       "id": "ADR-0008",
@@ -79,17 +95,21 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Navigasi klien = soft navigation (fetch HTML → swap → re-hydrate) tanpa framework data client tambahan.",
-      "features": ["soft-navigation"]
+      "features": [
+        "soft-navigation"
+      ]
     },
     {
       "id": "ADR-0009",
       "file": "0009-dev-server.md",
       "title": "Dev Server — Vite Front + Proxy Manual + `ssrLoadModule`",
-      "status": "accepted",
-      "statusDetail": "Accepted (2026-10-18)",
+      "status": "superseded",
+      "statusDetail": "Superseded by ADR-0083 (2026-10-23)",
       "date": "2026-10-18",
       "decision": "Dev server: Vite sebagai front (HMR) mem-proxy ke SSR Node via `ssrLoadModule` — tanpa build.",
-      "features": ["dev-server-hmr"]
+      "features": [
+        "dev-server-hmr"
+      ]
     },
     {
       "id": "ADR-0010",
@@ -99,7 +119,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "E2E browser memakai Playwright terhadap build produksi + baseline Web Vitals (median 3 load).",
-      "features": ["e2e-playwright"]
+      "features": [
+        "e2e-playwright"
+      ]
     },
     {
       "id": "ADR-0011",
@@ -109,7 +131,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Default aman: body ≤1 MiB → 413, handler/loader timeout 10s → 503 (+ request.signal abort); dapat dikonfigurasi.",
-      "features": ["resource-limits"]
+      "features": [
+        "resource-limits"
+      ]
     },
     {
       "id": "ADR-0012",
@@ -119,7 +143,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Batas 100 request bersamaan → 503 + Retry-After (load shedding), dapat dikonfigurasi.",
-      "features": ["resource-limits"]
+      "features": [
+        "resource-limits"
+      ]
     },
     {
       "id": "ADR-0013",
@@ -129,7 +155,10 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Paket `@ramonyx/security`: security headers + CSRF double-submit memakai Web Crypto (tanpa dependency crypto).",
-      "features": ["security-headers", "csrf"]
+      "features": [
+        "security-headers",
+        "csrf"
+      ]
     },
     {
       "id": "ADR-0014",
@@ -139,7 +168,10 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "CSP nonce per request + middleware dapat mengganti request (request replacement) untuk meneruskan nonce.",
-      "features": ["csp-nonce", "middleware-global"]
+      "features": [
+        "csp-nonce",
+        "middleware-global"
+      ]
     },
     {
       "id": "ADR-0015",
@@ -149,7 +181,10 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "`guardedFetch` memvalidasi host/IP (blokir privat, redirect per-hop) + batas ukuran output dokumen SSR.",
-      "features": ["ssrf-guard", "output-limit"]
+      "features": [
+        "ssrf-guard",
+        "output-limit"
+      ]
     },
     {
       "id": "ADR-0016",
@@ -169,7 +204,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Rate limit token bucket per klien; identitas dari adapter, `trustProxy` opt-in untuk X-Forwarded-For.",
-      "features": ["rate-limit"]
+      "features": [
+        "rate-limit"
+      ]
     },
     {
       "id": "ADR-0018",
@@ -189,7 +226,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Runtime R0: workspace Cargo terpisah, CLI `ramonyx-runtime`, konfigurasi, structured logging.",
-      "features": ["runtime-permissions"]
+      "features": [
+        "runtime-permissions"
+      ]
     },
     {
       "id": "ADR-0020",
@@ -199,7 +238,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Engine V8 di-embed lewat `deno_core` (bukan menulis engine sendiri).",
-      "features": ["runtime-http-server"]
+      "features": [
+        "runtime-http-server"
+      ]
     },
     {
       "id": "ADR-0021",
@@ -209,7 +250,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Runtime memuat ESM + transpile TypeScript via `deno_ast`, dengan fallback ekstensi.",
-      "features": ["runtime-compat-suite"]
+      "features": [
+        "runtime-compat-suite"
+      ]
     },
     {
       "id": "ADR-0022",
@@ -219,7 +262,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "I/O dasar (timer/fs/env) + HTTP server pull-model dengan API `ramonyx.*`, bind 127.0.0.1.",
-      "features": ["runtime-http-server"]
+      "features": [
+        "runtime-http-server"
+      ]
     },
     {
       "id": "ADR-0023",
@@ -229,7 +274,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Permission deny-all secara default; akses fs/env/net hanya via flag `--allow-read/write/net/env[=daftar]`.",
-      "features": ["runtime-permissions"]
+      "features": [
+        "runtime-permissions"
+      ]
     },
     {
       "id": "ADR-0024",
@@ -239,7 +286,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Cancellation saat klien putus (`request.signal`) + keep-alive koneksi.",
-      "features": ["runtime-http-server"]
+      "features": [
+        "runtime-http-server"
+      ]
     },
     {
       "id": "ADR-0025",
@@ -249,7 +298,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Respons streaming: `body` sebagai AsyncIterable dikirim chunked.",
-      "features": ["runtime-streaming"]
+      "features": [
+        "runtime-streaming"
+      ]
     },
     {
       "id": "ADR-0026",
@@ -259,7 +310,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Resolusi `node_modules` ESM v1 mendukung field `exports`/`module`/`main`.",
-      "features": ["runtime-compat-suite"]
+      "features": [
+        "runtime-compat-suite"
+      ]
     },
     {
       "id": "ADR-0027",
@@ -269,7 +322,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "`web_shim` menyediakan URL, TextEncoder, Headers/Request/Response, setTimeout, MessageChannel.",
-      "features": ["runtime-http-server"]
+      "features": [
+        "runtime-http-server"
+      ]
     },
     {
       "id": "ADR-0028",
@@ -279,7 +334,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Compatibility suite menjalankan pipeline framework nyata di runtime sebagai bukti kesesuaian.",
-      "features": ["runtime-compat-suite"]
+      "features": [
+        "runtime-compat-suite"
+      ]
     },
     {
       "id": "ADR-0029",
@@ -289,7 +346,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Interop CommonJS subset (graf `require` statis) + demo SSR React (`react-dom/server.browser`) berjalan di runtime.",
-      "features": ["runtime-cjs-interop"]
+      "features": [
+        "runtime-cjs-interop"
+      ]
     },
     {
       "id": "ADR-0030",
@@ -299,7 +358,10 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Runtime menyediakan `fetch` + `ReadableStream` + body streaming (POST body, SSR streaming `renderToReadableStream`).",
-      "features": ["runtime-fetch", "runtime-streaming"]
+      "features": [
+        "runtime-fetch",
+        "runtime-streaming"
+      ]
     },
     {
       "id": "ADR-0031",
@@ -309,7 +371,10 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Builtin subset node:net/dns + crypto.getRandomValues + subset @ramonyx/security berjalan di runtime; IP-pinning dicatat menyusul.",
-      "features": ["runtime-fetch", "ssrf-guard"]
+      "features": [
+        "runtime-fetch",
+        "ssrf-guard"
+      ]
     },
     {
       "id": "ADR-0032",
@@ -319,7 +384,10 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Jembatan `serveHandler` memungkinkan handler framework berjalan end-to-end di runtime (halaman SSR + API + POST + security).",
-      "features": ["runtime-http-server", "runtime-compat-suite"]
+      "features": [
+        "runtime-http-server",
+        "runtime-compat-suite"
+      ]
     },
     {
       "id": "ADR-0033",
@@ -329,7 +397,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Kuota heap V8 (`--max-heap-mb`), watchdog timeout (`--timeout-ms`), dan `ramonyx.permissions.get()/revoke()`.",
-      "features": ["runtime-quotas"]
+      "features": [
+        "runtime-quotas"
+      ]
     },
     {
       "id": "ADR-0034",
@@ -339,7 +409,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Worker berjalan di thread + isolate V8 terpisah, pesan JSON, permission irisan anti-eskalasi, kill switch.",
-      "features": ["runtime-worker-isolation"]
+      "features": [
+        "runtime-worker-isolation"
+      ]
     },
     {
       "id": "ADR-0035",
@@ -349,7 +421,10 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Body request pull-model + batas body default 1 MiB dengan penolakan 413 dini.",
-      "features": ["runtime-streaming", "resource-limits"]
+      "features": [
+        "runtime-streaming",
+        "resource-limits"
+      ]
     },
     {
       "id": "ADR-0036",
@@ -359,7 +434,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "`fetch` https dengan TLS diverifikasi (CA kustom `--tls-ca`) + redirect follow/manual/error dengan permission per hop.",
-      "features": ["runtime-fetch"]
+      "features": [
+        "runtime-fetch"
+      ]
     },
     {
       "id": "ADR-0037",
@@ -369,7 +446,10 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Profiling startup: timings per fase + metrik operasi + baseline; snapshot V8 ditolak dengan alasan terukur.",
-      "features": ["observability-metrics", "observability-logger"]
+      "features": [
+        "observability-metrics",
+        "observability-logger"
+      ]
     },
     {
       "id": "ADR-0038",
@@ -379,7 +459,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Kuota CPU per-thread (`--max-cpu-ms`) + RSS proses (`--max-rss-mb`) menutup gap memori di luar heap V8.",
-      "features": ["runtime-quotas"]
+      "features": [
+        "runtime-quotas"
+      ]
     },
     {
       "id": "ADR-0039",
@@ -399,7 +481,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Plugin berjalan di proses terpisah via `ramonyx.spawn` + protokol JSON stdin/stdout, permission irisan, kill.",
-      "features": ["runtime-plugin-process"]
+      "features": [
+        "runtime-plugin-process"
+      ]
     },
     {
       "id": "ADR-0041",
@@ -409,7 +493,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "`pnpm create:app` men-scaffold aplikasi Ramonyx (template file-routing SSR React + hydration).",
-      "features": ["scaffolder"]
+      "features": [
+        "scaffolder"
+      ]
     },
     {
       "id": "ADR-0042",
@@ -419,7 +505,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Situs dokumentasi adalah aplikasi Ramonyx (dogfood penuh: SSR + hydration + soft navigation atas docs/**).",
-      "features": ["docs-site"]
+      "features": [
+        "docs-site"
+      ]
     },
     {
       "id": "ADR-0043",
@@ -429,8 +517,12 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Plugin dapat disupervisi: `restart` + `plugin.stats()` untuk pemulihan otomatis.",
-      "related": ["ADR-0040"],
-      "features": ["runtime-plugin-supervision"]
+      "related": [
+        "ADR-0040"
+      ],
+      "features": [
+        "runtime-plugin-supervision"
+      ]
     },
     {
       "id": "ADR-0044",
@@ -440,8 +532,13 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Health-check plugin via `ramonyx.heartbeat()` + deteksi plugin senyap.",
-      "related": ["ADR-0040", "ADR-0043"],
-      "features": ["runtime-plugin-supervision"]
+      "related": [
+        "ADR-0040",
+        "ADR-0043"
+      ],
+      "features": [
+        "runtime-plugin-supervision"
+      ]
     },
     {
       "id": "ADR-0045",
@@ -451,7 +548,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Gate performa report-only (`pnpm bench:report`) dengan guard lintas-mesin; `--strict` hanya sahih di mesin baseline.",
-      "features": ["benchmark-gates"]
+      "features": [
+        "benchmark-gates"
+      ]
     },
     {
       "id": "ADR-0046",
@@ -461,7 +560,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Source map produksi untuk client bundle + paket npm.",
-      "features": ["source-maps"]
+      "features": [
+        "source-maps"
+      ]
     },
     {
       "id": "ADR-0047",
@@ -471,8 +572,13 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "SSR streaming Node memakai `react-dom/server.edge` (bukan server.browser — MessageChannel menahan proses); opt-in `streaming: true`.",
-      "related": ["ADR-0030", "ADR-0048"],
-      "features": ["ssr-streaming"]
+      "related": [
+        "ADR-0030",
+        "ADR-0048"
+      ],
+      "features": [
+        "ssr-streaming"
+      ]
     },
     {
       "id": "ADR-0048",
@@ -482,8 +588,14 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Bench SSR in-process (sinkron vs streaming, paritas byte-per-byte) + ambang Web Vitals di e2e; produksi wajib `NODE_ENV=production`.",
-      "related": ["ADR-0045", "ADR-0047"],
-      "features": ["benchmark-gates", "e2e-playwright"]
+      "related": [
+        "ADR-0045",
+        "ADR-0047"
+      ],
+      "features": [
+        "benchmark-gates",
+        "e2e-playwright"
+      ]
     },
     {
       "id": "ADR-0049",
@@ -493,8 +605,12 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Publikasi hanya dari tarball terverifikasi (guard tag↔versi, dist-tag, provenance), termasuk `create-ramonyx-app`.",
-      "related": ["ADR-0039"],
-      "features": ["scaffolder"]
+      "related": [
+        "ADR-0039"
+      ],
+      "features": [
+        "scaffolder"
+      ]
     },
     {
       "id": "ADR-0050",
@@ -504,8 +620,13 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Restart plugin memakai backoff eksponensial dengan reset stabil + watchdog health-check otomatis.",
-      "updates": ["ADR-0043", "ADR-0044"],
-      "features": ["runtime-plugin-supervision"]
+      "updates": [
+        "ADR-0043",
+        "ADR-0044"
+      ],
+      "features": [
+        "runtime-plugin-supervision"
+      ]
     },
     {
       "id": "ADR-0051",
@@ -515,8 +636,12 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Plugin disandbox di level kernel via Landlock (FS + TCP); net deny mencakup TCP saja, bukan UDP/DNS.",
-      "related": ["ADR-0040"],
-      "features": ["runtime-plugin-sandbox"]
+      "related": [
+        "ADR-0040"
+      ],
+      "features": [
+        "runtime-plugin-sandbox"
+      ]
     },
     {
       "id": "ADR-0052",
@@ -526,8 +651,13 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Situs docs diekspor statis (`pnpm docs:export`, `--base /ramonyx`) dan di-host di GitHub Pages; tautan halaman wajib relatif.",
-      "related": ["ADR-0042"],
-      "features": ["docs-site", "static-export"]
+      "related": [
+        "ADR-0042"
+      ],
+      "features": [
+        "docs-site",
+        "static-export"
+      ]
     },
     {
       "id": "ADR-0053",
@@ -537,7 +667,9 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "CLI `ramonyx` v1: `dev|build|start|doctor` dengan konvensi `src/app.ts` `createApp()`.",
-      "features": ["cli-devtools"]
+      "features": [
+        "cli-devtools"
+      ]
     },
     {
       "id": "ADR-0054",
@@ -547,8 +679,15 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Lapisan dokumentasi machine-readable JSON di `docs/machine/` (fitur/ADR/aturan/keamanan/glosarium/stats/llms) dengan validator blocking di CI; JSON dipilih agar tanpa dependency parser baru.",
-      "related": ["ADR-0016", "ADR-0042"],
-      "features": ["machine-docs", "llms-txt", "agent-skill"]
+      "related": [
+        "ADR-0016",
+        "ADR-0042"
+      ],
+      "features": [
+        "machine-docs",
+        "llms-txt",
+        "agent-skill"
+      ]
     },
     {
       "id": "ADR-0055",
@@ -558,7 +697,10 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Produksi default: kompresi brotli/gzip dengan flush per chunk (streaming tetap progresif), aset build ber-hash + manifest + cache immutable, middleware serveStatic dengan ETag/304, dan helper cacheControl.",
-      "related": ["ADR-0047", "ADR-0046"],
+      "related": [
+        "ADR-0047",
+        "ADR-0046"
+      ],
       "features": [
         "compression-etag",
         "asset-fingerprinting",
@@ -574,8 +716,17 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "SSG memakai request sintetis ke handler SSR yang sama (prerenderRoutes: rute statis + getStaticPaths + 404 + transformHtml), diekspos lewat `ramonyx build --static`; NODE_ENV=production diset paling awal di build/ekspor (memperbaiki mismatch React dev/prod).",
-      "related": ["ADR-0042", "ADR-0048", "ADR-0052", "ADR-0054"],
-      "features": ["ssg-first-class", "static-export", "cli-devtools"]
+      "related": [
+        "ADR-0042",
+        "ADR-0048",
+        "ADR-0052",
+        "ADR-0054"
+      ],
+      "features": [
+        "ssg-first-class",
+        "static-export",
+        "cli-devtools"
+      ]
     },
     {
       "id": "ADR-0057",
@@ -585,8 +736,15 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Mutasi form lewat `export const action` di halaman (POST ke path yang sama, FormData, actionSchema opsional, PRG 303 untuk redirect) dengan render ulang + prop `action` di payload; klien mengintersepsi submit untuk pengalaman tanpa reload, tetap berfungsi tanpa JavaScript.",
-      "related": ["ADR-0004", "ADR-0007", "ADR-0008"],
-      "features": ["mutations-server-actions", "forms"]
+      "related": [
+        "ADR-0004",
+        "ADR-0007",
+        "ADR-0008"
+      ],
+      "features": [
+        "mutations-server-actions",
+        "forms"
+      ]
     },
     {
       "id": "ADR-0058",
@@ -596,8 +754,16 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "`ramonyx build --target edge` menghasilkan satu berkas ESM kontrak `{ fetch }` dari codegen entry server (impor statis, tanpa node:fs) dengan guard node:*; React adapter memakai react-dom/server.edge untuk sinkron+streaming; guardedFetch pindah ke @ramonyx/security/ssrf dan middleware.ts wajib edge-safe.",
-      "related": ["ADR-0001", "ADR-0047", "ADR-0031", "ADR-0015"],
-      "features": ["adapter-serverless-edge", "adapter-node"]
+      "related": [
+        "ADR-0001",
+        "ADR-0047",
+        "ADR-0031",
+        "ADR-0015"
+      ],
+      "features": [
+        "adapter-serverless-edge",
+        "adapter-node"
+      ]
     },
     {
       "id": "ADR-0059",
@@ -607,8 +773,14 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "PageMetadata diperluas (description/canonical/image/type/robots) dan disuntikkan ke <head>; helper sitemapXml/robotsTxt/createSeoRoutes membangun SEO dari manifest (exclude noindex + halaman error, origin dari request); fillRouteParams dipindah ke core.",
-      "related": ["ADR-0007", "ADR-0056"],
-      "features": ["head-metadata", "seo-helpers"]
+      "related": [
+        "ADR-0007",
+        "ADR-0056"
+      ],
+      "features": [
+        "head-metadata",
+        "seo-helpers"
+      ]
     },
     {
       "id": "ADR-0060",
@@ -618,8 +790,12 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Klien mem-prefetch tautan same-origin saat hover/focus/viewport (IntersectionObserver) dengan cache LRU 8 entri TTL 30s, maks 2 request bersamaan, sekali-pakai; navigasi memakai cache tanpa request.",
-      "related": ["ADR-0008"],
-      "features": ["soft-navigation"]
+      "related": [
+        "ADR-0008"
+      ],
+      "features": [
+        "soft-navigation"
+      ]
     },
     {
       "id": "ADR-0061",
@@ -629,8 +805,15 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "`middleware.ts` per folder dieksekusi root→terdalam setelah pencocokan rute (root berlaku otomatis untuk semua rute); urusan pre-routing (serveStatic/logging) tetap global di createHandler; segmen folder `(grup)` tidak muncul di URL; codegen edge menyebar middleware ke artefak.",
-      "related": ["ADR-0014", "ADR-0058"],
-      "features": ["middleware-per-folder", "routing-route-groups", "middleware-global"]
+      "related": [
+        "ADR-0014",
+        "ADR-0058"
+      ],
+      "features": [
+        "middleware-per-folder",
+        "routing-route-groups",
+        "middleware-global"
+      ]
     },
     {
       "id": "ADR-0062",
@@ -640,8 +823,14 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "@ramonyx/security menyediakan parseCookies/serializeCookie + signValue/verifyValue (HMAC-SHA256 Web Crypto) + createSession (read/commit/clear) dengan default cookie aman; PageActionResult.headers menyebar set-cookie ke respons render ulang dan request render menerapkan ganti/hapus per nama.",
-      "related": ["ADR-0057", "ADR-0058", "ADR-0013"],
-      "features": ["auth-session"]
+      "related": [
+        "ADR-0057",
+        "ADR-0058",
+        "ADR-0013"
+      ],
+      "features": [
+        "auth-session"
+      ]
     },
     {
       "id": "ADR-0063",
@@ -651,8 +840,13 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Modul `*.server.ts` distub poison-pill di bundle klien (plugin Vite, juga di dev); impor node:* langsung dari modul klien ditolak pre-check, dan impor transitif ditangkap scan post-build — keduanya dengan pesan yang menunjuk file.",
-      "related": ["ADR-0058", "ADR-0005"],
-      "features": ["boundary-enforcement"]
+      "related": [
+        "ADR-0058",
+        "ADR-0005"
+      ],
+      "features": [
+        "boundary-enforcement"
+      ]
     },
     {
       "id": "ADR-0064",
@@ -662,8 +856,13 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "guardedFetch me-resolve DNS sekali lalu mematok alamat ke koneksi (node:http(s) dengan lookup kustom; Host/SNI tetap hostname asli); redirect divalidasi+di-pin per hop; body string/bytes/URLSearchParams/stream didukung, FormData menyusul.",
-      "related": ["ADR-0015", "ADR-0031"],
-      "features": ["ssrf-guard"]
+      "related": [
+        "ADR-0015",
+        "ADR-0031"
+      ],
+      "features": [
+        "ssrf-guard"
+      ]
     },
     {
       "id": "ADR-0065",
@@ -673,8 +872,15 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Empat primitif lintas-fitur: resolveConfig pass-through (key tak dikenal dipertahankan), AppHooks (zero-cost, createHandler/createPageRoutes), KeyValueStore + contract test (memory default), dan kontrak plugin di @ramonyx/bundler (vite/middleware/hooks, experimental); perubahan kontrak publik aditif + freeze window 0.2.0.",
-      "related": ["ADR-0053", "ADR-0058", "ADR-0016"],
-      "features": ["extension-primitives", "config"]
+      "related": [
+        "ADR-0053",
+        "ADR-0058",
+        "ADR-0016"
+      ],
+      "features": [
+        "extension-primitives",
+        "config"
+      ]
     },
     {
       "id": "ADR-0066",
@@ -684,8 +890,15 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Cache DATA loader (bukan HTML — nonce CSP) via `export const revalidate` + createCache (store pluggable); SWR dengan TTL 2x (paruh kedua stale + refresh belakang, dedupe); GET tanpa query/cookie saja; invalidasi path/tag dari action (context.revalidate + onInvalidate) atau API route (cache.revalidate).",
-      "related": ["ADR-0065", "ADR-0056", "ADR-0014"],
-      "features": ["revalidate", "data-loaders"]
+      "related": [
+        "ADR-0065",
+        "ADR-0056",
+        "ADR-0014"
+      ],
+      "features": [
+        "revalidate",
+        "data-loaders"
+      ]
     },
     {
       "id": "ADR-0067",
@@ -695,8 +908,15 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Plugin dimuat dari config (pass-through): vite diteruskan ke buildClient/buildEdge/createDevServer, middleware lewat withMiddleware (pre-routing, tanpa mengubah createApp aplikasi), hooks lewat konvensi createApp({hooks}); contoh kunjungan di playground + test CLI vite passthrough; kontrak experimental sampai >=2 plugin nyata.",
-      "related": ["ADR-0065", "ADR-0058", "ADR-0063"],
-      "features": ["plugin-ecosystem", "extension-primitives"]
+      "related": [
+        "ADR-0065",
+        "ADR-0058",
+        "ADR-0063"
+      ],
+      "features": [
+        "plugin-ecosystem",
+        "extension-primitives"
+      ]
     },
     {
       "id": "ADR-0068",
@@ -706,8 +926,13 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Env binding platform diteruskan per request (EnvReader.getRaw + createHandler.envFromRequest + WeakMap di entry edge); artefak diuji di workerd (runtime Cloudflare) sebagai langkah CI blocking via pnpm test:edge; buildEdge menormalkan path absolut.",
-      "related": ["ADR-0058", "ADR-0067"],
-      "features": ["adapter-serverless-edge"]
+      "related": [
+        "ADR-0058",
+        "ADR-0067"
+      ],
+      "features": [
+        "adapter-serverless-edge"
+      ]
     },
     {
       "id": "ADR-0069",
@@ -717,8 +942,15 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "buildClient memindai src/assets/** → salin ber-hash + manifest.assets (aditif); resolver (assetUrl/createAssetResolver) diteruskan ke loader via createPageRoutes({assets}); komponen Image (@ramonyx/react/assets) default anti-CLS/lazy; dev memakai fallback tanpa hash + plugin Vite penyaji; edge meng-inline peta aset saat build; M2 resize tetap gate (plugin + audit + build-time).",
-      "related": ["ADR-0055", "ADR-0067", "ADR-0058"],
-      "features": ["asset-pipeline", "image-optimization"]
+      "related": [
+        "ADR-0055",
+        "ADR-0067",
+        "ADR-0058"
+      ],
+      "features": [
+        "asset-pipeline",
+        "image-optimization"
+      ]
     },
     {
       "id": "ADR-0070",
@@ -728,8 +960,14 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "`ramonyx build --watch` memantau src/** (fs.watch recursive, debounce 200ms) dan menjalankan putaran build yang sama (klien/aset; --static prerender; --target edge) dengan antrean aman (dirty flag), error tidak menghentikan watch, SIGINT/SIGTERM bersih; putaran diekstrak ke buildOnce.",
-      "related": ["ADR-0053", "ADR-0056", "ADR-0058"],
-      "features": ["cli-devtools"]
+      "related": [
+        "ADR-0053",
+        "ADR-0056",
+        "ADR-0058"
+      ],
+      "features": [
+        "cli-devtools"
+      ]
     },
     {
       "id": "ADR-0071",
@@ -739,8 +977,14 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "traceId (propagasi/generate, request+respons), requestLogging (durasi/status/traceId lewat context.log), createMetrics (hook onRequestEnd/onLoaderEnd/onRenderEnd/onInvalidate) + createMetricsRoute(GET /metrics) — di @ramonyx/server (bukan paket baru), edge-safe; OTel manual tanpa dependency.",
-      "related": ["ADR-0065", "ADR-0067"],
-      "features": ["observability-logger", "observability-metrics"]
+      "related": [
+        "ADR-0065",
+        "ADR-0067"
+      ],
+      "features": [
+        "observability-logger",
+        "observability-metrics"
+      ]
     },
     {
       "id": "ADR-0072",
@@ -750,8 +994,13 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "errorDetails otomatis di dev (stack+sumber di error page/fallback; produksi tidak membocorkan) + kode error stabil (ErrorCode) dengan sufiks errorHint [kode RMX-…; docs: url#kode] pada error framework (config/routes/build/edge) + docs/troubleshooting.md ber-anchor.",
-      "related": ["ADR-0063", "ADR-0058"],
-      "features": ["error-messages-id"]
+      "related": [
+        "ADR-0063",
+        "ADR-0058"
+      ],
+      "features": [
+        "error-messages-id"
+      ]
     },
     {
       "id": "ADR-0073",
@@ -761,8 +1010,14 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "CLI (build/dev) menulis modul generate .ramonyx/routes.ts (RouteParamsMap + routeHref bertipe membungkus fillHref runtime); komponen Link merender <a> dengan navigasi klien/prefetch yang ada; pivot dari augmentasi declare module karena TS 7 tidak merge untuk modul paket (diuji).",
-      "related": ["ADR-0008", "ADR-0060", "ADR-0053"],
-      "features": ["typed-routes"]
+      "related": [
+        "ADR-0008",
+        "ADR-0060",
+        "ADR-0053"
+      ],
+      "features": [
+        "typed-routes"
+      ]
     },
     {
       "id": "ADR-0074",
@@ -772,9 +1027,16 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Baseline per-lingkungan (envKey platform/arch/nodeMajor/cpuModel → baselines/<bench>-<key>.json, fallback baseline lama); environmentsMatch memperkuat guard --strict (refus lintas lingkungan dengan catatan field); CI tetap report-only (runner bervariasi) dengan jalur self-hosted untuk blocking.",
-      "related": ["ADR-0045", "ADR-0048"],
-      "updates": ["ADR-0045"],
-      "features": ["benchmark-gates"]
+      "related": [
+        "ADR-0045",
+        "ADR-0048"
+      ],
+      "updates": [
+        "ADR-0045"
+      ],
+      "features": [
+        "benchmark-gates"
+      ]
     },
     {
       "id": "ADR-0075",
@@ -784,8 +1046,15 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Pentest v1 (5 skenario adversarial, test CI): fs symlink/env/kill switch/kuota CPU ditolak sesuai desain; temuan F1 (plugin bisa spawn plugin — amplifikasi 8^n) diperbaiki menjadi leaf-only via op_plugin_mode + gate bootstrap; residual dicatat jujur (env OS-level diwariskan, Landlock net TCP-saja, worker-dalam-plugin belum diuji) di docs/security/plugin-isolation-assessment.md.",
-      "related": ["ADR-0040", "ADR-0051", "ADR-0043"],
-      "features": ["runtime-plugin-process", "runtime-plugin-sandbox"]
+      "related": [
+        "ADR-0040",
+        "ADR-0051",
+        "ADR-0043"
+      ],
+      "features": [
+        "runtime-plugin-process",
+        "runtime-plugin-sandbox"
+      ]
     },
     {
       "id": "ADR-0076",
@@ -795,8 +1064,15 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "ramonyx dev|start memakai src/server.ts opsional (createHandler(options) → FetchHandler; CLI tetap host + plugin); app.streaming masuk config tervalidasi; playground/docs/bencmark scripts migrasi ke CLI (entry lama dihapus); uji konvensi spawn CLI + probe header.",
-      "related": ["ADR-0053", "ADR-0067", "ADR-0047"],
-      "features": ["cli-devtools", "dev-server-hmr"]
+      "related": [
+        "ADR-0053",
+        "ADR-0067",
+        "ADR-0047"
+      ],
+      "features": [
+        "cli-devtools",
+        "dev-server-hmr"
+      ]
     },
     {
       "id": "ADR-0077",
@@ -806,8 +1082,17 @@
       "statusDetail": "Accepted (2026-10-18)",
       "date": "2026-10-18",
       "decision": "Kolektor devtools di @ramonyx/bundler (hooks+middleware, dibuat hanya createDevServer) + dua endpoint dev server /__ramonyx/devtools (panel HTML) dan /__ramonyx/data (JSON rute/aset/request); timing dari AppHooks, hydration dari pemeriksaan HTML respons; wiring CLI dev dengan mergeHooks; tanpa paket npm baru.",
-      "related": ["ADR-0065", "ADR-0067", "ADR-0076", "ADR-0071"],
-      "features": ["dev-server-hmr", "cli-devtools", "observability-logger"]
+      "related": [
+        "ADR-0065",
+        "ADR-0067",
+        "ADR-0076",
+        "ADR-0071"
+      ],
+      "features": [
+        "dev-server-hmr",
+        "cli-devtools",
+        "observability-logger"
+      ]
     },
     {
       "id": "ADR-0078",
@@ -817,8 +1102,13 @@
       "statusDetail": "Accepted (2026-10-19)",
       "date": "2026-10-19",
       "decision": "Paket ke-15 @ramonyx/mcp-docs-server (bin ramonyx-mcp-docs): MCP stdio JSON-RPC tanpa dependency eksternal (subset terdokumentasi), 5 tools (search_docs/get_page/get_feature_status/get_rules/list_adrs) + resource ramonyx://machine|docs, snapshot docs dibundel saat rilis, pembacaan via indeks in-memory (tanpa traversal).",
-      "related": ["ADR-0054", "ADR-0016"],
-      "features": ["mcp-docs-server"]
+      "related": [
+        "ADR-0054",
+        "ADR-0016"
+      ],
+      "features": [
+        "mcp-docs-server"
+      ]
     },
     {
       "id": "ADR-0079",
@@ -828,8 +1118,16 @@
       "statusDetail": "Accepted (2026-10-19)",
       "date": "2026-10-19",
       "decision": "Hook `assets` di kontrak plugin (prosesor per berkas build-time); paket ke-16 @ramonyx/plugin-image (resize + WebP/AVIF, sharp peer opsional, cache content-hash); manifest + width/height/variants; AssetResolver.image (wajib, pra-1.0) + Image <picture><source>; resolver bersama createAssetResolverFromMap (Node + edge inline AssetInfo); koreksi bug M1: aset di root keluaran klien (URL <prefix>/<file> 1:1) dengan test HTTP regresi.",
-      "related": ["ADR-0069", "ADR-0067", "ADR-0046"],
-      "features": ["image-optimization", "asset-pipeline", "plugin-ecosystem"]
+      "related": [
+        "ADR-0069",
+        "ADR-0067",
+        "ADR-0046"
+      ],
+      "features": [
+        "image-optimization",
+        "asset-pipeline",
+        "plugin-ecosystem"
+      ]
     },
     {
       "id": "ADR-0080",
@@ -839,8 +1137,15 @@
       "statusDetail": "Accepted (2026-10-19)",
       "date": "2026-10-19",
       "decision": "Kontrak plugin dideklarasikan stabil setelah satu siklus rilis tanpa perubahan aditif (rilis berikutnya bila tidak ada perubahan; jika ada, siklus dihitung ulang); panduan publikasi plugin pihak ketiga: kirim JS terkompilasi (bukan .ts), peerDependencies ke @ramonyx/bundler/ramonyx, dependency berat sebagai peer opsional + impor dinamis, konvensi nama ramonyx-plugin-*, referensi @ramonyx/plugin-image.",
-      "related": ["ADR-0065", "ADR-0067", "ADR-0079"],
-      "features": ["plugin-ecosystem", "extension-primitives"]
+      "related": [
+        "ADR-0065",
+        "ADR-0067",
+        "ADR-0079"
+      ],
+      "features": [
+        "plugin-ecosystem",
+        "extension-primitives"
+      ]
     },
     {
       "id": "ADR-0081",
@@ -850,8 +1155,15 @@
       "statusDetail": "Accepted (2026-10-19)",
       "date": "2026-10-19",
       "decision": "Primitif i18n edge-safe di @ramonyx/core (parseAcceptLanguage/negotiateLocale/localePath/createTranslator); routing locale di createPageRoutes({ i18n }) dengan rute per-locale berprefix literal (bukan [locale]), default tanpa prefix + redirect 308, locale di loader/action/prop/hydration payload, <html lang>/dir + hreflang otomatis, cache key memuat locale; deteksi bahasa tidak otomatis (pola middleware + cookie); tanpa ICU MessageFormat.",
-      "related": ["ADR-0066", "ADR-0061", "ADR-0067"],
-      "features": ["i18n", "routing-route-groups"]
+      "related": [
+        "ADR-0066",
+        "ADR-0061",
+        "ADR-0067"
+      ],
+      "features": [
+        "i18n",
+        "routing-route-groups"
+      ]
     },
     {
       "id": "ADR-0082",
@@ -861,8 +1173,33 @@
       "statusDetail": "Accepted (2026-10-20)",
       "date": "2026-10-20",
       "decision": "Pemisahan fisik docs/public (satu-satunya sumber build publik) vs docs/internal (karantina; tidak dibaca build/llms/npm); ringkasan publik manual (8 ADR), 81 catatan penuh internal; machine layer terpisah; validator dua lapis + verify-no-leak (sumber/ekspor/indeks/llms/sitemap/tarball MCP); situs publik dogfood (landing+docs /docs/*, Cmd+K, Shiki, a11y, e2e kebijakan); snapshot MCP publik-only + deprecate versi bocor.",
-      "related": ["ADR-0054", "ADR-0078", "ADR-0052"],
-      "features": ["docs-site", "mcp-docs-server", "llms-txt", "machine-docs"]
+      "related": [
+        "ADR-0054",
+        "ADR-0078",
+        "ADR-0052"
+      ],
+      "features": [
+        "docs-site",
+        "mcp-docs-server",
+        "llms-txt",
+        "machine-docs"
+      ]
+    },
+    {
+      "id": "ADR-0083",
+      "file": "0083-single-port-dev-server.md",
+      "title": "Dev Server Single-Port — Vite Middleware + HMR + SSR dalam Satu HTTP Server",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-23)",
+      "date": "2026-10-23",
+      "decision": "Vite middleware mode + WebSocket HMR menempel ke satu node:http server; SSR lewat createNodeRequestListener sebagai middleware terakhir; port publik = server.port (default 3000); proxy target/--dev-port dihapus (breaking 2.0.0).",
+      "related": [
+        "ADR-0009",
+        "ADR-0077"
+      ],
+      "features": [
+        "dev-server-hmr"
+      ]
     }
   ]
 }

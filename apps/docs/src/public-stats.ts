@@ -13,7 +13,7 @@ export interface PublicStats {
 }
 
 export const PUBLIC_STATS: PublicStats = {
-  version: "1.2.0",
+  version: "2.0.0",
   packages: {
     workspace: 15,
     npm: 16,
@@ -36,7 +36,7 @@ export const PUBLIC_STATS: PublicStats = {
       "create-ramonyx-app",
     ],
   },
-  adrs: 8,
+  adrs: 9,
   docs: 32,
   tests: {
     node: 380,

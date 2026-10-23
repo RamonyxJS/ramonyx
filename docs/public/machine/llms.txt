@@ -12,7 +12,7 @@ This site has a search endpoint: https://context7.com/api/v2/ask?siteKey=ask_893
 ## Machine-readable (public only)
 
 - [features.json](https://ramonyx.devmoon.net/machine/features.json): feature status (implemented/partial/experimental/planned), packages, evidence, limitations
-- [adrs.json](https://ramonyx.devmoon.net/machine/adrs.json): 8 public architecture decisions (one-line decision + relations)
+- [adrs.json](https://ramonyx.devmoon.net/machine/adrs.json): 9 public architecture decisions (one-line decision + relations)
 - [rules.json](https://ramonyx.devmoon.net/machine/rules.json): rules for writing apps, with good/bad examples
 - [glossary.json](https://ramonyx.devmoon.net/machine/glossary.json): terms and concept map
 - [stats.json](https://ramonyx.devmoon.net/machine/stats.json): version, packages, public ADR count, test counts

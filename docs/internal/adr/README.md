@@ -89,3 +89,4 @@ Satu keputusan = satu file `NNNN-judul-singkat.md` (nomor berurutan; jangan meng
 | [0080](0080-plugin-stabilization.md) | Stabilisasi kontrak plugin + publikasi plugin pihak ketiga | Accepted |
 | [0081](0081-i18n.md) | i18n — primitif di core, routing locale di SSR, tanpa deteksi otomatis | Accepted |
 | [0082](0082-public-content-policy.md) | Kebijakan konten publik — karantina docs/internal, situs publik, gate kebocoran | Accepted |
+| [0083](0083-single-port-dev-server.md) | Dev server single-port — Vite middleware + HMR + SSR satu HTTP server | Accepted |

@@ -9,8 +9,12 @@
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-18",
       "decision": "Embed a JSON hydration payload in the document and hydrate from one hashed client bundle; error pages are server-only.",
-      "related": ["ADR-0047"],
-      "features": ["soft-navigation"],
+      "related": [
+        "ADR-0047"
+      ],
+      "features": [
+        "soft-navigation"
+      ],
       "visibility": "public"
     },
     {
@@ -21,8 +25,12 @@
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-18",
       "decision": "Streaming is opt-in via app.streaming/createPageRoutes; react-dom/server.edge renderers; error pages stay synchronous and errors after the first byte close the stream.",
-      "related": ["ADR-0007"],
-      "features": ["ssr-streaming"],
+      "related": [
+        "ADR-0007"
+      ],
+      "features": [
+        "ssr-streaming"
+      ],
       "visibility": "public"
     },
     {
@@ -33,8 +41,13 @@
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-18",
       "decision": "Pages may export action + actionSchema (POST to the same path); 303 PRG redirects; forms work without JavaScript; action result re-renders the page.",
-      "related": ["ADR-0004", "ADR-0066"],
-      "features": ["mutations-server-actions"],
+      "related": [
+        "ADR-0004",
+        "ADR-0066"
+      ],
+      "features": [
+        "mutations-server-actions"
+      ],
       "visibility": "public"
     },
     {
@@ -45,8 +58,12 @@
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-18",
       "decision": "ramonyx build --target edge emits a single { fetch } artifact with statically imported pages/API/middleware, inlined asset map, and a build guard against node:*; workerd smoke test in CI.",
-      "related": ["ADR-0068"],
-      "features": ["adapter-serverless-edge"],
+      "related": [
+        "ADR-0068"
+      ],
+      "features": [
+        "adapter-serverless-edge"
+      ],
       "visibility": "public"
     },
     {
@@ -57,8 +74,13 @@
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-19",
       "decision": "revalidate caches loader data with stale-while-revalidate; cookies/query bypass the cache; cacheTags + revalidate() invalidate on demand; store is pluggable.",
-      "related": ["ADR-0007", "ADR-0065"],
-      "features": ["revalidate"],
+      "related": [
+        "ADR-0007",
+        "ADR-0065"
+      ],
+      "features": [
+        "revalidate"
+      ],
       "visibility": "public"
     },
     {
@@ -69,8 +91,14 @@
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-19",
       "decision": "src/assets is hashed into a manifest; assets.url()/assets.image() feed loaders and Image; edge inlines the map; URLs map 1:1 to the client output root.",
-      "related": ["ADR-0055", "ADR-0079"],
-      "features": ["asset-pipeline", "image-optimization"],
+      "related": [
+        "ADR-0055",
+        "ADR-0079"
+      ],
+      "features": [
+        "asset-pipeline",
+        "image-optimization"
+      ],
       "visibility": "public"
     },
     {
@@ -81,8 +109,12 @@
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-19",
       "decision": "Package @ramonyx/mcp-docs-server runs MCP over stdio with no external dependencies and five tools; the npm package bundles a public docs snapshot and is verified in the release pipeline.",
-      "related": ["ADR-0054"],
-      "features": ["mcp-docs-server"],
+      "related": [
+        "ADR-0054"
+      ],
+      "features": [
+        "mcp-docs-server"
+      ],
       "visibility": "public"
     },
     {
@@ -93,8 +125,28 @@
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-19",
       "decision": "Edge-safe primitives (negotiation, localePath, createTranslator); per-locale literal routes; default locale unprefixed with 308 normalization; lang/dir + hreflang; locale-aware cache keys; no automatic redirects.",
-      "related": ["ADR-0066"],
-      "features": ["i18n"],
+      "related": [
+        "ADR-0066"
+      ],
+      "features": [
+        "i18n"
+      ],
+      "visibility": "public"
+    },
+    {
+      "id": "ADR-0083",
+      "file": "0083-single-port-dev-server.md",
+      "title": "Single-port dev server — Vite middleware + HMR + SSR",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-23",
+      "decision": "Vite runs in middleware mode on the same Node HTTP server as SSR; HMR WebSocket shares the port, SSR is the final middleware, and the legacy proxy mode plus --dev-port are removed.",
+      "related": [
+        "ADR-0077"
+      ],
+      "features": [
+        "dev-server-hmr"
+      ],
       "visibility": "public"
     }
   ]

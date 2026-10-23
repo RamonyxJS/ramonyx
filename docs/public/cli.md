@@ -62,7 +62,6 @@ ramonyx doctor --json
 | `--app <dir>` | all | App directory (default: cwd) |
 | `--config <path>` | all | Config path (default `<app>/ramonyx.config.ts`) |
 | `--port <n>` | dev/start | Override the dev/start port |
-| `--dev-port <n>` | dev | Deprecated alias for `--port` |
 | `--static` | build | Prerender static routes (`getStaticPaths` for dynamic routes) → `dist/static` |
 | `--target <name>` | build | Extra target; `edge` → `dist/edge` |
 | `--watch` | build/start | Build: rebuild on changes (debounced, safe queue). Start: restart a supervised server process with clean shutdown. |

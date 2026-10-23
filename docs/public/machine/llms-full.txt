@@ -1430,8 +1430,12 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-18",
       "decision": "Embed a JSON hydration payload in the document and hydrate from one hashed client bundle; error pages are server-only.",
-      "related": ["ADR-0047"],
-      "features": ["soft-navigation"],
+      "related": [
+        "ADR-0047"
+      ],
+      "features": [
+        "soft-navigation"
+      ],
       "visibility": "public"
     },
     {
@@ -1442,8 +1446,12 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-18",
       "decision": "Streaming is opt-in via app.streaming/createPageRoutes; react-dom/server.edge renderers; error pages stay synchronous and errors after the first byte close the stream.",
-      "related": ["ADR-0007"],
-      "features": ["ssr-streaming"],
+      "related": [
+        "ADR-0007"
+      ],
+      "features": [
+        "ssr-streaming"
+      ],
       "visibility": "public"
     },
     {
@@ -1454,8 +1462,13 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-18",
       "decision": "Pages may export action + actionSchema (POST to the same path); 303 PRG redirects; forms work without JavaScript; action result re-renders the page.",
-      "related": ["ADR-0004", "ADR-0066"],
-      "features": ["mutations-server-actions"],
+      "related": [
+        "ADR-0004",
+        "ADR-0066"
+      ],
+      "features": [
+        "mutations-server-actions"
+      ],
       "visibility": "public"
     },
     {
@@ -1466,8 +1479,12 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-18",
       "decision": "ramonyx build --target edge emits a single { fetch } artifact with statically imported pages/API/middleware, inlined asset map, and a build guard against node:*; workerd smoke test in CI.",
-      "related": ["ADR-0068"],
-      "features": ["adapter-serverless-edge"],
+      "related": [
+        "ADR-0068"
+      ],
+      "features": [
+        "adapter-serverless-edge"
+      ],
       "visibility": "public"
     },
     {
@@ -1478,8 +1495,13 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-19",
       "decision": "revalidate caches loader data with stale-while-revalidate; cookies/query bypass the cache; cacheTags + revalidate() invalidate on demand; store is pluggable.",
-      "related": ["ADR-0007", "ADR-0065"],
-      "features": ["revalidate"],
+      "related": [
+        "ADR-0007",
+        "ADR-0065"
+      ],
+      "features": [
+        "revalidate"
+      ],
       "visibility": "public"
     },
     {
@@ -1490,8 +1512,14 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-19",
       "decision": "src/assets is hashed into a manifest; assets.url()/assets.image() feed loaders and Image; edge inlines the map; URLs map 1:1 to the client output root.",
-      "related": ["ADR-0055", "ADR-0079"],
-      "features": ["asset-pipeline", "image-optimization"],
+      "related": [
+        "ADR-0055",
+        "ADR-0079"
+      ],
+      "features": [
+        "asset-pipeline",
+        "image-optimization"
+      ],
       "visibility": "public"
     },
     {
@@ -1502,8 +1530,12 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-19",
       "decision": "Package @ramonyx/mcp-docs-server runs MCP over stdio with no external dependencies and five tools; the npm package bundles a public docs snapshot and is verified in the release pipeline.",
-      "related": ["ADR-0054"],
-      "features": ["mcp-docs-server"],
+      "related": [
+        "ADR-0054"
+      ],
+      "features": [
+        "mcp-docs-server"
+      ],
       "visibility": "public"
     },
     {
@@ -1514,8 +1546,28 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "statusDetail": "Public summary (the full decision record lives in the internal log)",
       "date": "2026-10-19",
       "decision": "Edge-safe primitives (negotiation, localePath, createTranslator); per-locale literal routes; default locale unprefixed with 308 normalization; lang/dir + hreflang; locale-aware cache keys; no automatic redirects.",
-      "related": ["ADR-0066"],
-      "features": ["i18n"],
+      "related": [
+        "ADR-0066"
+      ],
+      "features": [
+        "i18n"
+      ],
+      "visibility": "public"
+    },
+    {
+      "id": "ADR-0083",
+      "file": "0083-single-port-dev-server.md",
+      "title": "Single-port dev server — Vite middleware + HMR + SSR",
+      "status": "accepted",
+      "statusDetail": "Public summary (the full decision record lives in the internal log)",
+      "date": "2026-10-23",
+      "decision": "Vite runs in middleware mode on the same Node HTTP server as SSR; HMR WebSocket shares the port, SSR is the final middleware, and the legacy proxy mode plus --dev-port are removed.",
+      "related": [
+        "ADR-0077"
+      ],
+      "features": [
+        "dev-server-hmr"
+      ],
       "visibility": "public"
     }
   ]
@@ -1975,11 +2027,11 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T11:25:50.142Z",
+  "generatedAt": "2026-10-23T12:05:28.105Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
         "connectRedisStore",
@@ -2010,7 +2062,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/bundler",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
@@ -2060,7 +2112,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/compiler",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/compiler/src/index.ts",
       "values": [
         "HTTP_METHODS",
@@ -2088,7 +2140,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/core",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/core/src/index.ts",
       "values": [
         "DEFERRED_MARKER",
@@ -2179,7 +2231,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/devtools",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
         "installPlugin",
@@ -2213,7 +2265,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/mcp-docs-server",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/mcp-docs-server/src/index.ts",
       "values": [
         "MCP_PROTOCOL_VERSION",
@@ -2236,7 +2288,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/plugin-image",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/plugin-image/src/index.ts",
       "values": [
         "imageOptimizer"
@@ -2246,7 +2298,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "ramonyx",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "Deferred",
@@ -2296,7 +2348,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/react",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/react/src/index.ts",
       "values": [
         "DevErrorOverlay",
@@ -2321,7 +2373,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/router",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/router/src/index.ts",
       "values": [
         "createRouteTable",
@@ -2336,7 +2388,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/schema",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/schema/src/index.ts",
       "values": [
         "validate"
@@ -2356,7 +2408,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/security",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/security/src/index.ts",
       "values": [
         "AuthorizationError",
@@ -2424,7 +2476,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/server",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/server/src/index.ts",
       "values": [
         "MiddlewareMatcher",
@@ -2450,7 +2502,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/ssr",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/ssr/src/index.ts",
       "values": [
         "PAYLOAD_SCRIPT_ID",
@@ -2478,7 +2530,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/testing",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/testing/src/index.ts",
       "values": [
         "createTestServer",
@@ -2496,8 +2548,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T11:25:51.889Z",
-  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --dev-port <n>    Alias lama untuk --port (dev; deprecated)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
+  "generatedAt": "2026-10-23T12:05:29.755Z",
+  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
       "name": "dev",
@@ -2551,11 +2603,6 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "flag": "--port",
       "argument": "n",
       "description": "Override port dev/start"
-    },
-    {
-      "flag": "--dev-port",
-      "argument": "n",
-      "description": "Alias lama untuk --port (dev; deprecated)"
     },
     {
       "flag": "--static",
@@ -2616,7 +2663,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T11:25:51.923Z",
+  "generatedAt": "2026-10-23T12:05:29.777Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2726,9 +2773,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "version": "1.2.0",
-  "generatedAt": "2026-10-23T11:24:37.798Z",
-  "commit": "89805e0169c9a691d579ac808d8c4a9790c89ce6",
+  "version": "2.0.0",
+  "generatedAt": "2026-10-23T12:04:06.357Z",
+  "commit": "f1a1e746e3c036209e96c10c0feba054e620f3a9",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2752,7 +2799,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "create-ramonyx-app"
     ]
   },
-  "adrs": 8,
+  "adrs": 9,
   "docs": 32,
   "tests": {
     "node": 380,
@@ -3292,7 +3339,6 @@ ramonyx doctor --json
 | `--app <dir>` | all | App directory (default: cwd) |
 | `--config <path>` | all | Config path (default `<app>/ramonyx.config.ts`) |
 | `--port <n>` | dev/start | Override the dev/start port |
-| `--dev-port <n>` | dev | Deprecated alias for `--port` |
 | `--static` | build | Prerender static routes (`getStaticPaths` for dynamic routes) → `dist/static` |
 | `--target <name>` | build | Extra target; `edge` → `dist/edge` |
 | `--watch` | build/start | Build: rebuild on changes (debounced, safe queue). Start: restart a supervised server process with clean shutdown. |
@@ -3652,11 +3698,11 @@ project mode, which adds `get_project_context`, `list_routes`, `get_route`, `get
 `search_api`:
 
 Run `ramonyx ai init` to write these configs with the package pinned to your project's `ramonyx`
-version. The examples use `1.2.0`; substitute your installed version (never `@latest`).
+version. The examples use `2.0.0`; substitute your installed version (never `@latest`).
 
 ```bash
 # Claude Code (project-aware)
-claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.2.0 --app .
+claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@2.0.0 --app .
 ```
 
 ```json
@@ -3665,7 +3711,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.2.0 --app .
   "mcpServers": {
     "ramonyx-docs": {
       "command": "npx",
-      "args": ["-y", "@ramonyx/mcp-docs-server@1.2.0", "--app", "."]
+      "args": ["-y", "@ramonyx/mcp-docs-server@2.0.0", "--app", "."]
     }
   }
 }
@@ -3677,7 +3723,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.2.0 --app .
   "mcp": {
     "ramonyx-docs": {
       "type": "local",
-      "command": ["npx", "-y", "@ramonyx/mcp-docs-server@1.2.0", "--app", "."],
+      "command": ["npx", "-y", "@ramonyx/mcp-docs-server@2.0.0", "--app", "."],
       "enabled": true
     }
   }

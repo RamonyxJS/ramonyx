@@ -4,6 +4,25 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [2.0.0] — 2026-10-23
+
+### Breaking
+
+- The dev server now always runs Vite middleware, HMR, and SSR on one HTTP server/port
+  (`server.port`, default `3000`).
+- `@ramonyx/bundler` `createDevServer` requires a `handler({ importer, devtools })` factory; the
+  legacy proxy mode (`target`) is removed.
+- The deprecated CLI flag `--dev-port` is removed; use `--port`.
+- `--port` now controls the single public dev/start port.
+
+### Added
+
+- Public ADR-0083 documents the single-port dev architecture and supersedes ADR-0009.
+- `createNodeRequestListener` is exported from `@ramonyx/adapter-runtime` and shared by the Node
+  host and dev server.
+- Automated create-app coverage for `client-entry.ts`, `@vite/client`, API routes, and the HMR
+  WebSocket on the same port.
+
 ## [1.2.0] — 2026-10-23
 
 ### Changed

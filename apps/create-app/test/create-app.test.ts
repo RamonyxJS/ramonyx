@@ -508,7 +508,7 @@ test("devtools dev: panel + data (rute/timing) tersedia di dev server — ADR-00
 
   const child = spawn(
     process.execPath,
-    ["--import", loader, devtoolsCli, "dev", "--app", target, "--dev-port", "0"],
+    ["--import", loader, devtoolsCli, "dev", "--app", target, "--port", "0"],
     { cwd: target, stdio: ["ignore", "pipe", "pipe"] },
   );
   let keluaran = "";

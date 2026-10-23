@@ -6,7 +6,7 @@ visibility: internal
 
 # ADR-0009: Dev Server — Vite Front + Proxy Manual + `ssrLoadModule`
 
-- Status: Accepted (2026-10-18)
+- Status: Superseded by ADR-0083 (2026-10-23)
 - Tanggal: 2026-10-18
 - Sumber: BLUEPRINT §9 (dev server Phase 2), ADR-0005/0006/0007/0008
 

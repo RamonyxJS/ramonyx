@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T11:25:50.142Z",
+  "generatedAt": "2026-10-23T12:05:28.105Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
         "connectRedisStore",
@@ -35,7 +35,7 @@
     },
     {
       "name": "@ramonyx/bundler",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
@@ -85,7 +85,7 @@
     },
     {
       "name": "@ramonyx/compiler",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/compiler/src/index.ts",
       "values": [
         "HTTP_METHODS",
@@ -113,7 +113,7 @@
     },
     {
       "name": "@ramonyx/core",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/core/src/index.ts",
       "values": [
         "DEFERRED_MARKER",
@@ -204,7 +204,7 @@
     },
     {
       "name": "@ramonyx/devtools",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
         "installPlugin",
@@ -238,7 +238,7 @@
     },
     {
       "name": "@ramonyx/mcp-docs-server",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/mcp-docs-server/src/index.ts",
       "values": [
         "MCP_PROTOCOL_VERSION",
@@ -261,7 +261,7 @@
     },
     {
       "name": "@ramonyx/plugin-image",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/plugin-image/src/index.ts",
       "values": [
         "imageOptimizer"
@@ -271,7 +271,7 @@
     },
     {
       "name": "ramonyx",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "Deferred",
@@ -321,7 +321,7 @@
     },
     {
       "name": "@ramonyx/react",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/react/src/index.ts",
       "values": [
         "DevErrorOverlay",
@@ -346,7 +346,7 @@
     },
     {
       "name": "@ramonyx/router",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/router/src/index.ts",
       "values": [
         "createRouteTable",
@@ -361,7 +361,7 @@
     },
     {
       "name": "@ramonyx/schema",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/schema/src/index.ts",
       "values": [
         "validate"
@@ -381,7 +381,7 @@
     },
     {
       "name": "@ramonyx/security",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/security/src/index.ts",
       "values": [
         "AuthorizationError",
@@ -449,7 +449,7 @@
     },
     {
       "name": "@ramonyx/server",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/server/src/index.ts",
       "values": [
         "MiddlewareMatcher",
@@ -475,7 +475,7 @@
     },
     {
       "name": "@ramonyx/ssr",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/ssr/src/index.ts",
       "values": [
         "PAYLOAD_SCRIPT_ID",
@@ -503,7 +503,7 @@
     },
     {
       "name": "@ramonyx/testing",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "source": "packages/testing/src/index.ts",
       "values": [
         "createTestServer",

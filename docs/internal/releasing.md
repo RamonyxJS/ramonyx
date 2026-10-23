@@ -32,6 +32,17 @@
 - **TERBIT — 1.2.0** (2026-10-23): dev server single-port (Vite middleware + HMR + SSR satu
   server). 16 paket @ 1.2.0 dengan provenance; GitHub Release 19 aset; Worker
   `4df4cfaa-559c-4984-8a8f-a24af1a3c40f`. Runtime Rust tetap eksperimental.
+- **PERSIAPAN — 2.0.0** (2026-10-23): hapus mode proxy dev lama dan `--dev-port`; ADR-0083;
+  `createDevServer` mewajibkan `handler`. Bump 16 paket + template ke **2.0.0**; tag `v2.0.0`.
+
+## Persiapan 2.0.0 (2026-10-23)
+
+- Breaking: satu port dev, `createDevServer({ handler })`, tanpa `target`/`--dev-port`.
+- ADR-0083 publik + internal, supersedes ADR-0009; update indeks ADR dan stats (9 ADR publik).
+- Gate: `pnpm lint`, `typecheck`, `test`, `docs:stats --node-only`, `docs:generate`,
+  `docs:validate`, `docs:no-leak`, `test:docs`; lalu `pnpm release` + `pnpm release:verify` +
+  dry-run publish 16 tarball.
+- Runtime Rust tetap eksperimental; suite Rust masih gagal di fixture `FormData`, dicatat terpisah.
 
 ## Hasil rilis 1.2.0 (2026-10-23)
 

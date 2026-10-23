@@ -25,6 +25,18 @@
 - **TERBIT — 1.0.0** (2026-10-22): Node baseline stabil — auth/API/security/benchmark gate
   selesai; 16 paket @ 1.0.0 + provenance; GitHub Release 19 aset. Runtime Rust tetap
   eksperimental.
+- **PERSIAPAN — 1.1.0** (2026-10-23): AI-ready DX (project JSON, MCP `--app`, recipes,
+  `ramonyx ai init|sync`, eval harness) + welcome screen scaffold + dev/CLI fixes. Bump ke
+  **1.1.0**; gate docs/release lalu tag `v1.1.0`.
+
+## Persiapan 1.1.0 (2026-10-23)
+
+- Bump `Cargo.toml` + 15 paket `packages/*` + `apps/create-app` → **1.1.0**; template `^1.1.0`;
+  CHANGELOG `[1.1.0]`.
+- Gate: `pnpm lint`, `typecheck`, `test`, `docs:stats`, `docs:generate`, `docs:validate`,
+  `docs:no-leak`, `test:docs`; lalu `pnpm release` + `pnpm release:verify` + dry-run publish 16
+  tarball.
+- Deploy: `pnpm build:worker` + `wrangler deploy` setelah gate, lalu smoke domain kanonis.
 
 ## Persiapan 1.0.0 (2026-10-22)
 

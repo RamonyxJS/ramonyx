@@ -4,6 +4,37 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-10-23
+
+AI-ready DX, a proper welcome screen for new apps, and developer-experience fixes found while
+running the scaffold with Bun.
+
+### AI-ready DX
+
+- `ramonyx routes|check|doctor --json`: stable project manifests and `RMX-*` diagnostics with
+  troubleshooting links.
+- MCP project mode (`--app <dir>`) adds `get_project_context`, `list_routes`, `get_route`,
+  `get_recipe`, and `search_api`, plus `ramonyx://project/manifest`; the scan is static.
+- Public task recipes with generated `machine/recipes.json`; docs, llms, and machine layers updated.
+- `ramonyx ai init|sync` writes a canonical `AGENTS.md` block, thin client adapters, and MCP
+  configs pinned to the project's `ramonyx` version. Commands follow the detected package manager.
+- Deterministic AI eval harness (`pnpm eval:ai`) with hidden tests and reference/empty baselines.
+
+### Scaffold
+
+- New responsive welcome screen with route map, onboarding steps, hydration counter, server-action
+  form, feature grid, favicon, and light/dark themes.
+- 404 page matches the welcome screen.
+
+### Fixes
+
+- Dev server redirects direct HTML requests on the internal SSR port to Vite, avoiding
+  `client-entry.ts`/`@vite/client` 404s.
+- Default document includes a favicon when a page does not provide one.
+- `/docs/recipes` now serves the directory index; llms/no-leak gates understand `index.md`.
+- CLI docs explain that `ramonyx` is a local binary (`bunx`, `pnpm exec`, `npx`), not a global
+  command.
+
 ## [1.0.0] — 2026-10-22
 
 Rilis **Node framework 1.0**: auth/session produksi, API stability policy, security/soak review,

@@ -4,7 +4,7 @@ Framework full-stack TypeScript (Node ≥ 24) + runtime Rust/V8 **eksperimental*
 SSR React (+ streaming), hydration + soft navigation, middleware security, validasi schema di
 tepi kepercayaan, dan benchmark/gate reproducible.
 
-> **Status: 1.1.0 — AI-ready DX + Node framework baseline stabil** (2026-10-23, 16 paket `@ramonyx/*` +
+> **Status: 1.2.0 — Single-port dev + AI-ready DX + Node framework baseline stabil** (2026-10-23, 16 paket `@ramonyx/*` +
 > `ramonyx` + `create-ramonyx-app`, **dengan provenance**). Runtime Rust/V8 tetap
 > **eksperimental** dan jalur terpisah. Aplikasi baru:
 > `pnpm create ramonyx-app aplikasi-saya` → `pnpm dev|build|start` (CLI `ramonyx`).

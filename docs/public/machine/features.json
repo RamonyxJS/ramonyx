@@ -446,7 +446,7 @@
       "id": "dev-server-hmr",
       "name": "Dev server terintegrasi (Vite middleware + HMR + SSR satu port) + panel devtools (rute, timing, hydration, bundel)",
       "status": "implemented",
-      "since": "0.1.0",
+      "since": "1.2.0",
       "priority": "p0",
       "packages": [
         "@ramonyx/bundler"

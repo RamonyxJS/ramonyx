@@ -460,7 +460,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "id": "dev-server-hmr",
       "name": "Dev server terintegrasi (Vite middleware + HMR + SSR satu port) + panel devtools (rute, timing, hydration, bundel)",
       "status": "implemented",
-      "since": "0.1.0",
+      "since": "1.2.0",
       "priority": "p0",
       "packages": [
         "@ramonyx/bundler"
@@ -1975,11 +1975,11 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T11:16:48.649Z",
+  "generatedAt": "2026-10-23T11:24:08.472Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/adapter-runtime/src/index.ts",
       "values": [
         "connectRedisStore",
@@ -2010,7 +2010,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/bundler",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/bundler/src/index.ts",
       "values": [
         "CLIENT_MANIFEST_FILE",
@@ -2060,7 +2060,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/compiler",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/compiler/src/index.ts",
       "values": [
         "HTTP_METHODS",
@@ -2088,7 +2088,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/core",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/core/src/index.ts",
       "values": [
         "DEFERRED_MARKER",
@@ -2179,7 +2179,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/devtools",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/devtools/src/index.ts",
       "values": [
         "installPlugin",
@@ -2213,7 +2213,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/mcp-docs-server",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/mcp-docs-server/src/index.ts",
       "values": [
         "MCP_PROTOCOL_VERSION",
@@ -2236,7 +2236,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/plugin-image",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/plugin-image/src/index.ts",
       "values": [
         "imageOptimizer"
@@ -2246,7 +2246,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "ramonyx",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/ramonyx/src/index.ts",
       "values": [
         "Deferred",
@@ -2296,7 +2296,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/react",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/react/src/index.ts",
       "values": [
         "DevErrorOverlay",
@@ -2321,7 +2321,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/router",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/router/src/index.ts",
       "values": [
         "createRouteTable",
@@ -2336,7 +2336,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/schema",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/schema/src/index.ts",
       "values": [
         "validate"
@@ -2356,7 +2356,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/security",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/security/src/index.ts",
       "values": [
         "AuthorizationError",
@@ -2424,7 +2424,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/server",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/server/src/index.ts",
       "values": [
         "MiddlewareMatcher",
@@ -2450,7 +2450,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/ssr",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/ssr/src/index.ts",
       "values": [
         "PAYLOAD_SCRIPT_ID",
@@ -2478,7 +2478,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "name": "@ramonyx/testing",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "packages/testing/src/index.ts",
       "values": [
         "createTestServer",
@@ -2496,7 +2496,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T11:16:50.282Z",
+  "generatedAt": "2026-10-23T11:24:10.238Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --dev-port <n>    Alias lama untuk --port (dev; deprecated)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2616,7 +2616,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T11:16:50.306Z",
+  "generatedAt": "2026-10-23T11:24:10.260Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2726,9 +2726,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "version": "1.1.0",
-  "generatedAt": "2026-10-23T07:45:58.603Z",
-  "commit": "183cf8e7a31aea459000f10047632f3e2de0861a",
+  "version": "1.2.0",
+  "generatedAt": "2026-10-23T11:22:45.733Z",
+  "commit": "39c8141f4c5e2a2ee389a17050d05c43a1d33663",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -3652,11 +3652,11 @@ project mode, which adds `get_project_context`, `list_routes`, `get_route`, `get
 `search_api`:
 
 Run `ramonyx ai init` to write these configs with the package pinned to your project's `ramonyx`
-version. The examples use `1.1.0`; substitute your installed version (never `@latest`).
+version. The examples use `1.2.0`; substitute your installed version (never `@latest`).
 
 ```bash
 # Claude Code (project-aware)
-claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.1.0 --app .
+claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.2.0 --app .
 ```
 
 ```json
@@ -3665,7 +3665,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.1.0 --app .
   "mcpServers": {
     "ramonyx-docs": {
       "command": "npx",
-      "args": ["-y", "@ramonyx/mcp-docs-server@1.1.0", "--app", "."]
+      "args": ["-y", "@ramonyx/mcp-docs-server@1.2.0", "--app", "."]
     }
   }
 }
@@ -3677,7 +3677,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.1.0 --app .
   "mcp": {
     "ramonyx-docs": {
       "type": "local",
-      "command": ["npx", "-y", "@ramonyx/mcp-docs-server@1.1.0", "--app", "."],
+      "command": ["npx", "-y", "@ramonyx/mcp-docs-server@1.2.0", "--app", "."],
       "enabled": true
     }
   }

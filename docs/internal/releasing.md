@@ -29,6 +29,17 @@
   `ramonyx ai init|sync`, eval harness) + welcome screen scaffold + dev/CLI fixes. 16 paket
   @ 1.1.0 dengan provenance; GitHub Release 19 aset; Worker `8f0a836d-116e-4a95-a75c-63bd18a20b2e`.
   Runtime Rust tetap eksperimental; suite Rust masih gagal di fixture `FormData` (dicatat).
+- **PERSIAPAN — 1.2.0** (2026-10-23): dev server single-port (Vite middleware + HMR + SSR satu
+  server), bump 16 paket + template ke **1.2.0**; gate Node/docs/release lalu tag `v1.2.0`.
+
+## Persiapan 1.2.0 (2026-10-23)
+
+- Bump `Cargo.toml` + 15 paket `packages/*` + `apps/create-app` → **1.2.0**; template `^1.2.0`;
+  CHANGELOG `[1.2.0]`.
+- Gate: `pnpm lint`, `typecheck`, `test`, `docs:stats --node-only`, `docs:generate`,
+  `docs:validate`, `docs:no-leak`, `test:docs`; lalu `pnpm release` + `pnpm release:verify` +
+  dry-run publish 16 tarball.
+- Runtime Rust tetap eksperimental; suite Rust masih gagal di fixture `FormData`, dicatat terpisah.
 
 ## Hasil rilis 1.1.0 (2026-10-23)
 

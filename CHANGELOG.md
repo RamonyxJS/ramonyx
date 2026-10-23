@@ -4,6 +4,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-10-23
+
 ### Changed
 
 - `ramonyx dev` now runs Vite middleware, HMR, and SSR in one HTTP server on one port

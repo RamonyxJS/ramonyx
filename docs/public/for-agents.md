@@ -33,11 +33,11 @@ project mode, which adds `get_project_context`, `list_routes`, `get_route`, `get
 `search_api`:
 
 Run `ramonyx ai init` to write these configs with the package pinned to your project's `ramonyx`
-version. The examples use `1.1.0`; substitute your installed version (never `@latest`).
+version. The examples use `1.2.0`; substitute your installed version (never `@latest`).
 
 ```bash
 # Claude Code (project-aware)
-claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.1.0 --app .
+claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.2.0 --app .
 ```
 
 ```json
@@ -46,7 +46,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.1.0 --app .
   "mcpServers": {
     "ramonyx-docs": {
       "command": "npx",
-      "args": ["-y", "@ramonyx/mcp-docs-server@1.1.0", "--app", "."]
+      "args": ["-y", "@ramonyx/mcp-docs-server@1.2.0", "--app", "."]
     }
   }
 }
@@ -58,7 +58,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.1.0 --app .
   "mcp": {
     "ramonyx-docs": {
       "type": "local",
-      "command": ["npx", "-y", "@ramonyx/mcp-docs-server@1.1.0", "--app", "."],
+      "command": ["npx", "-y", "@ramonyx/mcp-docs-server@1.2.0", "--app", "."],
       "enabled": true
     }
   }

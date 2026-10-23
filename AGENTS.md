@@ -29,9 +29,12 @@ eksperimental (Phase 4 selesai, ADR-0001).
 - `pnpm create:app <dir>` — scaffold aplikasi Ramonyx baru (template minimal yang berjalan).
 - `pnpm docs` — situs dokumentasi lokal (dogfood **penuh**: SSR React + hydration/soft navigation
   atas `docs/public/**`) di http://127.0.0.1:4000 (build klien + start).
-- `pnpm docs:export` — ekspor statis situs docs (`apps/docs/export.ts`) untuk hosting;
-  workflow `pages.yml` mengekspor ke root + `--cname ramonyx.devmoon.net` → https://ramonyx.devmoon.net/
-  (domain kustom GitHub Pages; ADR-0052).
+- `pnpm docs:export` — ekspor statis situs docs (`apps/docs/export.ts`). **Deploy kanonis
+  `https://ramonyx.devmoon.net/` memakai Cloudflare Worker + `wrangler`, bukan GitHub Pages**:
+  `pnpm deploy:worker` (= `pnpm build:worker` lalu `pnpm dlx wrangler deploy`) atau workflow
+  manual `deploy-worker.yml`; butuh `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` dan binding KV
+  `WAITLIST` (lihat `wrangler.toml`). GitHub Pages hanya **mirror** `https://ramonyxjs.github.io/ramonyx/`
+  (base `/ramonyx`, tanpa custom domain/cname — ADR-0052).
 - `pnpm test:docs` — e2e situs publik (ekspor statis + kebijakan konten + a11y) dan
   `pnpm docs:no-leak` — gate kebocoran (sumber/ekspor/indeks/llms/sitemap/tarball MCP); keduanya
   blocking di CI (ADR-0082).
@@ -75,6 +78,20 @@ eksperimental (Phase 4 selesai, ADR-0001).
   `--allow-read/write/net/env[=daftar]`; `serve()` butuh `--allow-net`.
 - pnpm standalone di `~/.local/share/pnpm/bin` (PNPM_HOME; `~/.bashrc` menambahkannya ke PATH).
   Shell non-interaktif perlu `export PATH="$HOME/.local/share/pnpm/bin:$PATH"`. CI memakai corepack.
+
+## Deploy (aturan tetap)
+
+- **Situs kanonis = Cloudflare Worker, deploy lewat `wrangler`.** Jalankan `pnpm deploy:worker`
+  (build Worker + `pnpm dlx wrangler deploy`) setelah `pnpm docs:generate`, `pnpm docs:validate`,
+  `pnpm test:docs`, dan `pnpm docs:no-leak` hijau. Alternatif CI: workflow manual
+  `deploy-worker.yml`.
+- **Jangan deploy lewat GitHub Pages/cname.** `pages.yml` hanya memublikasikan mirror statis di
+  `https://ramonyxjs.github.io/ramonyx/` (base `/ramonyx`); domain `ramonyx.devmoon.net` tetap
+  milik Worker (`wrangler.toml`, `[[routes]] custom_domain = true`).
+- Butuh `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`; binding KV `WAITLIST` sudah dideklarasikan
+  di `wrangler.toml`. Jika deploy API timeout, coba `NODE_OPTIONS="--dns-result-order=ipv4first"`.
+- Setelah deploy, smoke `https://ramonyx.devmoon.net/`, `/docs`, `/docs/recipes`, aset, API, dan
+  waitlist; jangan klaim live tanpa smoke.
 
 ## Jebakan yang paling mudah kena
 
@@ -218,8 +235,9 @@ untuk halaman error), **bench SSR + ambang Web Vitals** (report-only — ADR-004
 (publish dari tarball terverifikasi + guard tag↔versi + dist-tag + `create-ramonyx-app` — ADR-0049),
 dan **situs
 dokumentasi** (`pnpm docs`, dogfood **penuh**: SSR + hydration/soft navigation atas `docs/public/**` — ADR-0042),
-**di-host di GitHub Pages** (ekspor statis + `<base href>` subpath — ADR-0052) —
-semuanya diverifikasi test + smoke.
+**situs kanonis di-host di Cloudflare Worker via `wrangler`** (landing edge SSR + docs static
+assets; `pnpm deploy:worker`), dengan **GitHub Pages hanya mirror** (ekspor statis + `<base href>`
+subpath — ADR-0052) — semuanya diverifikasi test + smoke.
 **Exit criteria Phase 4 tercapai**; **publikasi npm selesai** (0.1.0 → **0.3.0**: **16 paket**
 dengan **provenance** + GitHub Release tiap tag; verifikasi registry end-to-end lewat alur CLI ✓).
 Sisa kandidat lama **selesai** (baseline bench per-lingkungan ADR-0074, migrasi CLI ADR-0076,

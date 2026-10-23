@@ -1,8 +1,9 @@
 # Cloudflare Worker untuk situs Ramonyx.
 # Build dulu: `pnpm build:worker` (docs static + landing edge).
 #
+# Deploy kanonis: `pnpm deploy:worker` (build + `wrangler deploy`) → ramonyx.devmoon.net.
 # Preview: `pnpm dlx wrangler deploy` → URL *.workers.dev.
-# Custom domain: aktifkan blok [[routes]] SETELAH custom domain GitHub Pages dilepas.
+# Custom domain aktif lewat blok [[routes]] di bawah; GitHub Pages hanya mirror /ramonyx.
 name = "ramonyx-site"
 main = "apps/docs/dist/worker/index.js"
 compatibility_date = "2026-10-21"

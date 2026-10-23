@@ -140,6 +140,8 @@ async function proxyToSsr(
         headers.set(name, value);
       }
     }
+    // Tandai request yang datang lewat Vite. SSR langsung di port 3000 tidak punya entry klien.
+    headers.set("x-ramonyx-dev-proxy", "1");
 
     const method = req.method ?? "GET";
     const init: RequestInit & { duplex?: "half" } = {

@@ -1975,7 +1975,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T05:46:46.333Z",
+  "generatedAt": "2026-10-23T06:05:10.214Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2495,7 +2495,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T05:46:47.969Z",
+  "generatedAt": "2026-10-23T06:05:12.229Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2615,7 +2615,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T05:46:47.989Z",
+  "generatedAt": "2026-10-23T06:05:12.251Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -5790,6 +5790,8 @@ The edge target rejects Node built-ins. `guardedFetch` lives in a Node-only subp
 | `503` + `Retry-After` under load | Concurrency limit (default 100) shedding load. Scale out or raise `maxConcurrent`. |
 | Hydration mismatch / no interactivity | Client bundle not built (`ramonyx build` before `ramonyx start`) or an error page (error pages are not hydrated). |
 | Assets 404 in production | Build first; assets are hashed into `dist/client` and served by `ramonyx start`. |
+| `/.ramonyx/client-entry.ts` or `/@vite/client` 404 in dev | Open the Vite URL printed by `ramonyx dev` (default `:5173`), not the internal SSR port (`:3000`). The SSR port does not serve Vite's client entry. |
+| `/favicon.ico` 404 | Add an icon with `metadata.head` (`<link rel="icon" …>`) or a `public/favicon.svg`; newer Ramonyx defaults include one. |
 | `node_modules` TypeScript fails | Node does not type-strip `node_modules`; publish compiled JS for plugins/consumers. |
 | Dev server panel missing | Open the URL printed by `ramonyx dev` (`/__ramonyx/devtools`); it is dev-only. |
 

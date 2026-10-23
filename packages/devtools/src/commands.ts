@@ -22,7 +22,7 @@ import {
 } from "@ramonyx/bundler";
 import { generateRouteTypes, loadPageRoutes } from "@ramonyx/compiler";
 import { withMiddleware } from "@ramonyx/server";
-import { type FetchHandler, mergeHooks, type RamonyxConfig } from "ramonyx";
+import { type FetchHandler, type Middleware, mergeHooks, type RamonyxConfig } from "ramonyx";
 
 import { type AiMode, runAi } from "./ai.ts";
 import { type CreateAppOptions, loadConfigFile, loadCreateApp, loadServerEntry } from "./load.ts";
@@ -572,6 +572,20 @@ async function commandDev(flags: Flags): Promise<number> {
   // Devtools (ADR-0077): kolektor panel dev-only — hook timing digabung, middleware paling luar
   // agar semua request (termasuk yang di-short-circuit plugin) tercatat.
   const hooks = mergeHooks(plugins.hooks, dev.devtools.hooks);
+  // Port SSR tidak melayani entry klien Vite. Arahkan navigasi HTML langsung ke Vite agar
+  // membuka :3000 tidak menghasilkan 404 client-entry.ts/@vite/client.
+  const redirectDirectSsr: Middleware = async (context, next) => {
+    const accept = context.request.headers.get("accept") ?? "";
+    if (
+      context.request.method === "GET" &&
+      accept.includes("text/html") &&
+      context.request.headers.get("x-ramonyx-dev-proxy") !== "1"
+    ) {
+      const url = new URL(context.request.url);
+      return Response.redirect(`${dev.url}${url.pathname}${url.search}`, 302);
+    }
+    return next();
+  };
   const app = withMiddleware(
     await resolveAppHandler(flags.appDir, {
       clientScript: "/.ramonyx/client-entry.ts",
@@ -581,11 +595,11 @@ async function commandDev(flags: Flags): Promise<number> {
       hooks,
       streaming: config.app.streaming === true,
     }),
-    [dev.devtools.middleware, ...plugins.middleware],
+    [redirectDirectSsr, dev.devtools.middleware, ...plugins.middleware],
     { env: host.env, logger: createConsoleLogger() },
   );
   await host.serve(app, { port, host: config.server.host });
-  console.log(`dev: ${dev.url} (Vite + HMR) → SSR ${target}`);
+  console.log(`dev: ${dev.url} (Vite + HMR — buka URL ini) → SSR ${target} (internal)`);
   console.log(`devtools: ${dev.url}/__ramonyx/devtools (panel dev-only — rute, timing, hydration)`);
   return 0;
 }

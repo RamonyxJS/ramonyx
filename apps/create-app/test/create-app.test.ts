@@ -574,6 +574,14 @@ test("devtools dev: panel + data (rute/timing) tersedia di dev server — ADR-00
     assert.equal(api?.kind, "api");
     assert.ok(api?.methods?.includes("GET"), "method API terdaftar");
 
+    // Port SSR langsung tidak punya entry klien; navigasi HTML diarahkan ke Vite.
+    const langsung = await fetch(`http://127.0.0.1:${portSsr}/`, {
+      headers: { accept: "text/html" },
+      redirect: "manual",
+    });
+    assert.equal(langsung.status, 302);
+    assert.equal(langsung.headers.get("location"), `${devUrl}/`);
+
     // Request halaman lewat proxy → SSR → kolektor (hooks + middleware) mencatat timing.
     const halaman = await fetch(`${devUrl}/`);
     assert.equal(halaman.status, 200, "halaman SSR lewat proxy dev");

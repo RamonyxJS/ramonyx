@@ -9,16 +9,46 @@
 
 | Prioritas | Jumlah | Item |
 | --- | --- | --- |
-| P0 — blocker adopsi | 6 | `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` · `p0-package-readiness-gate` |
+| P0 — blocker adopsi | 8 | `p0-release-2-0-1` · `p0-ci-coverage-core` · `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p0-http-production-basics` · `f0-extension-primitives` · `p0-package-readiness-gate` |
 | P1 — paritas | 12 | `p1-middleware-per-route` · `p1-typed-routes` · `p1-metadata-seo` · `p1-auth-session` · `p1-revalidate` · `p1-prefetch` · `p1-boundary-lint` · `p1-docs-tutorial` · `p2-public-site-content-policy` · `p1-package-contract-coverage` · `p1-framework-v1-readiness` · `p1-auth-session-complete` |
 | P2 — diferensiasi & utang | 25 | `p2-plugin-ecosystem` · `p2-observability` · `p2-bench-env-baseline` · `p2-ip-pinning` · `p2-pentest-plugin` · `p2-asset-pipeline` · `p2-error-dx` · `p2-watch-mode` · `p2-mcp-docs-server` · `p2-context7` · `p2-cli-migration` · `p2-testing-docs` · `p2-plugin-contract-freeze` · `p2-partial-hydration-islands` · `p2-deferred-data-streaming` · `p2-runtime-observability-complete` · `p2-state-contracts` · `p2-state-shared-adapters` · `p2-auth-user-store` · `p2-auth-oauth` · `p2-auth-authorization` · `p2-request-pipeline` · `p2-adapter-parity` · `p2-actions-ux` · `p2-i18n-complete` |
 | P3 — nice-to-have | 12 | `p3-i18n` · `p3-devtools-ui` · `p3-docs-domain` · `p3-runtime-production-readiness` · `p3-typed-routes` · `p3-cli-hmr` · `p3-error-boundary-dx` · `p3-media-complete` · `p3-mcp-http-skill` · `p3-plugin-registry` · `p3-benchmark-runner` · `p3-loader-dependencies` |
 
 **Quick wins** (dampak besar, usaha kecil): `p0-http-production-basics` · `p1-prefetch` · `p1-docs-tutorial` · `p2-watch-mode` · `p2-context7` · `p2-testing-docs`
 
-**Strategis** (butuh keputusan arsitektur): `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy` · `p0-package-readiness-gate` · `p1-framework-v1-readiness` · `p1-auth-session-complete` · `p3-runtime-production-readiness` · `p2-state-contracts` · `p2-state-shared-adapters` · `p2-auth-user-store` · `p2-auth-oauth` · `p2-adapter-parity` · `p2-actions-ux` · `p3-plugin-registry`
+**Strategis** (butuh keputusan arsitektur): `p0-ci-coverage-core` · `p0-server-actions` · `p0-static-generation` · `p0-serverless-adapters` · `p1-auth-session` · `p1-revalidate` · `p2-plugin-ecosystem` · `p2-bench-env-baseline` · `p2-asset-pipeline` · `p2-mcp-docs-server` · `f0-extension-primitives` · `p2-public-site-content-policy` · `p0-package-readiness-gate` · `p1-framework-v1-readiness` · `p1-auth-session-complete` · `p3-runtime-production-readiness` · `p2-state-contracts` · `p2-state-shared-adapters` · `p2-auth-user-store` · `p2-auth-oauth` · `p2-adapter-parity` · `p2-actions-ux` · `p3-plugin-registry`
 
 ## P0 — blocker adopsi
+
+### `p0-release-2-0-1` — Rilis patch 2.0.1: guard FormData, coverage listener, docs sinkron
+
+*tema: quality · ukuran: S · status: open · sumber: post-release audit 2026-10-23: tag v2.0.0 mendahului fix FormData/coverage*
+
+- **Apa**: Terbitkan patch 2.0.1 yang memuat guard `FormData` di `guardedFetch`, test coverage `createNodeRequestListener`, dan statistik Node 382 test; sinkronkan docs/machine layer dan deploy Worker.
+- **Kenapa penting untuk bersaing**: Tag 2.0.0 sudah dibuat sebelum guard FormData dan test coverage masuk. Paket npm 2.0.0 saat ini masih memiliki bug runtime tanpa global FormData dan coverage adapter-runtime masih merah di CI.
+- **Selesai bila**:
+  - [ ] Bump 16 paket + template ke 2.0.1; Cargo.toml dan Cargo.lock ikut 2.0.1.
+  - [ ] pnpm lint, typecheck, test (382), docs:stats, docs:generate, docs:validate, test:docs, docs:no-leak lulus.
+  - [ ] pnpm release + release:verify + dry-run publish 16 tarball lulus.
+  - [ ] Tag v2.0.1, release workflow sukses, registry dan GitHub Release terverifikasi.
+  - [ ] Docs Worker 2.0.1 live; smoke /, /docs/cli, /machine/stats.json, /machine/adrs.json OK.
+- **Area kode**: `packages`, `apps/create-app`, `docs/public`, `scripts`, `.github/workflows`
+- **ADR**: ADR-0083
+- **Pembanding**: Framework yang sudah stabil merilis patch keamanan sebelum meminta konsumen memakai versi berikutnya.
+
+### `p0-ci-coverage-core` — Hijaukan CI coverage @ramonyx/core (branch gate)
+
+*tema: quality · ukuran: M · status: open · sumber: CI failure 2026-10-23: core branch 81.98–84.26 vs threshold 88*
+
+- **Apa**: Naikkan branch coverage `@ramonyx/core` dari sekitar 82–84% ke ambang 88%, atau perbarui baseline secara eksplisit dengan alasan dan test tambahan. Pastikan seluruh gate `pnpm test:coverage` hijau, bukan hanya adapter-runtime.
+- **Kenapa penting untuk bersaing**: CI main masih gagal pada coverage core setelah coverage adapter-runtime diperbaiki. Tanpa gate hijau, klaim kualitas dan rilis berikutnya tidak punya sinyal yang dapat dipercaya.
+- **Selesai bila**:
+  - [ ] Branch coverage core ≥88% atau baseline baru didokumentasikan dengan alasan yang dapat diaudit.
+  - [ ] Test contract store dimasukkan atau cakupan setara ditambahkan ke suite core.
+  - [ ] pnpm test:coverage penuh hijau untuk 16 paket + create-ramonyx-app.
+  - [ ] CI main hijau (lint, typecheck, test, coverage, e2e/security yang relevan).
+- **Area kode**: `packages/core`, `scripts/test-coverage.mjs`, `.github/workflows`
+- **Pembanding**: Framework matang menjaga coverage gate tetap hijau dan tidak menurunkan ambang tanpa catatan.
 
 ### `p0-server-actions` — Server actions & form handling (mutasi first-class)
 

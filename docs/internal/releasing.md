@@ -32,8 +32,25 @@
 - **TERBIT — 1.2.0** (2026-10-23): dev server single-port (Vite middleware + HMR + SSR satu
   server). 16 paket @ 1.2.0 dengan provenance; GitHub Release 19 aset; Worker
   `4df4cfaa-559c-4984-8a8f-a24af1a3c40f`. Runtime Rust tetap eksperimental.
-- **PERSIAPAN — 2.0.0** (2026-10-23): hapus mode proxy dev lama dan `--dev-port`; ADR-0083;
-  `createDevServer` mewajibkan `handler`. Bump 16 paket + template ke **2.0.0**; tag `v2.0.0`.
+- **TERBIT — 2.0.0** (2026-10-23): hapus mode proxy dev lama dan `--dev-port`; ADR-0083;
+  `createDevServer` mewajibkan `handler`. 16 paket @ 2.0.0 dengan provenance; GitHub Release
+  19 aset; Worker `8f4d7a0d-e149-4b2e-b08a-05f58f31f2bd`.
+
+## Hasil rilis 2.0.0 (2026-10-23)
+
+- Tag `v2.0.0` → release workflow **success**: **16 paket @ 2.0.0** dengan `dist.attestations` +
+  **GitHub Release 19 aset** (https://github.com/RamonyxJS/ramonyx/releases/tag/v2.0.0).
+- **Breaking**: `createDevServer` handler factory wajib; `target`, proxyToSsr, dan `--dev-port`
+  dihapus. ADR-0083 (publik + internal) ditambahkan dan menggantikan ADR-0009.
+- **Node gate**: 380 test Node hijau; 9 ADR publik; `docs:validate`, `docs:no-leak`, `test:docs`
+  (16 e2e), `release` (17 artefak), dan `release:verify` lulus.
+- **Registry acceptance**: `create-ramonyx-app@2.0.0` → install → build → dev satu port
+  (`--port 3200`) → `client-entry.ts` dan `@vite/client` 200.
+- **Deploy**: Worker `ramonyx-site` versi
+  `8f4d7a0d-e149-4b2e-b08a-05f58f31f2bd`; smoke `/`, `/docs/cli`, `/machine/stats.json`
+  (v2.0.0), `/machine/adrs.json` (9 ADR, ADR-0083), `/machine/cli.json` (13 flag, tanpa
+  `--dev-port`).
+- Runtime Rust tetap eksperimental; suite Rust masih gagal di fixture `FormData`, dicatat terpisah.
 
 ## Persiapan 2.0.0 (2026-10-23)
 

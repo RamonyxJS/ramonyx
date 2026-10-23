@@ -56,10 +56,10 @@ function run(
     `--test-coverage-lines=${lines}`,
     `--test-coverage-functions=${functions}`,
     `--test-coverage-branches=${branches}`,
+    ...extraArgs,
     `${testDir}/**/*.test.ts`,
     `${testDir}/**/*.test.tsx`,
     ...extraTests,
-    ...extraArgs,
   ];
   const result = spawnSync(process.execPath, args, { cwd: root, stdio: "inherit" });
   if (result.status !== 0) {

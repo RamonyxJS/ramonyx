@@ -8,6 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@ramonyx/adapter-runtime": "workspace:*",
     "@ramonyx/compiler": "workspace:*",
     "@ramonyx/core": "workspace:*",
     "vite": "8.3.4"

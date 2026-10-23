@@ -20,7 +20,7 @@ pnpm create ramonyx-app aplikasi-saya
 cd aplikasi-saya && pnpm install && pnpm build && pnpm start
 
 # atau dari repo (kontribusi framework):
-corepack enable pnpm && pnpm install && pnpm dev   # Vite :5173 → SSR :3000
+corepack enable pnpm && pnpm install && pnpm dev   # Vite + SSR :3000 (satu port)
 ```
 
 ## Yang sudah ada (terverifikasi)

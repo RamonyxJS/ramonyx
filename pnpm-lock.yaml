@@ -351,6 +351,9 @@ importers:
 
   packages/bundler:
     dependencies:
+      '@ramonyx/adapter-runtime':
+        specifier: workspace:*
+        version: link:../adapter-runtime
       '@ramonyx/compiler':
         specifier: workspace:*
         version: link:../compiler

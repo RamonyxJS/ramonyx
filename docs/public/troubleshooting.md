@@ -91,7 +91,7 @@ The edge target rejects Node built-ins. `guardedFetch` lives in a Node-only subp
 | `503` + `Retry-After` under load | Concurrency limit (default 100) shedding load. Scale out or raise `maxConcurrent`. |
 | Hydration mismatch / no interactivity | Client bundle not built (`ramonyx build` before `ramonyx start`) or an error page (error pages are not hydrated). |
 | Assets 404 in production | Build first; assets are hashed into `dist/client` and served by `ramonyx start`. |
-| `/.ramonyx/client-entry.ts` or `/@vite/client` 404 in dev | Open the Vite URL printed by `ramonyx dev` (default `:5173`), not the internal SSR port (`:3000`). The SSR port does not serve Vite's client entry. |
+| `/.ramonyx/client-entry.ts` or `/@vite/client` 404 in dev | Restart `ramonyx dev` and open the single URL it prints (default `:3000`). If the error persists, clear `node_modules/.vite` and `.ramonyx` and restart. |
 | `/favicon.ico` 404 | Add an icon with `metadata.head` (`<link rel="icon" …>`) or a `public/favicon.svg`; newer Ramonyx defaults include one. |
 | `node_modules` TypeScript fails | Node does not type-strip `node_modules`; publish compiled JS for plugins/consumers. |
 | Dev server panel missing | Open the URL printed by `ramonyx dev` (`/__ramonyx/devtools`); it is dev-only. |

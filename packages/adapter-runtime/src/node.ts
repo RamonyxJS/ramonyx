@@ -167,41 +167,64 @@ async function writeResponse(
   }
 }
 
+/**
+ * Listener `node:http` → `FetchHandler`. Dipakai host Node dan dev server terintegrasi
+ * (Vite middleware + SSR pada satu port).
+ */
+export function createNodeRequestListener(
+  handler: FetchHandler,
+  options: NodeHostOptions = {},
+): (request: IncomingMessage, response: ServerResponse) => void {
+  const compression = options.compression ?? true;
+  const compressionMinBytes = options.compressionMinBytes ?? 1024;
+  return (incoming, outgoing) => {
+    void (async () => {
+      try {
+        const origin = `http://${incoming.headers.host ?? "localhost"}`;
+        const request = await toFetchRequest(incoming, origin);
+        const response = await handler(request);
+        await writeResponse(outgoing, response, {
+          method: request.method,
+          acceptEncoding: request.headers.get("accept-encoding") ?? undefined,
+          compression,
+          compressionMinBytes,
+        });
+      } catch (error) {
+        const code =
+          typeof error === "object" && error !== null && "code" in error
+            ? String((error as { code?: unknown }).code)
+            : "";
+        // Klien menutup koneksi saat respons masih mengalir (navigasi/HMR reload): bukan error app.
+        if (
+          code === "ERR_STREAM_PREMATURE_CLOSE" ||
+          code === "ERR_STREAM_UNABLE_TO_PIPE" ||
+          code === "ECONNRESET"
+        ) {
+          return;
+        }
+        options.onError?.(error);
+        if (outgoing.headersSent) {
+          // Aliran sudah dimulai (streaming) — status tak bisa diubah; putuskan koneksi.
+          outgoing.destroy();
+        } else {
+          outgoing.writeHead(500, { "content-type": "application/json" });
+          outgoing.end(JSON.stringify({ error: "Internal Server Error" }));
+        }
+      }
+    })();
+  };
+}
+
 /** Host Node.js: `node:http` → `Request`/`Response` standar web. */
 export function createNodeHost(options: NodeHostOptions = {}): RuntimeHost {
   const env: EnvReader = options.env ?? { get: (name) => process.env[name] };
-  const compression = options.compression ?? true;
-  const compressionMinBytes = options.compressionMinBytes ?? 1024;
 
   return {
     name: "node",
     env,
     async serve(handler: FetchHandler, serveOptions: ServeOptions): Promise<RunningServer> {
       const server = createServer();
-      server.on("request", (incoming, outgoing) => {
-        void (async () => {
-          try {
-            const origin = `http://${incoming.headers.host ?? "localhost"}`;
-            const request = await toFetchRequest(incoming, origin);
-            const response = await handler(request);
-            await writeResponse(outgoing, response, {
-              method: request.method,
-              acceptEncoding: request.headers.get("accept-encoding") ?? undefined,
-              compression,
-              compressionMinBytes,
-            });
-          } catch (error) {
-            options.onError?.(error);
-            if (outgoing.headersSent) {
-              // Aliran sudah dimulai (streaming) — status tak bisa diubah; putuskan koneksi.
-              outgoing.destroy();
-            } else {
-              outgoing.writeHead(500, { "content-type": "application/json" });
-              outgoing.end(JSON.stringify({ error: "Internal Server Error" }));
-            }
-          }
-        })();
-      });
+      server.on("request", createNodeRequestListener(handler, options));
 
       await new Promise<void>((resolve, reject) => {
         server.once("error", reject);

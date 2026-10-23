@@ -1,9 +1,10 @@
 import { existsSync } from "node:fs";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
-import type { ServerResponse } from "node:http";
+import { createServer as createHttpServer, type ServerResponse } from "node:http";
 import { extname, join, relative } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
+import { createNodeRequestListener } from "@ramonyx/adapter-runtime";
 import {
   generateClientEntry,
   listApiRoutes,
@@ -11,6 +12,7 @@ import {
   type ModuleImporter,
   RouteManifestError,
 } from "@ramonyx/compiler";
+import type { FetchHandler } from "@ramonyx/core";
 import { type Connect, createServer, type Plugin, type PluginOption } from "vite";
 import { createDevtoolsCollector, type DevtoolsCollector, devtoolsPanelHtml } from "./devtools.ts";
 import { readAssetManifest } from "./manifest.ts";
@@ -18,9 +20,20 @@ import { serverOnlyPlugin } from "./server-only.ts";
 
 export interface DevServerOptions {
   readonly appDir: string;
-  /** URL server SSR yang diproksikan (mis. "http://localhost:3000"). */
-  readonly target: string;
+  /**
+   * Mode terintegrasi: factory handler SSR. Vite berjalan sebagai middleware di server yang
+   * sama; `target` tidak dipakai.
+   */
+  readonly handler?: (context: {
+    readonly importer: ModuleImporter;
+    readonly devtools: DevtoolsCollector;
+  }) => FetchHandler | Promise<FetchHandler>;
+  /** Mode proxy lama: URL server SSR terpisah (mis. "http://localhost:3000"). */
+  readonly target?: string;
+  /** Port HTTP server (mode terintegrasi: port publik/dev). */
   readonly port?: number;
+  /** Interface bind; default localhost. */
+  readonly host?: string;
   /** Plugin Vite tambahan (dari plugin Ramonyx — ADR-0067). */
   readonly plugins?: readonly PluginOption[];
 }
@@ -29,7 +42,8 @@ export interface DevServer {
   readonly url: string;
   /** Importer untuk compiler: modul mengikuti module graph Vite (invalidasi saat file berubah). */
   readonly importer: ModuleImporter;
-  readonly target: string;
+  /** Hanya ada di mode proxy lama. */
+  readonly target?: string;
   /** Kolektor panel devtools (ADR-0077) — pasang `hooks`/`middleware`-nya ke handler aplikasi. */
   readonly devtools: DevtoolsCollector;
   close(): Promise<void>;
@@ -176,8 +190,29 @@ async function proxyToSsr(
   }
 }
 
+/** Mode proxy lama: Vite dan SSR berjalan di port berbeda. */
+function ssrProxyPlugin(target: string): Plugin {
+  return {
+    name: "ramonyx-ssr-proxy",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url === undefined || isViteRequest(req.url)) {
+          next();
+          return;
+        }
+        void proxyToSsr(target, req, res, next);
+      });
+    },
+  };
+}
+
 /**
- * Dev server: Vite (transform + HMR) sebagai front, proxy ke server SSR.
+ * Dev server: Vite (transform + HMR) dan SSR.
+ *
+ * - Mode terintegrasi (`handler`): satu HTTP server/port; Vite middleware + HMR WebSocket
+ *   menempel ke server yang sama, SSR menjadi middleware terakhir.
+ * - Mode proxy lama (`target`): Vite port terpisah memproksikan request ke SSR.
+ *
  * Modul halaman/manifest dimuat lewat `vite.ssrLoadModule` agar SSR ikut segar saat file berubah
  * (tanpa restart); perubahan di `src/routes` meregenerasi entry client + full-reload browser.
  */
@@ -215,13 +250,26 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
     devtools.setAssets(entries);
   };
 
+  const integrated = options.handler !== undefined;
+  const proxyTarget = options.target;
+  if (!integrated && proxyTarget === undefined) {
+    throw new Error(
+      "createDevServer: butuh `handler` (mode terintegrasi) atau `target` (mode proxy)",
+    );
+  }
+  const integratedServer = integrated ? createHttpServer() : undefined;
   const vite = await createServer({
     configFile: false,
     root: appDir,
     appType: "custom",
     logLevel: "info",
     esbuild: { jsx: "automatic" },
-    server: { port: options.port ?? 5173 },
+    server: integrated
+      ? {
+          middlewareMode: { server: integratedServer as ReturnType<typeof createHttpServer> },
+          ws: { server: integratedServer as ReturnType<typeof createHttpServer> },
+        }
+      : { port: options.port ?? 5173 },
     plugins: [
       ...(options.plugins ?? []),
       serverOnlyPlugin(),
@@ -251,18 +299,7 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
           });
         },
       },
-      {
-        name: "ramonyx-ssr-proxy",
-        configureServer(server) {
-          server.middlewares.use((req, res, next) => {
-            if (req.url === undefined || isViteRequest(req.url)) {
-              next();
-              return;
-            }
-            void proxyToSsr(options.target, req, res, next);
-          });
-        },
-      },
+      ...(integrated ? [] : [ssrProxyPlugin(proxyTarget as string)]),
     ],
   });
 
@@ -312,6 +349,61 @@ export async function createDevServer(options: DevServerOptions): Promise<DevSer
         vite.ws.send({ type: "full-reload" });
       });
   });
+
+  if (integrated) {
+    const server = integratedServer as ReturnType<typeof createHttpServer>;
+    const fetchHandler = await options.handler?.({ importer, devtools });
+    if (fetchHandler === undefined) {
+      throw new Error("createDevServer: handler tidak mengembalikan FetchHandler");
+    }
+    // SSR adalah middleware terakhir: request yang tidak ditangani Vite/plugin masuk ke app.
+    vite.middlewares.use(createNodeRequestListener(fetchHandler, { onError: console.error }));
+    server.on("request", (req, res) => {
+      vite.middlewares(req, res, (error: unknown) => {
+        if (error) {
+          console.error(error);
+          if (!res.headersSent) {
+            res.writeHead(500, { "content-type": "application/json" });
+          }
+          res.end(JSON.stringify({ error: "Internal Server Error" }));
+          return;
+        }
+        if (!res.headersSent) {
+          res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+        }
+        res.end("Not found");
+      });
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(options.port ?? 3000, options.host ?? "localhost", () => {
+        server.off("error", reject);
+        resolve();
+      });
+    });
+    const address = server.address();
+    const port =
+      typeof address === "object" && address !== null ? address.port : (options.port ?? 3000);
+    const host =
+      options.host === undefined ||
+      options.host === "0.0.0.0" ||
+      options.host === "::" ||
+      options.host === "127.0.0.1"
+        ? "localhost"
+        : options.host;
+
+    return {
+      url: `http://${host}:${port}`,
+      importer,
+      devtools,
+      close: async () => {
+        server.closeAllConnections();
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+        await vite.close();
+      },
+    };
+  }
 
   await vite.listen();
   const address = vite.httpServer?.address();

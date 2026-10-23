@@ -444,7 +444,7 @@
     },
     {
       "id": "dev-server-hmr",
-      "name": "Dev server + HMR (Vite → SSR) + panel devtools (rute, timing, hydration, bundel)",
+      "name": "Dev server terintegrasi (Vite middleware + HMR + SSR satu port) + panel devtools (rute, timing, hydration, bundel)",
       "status": "implemented",
       "since": "0.1.0",
       "priority": "p0",

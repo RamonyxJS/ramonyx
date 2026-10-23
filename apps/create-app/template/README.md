@@ -8,7 +8,7 @@ Aplikasi [Ramonyx](https://github.com/ramonyx/ramonyx) — framework full-stack 
 
 ```bash
 pnpm install   # atau: bun install / npm install
-pnpm dev       # Vite + HMR (http://localhost:5173) → SSR :3000
+pnpm dev       # Vite + HMR + SSR (http://localhost:3000, satu port)
 pnpm build     # bundel klien (wajib sebelum start produksi)
 pnpm start     # http://127.0.0.1:3000 (NODE_ENV=production otomatis)
 ```

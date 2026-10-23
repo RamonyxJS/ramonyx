@@ -4,6 +4,12 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+### Changed
+
+- `ramonyx dev` now runs Vite middleware, HMR, and SSR in one HTTP server on one port
+  (`server.port`, default `3000`). The legacy two-port proxy mode remains available through
+  `createDevServer({ target })` for library consumers, but the CLI no longer uses it.
+
 ## [1.1.0] — 2026-10-23
 
 AI-ready DX, a proper welcome screen for new apps, and developer-experience fixes found while

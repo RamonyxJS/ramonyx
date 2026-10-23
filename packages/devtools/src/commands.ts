@@ -22,7 +22,7 @@ import {
 } from "@ramonyx/bundler";
 import { generateRouteTypes, loadPageRoutes } from "@ramonyx/compiler";
 import { withMiddleware } from "@ramonyx/server";
-import { type FetchHandler, type Middleware, mergeHooks, type RamonyxConfig } from "ramonyx";
+import { type FetchHandler, mergeHooks, type RamonyxConfig } from "ramonyx";
 
 import { type AiMode, runAi } from "./ai.ts";
 import { type CreateAppOptions, loadConfigFile, loadCreateApp, loadServerEntry } from "./load.ts";
@@ -44,7 +44,7 @@ import {
 const USAGE = `ramonyx — CLI pengembangan Ramonyx
 
 Pemakaian:
-  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)
+  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)
   ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)
   ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)
   ramonyx build --target edge
@@ -64,8 +64,8 @@ Pemakaian:
 Opsi:
   --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)
   --config <path>   Path config (default: <app>/ramonyx.config.ts)
-  --port <n>        Override port server SSR
-  --dev-port <n>    Override port Vite (default 5173)
+  --port <n>        Override port dev/start
+  --dev-port <n>    Alias lama untuk --port (dev; deprecated)
   --static          (build) Prerender rute statis + getStaticPaths → dist/static
   --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)
   --watch           (build/start) Bangun ulang atau restart server saat src/** berubah
@@ -560,46 +560,32 @@ async function commandDev(flags: Flags): Promise<number> {
     flags.appDir,
     await loadPageRoutes({ dir: join(flags.appDir, "src/routes") }),
   );
-  const port = flags.port ?? config.server.port;
-  const target = `http://${config.server.host}:${port}`;
+  const port = flags.devPort ?? flags.port ?? config.server.port;
+  const host = createNodeHost();
   const dev = await createDevServer({
     appDir: flags.appDir,
-    target,
-    port: flags.devPort ?? 5173,
+    port,
+    host: config.server.host,
     plugins: plugins.vite,
+    handler: async ({ importer, devtools }) => {
+      // Devtools (ADR-0077): kolektor panel dev-only — hook timing digabung, middleware paling
+      // luar agar semua request (termasuk yang di-short-circuit plugin) tercatat.
+      const hooks = mergeHooks(plugins.hooks, devtools.hooks);
+      return withMiddleware(
+        await resolveAppHandler(flags.appDir, {
+          clientScript: "/.ramonyx/client-entry.ts",
+          clientModules: ["/@vite/client"],
+          importer,
+          reloadManifests: true,
+          hooks,
+          streaming: config.app.streaming === true,
+        }),
+        [devtools.middleware, ...plugins.middleware],
+        { env: host.env, logger: createConsoleLogger() },
+      );
+    },
   });
-  const host = createNodeHost();
-  // Devtools (ADR-0077): kolektor panel dev-only — hook timing digabung, middleware paling luar
-  // agar semua request (termasuk yang di-short-circuit plugin) tercatat.
-  const hooks = mergeHooks(plugins.hooks, dev.devtools.hooks);
-  // Port SSR tidak melayani entry klien Vite. Arahkan navigasi HTML langsung ke Vite agar
-  // membuka :3000 tidak menghasilkan 404 client-entry.ts/@vite/client.
-  const redirectDirectSsr: Middleware = async (context, next) => {
-    const accept = context.request.headers.get("accept") ?? "";
-    if (
-      context.request.method === "GET" &&
-      accept.includes("text/html") &&
-      context.request.headers.get("x-ramonyx-dev-proxy") !== "1"
-    ) {
-      const url = new URL(context.request.url);
-      return Response.redirect(`${dev.url}${url.pathname}${url.search}`, 302);
-    }
-    return next();
-  };
-  const app = withMiddleware(
-    await resolveAppHandler(flags.appDir, {
-      clientScript: "/.ramonyx/client-entry.ts",
-      clientModules: ["/@vite/client"],
-      importer: dev.importer,
-      reloadManifests: true,
-      hooks,
-      streaming: config.app.streaming === true,
-    }),
-    [redirectDirectSsr, dev.devtools.middleware, ...plugins.middleware],
-    { env: host.env, logger: createConsoleLogger() },
-  );
-  await host.serve(app, { port, host: config.server.host });
-  console.log(`dev: ${dev.url} (Vite + HMR — buka URL ini) → SSR ${target} (internal)`);
+  console.log(`dev: ${dev.url} (Vite + HMR)`);
   console.log(`devtools: ${dev.url}/__ramonyx/devtools (panel dev-only — rute, timing, hydration)`);
   return 0;
 }

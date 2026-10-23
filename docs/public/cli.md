@@ -9,7 +9,7 @@ diagnostics.
 the shell does not include `node_modules/.bin`.
 
 ```bash
-ramonyx dev              # Vite + HMR (default :5173) → SSR (port from config)
+ramonyx dev              # Vite + HMR + SSR on one port (default :3000)
 ramonyx build            # client bundle → dist/client (run before production start)
 ramonyx build --static   # client bundle + prerender pages → dist/static
 ramonyx build --target edge   # server/edge bundle → dist/edge ({ fetch } contract)
@@ -61,8 +61,8 @@ ramonyx doctor --json
 | --- | --- | --- |
 | `--app <dir>` | all | App directory (default: cwd) |
 | `--config <path>` | all | Config path (default `<app>/ramonyx.config.ts`) |
-| `--port <n>` | dev/start | Override the SSR port |
-| `--dev-port <n>` | dev | Override the Vite port (default 5173) |
+| `--port <n>` | dev/start | Override the dev/start port |
+| `--dev-port <n>` | dev | Deprecated alias for `--port` |
 | `--static` | build | Prerender static routes (`getStaticPaths` for dynamic routes) → `dist/static` |
 | `--target <name>` | build | Extra target; `edge` → `dist/edge` |
 | `--watch` | build/start | Build: rebuild on changes (debounced, safe queue). Start: restart a supervised server process with clean shutdown. |
@@ -83,6 +83,7 @@ src/routes/            page.tsx / layout.tsx / error.tsx + api/*.ts
 ramonyx.config.ts      default export { app?, server? } (optional)
 ```
 
+- `ramonyx dev` runs Vite middleware, HMR, and SSR on one port. There is no second Vite proxy port.
 - `ramonyx dev|start` prefers `src/server.ts` when present, otherwise `src/app.ts`.
 - Plugins from `ramonyx.config.ts` are loaded by the CLI (Vite, middleware, hooks, assets).
 - `ramonyx start` sets `NODE_ENV=production` if unset; reactivity/React production build depends on it.

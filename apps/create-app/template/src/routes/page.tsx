@@ -84,7 +84,7 @@ export default function Welcome({ data, action }: PageProps<{ logo?: string }>) 
             <span>APP STATUS</span>
             <span className="rw-live">ready</span>
           </div>
-          <p className="rw-url">localhost:5173</p>
+          <p className="rw-url">localhost:3000</p>
           <p className="rw-status-sub">SSR + hydration · Vite HMR</p>
           <div className="rw-brandline">
             <Image src={data.logo} alt="__APP_NAME__ logo" width={25} height={25} />

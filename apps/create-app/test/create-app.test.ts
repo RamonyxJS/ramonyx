@@ -506,21 +506,9 @@ test("devtools dev: panel + data (rute/timing) tersedia di dev server — ADR-00
   const target = join(workDir, "app-devtools");
   runCli([target]);
 
-  const portSsr = await portBebas();
   const child = spawn(
     process.execPath,
-    [
-      "--import",
-      loader,
-      devtoolsCli,
-      "dev",
-      "--app",
-      target,
-      "--port",
-      String(portSsr),
-      "--dev-port",
-      "0",
-    ],
+    ["--import", loader, devtoolsCli, "dev", "--app", target, "--dev-port", "0"],
     { cwd: target, stdio: ["ignore", "pipe", "pipe"] },
   );
   let keluaran = "";
@@ -546,10 +534,32 @@ test("devtools dev: panel + data (rute/timing) tersedia di dev server — ADR-00
     const devUrl = /dev: (http:\/\/localhost:\d+)/.exec(keluaran)?.[1];
     assert.ok(devUrl !== undefined, "URL dev server terbaca");
 
-    // Entry klien dev harus dilayani Vite (bukan 404) agar hydration/HMR tidak putus.
+    // Vite dan SSR berbagi satu port: entry klien, modul, dan SSR semuanya dari devUrl.
+    const viteClient = await fetch(`${devUrl}/@vite/client`);
+    assert.equal(viteClient.status, 200, "@vite/client tersedia di port dev");
     const clientEntry = await fetch(`${devUrl}/.ramonyx/client-entry.ts`);
     assert.equal(clientEntry.status, 200, "client-entry.ts tersedia di dev server");
     assert.match(await clientEntry.text(), /enableClientNavigation/);
+    const apiHalo = await fetch(`${devUrl}/api/halo/dunia`);
+    assert.equal(apiHalo.status, 200, "API route dilayani port dev yang sama");
+
+    // HMR WebSocket harus menempel ke HTTP server yang sama, bukan port Vite terpisah.
+    await new Promise<void>((resolve, reject) => {
+      const socket = new WebSocket(`${devUrl.replace(/^http/, "ws")}/`, "vite-hmr");
+      const timer = setTimeout(() => {
+        socket.close();
+        reject(new Error("WebSocket HMR tidak terhubung"));
+      }, 10_000);
+      socket.addEventListener("open", () => {
+        clearTimeout(timer);
+        socket.close();
+        resolve();
+      });
+      socket.addEventListener("error", () => {
+        clearTimeout(timer);
+        reject(new Error("WebSocket HMR error"));
+      });
+    });
 
     // Panel HTML (dev-only).
     const panel = await fetch(`${devUrl}/__ramonyx/devtools`);
@@ -574,17 +584,9 @@ test("devtools dev: panel + data (rute/timing) tersedia di dev server — ADR-00
     assert.equal(api?.kind, "api");
     assert.ok(api?.methods?.includes("GET"), "method API terdaftar");
 
-    // Port SSR langsung tidak punya entry klien; navigasi HTML diarahkan ke Vite.
-    const langsung = await fetch(`http://127.0.0.1:${portSsr}/`, {
-      headers: { accept: "text/html" },
-      redirect: "manual",
-    });
-    assert.equal(langsung.status, 302);
-    assert.equal(langsung.headers.get("location"), `${devUrl}/`);
-
-    // Request halaman lewat proxy → SSR → kolektor (hooks + middleware) mencatat timing.
+    // Satu HTTP server: request halaman masuk ke SSR dan tercatat di kolektor.
     const halaman = await fetch(`${devUrl}/`);
-    assert.equal(halaman.status, 200, "halaman SSR lewat proxy dev");
+    assert.equal(halaman.status, 200, "halaman SSR dilayani port dev yang sama");
 
     const data = (await (await fetch(`${devUrl}/__ramonyx/data`)).json()) as {
       requests: { path: string; status?: number; hydration?: string; ms?: number }[];

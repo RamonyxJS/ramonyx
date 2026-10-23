@@ -5,8 +5,8 @@ hydration status, and bundle sizes. It is never enabled in production builds.
 
 ```bash
 ramonyx dev
-# dev: http://localhost:5173 (Vite + HMR) → SSR http://127.0.0.1:3000
-# devtools: http://localhost:5173/__ramonyx/devtools
+# dev: http://localhost:3000 (Vite + HMR + SSR)
+# devtools: http://localhost:3000/__ramonyx/devtools
 ```
 
 ## What it shows

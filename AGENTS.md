@@ -22,7 +22,7 @@ eksperimental (Phase 4 selesai, ADR-0001).
 - `pnpm typecheck` — `tsc --noEmit` (TypeScript 7: `baseUrl` dihapus, `paths` wajib relatif `./`).
 - `pnpm test` / `pnpm bench` / `pnpm dev` / `pnpm build` — semuanya lewat
   `node --import ./tools/register.mjs` (loader esbuild: TS + JSX automatic; ADR-0006). Butuh Node ≥24.
-- `pnpm dev` — dev server: Vite (5173) dengan HMR → SSR (3000); **tanpa build**.
+- `pnpm dev` — dev server terintegrasi: Vite + HMR + SSR pada satu port (`:3000`, dari config); **tanpa build**.
 - `pnpm build` + `pnpm start` — produksi: bundle client ke `apps/playground/dist/client/`, lalu SSR di 3000.
 - `pnpm test:e2e` — Playwright terhadap build produksi (`pnpm build` + `pnpm start`); browser:
   CI memakai `playwright install chromium`, lokal boleh `PLAYWRIGHT_EXECUTABLE_PATH` ke Chrome yang ada.

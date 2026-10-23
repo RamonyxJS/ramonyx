@@ -2027,7 +2027,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T15:53:58.613Z",
+  "generatedAt": "2026-10-23T16:18:04.282Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2548,7 +2548,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T15:54:01.155Z",
+  "generatedAt": "2026-10-23T16:18:07.090Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2663,7 +2663,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T15:54:01.189Z",
+  "generatedAt": "2026-10-23T16:18:07.117Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2690,6 +2690,20 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "verify": "ramonyx check --json",
       "slug": "recipes/auth-session",
       "docs": "docs/public/recipes/auth-session.md"
+    },
+    {
+      "id": "better-auth",
+      "title": "Add Better Auth to an API route",
+      "summary": "Mount Better Auth on /api/auth, store users and sessions with Drizzle, and keep secrets in bindings.",
+      "when": "The app needs email/password login, sessions, and optional OAuth without building auth primitives from scratch.",
+      "files": [
+        "src/auth.server.ts",
+        "src/routes/api/auth/[...all].ts",
+        "src/db.server.ts"
+      ],
+      "verify": "pnpm test && ramonyx check --json",
+      "slug": "recipes/better-auth",
+      "docs": "docs/public/recipes/better-auth.md"
     },
     {
       "id": "cache-revalidate",
@@ -2789,8 +2803,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "2.0.1",
-  "generatedAt": "2026-10-23T15:52:03.717Z",
-  "commit": "acfadff5727304b89a2e72b69d939c9e2d5e6c9a",
+  "generatedAt": "2026-10-23T16:15:47.708Z",
+  "commit": "1012fab979ebeaf1dce5c044b0733643c3317a2a",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2815,9 +2829,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     ]
   },
   "adrs": 9,
-  "docs": 33,
+  "docs": 34,
   "tests": {
-    "node": 383,
+    "node": 384,
     "rust": 116,
     "e2eSpecFiles": 12
   }
@@ -4281,6 +4295,7 @@ touches, and a verification command; the machine-readable index is
 | Form mutation with progressive enhancement | [Handle a form with a server action](form-action.md) | `ramonyx check --json` |
 | JSON endpoint with validation | [Add an API route with validation](api-validation.md) | `ramonyx routes --json` |
 | SQLite persistence on Cloudflare | [Use Drizzle with Cloudflare D1](drizzle-d1.md) | `pnpm test` |
+| Email/password + sessions | [Add Better Auth to an API route](better-auth.md) | `pnpm test` |
 | Login/logout and protected pages | [Add session auth](auth-session.md) | `ramonyx check --json` |
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |
@@ -4435,6 +4450,110 @@ before calling `next()`. (Loaders cannot return a redirect; use `HttpError`/midd
 - In-memory stores are for development; use a shared store for multi-instance deployments.
 
 Read [Sessions & Auth](../sessions-and-auth.md) and [State & Adapters](../state-and-adapters.md).
+
+## docs/public/recipes/better-auth.md
+
+---
+recipe: better-auth
+title: Add Better Auth to an API route
+summary: Mount Better Auth on /api/auth, store users and sessions with Drizzle, and keep secrets in bindings.
+when: The app needs email/password login, sessions, and optional OAuth without building auth primitives from scratch.
+files: src/auth.server.ts, src/routes/api/auth/[...all].ts, src/db.server.ts
+verify: pnpm test && ramonyx check --json
+---
+
+# Add Better Auth to an API route
+
+Better Auth owns users, accounts, sessions, verification tokens, cookies, and the auth HTTP
+handler. Ramonyx only needs to mount that handler and provide a database adapter.
+
+Install:
+
+```bash
+pnpm add better-auth drizzle-orm
+```
+
+## Database adapter
+
+Use the Drizzle adapter with the database from the [Drizzle + D1 recipe](drizzle-d1.md). Generate
+the Better Auth tables with its CLI, then keep the generated schema in the app:
+
+```bash
+npx @better-auth/cli generate
+```
+
+```ts
+// src/auth.server.ts — server-only
+import type { EnvReader } from "ramonyx";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { database } from "./db.server.ts";
+import * as schema from "./schema.ts";
+
+export function authFor(env: EnvReader) {
+  const secret = env.get("BETTER_AUTH_SECRET");
+  if (secret === undefined || secret.length < 32) {
+    throw new Error("BETTER_AUTH_SECRET wajib diisi (minimal 32 karakter)");
+  }
+  return betterAuth({
+    baseURL: env.get("BETTER_AUTH_URL") ?? "http://localhost:3000",
+    secret,
+    emailAndPassword: { enabled: true },
+    database: drizzleAdapter(database(env), {
+      provider: "sqlite",
+      schema,
+    }),
+    trustedOrigins: [env.get("APP_ORIGIN") ?? "http://localhost:3000"],
+  });
+}
+```
+
+`BETTER_AUTH_SECRET` must come from a binding/secret store. In production use a randomly generated
+value; never commit it.
+
+## Mount the handler
+
+Better Auth expects to own `/api/auth/*`. A catch-all API route forwards the original request:
+
+```ts
+// src/routes/api/auth/[...all].ts
+import { route } from "ramonyx";
+import { authFor } from "../../../auth.server.ts";
+
+export const GET = route({
+  handler: ({ request, env }) => authFor(env).handler(request),
+});
+
+export const POST = route({
+  handler: ({ request, env }) => authFor(env).handler(request),
+});
+```
+
+If the project uses a custom `src/app.ts` middleware chain instead, forward `/api/auth/*` there
+before the page/API router. Do not mount Better Auth twice.
+
+## Verify
+
+```bash
+ramonyx routes --json   # /api/auth/[...all] appears
+ramonyx check --json
+pnpm test
+```
+
+Executable example: [`tests/integrations/better-auth.test.ts`](../../../tests/integrations/better-auth.test.ts)
+uses Better Auth's memory adapter for sign-up, session lookup, and bad-password rejection. For
+production, switch to the Drizzle adapter and test against a real D1/Postgres/MySQL database.
+
+## Limits
+
+- Memory adapter is for tests/dev only; sessions disappear on restart.
+- Better Auth's schema/migrations are owned by Better Auth; do not hand-edit generated tables
+  without following its upgrade notes.
+- Keep `BETTER_AUTH_SECRET` and OAuth client secrets in bindings; never expose them to client
+  components.
+- Set `trustedOrigins` explicitly and keep HTTPS in production.
+- This recipe covers email/password plus adapter wiring. OAuth providers, email delivery,
+  organization/roles, and UI remain application choices.
 
 ## docs/public/recipes/cache-revalidate.md
 

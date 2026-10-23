@@ -1137,7 +1137,7 @@
       "areas": ["examples", "docs/public", "packages", "apps/create-app"],
       "adrs": [],
       "competitor": "Next.js ecosystem, Nuxt modules, SvelteKit adapters, Astro integrations.",
-      "source": "agenda adopsi 2026-10-23; progres: Drizzle + Cloudflare D1 recipe + test shim (tests/integrations/drizzle-d1.test.ts, docs/public/recipes/drizzle-d1.md).",
+      "source": "agenda adopsi 2026-10-23; progres: Drizzle + Cloudflare D1, Better Auth (memory test + Drizzle/D1 recipe).",
       "strategic": true
     },
     {

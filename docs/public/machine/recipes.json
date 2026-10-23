@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T15:54:01.189Z",
+  "generatedAt": "2026-10-23T16:18:07.117Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -27,6 +27,20 @@
       "verify": "ramonyx check --json",
       "slug": "recipes/auth-session",
       "docs": "docs/public/recipes/auth-session.md"
+    },
+    {
+      "id": "better-auth",
+      "title": "Add Better Auth to an API route",
+      "summary": "Mount Better Auth on /api/auth, store users and sessions with Drizzle, and keep secrets in bindings.",
+      "when": "The app needs email/password login, sessions, and optional OAuth without building auth primitives from scratch.",
+      "files": [
+        "src/auth.server.ts",
+        "src/routes/api/auth/[...all].ts",
+        "src/db.server.ts"
+      ],
+      "verify": "pnpm test && ramonyx check --json",
+      "slug": "recipes/better-auth",
+      "docs": "docs/public/recipes/better-auth.md"
     },
     {
       "id": "cache-revalidate",

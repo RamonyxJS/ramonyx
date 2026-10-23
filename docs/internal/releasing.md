@@ -47,10 +47,12 @@
   `compat_security` hijau; Node suite 382 test.
 - **Coverage**: contract store dimasukkan ke coverage core; baseline fitur baru (core, MCP,
   React, security, server, SSR, create-app) diperbarui eksplisit; `pnpm test:coverage` penuh
-  hijau. Adapter-runtime mengecualikan `redis.ts` saat `redis-server` tidak tersedia agar CI
-  tidak bergantung pada service eksternal.
+  hijau. Adapter-runtime mengecualikan `redis.ts` dari baseline coverage agar CI deterministik;
+  integration test Redis tetap berjalan di suite utama saat service tersedia.
 - **Registry acceptance**: `create-ramonyx-app@2.0.1` install/build/dev satu port; client entry
   dan `@vite/client` 200.
+- **CI**: main hijau setelah flag exclude coverage ditempatkan sebelum glob test (Node CLI
+  mengabaikan opsi setelah positional); Rust + coverage + docs/e2e/security/edge smoke lulus.
 - **Deploy**: Worker `ramonyx-site` versi
   `0516001e-a26e-4078-80a8-df011231aeb1`; smoke `/`, `/docs/cli`, `/machine/stats.json`
   (2.0.1), `/machine/adrs.json` OK.

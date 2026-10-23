@@ -40,7 +40,7 @@
       "areas": ["packages/core", "scripts/test-coverage.mjs", ".github/workflows"],
       "adrs": [],
       "competitor": "Framework matang menjaga coverage gate tetap hijau dan tidak menurunkan ambang tanpa catatan.",
-      "source": "selesai 2026-10-23: contract store test ditambahkan ke coverage core; baseline fitur baru (core/mcp/react/security/server/ssr/create-app) diperbarui eksplisit; test:coverage penuh hijau.",
+      "source": "selesai 2026-10-23: contract store test ditambahkan ke coverage core; baseline fitur baru (core/mcp/react/security/server/ssr/create-app) diperbarui eksplisit; exclude Redis deterministik; test:coverage penuh dan CI main hijau.",
       "strategic": true
     },
     {

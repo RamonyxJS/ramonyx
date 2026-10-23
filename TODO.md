@@ -38,7 +38,7 @@
 
 ### `p0-ci-coverage-core` — Hijaukan CI coverage @ramonyx/core (branch gate)
 
-*tema: quality · ukuran: M · status: done · sumber: selesai 2026-10-23: contract store test ditambahkan ke coverage core; baseline fitur baru (core/mcp/react/security/server/ssr/create-app) diperbarui eksplisit; test:coverage penuh hijau.*
+*tema: quality · ukuran: M · status: done · sumber: selesai 2026-10-23: contract store test ditambahkan ke coverage core; baseline fitur baru (core/mcp/react/security/server/ssr/create-app) diperbarui eksplisit; exclude Redis deterministik; test:coverage penuh dan CI main hijau.*
 
 - **Apa**: Naikkan branch coverage `@ramonyx/core` dari sekitar 82–84% ke ambang 88%, atau perbarui baseline secara eksplisit dengan alasan dan test tambahan. Pastikan seluruh gate `pnpm test:coverage` hijau, bukan hanya adapter-runtime.
 - **Kenapa penting untuk bersaing**: CI main masih gagal pada coverage core setelah coverage adapter-runtime diperbaiki. Tanpa gate hijau, klaim kualitas dan rilis berikutnya tidak punya sinyal yang dapat dipercaya.

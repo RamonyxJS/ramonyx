@@ -25,9 +25,24 @@
 - **TERBIT — 1.0.0** (2026-10-22): Node baseline stabil — auth/API/security/benchmark gate
   selesai; 16 paket @ 1.0.0 + provenance; GitHub Release 19 aset. Runtime Rust tetap
   eksperimental.
-- **PERSIAPAN — 1.1.0** (2026-10-23): AI-ready DX (project JSON, MCP `--app`, recipes,
-  `ramonyx ai init|sync`, eval harness) + welcome screen scaffold + dev/CLI fixes. Bump ke
-  **1.1.0**; gate docs/release lalu tag `v1.1.0`.
+- **TERBIT — 1.1.0** (2026-10-23): AI-ready DX (project JSON, MCP `--app`, recipes,
+  `ramonyx ai init|sync`, eval harness) + welcome screen scaffold + dev/CLI fixes. 16 paket
+  @ 1.1.0 dengan provenance; GitHub Release 19 aset; Worker `8f0a836d-116e-4a95-a75c-63bd18a20b2e`.
+  Runtime Rust tetap eksperimental; suite Rust masih gagal di fixture `FormData` (dicatat).
+
+## Hasil rilis 1.1.0 (2026-10-23)
+
+- Tag `v1.1.0` → release workflow **success**: **16 paket @ 1.1.0** dengan `dist.attestations` +
+  **GitHub Release 19 aset** (https://github.com/RamonyxJS/ramonyx/releases/tag/v1.1.0).
+- **Node gate**: 380 test Node hijau; `docs:validate`, `docs:no-leak`, `test:docs` (16 e2e), dan
+  `release:verify` (scaffold build/start/SSR, MCP handshake, runtime binary) lulus.
+- **Rust**: `cargo test --workspace` masih gagal di `compat_security` karena `FormData` belum
+  tersedia di shim runtime (`tests/compatibility/fixtures/security-subset.mjs`). Runtime tetap
+  eksperimental; `docs:stats --node-only` dipakai agar statistik Node tidak mencampur suite merah.
+- **Deploy**: Worker `ramonyx-site` versi
+  `8f0a836d-116e-4a95-a75c-63bd18a20b2e`; smoke live `/`, `/docs`, `/docs/recipes`,
+  `/docs/for-agents`, `/machine/stats.json` (v1.1.0), `/machine/recipes.json`, aset, dan API OK.
+- **Docs**: recipes index sekarang hidup di `/docs/recipes`; llms/no-leak memahami `index.md`.
 
 ## Persiapan 1.1.0 (2026-10-23)
 

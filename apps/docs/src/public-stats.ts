@@ -33,14 +33,14 @@ export const PUBLIC_STATS: PublicStats = {
       "@ramonyx/server",
       "@ramonyx/ssr",
       "@ramonyx/testing",
-      "create-ramonyx-app"
-    ]
+      "create-ramonyx-app",
+    ],
   },
   adrs: 8,
   docs: 32,
   tests: {
     node: 380,
     rust: 116,
-    e2eSpecFiles: 12
-  }
+    e2eSpecFiles: 12,
+  },
 };

@@ -130,11 +130,11 @@ const app = await createApp({ clientScript: "/assets/client.js" });
 const halaman = await app(new Request("http://uji/"));
 if (halaman.status !== 200) throw new Error("status halaman: " + halaman.status);
 const html = await halaman.text();
-if (!html.includes("Halo dari SSR Ramonyx")) throw new Error("konten SSR: " + html.slice(0, 200));
+if (!html.includes("Your app is live.")) throw new Error("konten SSR: " + html.slice(0, 200));
 if (!html.includes('id="ramonyx-payload"')) throw new Error("payload hydration tidak ada");
 if (!html.includes("window.__RAMONYX__")) throw new Error("window.__RAMONYX__ tidak ada");
 if (!html.includes('src="/assets/client.js"')) throw new Error("script klien tidak ada");
-if (!html.includes("Klik saya:")) throw new Error("counter SSR tidak dirender");
+if (!html.includes("Clicks:")) throw new Error("counter SSR tidak dirender");
 if (!html.includes('src="/assets/logo.svg"')) throw new Error("Image logo (fallback aset) tidak ada");
 if (halaman.headers.get("x-content-type-options") !== "nosniff") throw new Error("security header hilang");
 
@@ -152,7 +152,7 @@ form.set("nama", "Ramonyx");
 const aksi = await app(new Request("http://uji/", { method: "POST", body: form }));
 if (aksi.status !== 200) throw new Error("status action: " + aksi.status);
 const aksiHtml = await aksi.text();
-if (!aksiHtml.includes("Halo, Ramonyx!")) throw new Error("pesan action tidak tampil");
+if (!aksiHtml.includes("Hello, Ramonyx!")) throw new Error("pesan action tidak tampil");
 if (!aksiHtml.includes('"action":{"ok":true')) throw new Error("payload action tidak ada");
 
 const hilang = await app(new Request("http://uji/tidak-ada"));
@@ -254,12 +254,12 @@ test("app hasil scaffold: build --static (SSG + 404 HTML + aset)", async () => {
   assert.match(output, /dilewati/, "catch-all 404 dilaporkan dilewati (prerender: false)");
 
   const index = readFileSync(join(target, "dist/static/index.html"), "utf8");
-  assert.ok(index.includes("Halo dari SSR Ramonyx"), "index terprerender");
+  assert.ok(index.includes("Your app is live."), "index terprerender");
   assert.ok(index.includes("/assets/logo-"), "URL aset ber-hash di HTML prerender (ADR-0069)");
   assert.ok(index.includes("window.__RAMONYX__"), "payload hydration ada");
 
   const notFound = readFileSync(join(target, "dist/static/404.html"), "utf8");
-  assert.ok(notFound.includes("404 — Tidak ditemukan"), "404.html HTML (bukan JSON)");
+  assert.ok(notFound.includes("Halaman tidak ditemukan."), "404.html HTML (bukan JSON)");
 
   // Typed routes (ADR-0073): CLI menulis .ramonyx/routes.d.ts saat build/dev.
   const routeTypes = readFileSync(join(target, ".ramonyx/routes.ts"), "utf8");
@@ -304,7 +304,7 @@ const handler = mod.default.fetch;
 const halaman = await handler(new Request("http://edge.local/"));
 if (halaman.status !== 200) throw new Error("status halaman: " + halaman.status);
 const html = await halaman.text();
-if (!html.includes("Halo dari SSR Ramonyx")) throw new Error("SSR tidak jalan");
+if (!html.includes("Your app is live.")) throw new Error("SSR tidak jalan");
 if (!html.includes("/assets/client-")) throw new Error("script klien ber-hash hilang");
 if (!html.includes("/assets/logo-")) throw new Error("URL aset ber-hash hilang");
 
@@ -316,7 +316,7 @@ const form = new FormData();
 form.set("nama", "Edge");
 const aksi = await handler(new Request("http://edge.local/", { method: "POST", body: form }));
 if (aksi.status !== 200) throw new Error("status action: " + aksi.status);
-if (!(await aksi.text()).includes("Halo, Edge!")) throw new Error("action tidak jalan");
+if (!(await aksi.text()).includes("Hello, Edge!")) throw new Error("action tidak jalan");
 
 // Upload streaming di edge: body tanpa content-length yang melewati 1 MiB → 413.
 const boundary = "----edge";
@@ -695,7 +695,7 @@ test("preset deploy vercel/deno: artefak + fetch handler", () => {
 const response = await handler(new Request("http://uji/"));
 if (response.status !== 200) throw new Error("status: " + response.status);
 const html = await response.text();
-if (!html.includes("Halo dari SSR Ramonyx")) throw new Error("SSR tidak jalan");
+if (!html.includes("Your app is live.")) throw new Error("SSR tidak jalan");
 console.log("PRESET VERCEL OK");\n`,
   );
   assert.match(runNode("preset-smoke.mjs", target), /PRESET VERCEL OK/);

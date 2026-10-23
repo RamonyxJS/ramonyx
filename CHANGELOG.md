@@ -4,6 +4,17 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [2.0.1] — 2026-10-23
+
+### Fixed
+
+- `guardedFetch` no longer throws `ReferenceError: FormData is not defined` on runtimes without
+  the global `FormData` (Rust compatibility subset and edge-like environments).
+- `@ramonyx/adapter-runtime` coverage restored with direct listener/error/logger tests.
+- Coverage baselines updated for features added after the original gate (core, MCP project mode,
+  React action helpers, security FormData guard, server/SSR additions, create-app).
+- Machine stats now record 382 Node tests.
+
 ## [2.0.0] — 2026-10-23
 
 ### Breaking

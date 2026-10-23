@@ -35,6 +35,18 @@
 - **TERBIT — 2.0.0** (2026-10-23): hapus mode proxy dev lama dan `--dev-port`; ADR-0083;
   `createDevServer` mewajibkan `handler`. 16 paket @ 2.0.0 dengan provenance; GitHub Release
   19 aset; Worker `8f4d7a0d-e149-4b2e-b08a-05f58f31f2bd`.
+- **PERSIAPAN — 2.0.1** (2026-10-23): patch guard `FormData` di `guardedFetch`, test listener/
+  coverage adapter, baseline coverage fitur baru, dan statistik 382 test. Bump 16 paket ke
+  **2.0.1**; tag `v2.0.1`.
+
+## Persiapan 2.0.1 (2026-10-23)
+
+- Patch keamanan runtime/edge: `typeof FormData !== "undefined"` sebelum `instanceof`.
+- Coverage adapter-runtime + test logger/listener; gate `pnpm test:coverage` penuh hijau.
+- Rust `compat_security` lulus setelah guard; suite Rust tetap eksperimental.
+- Gate: lint, typecheck, test 382, coverage, docs:stats/generate/validate, test:docs, no-leak;
+  lalu release + verify + dry-run publish 16 tarball.
+- Deploy Worker setelah docs 2.0.1 dan smoke.
 
 ## Hasil rilis 2.0.0 (2026-10-23)
 

@@ -13,7 +13,7 @@ export interface PublicStats {
 }
 
 export const PUBLIC_STATS: PublicStats = {
-  version: "2.0.0",
+  version: "2.0.1",
   packages: {
     workspace: 15,
     npm: 16,

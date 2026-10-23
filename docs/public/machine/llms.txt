@@ -17,6 +17,7 @@ This site has a search endpoint: https://context7.com/api/v2/ask?siteKey=ask_893
 - [glossary.json](https://ramonyx.devmoon.net/machine/glossary.json): terms and concept map
 - [stats.json](https://ramonyx.devmoon.net/machine/stats.json): version, packages, public ADR count, test counts
 - [api.json](https://ramonyx.devmoon.net/machine/api.json) and [cli.json](https://ramonyx.devmoon.net/machine/cli.json): extracted API/CLI reference
+- [recipes.json](https://ramonyx.devmoon.net/machine/recipes.json): task recipes (page/loader, actions, APIs, auth, cache, testing, deploy)
 - [config.schema.json](https://ramonyx.devmoon.net/machine/config.schema.json): ramonyx.config.ts shape (verified by tests)
 
 ## Documentation
@@ -35,6 +36,15 @@ This site has a search endpoint: https://context7.com/api/v2/ask?siteKey=ask_893
 - [Internationalization](https://ramonyx.devmoon.net/docs/i18n/)
 - [Observability](https://ramonyx.devmoon.net/docs/observability/)
 - [Plugins](https://ramonyx.devmoon.net/docs/plugins/)
+- [Add an API route with validation](https://ramonyx.devmoon.net/docs/recipes/api-validation/)
+- [Add session auth](https://ramonyx.devmoon.net/docs/recipes/auth-session/)
+- [Cache loader data and invalidate it](https://ramonyx.devmoon.net/docs/recipes/cache-revalidate/)
+- [Deploy static or edge output](https://ramonyx.devmoon.net/docs/recipes/deploy-static-edge/)
+- [Add a dynamic route](https://ramonyx.devmoon.net/docs/recipes/dynamic-route/)
+- [Handle a form with a server action](https://ramonyx.devmoon.net/docs/recipes/form-action/)
+- [Recipes](https://ramonyx.devmoon.net/docs/recipes/index/)
+- [Add a page with a loader](https://ramonyx.devmoon.net/docs/recipes/page-loader/)
+- [Test a route in-process](https://ramonyx.devmoon.net/docs/recipes/testing/)
 - [Routing](https://ramonyx.devmoon.net/docs/routing/)
 - [Security Overview](https://ramonyx.devmoon.net/docs/security/overview/)
 - [Sessions & Auth](https://ramonyx.devmoon.net/docs/sessions-and-auth/)

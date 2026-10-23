@@ -49,6 +49,7 @@ function RailFoot() {
     <div className="sidebar-foot">
       <span className="sidebar-foot-label">Machine layer</span>
       <a href="machine/features.json">features.json</a>
+      <a href="machine/recipes.json">recipes.json</a>
       <a href="machine/llms.txt">llms.txt</a>
       <a href="docs/for-agents">MCP server</a>
     </div>

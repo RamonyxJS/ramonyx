@@ -1,0 +1,7 @@
+{
+  "id": "form-action",
+  "title": "Validate a form with a server action",
+  "prompt": "Add src/routes/notes/page.tsx. Export actionSchema that rejects empty text, an action that returns { message: `Saved ${text}` }, and a default React component. Keep the form usable without JavaScript.",
+  "recipe": "form-action",
+  "hidden": "hidden.test.ts"
+}

@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { generateApi } from "./api.ts";
 import { generateCli } from "./cli.ts";
 import { generateLlms } from "./llms.ts";
+import { generateRecipes } from "./recipes.ts";
 import { generateTodoMd } from "./todo.ts";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
@@ -18,6 +19,10 @@ console.log(`✓ api.json (${api.packages.length} paket)`);
 const cli = generateCli();
 writeFileSync(`${ROOT}docs/public/machine/cli.json`, `${JSON.stringify(cli, null, 2)}\n`);
 console.log(`✓ cli.json (${cli.commands.length} perintah, ${cli.flags.length} flag)`);
+
+const recipes = generateRecipes();
+writeFileSync(`${ROOT}docs/public/machine/recipes.json`, `${JSON.stringify(recipes, null, 2)}\n`);
+console.log(`✓ recipes.json (${recipes.recipes.length} resep)`);
 
 const llms = generateLlms();
 writeFileSync(`${ROOT}docs/public/machine/llms.txt`, llms.llms);

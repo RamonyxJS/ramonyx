@@ -48,6 +48,11 @@ export const NAV: readonly NavSection[] = [
         description: "Loaders, dependency graphs, revalidation, and shared stores.",
       },
       {
+        slug: "recipes",
+        label: "Recipes",
+        description: "Task-oriented guides: pages, actions, APIs, auth, cache, testing, deploy.",
+      },
+      {
         slug: "typed-routes",
         label: "Typed Routes",
         description: "Generated route maps and typed links through #routes.",

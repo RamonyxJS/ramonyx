@@ -22,6 +22,7 @@ import { fileURLToPath } from "node:url";
 import { generateApi } from "./api.ts";
 import { generateCli } from "./cli.ts";
 import { generateLlms } from "./llms.ts";
+import { generateRecipes } from "./recipes.ts";
 import { validateAgainstSchema } from "./schema.ts";
 import { generateTodoMd } from "./todo.ts";
 
@@ -67,6 +68,7 @@ const MACHINE_FILES: MachineFile[] = [
   { data: `${PUBLIC_MACHINE}/glossary.json`, schema: `${PUBLIC_MACHINE}/glossary.schema.json` },
   { data: `${PUBLIC_MACHINE}/api.json`, schema: `${PUBLIC_MACHINE}/api.schema.json` },
   { data: `${PUBLIC_MACHINE}/cli.json`, schema: `${PUBLIC_MACHINE}/cli.schema.json` },
+  { data: `${PUBLIC_MACHINE}/recipes.json`, schema: `${PUBLIC_MACHINE}/recipes.schema.json` },
   { data: `${PUBLIC_MACHINE}/stats.json`, schema: `${PUBLIC_MACHINE}/stats.schema.json` },
   { data: `${INTERNAL_MACHINE}/security.json`, schema: `${INTERNAL_MACHINE}/security.schema.json` },
   { data: "TODO.json", schema: `${INTERNAL_MACHINE}/todo.schema.json` },
@@ -392,6 +394,12 @@ if (
   JSON.stringify(stripGeneratedAt(generateCli()))
 ) {
   fail("kesegaran", `${PUBLIC_MACHINE}/cli.json tidak segar — jalankan pnpm docs:generate`);
+}
+if (
+  JSON.stringify(stripGeneratedAt(readJson(`${PUBLIC_MACHINE}/recipes.json`))) !==
+  JSON.stringify(stripGeneratedAt(generateRecipes()))
+) {
+  fail("kesegaran", `${PUBLIC_MACHINE}/recipes.json tidak segar — jalankan pnpm docs:generate`);
 }
 if (existsSync(`${ROOT}TODO.json`)) {
   checkFresh("kesegaran", "TODO.md", generateTodoMd(readJson("TODO.json") as never));

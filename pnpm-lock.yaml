@@ -387,6 +387,9 @@ importers:
       '@ramonyx/compiler':
         specifier: workspace:*
         version: link:../compiler
+      '@ramonyx/core':
+        specifier: workspace:*
+        version: link:../core
       ramonyx:
         specifier: workspace:*
         version: link:../ramonyx

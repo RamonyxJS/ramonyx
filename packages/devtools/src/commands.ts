@@ -5,7 +5,7 @@
 // paket (lihat `load.ts`).
 
 import { type ChildProcess, spawn } from "node:child_process";
-import { existsSync, readFileSync, watch } from "node:fs";
+import { readFileSync, watch } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
@@ -24,7 +24,16 @@ import { generateRouteTypes, loadPageRoutes } from "@ramonyx/compiler";
 import { withMiddleware } from "@ramonyx/server";
 import { type FetchHandler, mergeHooks, type RamonyxConfig } from "ramonyx";
 
+import { type AiMode, runAi } from "./ai.ts";
 import { type CreateAppOptions, loadConfigFile, loadCreateApp, loadServerEntry } from "./load.ts";
+import {
+  checkProject,
+  createProjectManifest,
+  diagnosticFromError,
+  doctorReport,
+  readCliVersion,
+  routeEntries,
+} from "./project.ts";
 import {
   installPlugin,
   loadPluginRegistry,
@@ -46,6 +55,9 @@ Pemakaian:
                            Pasang plugin + verifikasi integritas/signature
   ramonyx remove <nama>    Hapus plugin + lock entry
   ramonyx doctor           Diagnostik konfigurasi & lingkungan
+  ramonyx routes           Daftar halaman + route API (manifest)
+  ramonyx check            Periksa config, entry, route, dan batas client/server
+  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP
   ramonyx version          Versi CLI
   ramonyx help             Bantuan ini
 
@@ -59,6 +71,11 @@ Opsi:
   --watch           (build/start) Bangun ulang atau restart server saat src/** berubah
   --registry <path|url>  (add/remove) Registry plugin JSON
   --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature
+  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)
+  --no-mcp          (ai) Jangan tulis konfigurasi MCP
+  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)
+  --dry-run         (ai) Laporkan aksi tanpa menulis
+  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin
 
 Konvensi:
   src/app.ts        mengekspor createApp(options?) → FetchHandler
@@ -76,17 +93,11 @@ interface Flags {
   readonly watch?: boolean;
   readonly registry?: string;
   readonly publicKey?: string;
-}
-
-function readVersion(): string {
-  try {
-    const manifest = JSON.parse(
-      readFileSync(new URL("../package.json", import.meta.url), "utf8"),
-    ) as { version?: string };
-    return manifest.version ?? "0.0.0";
-  } catch {
-    return "0.0.0";
-  }
+  readonly agents?: readonly string[];
+  readonly mcp?: boolean;
+  readonly force?: boolean;
+  readonly dryRun?: boolean;
+  readonly json?: boolean;
 }
 
 function parseArgs(argv: readonly string[]): {
@@ -106,6 +117,11 @@ function parseArgs(argv: readonly string[]): {
   let watch = false;
   let registry: string | undefined;
   let publicKey: string | undefined;
+  let agents: readonly string[] | undefined;
+  let mcp = true;
+  let force = false;
+  let dryRun = false;
+  let json = false;
   let help = false;
 
   const numeric = (value: string | undefined, flag: string): number => {
@@ -136,6 +152,27 @@ function parseArgs(argv: readonly string[]): {
         break;
       case "--watch":
         watch = true;
+        break;
+      case "--json":
+        json = true;
+        break;
+      case "--agents":
+        agents = (argv[++index] ?? "")
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0);
+        if (agents.length === 0) {
+          throw new Error("--agents butuh daftar (mis. claude,cursor)");
+        }
+        break;
+      case "--no-mcp":
+        mcp = false;
+        break;
+      case "--force":
+        force = true;
+        break;
+      case "--dry-run":
+        dryRun = true;
         break;
       case "--registry":
         registry = argv[++index];
@@ -179,6 +216,11 @@ function parseArgs(argv: readonly string[]): {
       watch,
       registry,
       publicKey,
+      agents,
+      mcp,
+      force,
+      dryRun,
+      json,
     },
     positionals,
     help,
@@ -549,19 +591,110 @@ async function commandDev(flags: Flags): Promise<number> {
 }
 
 async function commandDoctor(flags: Flags): Promise<number> {
-  const appDir = flags.appDir;
-  const { config, file } = await loadConfigFile(appDir, flags.configPath);
-  const pages = await loadPageRoutes({ dir: join(appDir, "src/routes") });
+  const manifest = await createProjectManifest(flags);
+  const report = doctorReport(manifest);
+  if (flags.json === true) {
+    console.log(JSON.stringify(report, null, 2));
+    return report.ok ? 0 : 1;
+  }
   const baris = [
-    `ramonyx CLI      ${readVersion()} (node ${process.version}, ${process.platform}/${process.arch})`,
-    `appDir           ${appDir}`,
-    `config           ${file ?? "(default — tidak ada ramonyx.config.ts)"} (port ${config.server.port}, host ${config.server.host}, strictValidation ${config.app.strictValidation})`,
-    `src/app.ts       ${existsSync(join(appDir, "src/app.ts")) ? "ada" : "TIDAK ADA — createApp() wajib diekspor"}`,
-    `src/routes       ${pages.length} halaman`,
-    `dist/client      ${existsSync(join(appDir, "dist/client", "ramonyx.assets.json")) ? "ada (manifest aset)" : "belum dibangun (`ramonyx build`)"}`,
+    `ramonyx CLI      ${manifest.framework.cli} (node ${manifest.framework.node}, ${manifest.framework.platform}/${manifest.framework.arch})`,
+    `appDir           ${manifest.appDir}`,
+    `config           ${manifest.config?.file ?? "(default — tidak ada ramonyx.config.ts)"} (port ${manifest.config?.server.port ?? "?"}, host ${manifest.config?.server.host ?? "?"}, strictValidation ${manifest.config?.app.strictValidation ?? "?"})`,
+    `entry            ${manifest.entry.file ?? "TIDAK ADA — buat src/app.ts atau src/server.ts"}`,
+    `src/routes       ${manifest.pages.length} halaman, ${manifest.api.length} route API`,
+    `dist/client      ${manifest.build.clientManifest ? "ada (manifest aset)" : "belum dibangun (`ramonyx build`)"}`,
   ];
   console.log(baris.join("\n"));
+  return report.ok ? 0 : 1;
+}
+
+async function commandRoutes(flags: Flags): Promise<number> {
+  const routes = await routeEntries(flags.appDir);
+  if (flags.json === true) {
+    console.log(
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          appDir: flags.appDir,
+          pages: routes.pages,
+          api: routes.api,
+        },
+        null,
+        2,
+      ),
+    );
+    return 0;
+  }
+  const baris = [`Routes (${flags.appDir})`];
+  for (const page of routes.pages) {
+    const tanda = [page.loader ? "loader" : "", page.action ? "action" : ""]
+      .filter((item) => item.length > 0)
+      .join("+");
+    baris.push(`  ${page.path.padEnd(32)} ${page.file}${tanda.length > 0 ? `  [${tanda}]` : ""}`);
+  }
+  for (const api of routes.api) {
+    baris.push(`  ${api.path.padEnd(32)} ${api.methods.join(",").padEnd(8)} ${api.file}`);
+  }
+  if (routes.pages.length === 0 && routes.api.length === 0) {
+    baris.push("  (tidak ada route — buat src/routes/page.tsx atau src/routes/api/*.ts)");
+  }
+  console.log(baris.join("\n"));
   return 0;
+}
+
+async function commandCheck(flags: Flags): Promise<number> {
+  const result = await checkProject(flags);
+  if (flags.json === true) {
+    console.log(JSON.stringify(result, null, 2));
+  } else {
+    if (result.diagnostics.length === 0) {
+      console.log("✓ check: config, entry, route, dan batas client/server valid");
+    } else {
+      for (const entry of result.diagnostics) {
+        const lokasi = entry.file === undefined ? "" : ` (${entry.file})`;
+        console.log(`${entry.severity}: ${entry.code}: ${entry.message}${lokasi}`);
+        if (entry.docs !== undefined) {
+          console.log(`  ${entry.docs}`);
+        }
+      }
+      console.log(
+        `\n${result.summary.errors} error, ${result.summary.warnings} warning — ${result.ok ? "OK" : "gagal"}`,
+      );
+    }
+  }
+  return result.ok ? 0 : 1;
+}
+
+async function commandAi(flags: Flags, positionals: readonly string[]): Promise<number> {
+  const mode = (positionals[0] ?? "init") as AiMode;
+  if (mode !== "init" && mode !== "sync") {
+    throw new Error(`ai: subperintah tidak dikenal "${mode}" (pakai init atau sync)`);
+  }
+  const result = await runAi({
+    mode,
+    appDir: flags.appDir,
+    ...(flags.agents === undefined ? {} : { agents: flags.agents }),
+    mcp: flags.mcp !== false,
+    force: flags.force === true,
+    dryRun: flags.dryRun === true,
+  });
+  if (flags.json === true) {
+    console.log(JSON.stringify(result, null, 2));
+    return result.ok ? 0 : 1;
+  }
+  console.log(`ramonyx ai ${mode} — ${result.appDir}`);
+  for (const file of result.files) {
+    const suffix = file.reason === undefined ? "" : ` (${file.reason})`;
+    console.log(`  ${file.action.padEnd(13)} ${file.path}${suffix}`);
+  }
+  if (result.mcp !== null) {
+    console.log(`  MCP: ${result.mcp.command.join(" ")}`);
+  }
+  for (const warning of result.warnings) {
+    console.warn(`  warning: ${warning}`);
+  }
+  return result.ok ? 0 : 1;
 }
 
 async function commandAdd(flags: Flags, positionals: readonly string[]): Promise<number> {
@@ -604,7 +737,7 @@ export async function runCli(argv: readonly string[]): Promise<number> {
     }
     switch (command) {
       case "version":
-        console.log(readVersion());
+        console.log(readCliVersion());
         return 0;
       case "build":
         return await commandBuild(flags);
@@ -614,6 +747,12 @@ export async function runCli(argv: readonly string[]): Promise<number> {
         return await commandDev(flags);
       case "doctor":
         return await commandDoctor(flags);
+      case "routes":
+        return await commandRoutes(flags);
+      case "check":
+        return await commandCheck(flags);
+      case "ai":
+        return await commandAi(flags, positionals);
       case "add":
         return await commandAdd(flags, positionals);
       case "remove":
@@ -624,7 +763,21 @@ export async function runCli(argv: readonly string[]): Promise<number> {
         return 1;
     }
   } catch (error) {
-    console.error(`error: ${error instanceof Error ? error.message : String(error)}`);
+    if (argv.includes("--json")) {
+      console.log(
+        JSON.stringify(
+          {
+            schemaVersion: 1,
+            ok: false,
+            diagnostics: [diagnosticFromError(error)],
+          },
+          null,
+          2,
+        ),
+      );
+    } else {
+      console.error(`error: ${error instanceof Error ? error.message : String(error)}`);
+    }
     return 1;
   }
 }

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-23T04:22:14.717Z",
+  "recipes": [
+    {
+      "id": "api-validation",
+      "title": "Add an API route with validation",
+      "summary": "Export HTTP methods from src/routes/api, validate params/query/body at the trust boundary, and return stable errors.",
+      "when": "A client or service needs JSON rather than HTML.",
+      "files": [
+        "src/routes/api/users/[id].ts"
+      ],
+      "verify": "ramonyx check --json && ramonyx routes --json",
+      "slug": "recipes/api-validation",
+      "docs": "docs/public/recipes/api-validation.md"
+    },
+    {
+      "id": "auth-session",
+      "title": "Add session auth",
+      "summary": "Store sessions server-side, rotate the session on login, and protect a route with a guard.",
+      "when": "You need login/logout and per-request user identity.",
+      "files": [
+        "src/routes/login/page.tsx",
+        "src/routes/account/page.tsx",
+        "src/app.ts"
+      ],
+      "verify": "ramonyx check --json",
+      "slug": "recipes/auth-session",
+      "docs": "docs/public/recipes/auth-session.md"
+    },
+    {
+      "id": "cache-revalidate",
+      "title": "Cache loader data and invalidate it",
+      "summary": "Opt into loader caching with revalidate/cacheTags, then invalidate by path or tag after a mutation.",
+      "when": "A read-heavy page can tolerate a short stale window.",
+      "files": [
+        "src/routes/products/page.tsx"
+      ],
+      "verify": "ramonyx check --json",
+      "slug": "recipes/cache-revalidate",
+      "docs": "docs/public/recipes/cache-revalidate.md"
+    },
+    {
+      "id": "deploy-static-edge",
+      "title": "Deploy static or edge output",
+      "summary": "Prerender static routes or build a fetch-handler bundle, then deploy the generated directory.",
+      "when": "You need a CDN/static host or an edge/serverless runtime instead of a Node process.",
+      "files": [
+        "dist/static",
+        "dist/edge/index.js"
+      ],
+      "verify": "ramonyx build --static && ramonyx build --target edge",
+      "slug": "recipes/deploy-static-edge",
+      "docs": "docs/public/recipes/deploy-static-edge.md"
+    },
+    {
+      "id": "dynamic-route",
+      "title": "Add a dynamic route",
+      "summary": "Map a URL segment or catch-all to a page, read params in the loader, and validate them.",
+      "when": "The URL contains an identifier, slug, or nested path.",
+      "files": [
+        "src/routes/blog/[slug]/page.tsx"
+      ],
+      "verify": "ramonyx routes --json && ramonyx check --json",
+      "slug": "recipes/dynamic-route",
+      "docs": "docs/public/recipes/dynamic-route.md"
+    },
+    {
+      "id": "form-action",
+      "title": "Handle a form with a server action",
+      "summary": "Validate FormData, mutate on the server, redirect or return a result, and keep no-JS submission working.",
+      "when": "A page needs a mutation without a separate JSON API endpoint.",
+      "files": [
+        "src/routes/notes/page.tsx"
+      ],
+      "verify": "ramonyx check --json && ramonyx dev",
+      "slug": "recipes/form-action",
+      "docs": "docs/public/recipes/form-action.md"
+    },
+    {
+      "id": "page-loader",
+      "title": "Add a page with a loader",
+      "summary": "Create a server-rendered page whose data is loaded on each request and embedded in the hydration payload.",
+      "when": "The page needs request-time data from a database, API, or environment.",
+      "files": [
+        "src/routes/page.tsx"
+      ],
+      "verify": "ramonyx check --json && ramonyx routes --json",
+      "slug": "recipes/page-loader",
+      "docs": "docs/public/recipes/page-loader.md"
+    },
+    {
+      "id": "testing",
+      "title": "Test a route in-process",
+      "summary": "Exercise the real handler with an in-memory host, assert SSR/API behavior, then add a browser check.",
+      "when": "You changed routes, loaders, actions, validation, or security limits.",
+      "files": [
+        "test/home.test.ts"
+      ],
+      "verify": "pnpm test",
+      "slug": "recipes/testing",
+      "docs": "docs/public/recipes/testing.md"
+    }
+  ]
+}

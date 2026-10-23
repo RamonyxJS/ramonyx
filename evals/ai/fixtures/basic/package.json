@@ -1,0 +1,8 @@
+{
+  "name": "ramonyx-ai-eval-fixture",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "ramonyx": "^1.0.0"
+  }
+}

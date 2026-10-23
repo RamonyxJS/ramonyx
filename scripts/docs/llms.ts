@@ -18,6 +18,7 @@ const MACHINE_FILES = [
   "glossary.json",
   "api.json",
   "cli.json",
+  "recipes.json",
   "stats.json",
   "config.schema.json",
 ] as const;
@@ -78,6 +79,7 @@ ${CONTEXT7_SEARCH_SECTION}
 - [glossary.json](${SITE}/machine/glossary.json): terms and concept map
 - [stats.json](${SITE}/machine/stats.json): version, packages, public ADR count, test counts
 - [api.json](${SITE}/machine/api.json) and [cli.json](${SITE}/machine/cli.json): extracted API/CLI reference
+- [recipes.json](${SITE}/machine/recipes.json): task recipes (page/loader, actions, APIs, auth, cache, testing, deploy)
 - [config.schema.json](${SITE}/machine/config.schema.json): ramonyx.config.ts shape (verified by tests)
 
 ## Documentation

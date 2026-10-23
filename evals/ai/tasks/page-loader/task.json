@@ -1,0 +1,7 @@
+{
+  "id": "page-loader",
+  "title": "Add a page with a loader",
+  "prompt": "Add src/routes/page.tsx with a loader that returns { title: \"Hello\", path } where path is the request URL pathname. The default export must be a React component.",
+  "recipe": "page-loader",
+  "hidden": "hidden.test.ts"
+}

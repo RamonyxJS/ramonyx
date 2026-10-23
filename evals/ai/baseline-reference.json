@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "solution": "reference",
+  "tasks": [
+    {
+      "id": "fix-boundary",
+      "title": "Move a Node import out of a client page",
+      "ok": true,
+      "check": {
+        "ok": true,
+        "code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "hidden": {
+        "ok": true,
+        "code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "form-action",
+      "title": "Validate a form with a server action",
+      "ok": true,
+      "check": {
+        "ok": true,
+        "code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "hidden": {
+        "ok": true,
+        "code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "id": "page-loader",
+      "title": "Add a page with a loader",
+      "ok": true,
+      "check": {
+        "ok": true,
+        "code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "hidden": {
+        "ok": true,
+        "code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "total": 3
+  }
+}

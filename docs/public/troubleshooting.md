@@ -16,6 +16,18 @@ anchor from the error message.
 
 Fix the value; unknown keys are kept (config pass-through) and are not the cause.
 
+## RMX-APP-1 — missing server entry
+
+The CLI/check could not find `src/app.ts` (must export `createApp(options?)`) or `src/server.ts`
+(must export `createHandler(options?)`). Create the missing entry, or pass the correct app
+directory with `--app`.
+
+## RMX-CHECK-1 — unexpected check failure
+
+`ramonyx check` failed before it could classify the problem. The message is the original error;
+run `ramonyx doctor` and check the config/route files. This usually means a module threw while
+being imported.
+
 ## RMX-ROUTES-1 — can't read the routes directory
 
 The compiler cannot read `src/routes` (missing directory or permissions). Create

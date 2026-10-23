@@ -1,0 +1,7 @@
+{
+  "id": "fix-boundary",
+  "title": "Move a Node import out of a client page",
+  "prompt": "src/routes/panel/page.tsx imports node:fs and runs ramonyx check. Make the page client-safe without breaking the route (the page may stay trivial). Run ramonyx check --json and keep the page module export.",
+  "recipe": "page-loader",
+  "hidden": "hidden.test.ts"
+}

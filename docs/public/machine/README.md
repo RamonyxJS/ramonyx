@@ -10,6 +10,7 @@ Structured facts for humans and agents, generated from the **public** documentat
 | `adrs.json` | Public architecture decisions (one-line decision + relations) |
 | `glossary.json` | Terms and concept map |
 | `api.json` / `cli.json` / `config.schema.json` | Extracted API, CLI, and config reference |
+| `recipes.json` | Task recipes generated from `docs/public/recipes/*.md` |
 | `llms.txt` / `llms-full.txt` | Agent index and full public corpus |
 
 Everything here is validated in CI: schemas, evidence paths (public only), ADR index, freshness, and

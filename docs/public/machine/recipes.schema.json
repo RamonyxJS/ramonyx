@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ramonyx recipes index (generated)",
+  "description": "Indeks resep task-oriented dari docs/public/recipes/*.md (frontmatter), digenerate oleh pnpm docs:generate (scripts/docs/recipes.ts).",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "recipes"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "minLength": 10 },
+    "recipes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "summary", "when", "files", "verify", "slug", "docs"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string", "minLength": 3 },
+          "summary": { "type": "string", "minLength": 10 },
+          "when": { "type": "string", "minLength": 10 },
+          "files": { "type": "array", "items": { "type": "string", "minLength": 3 } },
+          "verify": { "type": "string", "minLength": 3 },
+          "slug": { "type": "string", "pattern": "^recipes/[a-z0-9-]+$" },
+          "docs": { "type": "string", "pattern": "^docs/public/recipes/.+\\.md$" }
+        }
+      }
+    }
+  }
+}

@@ -14,7 +14,40 @@ ramonyx start --watch    # restart the server when src/** changes
 ramonyx add <name> --registry <path|url>  # verified plugin install + lock
 ramonyx remove <name>    # remove plugin + lock entry
 ramonyx doctor           # config + routes + build diagnostics
+ramonyx routes           # page + API route manifest
+ramonyx check            # config, entry, routes, client/server boundaries
+ramonyx ai init          # AGENTS.md + thin adapters + MCP config
+ramonyx ai sync          # update the managed block/config without touching user prose
 ramonyx version | help
+```
+
+`doctor`, `routes`, `check`, and `ai` accept `--json` for agents and CI. JSON output is stable and
+does not include timestamps:
+
+```bash
+ramonyx routes --json
+ramonyx check --json
+ramonyx doctor --json
+```
+
+`check --json` returns diagnostics with a stable code and a troubleshooting link:
+
+```json
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "appDir": "/app",
+  "summary": { "errors": 1, "warnings": 0 },
+  "diagnostics": [
+    {
+      "code": "RMX-BUILD-1",
+      "severity": "error",
+      "message": "Impor \"node:fs\" di modul klien tidak diizinkan (node-builtin). ...",
+      "file": "src/routes/panel/page.tsx",
+      "docs": "https://ramonyx.devmoon.net/docs/troubleshooting/#rmx-build-1"
+    }
+  ]
+}
 ```
 
 ## Flags
@@ -30,6 +63,11 @@ ramonyx version | help
 | `--watch` | build/start | Build: rebuild on changes (debounced, safe queue). Start: restart a supervised server process with clean shutdown. |
 | `--registry <path\|url>` | add/remove | Plugin registry JSON (or `RAMONYX_PLUGIN_REGISTRY`) |
 | `--public-key <path>` | add | Ed25519 public key PEM (or `RAMONYX_PLUGIN_PUBLIC_KEY`) |
+| `--agents <list>` | ai | Adapters: `claude,cursor,copilot,opencode` (default: all) |
+| `--no-mcp` | ai | Do not write MCP client configuration |
+| `--force` | ai | Overwrite existing files, including `AGENTS.md` without a managed marker |
+| `--dry-run` | ai | Report actions without writing |
+| `--json` | doctor/routes/check/ai | Machine-readable output (stable schema, no timestamps) |
 
 ## Conventions
 
@@ -64,10 +102,38 @@ ramonyx build --target edge --app examples/shop
 ramonyx build --watch --app examples/shop
 ```
 
-## Doctor
+## Doctor, routes, and check
 
-`ramonyx doctor` prints the CLI/Node versions, resolved config, whether `src/app.ts` exists, the
-number of pages, and whether `dist/client` has a manifest. Use it before filing an issue.
+`ramonyx doctor` prints the CLI/Node versions, resolved config, the resolved entry
+(`src/server.ts` or `src/app.ts`), route counts, and whether `dist/client` has a manifest. Use it
+before filing an issue or before an agent starts work.
+
+`ramonyx routes` prints the page/API manifest: path, source file, loader/action flags, API methods,
+and middleware. It does not open a server. `--json` is the agent-facing form.
+
+`ramonyx check` validates config, the server entry, page/API route exports, and client/server
+boundaries. It is intentionally static and does not replace `pnpm typecheck` or `ramonyx build`.
+Exit code is `1` when an error diagnostic is present. Codes are the stable `RMX-*` codes documented
+in [Troubleshooting](troubleshooting.md).
+
+## Agent setup
+
+`ramonyx ai init` writes an `AGENTS.md` managed block from the project manifest and, optionally,
+thin adapters for Claude Code, Cursor, GitHub Copilot, and OpenCode. It also writes project MCP
+configs (`.mcp.json`, `.cursor/mcp.json`, `opencode.json`) with the MCP package **pinned to the
+project's `ramonyx` version** — never `@latest`.
+
+```bash
+ramonyx ai init
+ramonyx ai init --agents claude,cursor --dry-run
+ramonyx ai sync              # refresh the managed block + MCP command
+ramonyx ai sync --json       # { schemaVersion, ok, mcp, files, warnings }
+```
+
+`AGENTS.md` is canonical; `CLAUDE.md`, `.cursor/rules/ramonyx.mdc`,
+`.github/copilot-instructions.md`, and `.opencode/skills/ramonyx/SKILL.md` are short pointers to it.
+Files you already wrote are skipped unless `--force`; `--dry-run` writes nothing. Run
+`ramonyx check --json` afterwards to verify the app itself.
 
 ## Devtools
 

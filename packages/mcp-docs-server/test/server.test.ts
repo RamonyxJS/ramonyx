@@ -8,9 +8,14 @@ import { fileURLToPath } from "node:url";
 import { createMcpServer, type McpServer, resolveDocsRoot, runStdioServer } from "../src/index.ts";
 
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "docs");
+const appFixture = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "app");
 
 function server(): McpServer {
   return createMcpServer({ docsRoot: fixtures, version: "9.9.9" });
+}
+
+function projectServer(): McpServer {
+  return createMcpServer({ docsRoot: fixtures, version: "9.9.9", appRoot: appFixture });
 }
 
 function kirim(mcp: McpServer, msg: unknown): Record<string, unknown> {
@@ -224,6 +229,106 @@ test("resources: list memuat machine + halaman; read machine JSON & markdown; ur
 
   const templates = kirim(mcp, { jsonrpc: "2.0", id: 12, method: "resources/templates/list" });
   assert.deepEqual(templates.result, { resourceTemplates: [] });
+});
+
+test("mode proyek: tools statis, route manifest, detail route, recipe, API search", () => {
+  const mcp = projectServer();
+  const list = kirim(mcp, { jsonrpc: "2.0", id: 20, method: "tools/list" });
+  const names = (list.result as { tools: { name: string }[] }).tools
+    .map((tool) => tool.name)
+    .sort();
+  assert.deepEqual(names, [
+    "get_feature_status",
+    "get_page",
+    "get_project_context",
+    "get_recipe",
+    "get_route",
+    "get_rules",
+    "list_adrs",
+    "list_routes",
+    "search_api",
+    "search_docs",
+  ]);
+
+  const context = hasilTool(mcp, "get_project_context", {});
+  const data = context.structuredContent as {
+    entry: string;
+    configFile: string;
+    pages: { path: string }[];
+    api: { path: string }[];
+    warnings: string[];
+  };
+  assert.equal(data.entry, "src/app.ts");
+  assert.equal(data.configFile, "ramonyx.config.ts");
+  assert.deepEqual(
+    data.pages.map((page) => page.path),
+    ["/", "/about", "/blog/[slug]"],
+  );
+  assert.deepEqual(
+    data.api.map((route) => route.path),
+    ["/api/health", "/api/users/[id]"],
+  );
+  assert.deepEqual(data.warnings, []);
+
+  const routes = hasilTool(mcp, "list_routes", { query: "health" });
+  assert.match(teksDari(routes), /\/api\/health/);
+  assert.doesNotMatch(teksDari(routes), /\/blog/);
+
+  const blog = hasilTool(mcp, "get_route", { path: "blog/[slug]" });
+  const blogData = blog.structuredContent as {
+    routes: { file: string; loader: boolean; layouts: string[]; middleware: string[] }[];
+  };
+  assert.equal(blogData.routes[0]?.file, "src/routes/blog/[slug]/page.tsx");
+  assert.equal(blogData.routes[0]?.loader, true);
+  assert.deepEqual(blogData.routes[0]?.layouts, ["src/routes/layout.tsx"]);
+  assert.deepEqual(blogData.routes[0]?.middleware, ["src/routes/middleware.ts"]);
+
+  const api = hasilTool(mcp, "get_route", { path: "/api/health", kind: "api" });
+  assert.match(teksDari(api), /GET, POST/);
+
+  const missing = hasilTool(mcp, "get_route", { path: "/missing" });
+  assert.equal(missing.isError, true);
+  assert.match(teksDari(missing), /list_routes/);
+
+  const recipe = hasilTool(mcp, "get_recipe", { id: "page-loader" });
+  assert.match(teksDari(recipe), /Add a page with a loader/);
+  const recipeSearch = hasilTool(mcp, "get_recipe", { query: "loader" });
+  assert.match(teksDari(recipeSearch), /src\/routes\/page\.tsx/);
+
+  const symbols = hasilTool(mcp, "search_api", { query: "createHandler" });
+  const apiData = symbols.structuredContent as {
+    results: { name: string; package: string; kind: string }[];
+  };
+  assert.deepEqual(apiData.results[0], {
+    package: "@ramonyx/server",
+    name: "createHandler",
+    kind: "value",
+    source: "packages/server/src/index.ts",
+    version: "9.9.9",
+  });
+});
+
+test("mode proyek: resource manifest + server tanpa --app tetap docs-only", () => {
+  const mcp = projectServer();
+  const list = kirim(mcp, { jsonrpc: "2.0", id: 21, method: "resources/list" });
+  const uris = (list.result as { resources: { uri: string }[] }).resources.map(
+    (resource) => resource.uri,
+  );
+  assert.ok(uris.includes("ramonyx://project/manifest"));
+
+  const manifest = kirim(mcp, {
+    jsonrpc: "2.0",
+    id: 22,
+    method: "resources/read",
+    params: { uri: "ramonyx://project/manifest" },
+  });
+  const text = (manifest.result as { contents: { text: string }[] }).contents[0]?.text ?? "";
+  assert.match(text, /mcp-project-fixture/);
+  assert.match(text, /src\/routes\/api\/health\.ts/);
+
+  const docsOnly = server();
+  assert.equal(docsOnly.project, undefined);
+  assert.equal(docsOnly.tools.length, 5);
 });
 
 test("runStdioServer: baris diproses berurutan, notifikasi tanpa output, sisa buffer di-flush", async () => {

@@ -15,7 +15,9 @@ export type ErrorCode =
   | "RMX-ROUTES-5"
   | "RMX-BUILD-1"
   | "RMX-BUILD-2"
-  | "RMX-EDGE-1";
+  | "RMX-EDGE-1"
+  | "RMX-APP-1"
+  | "RMX-CHECK-1";
 
 /** Tautan anchor untuk sebuah kode error. */
 export function docsUrl(code: ErrorCode): string {

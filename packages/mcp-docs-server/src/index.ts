@@ -8,9 +8,12 @@
 // Tidak didukung: HTTP/SSE transport, prompts, sampling, subscriptions, roots, batching.
 
 import { createDocsIndex, type DocsIndex, MACHINE_FILES, resolveDocsRoot } from "./docs.ts";
+import { type ProjectContext, type ProjectRoute, scanProject } from "./project.ts";
 
 export type { DocEntry, DocHit, DocsIndex, MachineName } from "./docs.ts";
 export { createDocsIndex, resolveDocsRoot } from "./docs.ts";
+export type { ProjectContext, ProjectRoute } from "./project.ts";
+export { scanProject } from "./project.ts";
 
 /** Versi protokol MCP yang dipakai sebagai default (versi klien di-echo saat handshake). */
 export const MCP_PROTOCOL_VERSION = "2025-06-18";
@@ -22,6 +25,13 @@ export interface McpServerOptions {
   readonly moduleUrl?: string;
   /** Versi server (info handshake). */
   readonly version?: string;
+  /**
+   * Mode proyek: direktori aplikasi Ramonyx. Bila diisi, tools `get_project_context`,
+   * `list_routes`, `get_route`, `get_recipe`, `search_api` dan resource
+   * `ramonyx://project/manifest` ikut tersedia. Pemindaian **statis** (tidak mengeksekusi kode
+   * pengguna); validasi mendalam tetap `ramonyx check`.
+   */
+  readonly appRoot?: string;
 }
 
 interface ToolDefinition {
@@ -144,8 +154,103 @@ const TOOLS: readonly ToolDefinition[] = [
   },
 ];
 
+const PROJECT_TOOLS: readonly ToolDefinition[] = [
+  {
+    name: "get_project_context",
+    title: "Konteks proyek Ramonyx",
+    description:
+      "Ringkasan proyek aktif (mode --app): package, versi ramonyx, config, entry, jumlah route, dan peringatan. Pindai statis; jalankan `ramonyx check --json` untuk validasi.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "list_routes",
+    title: "Daftar route proyek",
+    description:
+      "Daftar halaman dan route API proyek (path, file, loader/action, method, middleware). Filter opsional berdasarkan path/file dan jenis.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Filter path atau file (substring, opsional)" },
+        kind: {
+          type: "string",
+          enum: ["page", "api"],
+          description: "Batasi ke halaman atau route API (opsional)",
+        },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "get_route",
+    title: "Detail satu route",
+    description:
+      "Detail route berdasarkan path URL (mis. `/blog/[slug]` atau `/api/health`). Kembalikan file, ekspor loader/action, method API, layout, dan middleware.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Path route, dengan atau tanpa leading slash" },
+        kind: {
+          type: "string",
+          enum: ["page", "api"],
+          description: "Opsional bila path yang sama ada di halaman dan API",
+        },
+      },
+      required: ["path"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "get_recipe",
+    title: "Resep tugas Ramonyx",
+    description:
+      "Baca resep task-oriented dari docs (recipes/<id>). Berikan `id` (mis. `form-action`) atau `query` untuk mencari resep yang cocok.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "ID resep, mis. `page-loader` (opsional)" },
+        query: { type: "string", description: "Kata kunci resep (opsional bila id kosong)" },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "search_api",
+    title: "Cari API framework",
+    description:
+      "Cari nilai/tipe API publik dari machine layer api.json berdasarkan nama simbol, package, atau sumber.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Nama simbol/package (substring)" },
+        limit: {
+          type: "integer",
+          minimum: 1,
+          maximum: 100,
+          description: "Maksimum hasil (default 20)",
+        },
+      },
+      required: ["query"],
+      additionalProperties: false,
+    },
+  },
+];
+
 function teksField(value: unknown): string {
   return typeof value === "string" ? value : "";
+}
+
+function routeLine(route: ProjectRoute): string {
+  if (route.kind === "api") {
+    return `- \`${route.path}\` — API ${route.methods?.join("/") || "?"} — \`${route.file}\``;
+  }
+  const tanda = [route.loader ? "loader" : "", route.action ? "action" : ""]
+    .filter((item) => item.length > 0)
+    .join("+");
+  return `- \`${route.path}\` — \`${route.file}\`${tanda.length > 0 ? ` [${tanda}]` : ""}`;
 }
 
 function cocok(haystack: string, needle: string): boolean {
@@ -159,9 +264,17 @@ export function createMcpServer(options: McpServerOptions = {}) {
   const index: DocsIndex = createDocsIndex(
     resolveDocsRoot({ ...options, explicit: options.docsRoot }),
   );
+  const project: ProjectContext | undefined =
+    options.appRoot === undefined
+      ? undefined
+      : scanProject(options.appRoot, {
+          ...(options.version === undefined ? {} : { serverVersion: options.version }),
+        });
+  const tools: readonly ToolDefinition[] =
+    project === undefined ? TOOLS : [...TOOLS, ...PROJECT_TOOLS];
   const serverInfo = {
     name: "ramonyx-docs",
-    title: "Ramonyx Docs",
+    title: project === undefined ? "Ramonyx Docs" : "Ramonyx Docs + Project",
     version: options.version ?? "0.0.0",
   };
 
@@ -169,7 +282,12 @@ export function createMcpServer(options: McpServerOptions = {}) {
     "Dokumentasi Ramonyx (framework full-stack TypeScript + runtime Rust eksperimental). Alur: " +
     "`search_docs` → `get_page` untuk halaman; `get_feature_status` untuk status/bukti fitur; " +
     "`get_rules` untuk aturan menulis aplikasi; `list_adrs` untuk keputusan arsitektur. " +
-    "Resource `ramonyx://machine/*` menyediakan berkas machine layer mentah (stats/features/rules/adrs/…).";
+    "Resource `ramonyx://machine/*` menyediakan berkas machine layer mentah (stats/features/rules/adrs/…)." +
+    (project === undefined
+      ? ""
+      : " Mode proyek aktif: `get_project_context` → `list_routes`/`get_route` untuk peta aplikasi, " +
+        "`get_recipe` untuk langkah tugas, `search_api` untuk simbol API. Pemindaian proyek statis; " +
+        "untuk validasi jalankan `ramonyx check --json` dan `ramonyx routes --json`.");
 
   function toolCall(id: unknown, params: unknown): Record<string, unknown> {
     const p = (typeof params === "object" && params !== null ? params : {}) as Record<
@@ -298,6 +416,209 @@ export function createMcpServer(options: McpServerOptions = {}) {
       return ok(id, teks(text, { query: query || null, adrs }));
     }
 
+    if (project !== undefined) {
+      if (name === "get_project_context") {
+        const nama = project.package.name ?? "(tanpa package.json)";
+        const baris = [
+          `# Proyek Ramonyx: ${nama}`,
+          `Root: \`${project.root}\``,
+          `Package: ${project.package.name ?? "?"} ${project.package.version ?? ""}`.trim(),
+          `ramonyx: ${project.ramonyxVersion ?? "tidak dideklarasikan"}`,
+          `Config: ${project.configFile ?? "(default)"}`,
+          `Entry: ${project.entry ?? "(tidak ditemukan)"}`,
+          `Route: ${project.pages.length} halaman, ${project.api.length} API`,
+        ];
+        if (project.warnings.length > 0) {
+          baris.push("", "Peringatan:", ...project.warnings.map((warning) => `- ${warning}`));
+        }
+        if (project.pages.length > 0) {
+          baris.push("", "Halaman:", ...project.pages.slice(0, 100).map(routeLine));
+          if (project.pages.length > 100) {
+            baris.push(`- … ${project.pages.length - 100} halaman lagi (gunakan list_routes)`);
+          }
+        }
+        if (project.api.length > 0) {
+          baris.push("", "API:", ...project.api.slice(0, 100).map(routeLine));
+        }
+        baris.push("", "Validasi: `ramonyx check --json`; manifest CLI: `ramonyx routes --json`.");
+        return ok(id, teks(baris.join("\n"), project));
+      }
+
+      if (name === "list_routes") {
+        const query = teksField(args.query).toLowerCase();
+        const kind = teksField(args.kind);
+        const filter = (route: ProjectRoute): boolean => {
+          if (kind.length > 0 && route.kind !== kind) {
+            return false;
+          }
+          return (
+            query.length === 0 ||
+            route.path.toLowerCase().includes(query) ||
+            route.file.toLowerCase().includes(query)
+          );
+        };
+        const pages = project.pages.filter(filter);
+        const api = project.api.filter(filter);
+        const lines = [...pages.map(routeLine), ...api.map(routeLine)];
+        const text = lines.length === 0 ? "Tidak ada route yang cocok." : lines.join("\n");
+        return ok(id, teks(text, { query: query || null, kind: kind || null, pages, api }));
+      }
+
+      if (name === "get_route") {
+        const rawPath = teksField(args.path).trim();
+        if (rawPath.length === 0) {
+          return err(id, -32602, "get_route: argumen `path` (string) wajib.");
+        }
+        const wanted =
+          rawPath === "/" ? "/" : `/${rawPath.replace(/^\/+/, "").replace(/\/+$/, "")}`;
+        const kind = teksField(args.kind);
+        const found = [...project.pages, ...project.api].filter(
+          (route) => route.path === wanted && (kind.length === 0 || route.kind === kind),
+        );
+        if (found.length === 0) {
+          return ok(
+            id,
+            teks(
+              `Route "${wanted}" tidak ditemukan. Gunakan \`list_routes\` untuk melihat path yang tersedia.`,
+              { path: wanted, routes: [] },
+              true,
+            ),
+          );
+        }
+        const detail = found
+          .map((route) => {
+            const lines = [
+              `## ${route.kind === "page" ? "Halaman" : "API"} \`${route.path}\``,
+              `File: \`${route.file}\``,
+            ];
+            if (route.kind === "page") {
+              lines.push(
+                `Loader: ${route.loader ? "ya" : "tidak"}; Action: ${route.action ? "ya" : "tidak"}`,
+              );
+              if (route.layouts !== undefined && route.layouts.length > 0) {
+                lines.push(`Layout: ${route.layouts.map((file) => `\`${file}\``).join(", ")}`);
+              }
+              if (route.error !== null && route.error !== undefined) {
+                lines.push(`Error boundary: \`${route.error}\``);
+              }
+            } else {
+              lines.push(`Method: ${route.methods?.join(", ") || "(tidak ada ekspor method)"}`);
+            }
+            if (route.middleware !== undefined && route.middleware.length > 0) {
+              lines.push(`Middleware: ${route.middleware.map((file) => `\`${file}\``).join(", ")}`);
+            }
+            return lines.join("\n");
+          })
+          .join("\n\n");
+        return ok(id, teks(detail, { path: wanted, routes: found }));
+      }
+
+      if (name === "get_recipe") {
+        const idValue = teksField(args.id)
+          .replace(/^recipes\//, "")
+          .replace(/\.md$/, "");
+        const query = teksField(args.query);
+        let doc = null;
+        if (idValue.length > 0) {
+          doc = index.getDoc(`recipes/${idValue}`);
+        } else if (query.length > 0) {
+          const hit = index
+            .searchDocs(query, 50)
+            .find((entry) => entry.slug.startsWith("recipes/"));
+          doc = hit === undefined ? null : index.getDoc(hit.slug);
+        } else {
+          return err(id, -32602, "get_recipe: berikan `id` atau `query`.");
+        }
+        if (doc === null) {
+          const tersedia = index
+            .listDocs()
+            .filter((entry) => entry.slug.startsWith("recipes/") && entry.slug !== "recipes")
+            .map((entry) => `- \`${entry.slug.replace(/^recipes\//, "")}\` — ${entry.title}`)
+            .join("\n");
+          return ok(
+            id,
+            teks(
+              `Resep tidak ditemukan.${tersedia.length > 0 ? `\n\nResep tersedia:\n${tersedia}` : ""}`,
+              undefined,
+              true,
+            ),
+          );
+        }
+        return ok(
+          id,
+          teks(doc.text, {
+            slug: doc.slug,
+            title: doc.title,
+            id: doc.slug.replace(/^recipes\//, ""),
+          }),
+        );
+      }
+
+      if (name === "search_api") {
+        const query = teksField(args.query);
+        if (query.length === 0) {
+          return err(id, -32602, "search_api: argumen `query` (string) wajib.");
+        }
+        const raw = index.readMachine("api");
+        let packages: readonly Record<string, unknown>[] = [];
+        if (raw !== null) {
+          try {
+            const parsed = JSON.parse(raw.text) as { packages?: unknown };
+            packages = Array.isArray(parsed.packages)
+              ? (parsed.packages as Record<string, unknown>[])
+              : [];
+          } catch {
+            packages = [];
+          }
+        }
+        const limit = typeof args.limit === "number" ? Math.trunc(args.limit) : 20;
+        const hasil: {
+          package: string;
+          name: string;
+          kind: "value" | "type";
+          source: string;
+          version: string | null;
+        }[] = [];
+        for (const pkg of packages) {
+          const packageName = teksField(pkg.name);
+          const source = teksField(pkg.source);
+          const version = typeof pkg.version === "string" ? pkg.version : null;
+          for (const kind of ["values", "types"] as const) {
+            const values = Array.isArray(pkg[kind]) ? (pkg[kind] as unknown[]) : [];
+            for (const value of values) {
+              const symbol = teksField(value);
+              if (cocok(symbol, query) || cocok(packageName, query) || cocok(source, query)) {
+                hasil.push({
+                  package: packageName,
+                  name: symbol,
+                  kind: kind === "values" ? "value" : "type",
+                  source,
+                  version,
+                });
+              }
+            }
+          }
+        }
+        hasil.sort(
+          (a, b) =>
+            a.name.localeCompare(b.name) ||
+            a.package.localeCompare(b.package) ||
+            a.kind.localeCompare(b.kind),
+        );
+        const potong = hasil.slice(0, Math.max(1, Math.min(100, limit)));
+        const text =
+          potong.length === 0
+            ? `Tidak ada API yang cocok dengan "${query}".`
+            : potong
+                .map(
+                  (entry) =>
+                    `- \`${entry.name}\` (${entry.kind}) — ${entry.package}@${entry.version ?? "?"} — \`${entry.source}\``,
+                )
+                .join("\n");
+        return ok(id, teks(text, { query, results: potong }));
+      }
+    }
+
     return err(id, -32602, `Tool tidak dikenal: "${name}". Lihat tools/list.`);
   }
 
@@ -321,6 +642,15 @@ export function createMcpServer(options: McpServerOptions = {}) {
         mimeType: "text/markdown",
       });
     }
+    if (project !== undefined) {
+      items.push({
+        uri: "ramonyx://project/manifest",
+        name: "project/manifest.json",
+        title: "Manifest proyek (statis)",
+        mimeType: "application/json",
+        description: "Peta package/config/entry/route proyek aktif",
+      });
+    }
     return items;
   }
 
@@ -330,6 +660,24 @@ export function createMcpServer(options: McpServerOptions = {}) {
       unknown
     >;
     const uri = teksField(p.uri);
+    if (uri === "ramonyx://project/manifest") {
+      if (project === undefined) {
+        return err(
+          id,
+          -32602,
+          "Resource proyek tidak tersedia; jalankan server dengan `--app <dir>`.",
+        );
+      }
+      return ok(id, {
+        contents: [
+          {
+            uri,
+            mimeType: "application/json",
+            text: JSON.stringify(project, null, 2),
+          },
+        ],
+      });
+    }
     if (uri.startsWith("ramonyx://machine/")) {
       const name = uri.slice("ramonyx://machine/".length);
       const berkas = index.readMachine(name);
@@ -398,7 +746,7 @@ export function createMcpServer(options: McpServerOptions = {}) {
       case "logging/setLevel":
         return ok(id, {});
       case "tools/list":
-        return ok(id, { tools: TOOLS });
+        return ok(id, { tools });
       case "tools/call":
         return toolCall(id, pesan.params);
       case "resources/list":
@@ -435,7 +783,8 @@ export function createMcpServer(options: McpServerOptions = {}) {
     handleLine,
     handleMessage,
     index,
-    tools: TOOLS,
+    tools,
+    project,
     serverInfo,
     instructions,
   };

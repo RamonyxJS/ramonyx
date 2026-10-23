@@ -14,19 +14,22 @@ import { runStdioServer } from "./index.ts";
 const USAGE = `ramonyx-mcp-docs — MCP docs server Ramonyx (stdio)
 
 Pemakaian:
-  ramonyx-mcp-docs [--docs <dir>]
+  ramonyx-mcp-docs [--docs <dir>] [--app <dir>]
 
 Opsi:
   --docs <dir>   Root repo Ramonyx atau direktori docs/ (default: deteksi otomatis
                  dari cwd, lalu snapshot docs yang dibundel di paket; env: RAMONYX_DOCS_DIR)
+  --app <dir>    Mode proyek: direktori aplikasi Ramonyx (env: RAMONYX_APP_DIR).
+                 Menambah tools get_project_context/list_routes/get_route/get_recipe/search_api.
   --version      Cetak versi
   --help, -h     Cetak bantuan ini
 
 Tools: search_docs · get_page · get_feature_status · get_rules · list_adrs
-Resource: ramonyx://machine/* · ramonyx://docs/<slug>
+       (+ mode proyek: get_project_context · list_routes · get_route · get_recipe · search_api)
+Resource: ramonyx://machine/* · ramonyx://docs/<slug> · ramonyx://project/manifest (mode proyek)
 
 Contoh pemasangan (Claude Code):
-  claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server
+  claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server --app .
 `;
 
 function versiPaket(): string {
@@ -43,6 +46,7 @@ function versiPaket(): string {
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
   let docs: string | undefined;
+  let app: string | undefined;
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     switch (arg) {
@@ -50,6 +54,13 @@ async function main(): Promise<number> {
         docs = args[++index];
         if (docs === undefined || docs.length === 0) {
           console.error("error: --docs butuh argumen direktori.");
+          return 1;
+        }
+        break;
+      case "--app":
+        app = args[++index];
+        if (app === undefined || app.length === 0) {
+          console.error("error: --app butuh argumen direktori.");
           return 1;
         }
         break;
@@ -67,7 +78,10 @@ async function main(): Promise<number> {
     }
   }
 
-  await runStdioServer({ docsRoot: docs ?? process.env.RAMONYX_DOCS_DIR });
+  await runStdioServer({
+    docsRoot: docs ?? process.env.RAMONYX_DOCS_DIR,
+    appRoot: app ?? process.env.RAMONYX_APP_DIR,
+  });
   return 0;
 }
 

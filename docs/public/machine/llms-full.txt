@@ -1975,7 +1975,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T09:21:13.944Z",
+  "generatedAt": "2026-10-23T04:22:12.990Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2188,10 +2188,17 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "pluginIntegrity",
         "removePlugin",
         "resolveRegistryEntry",
+        "runAi",
         "runCli",
         "verifyPluginTarball"
       ],
       "types": [
+        "AiAction",
+        "AiAgent",
+        "AiFileResult",
+        "AiMode",
+        "AiOptions",
+        "AiResult",
         "CreateApp",
         "CreateAppOptions",
         "InstallPluginOptions",
@@ -2213,13 +2220,16 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "createMcpHttpHandler",
         "createMcpServer",
         "resolveDocsRoot",
-        "runStdioServer"
+        "runStdioServer",
+        "scanProject"
       ],
       "types": [
         "DocEntry",
         "DocHit",
         "DocsIndex",
-        "MachineName"
+        "MachineName",
+        "ProjectContext",
+        "ProjectRoute"
       ],
       "reexports": []
     },
@@ -2485,8 +2495,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T09:21:25.687Z",
-  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
+  "generatedAt": "2026-10-23T04:22:14.695Z",
+  "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR (default :5173) → SSR (port dari config)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port server SSR\n  --dev-port <n>    Override port Vite (default 5173)\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
       "name": "dev",
@@ -2503,6 +2513,18 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     {
       "name": "doctor",
       "summary": "Diagnostik konfigurasi & lingkungan"
+    },
+    {
+      "name": "routes",
+      "summary": "Daftar halaman + route API (manifest)"
+    },
+    {
+      "name": "check",
+      "summary": "Periksa config, entry, route, dan batas client/server"
+    },
+    {
+      "name": "ai",
+      "summary": "init|sync: AGENTS.md + adapter agen + konfigurasi MCP"
     },
     {
       "name": "version",
@@ -2558,6 +2580,141 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "flag": "--public-key",
       "argument": "path",
       "description": "(add) Public key Ed25519 PEM untuk verifikasi signature"
+    },
+    {
+      "flag": "--agents",
+      "argument": "list",
+      "description": "(ai) Adapter: claude,cursor,copilot,opencode (default semua)"
+    },
+    {
+      "flag": "--no-mcp",
+      "argument": null,
+      "description": "(ai) Jangan tulis konfigurasi MCP"
+    },
+    {
+      "flag": "--force",
+      "argument": null,
+      "description": "(ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)"
+    },
+    {
+      "flag": "--dry-run",
+      "argument": null,
+      "description": "(ai) Laporkan aksi tanpa menulis"
+    },
+    {
+      "flag": "--json",
+      "argument": null,
+      "description": "(doctor/routes/check/ai) Output JSON yang dapat dibaca mesin"
+    }
+  ]
+}
+```
+
+## docs/public/machine/recipes.json
+
+```json
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-23T04:22:14.717Z",
+  "recipes": [
+    {
+      "id": "api-validation",
+      "title": "Add an API route with validation",
+      "summary": "Export HTTP methods from src/routes/api, validate params/query/body at the trust boundary, and return stable errors.",
+      "when": "A client or service needs JSON rather than HTML.",
+      "files": [
+        "src/routes/api/users/[id].ts"
+      ],
+      "verify": "ramonyx check --json && ramonyx routes --json",
+      "slug": "recipes/api-validation",
+      "docs": "docs/public/recipes/api-validation.md"
+    },
+    {
+      "id": "auth-session",
+      "title": "Add session auth",
+      "summary": "Store sessions server-side, rotate the session on login, and protect a route with a guard.",
+      "when": "You need login/logout and per-request user identity.",
+      "files": [
+        "src/routes/login/page.tsx",
+        "src/routes/account/page.tsx",
+        "src/app.ts"
+      ],
+      "verify": "ramonyx check --json",
+      "slug": "recipes/auth-session",
+      "docs": "docs/public/recipes/auth-session.md"
+    },
+    {
+      "id": "cache-revalidate",
+      "title": "Cache loader data and invalidate it",
+      "summary": "Opt into loader caching with revalidate/cacheTags, then invalidate by path or tag after a mutation.",
+      "when": "A read-heavy page can tolerate a short stale window.",
+      "files": [
+        "src/routes/products/page.tsx"
+      ],
+      "verify": "ramonyx check --json",
+      "slug": "recipes/cache-revalidate",
+      "docs": "docs/public/recipes/cache-revalidate.md"
+    },
+    {
+      "id": "deploy-static-edge",
+      "title": "Deploy static or edge output",
+      "summary": "Prerender static routes or build a fetch-handler bundle, then deploy the generated directory.",
+      "when": "You need a CDN/static host or an edge/serverless runtime instead of a Node process.",
+      "files": [
+        "dist/static",
+        "dist/edge/index.js"
+      ],
+      "verify": "ramonyx build --static && ramonyx build --target edge",
+      "slug": "recipes/deploy-static-edge",
+      "docs": "docs/public/recipes/deploy-static-edge.md"
+    },
+    {
+      "id": "dynamic-route",
+      "title": "Add a dynamic route",
+      "summary": "Map a URL segment or catch-all to a page, read params in the loader, and validate them.",
+      "when": "The URL contains an identifier, slug, or nested path.",
+      "files": [
+        "src/routes/blog/[slug]/page.tsx"
+      ],
+      "verify": "ramonyx routes --json && ramonyx check --json",
+      "slug": "recipes/dynamic-route",
+      "docs": "docs/public/recipes/dynamic-route.md"
+    },
+    {
+      "id": "form-action",
+      "title": "Handle a form with a server action",
+      "summary": "Validate FormData, mutate on the server, redirect or return a result, and keep no-JS submission working.",
+      "when": "A page needs a mutation without a separate JSON API endpoint.",
+      "files": [
+        "src/routes/notes/page.tsx"
+      ],
+      "verify": "ramonyx check --json && ramonyx dev",
+      "slug": "recipes/form-action",
+      "docs": "docs/public/recipes/form-action.md"
+    },
+    {
+      "id": "page-loader",
+      "title": "Add a page with a loader",
+      "summary": "Create a server-rendered page whose data is loaded on each request and embedded in the hydration payload.",
+      "when": "The page needs request-time data from a database, API, or environment.",
+      "files": [
+        "src/routes/page.tsx"
+      ],
+      "verify": "ramonyx check --json && ramonyx routes --json",
+      "slug": "recipes/page-loader",
+      "docs": "docs/public/recipes/page-loader.md"
+    },
+    {
+      "id": "testing",
+      "title": "Test a route in-process",
+      "summary": "Exercise the real handler with an in-memory host, assert SSR/API behavior, then add a browser check.",
+      "when": "You changed routes, loaders, actions, validation, or security limits.",
+      "files": [
+        "test/home.test.ts"
+      ],
+      "verify": "pnpm test",
+      "slug": "recipes/testing",
+      "docs": "docs/public/recipes/testing.md"
     }
   ]
 }
@@ -3086,7 +3243,40 @@ ramonyx start --watch    # restart the server when src/** changes
 ramonyx add <name> --registry <path|url>  # verified plugin install + lock
 ramonyx remove <name>    # remove plugin + lock entry
 ramonyx doctor           # config + routes + build diagnostics
+ramonyx routes           # page + API route manifest
+ramonyx check            # config, entry, routes, client/server boundaries
+ramonyx ai init          # AGENTS.md + thin adapters + MCP config
+ramonyx ai sync          # update the managed block/config without touching user prose
 ramonyx version | help
+```
+
+`doctor`, `routes`, `check`, and `ai` accept `--json` for agents and CI. JSON output is stable and
+does not include timestamps:
+
+```bash
+ramonyx routes --json
+ramonyx check --json
+ramonyx doctor --json
+```
+
+`check --json` returns diagnostics with a stable code and a troubleshooting link:
+
+```json
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "appDir": "/app",
+  "summary": { "errors": 1, "warnings": 0 },
+  "diagnostics": [
+    {
+      "code": "RMX-BUILD-1",
+      "severity": "error",
+      "message": "Impor \"node:fs\" di modul klien tidak diizinkan (node-builtin). ...",
+      "file": "src/routes/panel/page.tsx",
+      "docs": "https://ramonyx.devmoon.net/docs/troubleshooting/#rmx-build-1"
+    }
+  ]
+}
 ```
 
 ## Flags
@@ -3102,6 +3292,11 @@ ramonyx version | help
 | `--watch` | build/start | Build: rebuild on changes (debounced, safe queue). Start: restart a supervised server process with clean shutdown. |
 | `--registry <path\|url>` | add/remove | Plugin registry JSON (or `RAMONYX_PLUGIN_REGISTRY`) |
 | `--public-key <path>` | add | Ed25519 public key PEM (or `RAMONYX_PLUGIN_PUBLIC_KEY`) |
+| `--agents <list>` | ai | Adapters: `claude,cursor,copilot,opencode` (default: all) |
+| `--no-mcp` | ai | Do not write MCP client configuration |
+| `--force` | ai | Overwrite existing files, including `AGENTS.md` without a managed marker |
+| `--dry-run` | ai | Report actions without writing |
+| `--json` | doctor/routes/check/ai | Machine-readable output (stable schema, no timestamps) |
 
 ## Conventions
 
@@ -3136,10 +3331,38 @@ ramonyx build --target edge --app examples/shop
 ramonyx build --watch --app examples/shop
 ```
 
-## Doctor
+## Doctor, routes, and check
 
-`ramonyx doctor` prints the CLI/Node versions, resolved config, whether `src/app.ts` exists, the
-number of pages, and whether `dist/client` has a manifest. Use it before filing an issue.
+`ramonyx doctor` prints the CLI/Node versions, resolved config, the resolved entry
+(`src/server.ts` or `src/app.ts`), route counts, and whether `dist/client` has a manifest. Use it
+before filing an issue or before an agent starts work.
+
+`ramonyx routes` prints the page/API manifest: path, source file, loader/action flags, API methods,
+and middleware. It does not open a server. `--json` is the agent-facing form.
+
+`ramonyx check` validates config, the server entry, page/API route exports, and client/server
+boundaries. It is intentionally static and does not replace `pnpm typecheck` or `ramonyx build`.
+Exit code is `1` when an error diagnostic is present. Codes are the stable `RMX-*` codes documented
+in [Troubleshooting](troubleshooting.md).
+
+## Agent setup
+
+`ramonyx ai init` writes an `AGENTS.md` managed block from the project manifest and, optionally,
+thin adapters for Claude Code, Cursor, GitHub Copilot, and OpenCode. It also writes project MCP
+configs (`.mcp.json`, `.cursor/mcp.json`, `opencode.json`) with the MCP package **pinned to the
+project's `ramonyx` version** — never `@latest`.
+
+```bash
+ramonyx ai init
+ramonyx ai init --agents claude,cursor --dry-run
+ramonyx ai sync              # refresh the managed block + MCP command
+ramonyx ai sync --json       # { schemaVersion, ok, mcp, files, warnings }
+```
+
+`AGENTS.md` is canonical; `CLAUDE.md`, `.cursor/rules/ramonyx.mdc`,
+`.github/copilot-instructions.md`, and `.opencode/skills/ramonyx/SKILL.md` are short pointers to it.
+Files you already wrote are skipped unless `--force`; `--dry-run` writes nothing. Run
+`ramonyx check --json` afterwards to verify the app itself.
 
 ## Devtools
 
@@ -3401,6 +3624,10 @@ Agents get a machine-readable view of Ramonyx that is generated from **public** 
 - `machine/stats.json` — the single source of truth for numbers (version, packages, tests).
 - `machine/api.json`, `machine/cli.json`, `machine/config.schema.json` — extracted API/CLI/config
   references.
+- `machine/recipes.json` — task recipes with stable ids, affected files, and verification commands;
+  the full guides live in `recipes/` (start at [Recipes](recipes/index.md)).
+- `ramonyx routes --json` / `ramonyx check --json` / `ramonyx doctor --json` — project map and
+  stable diagnostics (`RMX-*` codes + troubleshooting links) from the CLI.
 
 ## Context7
 
@@ -3410,19 +3637,27 @@ Agents get a machine-readable view of Ramonyx that is generated from **public** 
 
 ## MCP server (stdio)
 
-The docs are also available as an MCP server with five tools — `search_docs`, `get_page`,
-`get_feature_status`, `get_rules`, `list_adrs`:
+The docs are also available as an MCP server. The docs-only baseline has five tools —
+`search_docs`, `get_page`, `get_feature_status`, `get_rules`, `list_adrs`. Add `--app <dir>` for
+project mode, which adds `get_project_context`, `list_routes`, `get_route`, `get_recipe`, and
+`search_api`:
+
+Run `ramonyx ai init` to write these configs with the package pinned to your project's `ramonyx`
+version. The examples use `1.0.0`; substitute your installed version (never `@latest`).
 
 ```bash
-# Claude Code
-claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server
+# Claude Code (project-aware)
+claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@1.0.0 --app .
 ```
 
 ```json
 // Cursor: .cursor/mcp.json
 {
   "mcpServers": {
-    "ramonyx-docs": { "command": "npx", "args": ["-y", "@ramonyx/mcp-docs-server"] }
+    "ramonyx-docs": {
+      "command": "npx",
+      "args": ["-y", "@ramonyx/mcp-docs-server@1.0.0", "--app", "."]
+    }
   }
 }
 ```
@@ -3433,7 +3668,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server
   "mcp": {
     "ramonyx-docs": {
       "type": "local",
-      "command": ["npx", "-y", "@ramonyx/mcp-docs-server"],
+      "command": ["npx", "-y", "@ramonyx/mcp-docs-server@1.0.0", "--app", "."],
       "enabled": true
     }
   }
@@ -3444,8 +3679,12 @@ The server ships a **snapshot of the public docs** at release time, so it works 
 repo. Inside the repository you can point it at the working tree:
 
 ```bash
-node --import ./tools/register.mjs packages/mcp-docs-server/src/cli.ts --docs docs/public
+node --import ./tools/register.mjs packages/mcp-docs-server/src/cli.ts --docs docs/public --app .
 ```
+
+Project mode is a **static scan**: it reads file names and exports, and does not execute your app.
+Use `ramonyx routes --json` / `ramonyx check --json` when you need the validated route manifest or
+diagnostics. Keep the MCP package pinned to the project's `ramonyx` version rather than `@latest`.
 
 ### HTTP transport
 
@@ -3473,7 +3712,8 @@ controlled proxy.
 
 `pnpm create ramonyx-app <dir> --with-agent-docs` writes `AGENTS.md` and
 `.opencode/skills/ramonyx/SKILL.md` in addition to the minimal app. Without the flag, the template
-contains no agent-specific files.
+contains no agent-specific files. After scaffolding (or in any existing app), run
+`ramonyx ai init` to regenerate the guide from the actual route map and write MCP configs.
 
 ## Ground rules for agents
 
@@ -3951,6 +4191,507 @@ JavaScript:
   plugin runs with the app's permissions.
 - No per-route/per-loader plugin hooks (pre-routing middleware + app hooks only).
 - Plugin order is config order; there is no explicit priority field.
+
+## docs/public/recipes/api-validation.md
+
+---
+recipe: api-validation
+title: Add an API route with validation
+summary: Export HTTP methods from src/routes/api, validate params/query/body at the trust boundary, and return stable errors.
+when: A client or service needs JSON rather than HTML.
+files: src/routes/api/users/[id].ts
+verify: ramonyx check --json && ramonyx routes --json
+---
+
+# Add an API route with validation
+
+```ts
+// src/routes/api/users/[id].ts
+import { route } from "ramonyx";
+
+const idSchema = {
+  "~standard": {
+    version: 1 as const,
+    vendor: "app",
+    validate: (input: unknown) => {
+      const id = String((input as { id?: unknown })?.id ?? "");
+      return /^[a-z0-9-]+$/.test(id)
+        ? { value: { id } }
+        : { issues: [{ message: "Invalid id", path: ["id"] }] };
+    },
+  },
+};
+
+export const GET = route({
+  params: idSchema,
+  handler: async ({ params, json }) => {
+    const user = await db.users.find(params.id);
+    return user === null ? json({ error: "Not found" }, 404) : json({ user });
+  },
+});
+
+export const DELETE = route({
+  params: idSchema,
+  handler: async ({ params, text }) => {
+    await db.users.delete(params.id);
+    return text("", 204);
+  },
+});
+```
+
+- File path maps to URL: `api/users/[id].ts` → `/api/users/:id`.
+- Exported `GET`/`POST`/`PUT`/`PATCH`/`DELETE`/`HEAD`/`OPTIONS` define allowed methods. Anything
+  else returns `405` with `Allow`.
+- `params`, `query`, and `body` accept Standard Schema; invalid input returns `400` with `issues`.
+- Validate at the boundary, then trust the validated value inside the handler. Never interpolate
+  raw input into SQL/shell/URLs.
+- Use `json()`/`text()` helpers so status and headers are explicit.
+
+## Verify
+
+```bash
+ramonyx routes --json   # methods + file for /api/users/[id]
+ramonyx check --json
+```
+
+Next: [Routing](../routing.md), [Security](../security/) and [Sessions & Auth](../sessions-and-auth.md).
+
+## docs/public/recipes/auth-session.md
+
+---
+recipe: auth-session
+title: Add session auth
+summary: Store sessions server-side, rotate the session on login, and protect a route with a guard.
+when: You need login/logout and per-request user identity.
+files: src/routes/login/page.tsx, src/routes/account/page.tsx, src/app.ts
+verify: ramonyx check --json
+---
+
+# Add session auth
+
+Ramonyx ships primitives; you own the account UI and email delivery. The examples below are a
+minimal store-backed setup.
+
+```ts
+// src/lib/auth.server.ts
+import { createKeyValueSessionStore, createSession, type KeyValueStore } from "@ramonyx/security";
+
+export function sessionFor(store: KeyValueStore, secret: string) {
+  return createSession({
+    secret,
+    store: createKeyValueSessionStore(store), // Redis/KV/DB in production
+    cookie: { secure: true, sameSite: "lax", path: "/" },
+  });
+}
+```
+
+```ts
+// src/routes/login/page.tsx
+import { verifyPassword } from "@ramonyx/security";
+import { sessionFor } from "../../lib/auth.server.ts";
+
+export async function action({ request, env }: { request: Request; env: { get(k: string): string | undefined } }) {
+  const form = await request.formData();
+  const username = String(form.get("username") ?? "");
+  const password = String(form.get("password") ?? "");
+  const user = await db.users.findByUsername(username);
+  const valid = user !== null && (await verifyPassword(password, user.passwordHash));
+  if (!valid) {
+    return { errors: { form: "Invalid username or password" }, status: 401 };
+  }
+  const session = sessionFor(store, env.get("SESSION_SECRET")!);
+  const cookie = await session.rotate(request, { user: user.id }); // prevents fixation
+  return { redirect: "/account", headers: { "set-cookie": cookie } };
+}
+```
+
+Protect a page in its loader:
+
+```ts
+import { HttpError } from "ramonyx";
+import { sessionFor } from "../../lib/auth.server.ts";
+
+export async function loader({ request, env }: { request: Request; env: { get(k: string): string | undefined } }) {
+  const session = sessionFor(store, env.get("SESSION_SECRET")!);
+  const data = await session.read(request);
+  if (data === null) {
+    throw new HttpError(401, "Login required");
+  }
+  return { user: data.user };
+}
+```
+
+Render a login link in `error.tsx` for `401`, or redirect in a middleware that reads the session
+before calling `next()`. (Loaders cannot return a redirect; use `HttpError`/middleware.)
+
+- Signed cookies are **not encrypted**; store only an opaque session id or non-secret data.
+- Rotate on login, revoke on logout, and use the same generic error for unknown user and bad password.
+- Add CSRF protection for state-changing forms (`csrfProtection()`), and rate-limit login/reset.
+- In-memory stores are for development; use a shared store for multi-instance deployments.
+
+Read [Sessions & Auth](../sessions-and-auth.md) and [State & Adapters](../state-and-adapters.md).
+
+## docs/public/recipes/cache-revalidate.md
+
+---
+recipe: cache-revalidate
+title: Cache loader data and invalidate it
+summary: Opt into loader caching with revalidate/cacheTags, then invalidate by path or tag after a mutation.
+when: A read-heavy page can tolerate a short stale window.
+files: src/routes/products/page.tsx
+verify: ramonyx check --json
+---
+
+# Cache loader data and invalidate it
+
+```tsx title="src/routes/products/page.tsx"
+export const revalidate = 60;               // seconds
+export const cacheTags = ["products"];
+
+export async function loader() {
+  return { products: await db.products.list() };
+}
+
+export async function action({ formData, revalidate }: {
+  formData: FormData;
+  revalidate: (options: { tags?: string[] }) => Promise<void>;
+}) {
+  await db.products.create({ name: String(formData.get("name") ?? "") });
+  await revalidate({ tags: ["products"] });
+  return { message: "Created" };
+}
+```
+
+- `revalidate` caches loader data for that many seconds and serves stale data while refreshing.
+- Caching is skipped for requests with cookies or a query string.
+- `cacheTags` lets you invalidate a group; `revalidate({ paths, tags })` also works from a loader,
+  action, or the cache instance.
+- Cached values are process-local by default. For multi-instance deployments, back the cache and
+  session/rate-limit stores with Redis/KV.
+- Do not combine loader caching with `defer()`; deferred data is for non-critical UI.
+
+## Verify
+
+Call the page twice and assert the loader count; invalidate a tag and assert the next request
+re-reads. See [Testing](testing.md) and [Data & Caching](../data-and-caching.md).
+
+## docs/public/recipes/deploy-static-edge.md
+
+---
+recipe: deploy-static-edge
+title: Deploy static or edge output
+summary: Prerender static routes or build a fetch-handler bundle, then deploy the generated directory.
+when: You need a CDN/static host or an edge/serverless runtime instead of a Node process.
+files: dist/static, dist/edge/index.js
+verify: ramonyx build --static && ramonyx build --target edge
+---
+
+# Deploy static or edge output
+
+## Static
+
+```bash
+ramonyx build --static
+# → dist/static
+```
+
+- Every static page is prerendered; dynamic routes need `getStaticPaths`.
+- A catch-all page with `metadata.status = 404` becomes `404.html`.
+- Upload `dist/static` to GitHub Pages, S3, Netlify, or any static host.
+
+## Edge / serverless
+
+```bash
+ramonyx build --target edge    # → dist/edge/index.js
+ramonyx build --target vercel  # → dist/vercel
+ramonyx build --target deno    # → dist/deno
+```
+
+The artifact exports the standard fetch contract:
+
+```js
+export const fetch = (request, env) => handler(request);
+export default { fetch };
+```
+
+- Pages, API routes, actions, middleware, and the asset map are bundled together.
+- Platform bindings arrive in `env` and are exposed as `env.get(name)`.
+- `node:*` imports are rejected in the edge bundle (except platform shims). Move server-only code
+  behind bindings or to a Node deployment.
+
+## Verify
+
+```bash
+ramonyx check --json
+ramonyx build --static
+ramonyx build --target edge
+# serve dist/static locally and request / and /404.html
+```
+
+Read [Deployment](../deployment.md) and [Troubleshooting](../troubleshooting.md) for target-specific
+errors (`RMX-EDGE-1`, `RMX-BUILD-*`).
+
+## docs/public/recipes/dynamic-route.md
+
+---
+recipe: dynamic-route
+title: Add a dynamic route
+summary: Map a URL segment or catch-all to a page, read params in the loader, and validate them.
+when: The URL contains an identifier, slug, or nested path.
+files: src/routes/blog/[slug]/page.tsx
+verify: ramonyx routes --json && ramonyx check --json
+---
+
+# Add a dynamic route
+
+Use `[param]` for one segment and `[...param]` for a catch-all:
+
+```
+src/routes/blog/[slug]/page.tsx   → /blog/:slug
+src/routes/docs/[...path]/page.tsx → /docs/*path
+```
+
+```tsx title="src/routes/blog/[slug]/page.tsx"
+import { HttpError, type PageLoaderContext } from "ramonyx";
+import type { PageProps } from "@ramonyx/react";
+
+export async function loader({ params }: PageLoaderContext<{ slug: string }>) {
+  const post = await findPost(params.slug);
+  if (post === null) {
+    throw new HttpError(404, "Post not found");
+  }
+  return { post };
+}
+
+export default function Post({ data }: PageProps<{ post: { title: string; body: string } }>) {
+  return (
+    <article>
+      <h1>{data.post.title}</h1>
+      <p>{data.post.body}</p>
+    </article>
+  );
+}
+```
+
+- Params are strings; validate/normalize them before using them in queries.
+- For static export, export `getStaticPaths()` with every allowed param object.
+- Route groups `(marketing)` do not appear in the URL. Keep folder names that start with `_` for
+  private files.
+
+## Verify
+
+```bash
+ramonyx routes --json   # check the generated path, e.g. /blog/[slug]
+ramonyx check --json
+```
+
+Next: [Routing](../routing.md) and [Typed Routes](../typed-routes.md).
+
+## docs/public/recipes/form-action.md
+
+---
+recipe: form-action
+title: Handle a form with a server action
+summary: Validate FormData, mutate on the server, redirect or return a result, and keep no-JS submission working.
+when: A page needs a mutation without a separate JSON API endpoint.
+files: src/routes/notes/page.tsx
+verify: ramonyx check --json && ramonyx dev
+---
+
+# Handle a form with a server action
+
+```tsx title="src/routes/notes/page.tsx"
+import type { PageActionContext } from "ramonyx";
+import type { PageProps } from "@ramonyx/react";
+
+export const actionSchema = {
+  "~standard": {
+    version: 1 as const,
+    vendor: "app",
+    validate: (input: unknown) => {
+      const name = String((input as Record<string, unknown>)?.text ?? "").trim();
+      return name.length > 0
+        ? { value: { text: name } }
+        : { issues: [{ message: "Text is required", path: ["text"] }] };
+    },
+  },
+};
+
+export async function action({ formData, revalidate }: PageActionContext) {
+  const text = String(formData.get("text") ?? "").trim();
+  await db.notes.create({ text });
+  await revalidate({ tags: ["notes"] });
+  return { message: "Saved" };
+}
+
+export default function Notes({ data, action }: PageProps<{ notes: { id: string; text: string }[] }>) {
+  return (
+    <main>
+      <form method="post">
+        <input name="text" aria-label="Note text" />
+        <button type="submit">Save</button>
+      </form>
+      {action?.message ? <p role="status">{action.message}</p> : null}
+      <ul>{data.notes.map((note) => <li key={note.id}>{note.text}</li>)}</ul>
+    </main>
+  );
+}
+```
+
+- The action POSTs to the same path; successful mutation re-renders the page with `action` result.
+- Return `{ redirect: "/notes" }` for PRG (`303`) or `{ errors, status }` on failure.
+- `actionSchema` runs before the action and returns `400` with field issues on invalid input.
+- Without JavaScript the browser submits normally; with JavaScript the client intercepts it.
+- Invalidate related loader data with `context.revalidate()` or `actionRevalidate`.
+
+## Verify
+
+```bash
+ramonyx check --json
+ramonyx dev
+```
+
+Submit the form with JavaScript disabled and enabled. Read [SSR & Hydration](../ssr-hydration.md)
+and [Data & Caching](../data-and-caching.md).
+
+## docs/public/recipes/index.md
+
+# Recipes
+
+Short, task-oriented guides for agents and humans. Each recipe has a stable id, the files it
+touches, and a verification command; the machine-readable index is
+`machine/recipes.json`.
+
+| Task | Recipe | Verify |
+| --- | --- | --- |
+| Server-rendered page with data | [Add a page with a loader](page-loader.md) | `ramonyx check --json` |
+| URL params and catch-all | [Add a dynamic route](dynamic-route.md) | `ramonyx routes --json` |
+| Form mutation with progressive enhancement | [Handle a form with a server action](form-action.md) | `ramonyx check --json` |
+| JSON endpoint with validation | [Add an API route with validation](api-validation.md) | `ramonyx routes --json` |
+| Login/logout and protected pages | [Add session auth](auth-session.md) | `ramonyx check --json` |
+| Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
+| In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |
+| Static/edge deployment | [Deploy static or edge output](deploy-static-edge.md) | `ramonyx build --static` |
+
+## Use with an agent
+
+```bash
+ramonyx routes --json     # current page/API map
+ramonyx check --json      # stable diagnostics + docs links
+```
+
+MCP clients can call `get_recipe` (project mode) or `get_page` with these slugs. Prefer the public
+docs over guessing; if a recipe does not fit, start from [Routing](../routing.md) and
+[SSR & Hydration](../ssr-hydration.md).
+
+## docs/public/recipes/page-loader.md
+
+---
+recipe: page-loader
+title: Add a page with a loader
+summary: Create a server-rendered page whose data is loaded on each request and embedded in the hydration payload.
+when: The page needs request-time data from a database, API, or environment.
+files: src/routes/page.tsx
+verify: ramonyx check --json && ramonyx routes --json
+---
+
+# Add a page with a loader
+
+Create `src/routes/page.tsx`:
+
+```tsx title="src/routes/page.tsx"
+import type { PageLoaderContext } from "ramonyx";
+import type { PageProps } from "@ramonyx/react";
+
+export async function loader({ request, env }: PageLoaderContext) {
+  const greeting = env.get("GREETING") ?? "Hello";
+  return { greeting, url: new URL(request.url).pathname };
+}
+
+export default function Home({ data }: PageProps<{ greeting: string; url: string }>) {
+  return (
+    <main>
+      <h1>{data.greeting}</h1>
+      <p>Rendered for {data.url}</p>
+    </main>
+  );
+}
+```
+
+- `loader` runs on the server for GET requests. Its return value must be JSON-serializable.
+- Import server-only code from `*.server.ts`; never import `node:*` from a page component.
+- Use `metadata` for the title and `HttpError(404, "…")` for missing data.
+
+## Verify
+
+```bash
+ramonyx routes --json   # the page appears with "loader": true
+ramonyx check --json    # config, entry, routes, client/server boundaries
+ramonyx dev             # request the page in a browser
+```
+
+Next: [Routing](../routing.md) and [SSR & Hydration](../ssr-hydration.md).
+
+## docs/public/recipes/testing.md
+
+---
+recipe: testing
+title: Test a route in-process
+summary: Exercise the real handler with an in-memory host, assert SSR/API behavior, then add a browser check.
+when: You changed routes, loaders, actions, validation, or security limits.
+files: test/home.test.ts
+verify: pnpm test
+---
+
+# Test a route in-process
+
+`@ramonyx/testing` runs your `FetchHandler` without ports or a browser:
+
+```ts
+// test/home.test.ts
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { createTestServerFromHandler } from "@ramonyx/testing";
+import { createApp } from "../src/app.ts";
+
+test("GET / renders SSR", async () => {
+  const server = await createTestServerFromHandler(await createApp());
+  try {
+    const response = await server.fetch("/");
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /Hello/);
+  } finally {
+    await server.close(); // always close: a leaked listener hangs node --test
+  }
+});
+
+test("POST /api/users rejects invalid body", async () => {
+  const server = await createTestServerFromHandler(await createApp());
+  try {
+    const response = await server.fetch("/api/users", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "" }),
+    });
+    assert.equal(response.status, 400);
+    const body = (await response.json()) as { issues: unknown[] };
+    assert.ok(body.issues.length > 0);
+  } finally {
+    await server.close();
+  }
+});
+```
+
+What to cover:
+
+- Routing: `200`, `404`, `405` + `Allow`.
+- Validation: invalid params/query/body → `400` with `issues`.
+- Actions: rendered result, errors, redirect (`303`), and no-JS form submission.
+- Cache: loader call counts and invalidation.
+- Limits/security: `413`, `503`, `Retry-After`, CSRF.
+
+Browser-level checks (hydration, soft navigation) belong in Playwright. Run `pnpm test` and
+`ramonyx check --json` before handing work off. See [Testing](../testing.md).
 
 ## docs/public/routing.md
 
@@ -4962,6 +5703,18 @@ anchor from the error message.
 | `server.host` | non-empty string |
 
 Fix the value; unknown keys are kept (config pass-through) and are not the cause.
+
+## RMX-APP-1 — missing server entry
+
+The CLI/check could not find `src/app.ts` (must export `createApp(options?)`) or `src/server.ts`
+(must export `createHandler(options?)`). Create the missing entry, or pass the correct app
+directory with `--app`.
+
+## RMX-CHECK-1 — unexpected check failure
+
+`ramonyx check` failed before it could classify the problem. The message is the original error;
+run `ramonyx doctor` and check the config/route files. This usually means a module threw while
+being imported.
 
 ## RMX-ROUTES-1 — can't read the routes directory
 

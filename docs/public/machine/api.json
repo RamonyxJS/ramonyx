@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-22T09:21:13.944Z",
+  "generatedAt": "2026-10-23T04:22:12.990Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -213,10 +213,17 @@
         "pluginIntegrity",
         "removePlugin",
         "resolveRegistryEntry",
+        "runAi",
         "runCli",
         "verifyPluginTarball"
       ],
       "types": [
+        "AiAction",
+        "AiAgent",
+        "AiFileResult",
+        "AiMode",
+        "AiOptions",
+        "AiResult",
         "CreateApp",
         "CreateAppOptions",
         "InstallPluginOptions",
@@ -238,13 +245,16 @@
         "createMcpHttpHandler",
         "createMcpServer",
         "resolveDocsRoot",
-        "runStdioServer"
+        "runStdioServer",
+        "scanProject"
       ],
       "types": [
         "DocEntry",
         "DocHit",
         "DocsIndex",
-        "MachineName"
+        "MachineName",
+        "ProjectContext",
+        "ProjectRoute"
       ],
       "reexports": []
     },

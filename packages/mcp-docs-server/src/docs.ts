@@ -29,6 +29,7 @@ export const MACHINE_FILES = {
   glossary: "glossary.json",
   api: "api.json",
   cli: "cli.json",
+  recipes: "recipes.json",
   "config-schema": "config.schema.json",
   llms: "llms.txt",
   "llms-full": "llms-full.txt",

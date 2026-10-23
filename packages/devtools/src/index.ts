@@ -1,3 +1,12 @@
+export type {
+  AiAction,
+  AiAgent,
+  AiFileResult,
+  AiMode,
+  AiOptions,
+  AiResult,
+} from "./ai.ts";
+export { runAi } from "./ai.ts";
 export { runCli } from "./commands.ts";
 export type { CreateApp, CreateAppOptions } from "./load.ts";
 export { loadConfigFile, loadCreateApp } from "./load.ts";

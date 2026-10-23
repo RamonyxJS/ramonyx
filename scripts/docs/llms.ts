@@ -42,8 +42,14 @@ function collectDocs(dir: string, found: string[] = []): string[] {
   return found;
 }
 
+function sourceFor(file: string): string {
+  return relative(join(ROOT, PUBLIC), file).split(sep).join("/");
+}
+
 function slugFor(file: string): string {
-  return relative(join(ROOT, PUBLIC), file).split(sep).join("/").replace(/\.md$/, "");
+  return sourceFor(file)
+    .replace(/\.md$/, "")
+    .replace(/\/index$/, "");
 }
 
 function titleOf(markdown: string): string {
@@ -116,7 +122,7 @@ ${docs.map((file) => `- [${titleOf(readFileSync(file, "utf8"))}](${SITE}/docs/${
     );
   }
   for (const file of docs) {
-    parts.push(`## docs/public/${slugFor(file)}.md`, "", readFileSync(file, "utf8").trimEnd(), "");
+    parts.push(`## docs/public/${sourceFor(file)}`, "", readFileSync(file, "utf8").trimEnd(), "");
   }
   return { llms, llmsFull: `${parts.join("\n")}\n` };
 }

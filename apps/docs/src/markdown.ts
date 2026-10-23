@@ -58,8 +58,8 @@ function escapeHtml(value: string): string {
  * Tulis ulang tautan dokumen relatif agar benar dari halaman mana pun. URL hasil bersifat
  * relatif terhadap `<base href>` (mis. `/ramonyx/`) — lihat ADR-0052.
  */
-export function rewriteDocLinks(markdown: string, slug: string): string {
-  const baseDir = slug.includes("/") ? slug.slice(0, slug.lastIndexOf("/")) : "";
+export function rewriteDocLinks(markdown: string, slug: string, baseDir?: string): string {
+  const sourceDir = baseDir ?? (slug.includes("/") ? slug.slice(0, slug.lastIndexOf("/")) : "");
   return markdown.replace(
     /\]\(([^()\s#]*)(#[^()\s]*)?\)/g,
     (match, target: string, hash: string | undefined) => {
@@ -72,11 +72,11 @@ export function rewriteDocLinks(markdown: string, slug: string): string {
       if (!target.endsWith(".md")) {
         return match;
       }
-      const resolved = posix.normalize(posix.join(baseDir, target));
+      const resolved = posix.normalize(posix.join(sourceDir, target));
       if (resolved.startsWith("..")) {
         return match;
       }
-      const tanpaExt = resolved.slice(0, -3);
+      const tanpaExt = resolved.slice(0, -3).replace(/\/index$/, "");
       return `](${DOC_BASE}${tanpaExt === "README" ? "" : tanpaExt}${hash ?? ""})`;
     },
   );
@@ -92,10 +92,15 @@ export function extractTitle(source: string, fallback: string): string {
   return fallback;
 }
 
-export function renderMarkdown(source: string, options: { slug?: string } = {}): RenderedDoc {
+export function renderMarkdown(
+  source: string,
+  options: { slug?: string; baseDir?: string } = {},
+): RenderedDoc {
   const tanpaFrontmatter = stripFrontmatter(source);
   const denganTautan =
-    options.slug === undefined ? tanpaFrontmatter : rewriteDocLinks(tanpaFrontmatter, options.slug);
+    options.slug === undefined
+      ? tanpaFrontmatter
+      : rewriteDocLinks(tanpaFrontmatter, options.slug, options.baseDir);
 
   const toc: TocItem[] = [];
   const dipakai = new Set<string>();

@@ -78,7 +78,7 @@ for (const doc of catalog) {
   await mkdir(dirname(target), { recursive: true });
   await writeFile(
     target,
-    `${CONTEXT7_MARKDOWN_SEARCH}\n\n${rewriteDocLinks(doc.text, doc.slug).trimEnd()}\n`,
+    `${CONTEXT7_MARKDOWN_SEARCH}\n\n${rewriteDocLinks(doc.text, doc.slug, doc.baseDir).trimEnd()}\n`,
   );
 }
 await writeFile(

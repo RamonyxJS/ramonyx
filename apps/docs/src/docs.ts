@@ -39,7 +39,11 @@ function collect(directory: string, found: string[] = []): string[] {
 }
 
 function slugFor(file: string): string {
-  return relative(docsDir, file).split(sep).join("/").replace(/\.md$/, "");
+  return relative(docsDir, file)
+    .split(sep)
+    .join("/")
+    .replace(/\.md$/, "")
+    .replace(/\/index$/, "");
 }
 
 /** Daftar dokumen publik terurut (judul dari heading pertama). */
@@ -67,14 +71,24 @@ export function readDoc(slug: string): LoadedDoc | null {
   if (!candidate.startsWith(docsDir + sep)) {
     return null;
   }
-  if (!existsSync(candidate) || !statSync(candidate).isFile()) {
+  const indexCandidate = resolve(docsDir, slug, "index.md");
+  if (!indexCandidate.startsWith(docsDir + sep)) {
     return null;
   }
-  const markdown = readFileSync(candidate, "utf8");
+  const file =
+    existsSync(candidate) && statSync(candidate).isFile()
+      ? candidate
+      : existsSync(indexCandidate) && statSync(indexCandidate).isFile()
+        ? indexCandidate
+        : null;
+  if (file === null) {
+    return null;
+  }
+  const markdown = readFileSync(file, "utf8");
   return {
     entry: { slug, title: extractTitle(markdown, slug) },
     markdown,
-    file: candidate,
+    file,
   };
 }
 
@@ -84,10 +98,15 @@ export async function loadCatalog(): Promise<CatalogDoc[]> {
   return listDocs().map((entry) => {
     const doc = readDoc(entry.slug);
     const text = doc?.markdown ?? "";
-    const rendered = renderMarkdown(text, { slug: entry.slug });
+    const sourceDir =
+      doc === null
+        ? ""
+        : dirname(relative(docsDir, doc.file).split(sep).join("/")).replace(/^\.$/, "");
+    const rendered = renderMarkdown(text, { slug: entry.slug, baseDir: sourceDir });
     return {
       slug: entry.slug,
       title: entry.title,
+      baseDir: sourceDir,
       html: rendered.html,
       text,
       toc: rendered.toc,

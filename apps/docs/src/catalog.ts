@@ -10,6 +10,8 @@ export interface CatalogEntry {
 }
 
 export interface CatalogDoc extends CatalogEntry {
+  /** Direktori sumber relatif terhadap `docs/public` (untuk tautan `.md`). */
+  readonly baseDir?: string;
   /** HTML hasil render markdown (dihitung di server). */
   readonly html: string;
   /** Markdown mentah (untuk pencarian isi di server). */

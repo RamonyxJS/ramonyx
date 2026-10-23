@@ -36,6 +36,9 @@ test("markdown: frontmatter dibuang, heading ber-id, blok kode ber-nama berkas",
   assert.match(html, /<table>/);
   assert.equal(extractTitle("# Halo\nisi", "fallback"), "Halo");
   assert.equal(extractTitle("---\nx: 1\n---\n\n# Judul\n", "fallback"), "Judul");
+
+  const indexLink = renderMarkdown("[Recipes](recipes/index.md)", { slug: "for-agents" });
+  assert.match(indexLink.html, /href="docs\/recipes"/, "tautan index.md memakai slug direktori");
 });
 
 test("katalog publik: hanya docs/public; slug internal tidak ada", () => {
@@ -44,6 +47,11 @@ test("katalog publik: hanya docs/public; slug internal tidak ada", () => {
   assert.ok(entries.some((entry) => entry.slug === "getting-started"));
   assert.ok(entries.some((entry) => entry.slug === "whats-included"));
   assert.ok(entries.some((entry) => entry.slug === "i18n"));
+  assert.ok(
+    entries.some((entry) => entry.slug === "recipes"),
+    "index.md → slug direktori",
+  );
+  assert.ok(!entries.some((entry) => entry.slug === "recipes/index"));
   assert.ok(!entries.some((entry) => entry.slug.startsWith("adr/")), "ADR bukan halaman docs");
   assert.ok(
     !entries.some((entry) => entry.slug.startsWith("engineering/")),
@@ -74,6 +82,12 @@ test("katalog publik: hanya docs/public; slug internal tidak ada", () => {
   const doc = readDoc("ssr-hydration");
   assert.ok(doc);
   assert.match(doc.markdown, /Hydration/);
+
+  const recipes = readDoc("recipes");
+  assert.ok(recipes);
+  assert.equal(recipes.entry.slug, "recipes");
+  assert.match(recipes.markdown, /# Recipes/);
+  assert.equal(recipes.file.endsWith("/recipes/index.md"), true);
 });
 
 test("pencarian katalog: judul diprioritaskan, excerpt isi, limit", () => {
@@ -126,6 +140,12 @@ test("app publik: landing, docs, legacy alias, machine publik, pencarian, 404", 
   assert.match(pageHtml, /Edit this page on GitHub/);
   assert.doesNotMatch(pageHtml, /href="docs\/\[\.\.\.slug\]/, "link tidak memakai pola rute");
   assert.match(pageHtml, /class="lewati" href="docs\/getting-started#isi"/);
+
+  const recipes = await app(new Request("http://uji/docs/recipes"));
+  assert.equal(recipes.status, 200, "index.md dilayani di /docs/recipes");
+  const recipesHtml = await recipes.text();
+  assert.match(recipesHtml, /Recipes<\/h1>/);
+  assert.match(recipesHtml, /href="docs\/recipes\/page-loader"/);
 
   // Alias lama tetap melayani dokumen publik.
   const legacy = await app(new Request("http://uji/dokumen/getting-started"));

@@ -78,17 +78,12 @@ if (existsSync(dist)) {
   const indeksPath = join(dist, "api", "indeks");
   if (existsSync(indeksPath)) {
     const indeks = JSON.parse(readFileSync(indeksPath, "utf8"));
-    // Setiap entri indeks wajib berupa halaman publik; slug yang HANYA ada di internal ditolak.
-    const slugInternal = new Set(
-      walk(internal, (p) => p.endsWith(".md")).map((p) =>
-        relative(internal, p).split("\\").join("/").replace(/\.md$/, ""),
-      ),
-    );
+    // Setiap entri indeks wajib berupa halaman publik (file datar atau `<slug>/index.md`).
+    const publicDocExists = (slug) =>
+      existsSync(join(publik, `${slug}.md`)) || existsSync(join(publik, slug, "index.md"));
     for (const entry of indeks) {
-      const berkasPublik = join(publik, `${entry.slug}.md`);
-      if (!existsSync(berkasPublik)) {
+      if (!publicDocExists(entry.slug)) {
         gagal(`slug non-publik di indeks pencarian: ${entry.slug}`);
-      } else if (slugInternal.has(entry.slug)) {
       }
     }
   }
@@ -100,7 +95,7 @@ if (existsSync(dist)) {
     for (const match of llms.matchAll(/docs\/([^\s)#]+)/g)) {
       const slug = (match[1] ?? "").replace(/\/$/, "").replace(/\.md$/, "");
       if (slug.length === 0) continue;
-      if (!existsSync(join(publik, `${slug}.md`))) {
+      if (!existsSync(join(publik, `${slug}.md`)) && !existsSync(join(publik, slug, "index.md"))) {
         gagal(`llms.txt menautkan halaman publik yang tidak ada: docs/${slug}`);
       }
     }

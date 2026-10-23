@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "version": "2.0.0",
-  "generatedAt": "2026-10-23T12:04:06.357Z",
-  "commit": "f1a1e746e3c036209e96c10c0feba054e620f3a9",
+  "generatedAt": "2026-10-23T12:06:48.025Z",
+  "commit": "ed216e94a4ff34ff3e49a19451648f00995b2c30",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,

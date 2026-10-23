@@ -7,13 +7,16 @@ Aplikasi [Ramonyx](https://github.com/ramonyx/ramonyx) — framework full-stack 
 ## Menjalankan
 
 ```bash
-pnpm install
+pnpm install   # atau: bun install / npm install
 pnpm dev       # Vite + HMR (http://localhost:5173) → SSR :3000
 pnpm build     # bundel klien (wajib sebelum start produksi)
 pnpm start     # http://127.0.0.1:3000 (NODE_ENV=production otomatis)
 ```
 
-Perintah memakai CLI **`ramonyx`** (`@ramonyx/devtools`): `ramonyx dev|build|start|doctor`.
+Dengan Bun: `bun run dev`, `bun run build`, `bun run start`. Perintah memakai CLI **`ramonyx`**
+(`@ramonyx/devtools`) yang terpasang **lokal** di `node_modules/.bin`. Untuk memanggil CLI di luar
+package script, gunakan runner package manager: `bunx ramonyx …`, `pnpm exec ramonyx …`, atau
+`npx ramonyx …`. `ramonyx …` tanpa runner hanya tersedia setelah instalasi global.
 
 ## Struktur
 

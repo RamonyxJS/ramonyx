@@ -6,7 +6,7 @@
 // - Berkas pengguna tidak ditimpa diam-diam: blok terkelola memakai marker; `--force` eksplisit.
 // - `--dry-run` melaporkan aksi tanpa menulis.
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -106,13 +106,63 @@ function pinnedVersion(appDir: string): string {
   return typeof cli?.version === "string" ? cli.version : "1.0.0";
 }
 
+type PackageManager = "bun" | "pnpm" | "npm" | "yarn";
+
+function detectPackageManager(appDir: string): PackageManager {
+  const pkg = readJson(join(appDir, "package.json"));
+  const declared = typeof pkg?.packageManager === "string" ? pkg.packageManager.split("@")[0] : "";
+  if (declared === "bun" || declared === "pnpm" || declared === "npm" || declared === "yarn") {
+    return declared;
+  }
+  if (existsSync(join(appDir, "bun.lock")) || existsSync(join(appDir, "bun.lockb"))) {
+    return "bun";
+  }
+  if (existsSync(join(appDir, "pnpm-lock.yaml"))) {
+    return "pnpm";
+  }
+  if (existsSync(join(appDir, "yarn.lock"))) {
+    return "yarn";
+  }
+  return "npm";
+}
+
 function packageScripts(appDir: string): string[] {
   const pkg = readJson(join(appDir, "package.json"));
   const scripts =
     typeof pkg?.scripts === "object" && pkg.scripts !== null
       ? (pkg.scripts as Record<string, unknown>)
       : {};
-  return ["dev", "build", "start", "test"].filter((name) => typeof scripts[name] === "string");
+  return ["dev", "build", "start", "test", "typecheck"].filter(
+    (name) => typeof scripts[name] === "string",
+  );
+}
+
+/** Perintah skrip yang benar untuk package manager proyek. */
+function runScript(manager: PackageManager, name: string): string {
+  switch (manager) {
+    case "bun":
+      return `bun run ${name}`;
+    case "pnpm":
+      return `pnpm ${name}`;
+    case "yarn":
+      return `yarn ${name}`;
+    default:
+      return `npm run ${name}`;
+  }
+}
+
+/** Panggil bin lokal; `ramonyx` telanjang tidak ada di PATH shell biasa. */
+function cliCommand(manager: PackageManager, args: string): string {
+  switch (manager) {
+    case "bun":
+      return `bunx ramonyx ${args}`;
+    case "pnpm":
+      return `pnpm exec ramonyx ${args}`;
+    case "yarn":
+      return `yarn ramonyx ${args}`;
+    default:
+      return `npx ramonyx ${args}`;
+  }
 }
 
 function agentsDoc(
@@ -123,21 +173,25 @@ function agentsDoc(
   const pkg = readJson(join(appDir, "package.json"));
   const name = typeof pkg?.name === "string" ? pkg.name : "Ramonyx app";
   const scripts = packageScripts(appDir);
+  const manager = detectPackageManager(appDir);
   const commandLines =
     scripts.length === 0
-      ? ["- `pnpm dev` — Vite + SSR (or your package manager equivalent)."]
+      ? [`- \`${runScript(manager, "dev")}\` — Vite + SSR.`]
       : [
-          `- \`${scripts.includes("dev") ? "pnpm dev" : "npm run dev"}\` — Vite + SSR.`,
+          `- \`${runScript(manager, "dev")}\` — Vite + SSR.`,
           ...(scripts.includes("build")
-            ? [`- \`${scripts.includes("dev") ? "pnpm" : "npm"} build\` — client + server build.`]
+            ? [`- \`${runScript(manager, "build")}\` — client + server build.`]
             : []),
           ...(scripts.includes("start")
             ? [
-                `- \`${scripts.includes("dev") ? "pnpm" : "npm"} start\` — production server (\`NODE_ENV=production\`).`,
+                `- \`${runScript(manager, "start")}\` — production server (\`NODE_ENV=production\`).`,
               ]
             : []),
           ...(scripts.includes("test")
-            ? [`- \`${scripts.includes("dev") ? "pnpm" : "npm"} test\` — application tests.`]
+            ? [`- \`${runScript(manager, "test")}\` — application tests.`]
+            : []),
+          ...(scripts.includes("typecheck")
+            ? [`- \`${runScript(manager, "typecheck")}\` — type-check.`]
             : []),
         ];
   const pages = routes?.pages.slice(0, 60) ?? [];
@@ -189,10 +243,10 @@ ${routeLines.join("\n")}
 ## Verification before claiming success
 
 \`\`\`bash
-ramonyx check --json     # config, entry, routes, client/server boundaries
-ramonyx routes --json    # current page/API manifest
-pnpm typecheck           # if the project has it
-pnpm test                # if the project has it
+${cliCommand(manager, "check --json")}    # config, entry, routes, client/server boundaries
+${cliCommand(manager, "routes --json")}   # current page/API manifest
+${scripts.includes("typecheck") ? `${runScript(manager, "typecheck")}                # if the project has it` : ""}
+${scripts.includes("test") ? `${runScript(manager, "test")}                     # if the project has it` : ""}
 \`\`\`
 
 ## Framework help
@@ -266,6 +320,8 @@ export async function runAi(options: AiOptions): Promise<AiResult> {
   const force = options.force === true;
   const useMcp = options.mcp !== false;
   const agents = normalizeAgents(options.agents);
+  const manager = detectPackageManager(appDir);
+  const checkCommand = cliCommand(manager, "check --json");
   const version = pinnedVersion(appDir);
   const command = useMcp ? ["npx", "-y", `${MCP_PACKAGE}@${version}`, "--app", "."] : null;
   const files: AiFileResult[] = [];
@@ -277,7 +333,7 @@ export async function runAi(options: AiOptions): Promise<AiResult> {
   } catch (error) {
     warnings.push(
       `Tidak dapat memindai route (${error instanceof Error ? error.message : String(error)}); ` +
-        "peta route memakai placeholder. Jalankan `ramonyx check --json` setelah memperbaiki config.",
+        `peta route memakai placeholder. Jalankan \`${checkCommand}\` setelah memperbaiki config.`,
     );
   }
 
@@ -377,7 +433,7 @@ export async function runAi(options: AiOptions): Promise<AiResult> {
   if (agents.includes("copilot")) {
     addNew(
       ".github/copilot-instructions.md",
-      "# Ramonyx app instructions\n\nRead `AGENTS.md` before changing this project. Key rules: server-only\nloaders/actions, validate input at the boundary, keep CSRF/security middleware, and verify with\n`ramonyx check --json` plus the project tests.\n",
+      `# Ramonyx app instructions\n\nRead \`AGENTS.md\` before changing this project. Key rules: server-only\nloaders/actions, validate input at the boundary, keep CSRF/security middleware, and verify with\n\`${checkCommand}\` plus the project tests.\n`,
     );
   }
   if (agents.includes("cursor")) {
@@ -389,7 +445,7 @@ export async function runAi(options: AiOptions): Promise<AiResult> {
   if (agents.includes("opencode")) {
     addNew(
       ".opencode/skills/ramonyx/SKILL.md",
-      "# Ramonyx skill\n\nUse this skill when working in a Ramonyx app.\n\n1. Read `AGENTS.md` and the target `src/routes/**` module.\n2. Keep reads in `loader` and mutations in `action`; validate at trust boundaries.\n3. Run `ramonyx check --json` and the relevant tests before claiming success.\n4. For framework questions, use MCP `search_docs`/`get_page`/`get_recipe` instead of guessing.\n",
+      `# Ramonyx skill\n\nUse this skill when working in a Ramonyx app.\n\n1. Read \`AGENTS.md\` and the target \`src/routes/**\` module.\n2. Keep reads in \`loader\` and mutations in \`action\`; validate at trust boundaries.\n3. Run \`${checkCommand}\` and the relevant tests before claiming success.\n4. For framework questions, use MCP \`search_docs\`/\`get_page\`/\`get_recipe\` instead of guessing.\n`,
     );
     mergeJson("opencode.json", "mcp");
   }

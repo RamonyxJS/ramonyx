@@ -3,6 +3,11 @@
 The `ramonyx` CLI (from `@ramonyx/devtools`) runs the app: dev server, build, production start, and
 diagnostics.
 
+`ramonyx` is installed as a **project-local** binary. Run it through your package manager:
+`pnpm dev` / `bun run dev` / `npm run dev` for scripts, or `pnpm exec ramonyx …` / `bunx ramonyx …` /
+`npx ramonyx …` for one-off commands. A bare `ramonyx …` only works after a global install, because
+the shell does not include `node_modules/.bin`.
+
 ```bash
 ramonyx dev              # Vite + HMR (default :5173) → SSR (port from config)
 ramonyx build            # client bundle → dist/client (run before production start)

@@ -10,8 +10,12 @@ pnpm install
 pnpm dev        # Vite (5173) → SSR (3000)
 ```
 
+With Bun, the same app runs as `bun install && bun run dev`; with npm, `npm install && npm run dev`.
 Open <http://localhost:5173>. The scaffold ships with a page, an API route, validation, actions,
 security middleware, and hydration — all runnable.
+
+`ramonyx` is a project-local binary. For a one-off command use `pnpm exec ramonyx …`,
+`bunx ramonyx …`, or `npx ramonyx …`; a bare `ramonyx` is not on the shell `PATH`.
 
 ## Project layout
 

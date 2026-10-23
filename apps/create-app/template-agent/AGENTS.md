@@ -5,10 +5,15 @@ routing, data loading, auth, or security-sensitive code.
 
 ## Commands
 
-- `pnpm dev` — Vite HMR + SSR on the port in `ramonyx.config.ts`.
-- `pnpm build` — client bundle + server build.
-- `pnpm start` — production server (`NODE_ENV=production`).
-- `pnpm test` — application tests.
+Use the package manager that installed the project (`pnpm`, `bun`, or `npm`):
+
+- `pnpm dev` / `bun run dev` / `npm run dev` — Vite HMR + SSR on the port in `ramonyx.config.ts`.
+- `pnpm build` / `bun run build` / `npm run build` — client bundle + server build.
+- `pnpm start` / `bun run start` / `npm run start` — production server (`NODE_ENV=production`).
+- `pnpm test` / `bun run test` / `npm test` — application tests.
+
+The `ramonyx` binary is local to `node_modules/.bin`, not on the shell `PATH`. For one-off CLI
+commands use `pnpm exec ramonyx …`, `bunx ramonyx …`, or `npx ramonyx …`.
 
 ## Project map
 

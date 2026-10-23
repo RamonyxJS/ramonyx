@@ -15,7 +15,9 @@ Agents get a machine-readable view of Ramonyx that is generated from **public** 
 - `machine/recipes.json` — task recipes with stable ids, affected files, and verification commands;
   the full guides live in `recipes/` (start at [Recipes](recipes/index.md)).
 - `ramonyx routes --json` / `ramonyx check --json` / `ramonyx doctor --json` — project map and
-  stable diagnostics (`RMX-*` codes + troubleshooting links) from the CLI.
+  stable diagnostics (`RMX-*` codes + troubleshooting links) from the CLI. In an app, invoke the
+  local binary as `bunx ramonyx …`, `pnpm exec ramonyx …`, or `npx ramonyx …`; a bare `ramonyx`
+  is not on the shell `PATH`.
 
 ## Context7
 

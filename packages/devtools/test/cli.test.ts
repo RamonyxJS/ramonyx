@@ -262,6 +262,14 @@ test("ai init/sync: AGENTS.md kanonik, adapter tipis, MCP dipin ke versi proyek"
   assert.equal(synced.ok, true);
   assert.ok(synced.files.every((file) => file.action === "unchanged"));
 
+  // Package manager terdeteksi dari lockfile: perintah agen memakai bunx/bun, bukan PATH global.
+  writeFileSync(join(fixture, "bun.lock"), "\n");
+  const bunSync = runCliIn(fixture, ["ai", "sync", "--json"]);
+  assert.equal(bunSync.code, 0);
+  const bunAgents = readFileSync(join(fixture, "AGENTS.md"), "utf8");
+  assert.match(bunAgents, /bun run dev/);
+  assert.match(bunAgents, /bunx ramonyx check --json/);
+
   // Berkas pengguna tanpa marker tidak ditimpa tanpa --force.
   writeFileSync(join(fixture, "AGENTS.md"), "# My custom agent guide\n");
   const protectedSync = runCliIn(fixture, ["ai", "sync", "--json"]);

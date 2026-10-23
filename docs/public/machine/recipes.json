@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T15:43:33.832Z",
+  "generatedAt": "2026-10-23T15:54:01.189Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -52,6 +52,21 @@
       "verify": "ramonyx build --static && ramonyx build --target edge",
       "slug": "recipes/deploy-static-edge",
       "docs": "docs/public/recipes/deploy-static-edge.md"
+    },
+    {
+      "id": "drizzle-d1",
+      "title": "Use Drizzle with Cloudflare D1",
+      "summary": "Define a typed schema, read the D1 binding from env, and run typed queries in an API route.",
+      "when": "The app runs on Cloudflare Workers and needs SQLite persistence through a D1 binding.",
+      "files": [
+        "src/schema.ts",
+        "src/db.server.ts",
+        "src/routes/api/notes.ts",
+        "wrangler.toml"
+      ],
+      "verify": "pnpm test && ramonyx check --json",
+      "slug": "recipes/drizzle-d1",
+      "docs": "docs/public/recipes/drizzle-d1.md"
     },
     {
       "id": "dynamic-route",

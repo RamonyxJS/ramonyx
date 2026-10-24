@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "benchmark": "public-http-frameworks-v1",
+  "generatedAt": "2026-10-24T05:46:34.955Z",
+  "scenario": "GET /api/hello — JSON handler, shared Node http Fetch adapter, no middleware/logging/IO",
+  "scope": "Routing/JSON handler only; excludes SSR, hydration, static assets, databases, TLS, and framework middleware.",
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v24.22.0",
+    "nodeMajor": 24,
+    "cpus": 8,
+    "cpuModel": "AMD Ryzen 5 7520U with Radeon Graphics"
+  },
+  "versions": {
+    "node": "v24.22.0",
+    "ramonyx": "2.0.1",
+    "hono": "4.13.13",
+    "autocannon": "8.0.0"
+  },
+  "load": {
+    "connections": 50,
+    "durationSeconds": 10,
+    "warmupSeconds": 3,
+    "repeats": 5,
+    "pipelining": 1
+  },
+  "parity": {
+    "passed": true,
+    "body": "{\"hello\":\"world\"}"
+  },
+  "targets": [
+    {
+      "id": "node",
+      "label": "Node built-in http (lower bound)",
+      "note": "Direct ServerResponse with the same JSON body; no router.",
+      "result": {
+        "latency": {
+          "p50": 19,
+          "p90": 25,
+          "p97_5": 33,
+          "p99": 38,
+          "max": 303
+        },
+        "requestsPerSecond": 2437.7,
+        "throughputBytesPerSecond": 465510.4,
+        "errors": 0,
+        "non2xx": 0,
+        "spread": {
+          "latency": {
+            "p50": {
+              "min": 18,
+              "max": 22
+            },
+            "p90": {
+              "min": 23,
+              "max": 33
+            },
+            "p97_5": {
+              "min": 28,
+              "max": 44
+            },
+            "p99": {
+              "min": 34,
+              "max": 48
+            },
+            "max": {
+              "min": 282,
+              "max": 359
+            }
+          },
+          "requestsPerSecond": {
+            "min": 2070.31,
+            "max": 2557.81
+          },
+          "throughputBytesPerSecond": {
+            "min": 395366.4,
+            "max": 488460.8
+          }
+        }
+      },
+      "perRun": [
+        {
+          "latency": {
+            "p50": 19,
+            "p90": 26,
+            "p97_5": 31,
+            "p99": 34,
+            "max": 355
+          },
+          "requestsPerSecond": 2383,
+          "throughputBytesPerSecond": 455065.6,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 19,
+            "p90": 25,
+            "p97_5": 33,
+            "p99": 38,
+            "max": 283
+          },
+          "requestsPerSecond": 2437.7,
+          "throughputBytesPerSecond": 465510.4,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 18,
+            "p90": 23,
+            "p97_5": 28,
+            "p99": 37,
+            "max": 282
+          },
+          "requestsPerSecond": 2557.81,
+          "throughputBytesPerSecond": 488460.8,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 18,
+            "p90": 25,
+            "p97_5": 33,
+            "p99": 44,
+            "max": 359
+          },
+          "requestsPerSecond": 2482.9,
+          "throughputBytesPerSecond": 474150.4,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 22,
+            "p90": 33,
+            "p97_5": 44,
+            "p99": 48,
+            "max": 303
+          },
+          "requestsPerSecond": 2070.31,
+          "throughputBytesPerSecond": 395366.4,
+          "errors": 0,
+          "non2xx": 0
+        }
+      ]
+    },
+    {
+      "id": "ramonyx",
+      "label": "Ramonyx createHandler",
+      "note": "Route table + handler; no middleware, validation, cache, or static assets.",
+      "result": {
+        "latency": {
+          "p50": 26,
+          "p90": 36,
+          "p97_5": 43,
+          "p99": 47,
+          "max": 370
+        },
+        "requestsPerSecond": 1805.2,
+        "throughputBytesPerSecond": 344780.8,
+        "errors": 0,
+        "non2xx": 0,
+        "spread": {
+          "latency": {
+            "p50": {
+              "min": 24,
+              "max": 31
+            },
+            "p90": {
+              "min": 32,
+              "max": 44
+            },
+            "p97_5": {
+              "min": 39,
+              "max": 52
+            },
+            "p99": {
+              "min": 44,
+              "max": 56
+            },
+            "max": {
+              "min": 340,
+              "max": 531
+            }
+          },
+          "requestsPerSecond": {
+            "min": 1500,
+            "max": 1937.7
+          },
+          "throughputBytesPerSecond": {
+            "min": 286508.8,
+            "max": 370048
+          }
+        }
+      },
+      "perRun": [
+        {
+          "latency": {
+            "p50": 26,
+            "p90": 36,
+            "p97_5": 43,
+            "p99": 47,
+            "max": 415
+          },
+          "requestsPerSecond": 1805.2,
+          "throughputBytesPerSecond": 344780.8,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 25,
+            "p90": 32,
+            "p97_5": 39,
+            "p99": 44,
+            "max": 370
+          },
+          "requestsPerSecond": 1880,
+          "throughputBytesPerSecond": 359065.6,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 26,
+            "p90": 37,
+            "p97_5": 49,
+            "p99": 55,
+            "max": 340
+          },
+          "requestsPerSecond": 1775.1,
+          "throughputBytesPerSecond": 338976,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 24,
+            "p90": 32,
+            "p97_5": 39,
+            "p99": 47,
+            "max": 359
+          },
+          "requestsPerSecond": 1937.7,
+          "throughputBytesPerSecond": 370048,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 31,
+            "p90": 44,
+            "p97_5": 52,
+            "p99": 56,
+            "max": 531
+          },
+          "requestsPerSecond": 1500,
+          "throughputBytesPerSecond": 286508.8,
+          "errors": 0,
+          "non2xx": 0
+        }
+      ]
+    },
+    {
+      "id": "hono",
+      "label": "Hono 4.13.13",
+      "note": "Hono app.fetch; same shared Node fetch adapter and JSON route.",
+      "result": {
+        "latency": {
+          "p50": 21,
+          "p90": 29,
+          "p97_5": 43,
+          "p99": 59,
+          "max": 353
+        },
+        "requestsPerSecond": 2155.6,
+        "throughputBytesPerSecond": 411622.4,
+        "errors": 0,
+        "non2xx": 0,
+        "spread": {
+          "latency": {
+            "p50": {
+              "min": 20,
+              "max": 25
+            },
+            "p90": {
+              "min": 27,
+              "max": 39
+            },
+            "p97_5": {
+              "min": 34,
+              "max": 50
+            },
+            "p99": {
+              "min": 44,
+              "max": 75
+            },
+            "max": {
+              "min": 311,
+              "max": 415
+            }
+          },
+          "requestsPerSecond": {
+            "min": 1847.5,
+            "max": 2270.6
+          },
+          "throughputBytesPerSecond": {
+            "min": 352896,
+            "max": 433587.2
+          }
+        }
+      },
+      "perRun": [
+        {
+          "latency": {
+            "p50": 21,
+            "p90": 28,
+            "p97_5": 37,
+            "p99": 53,
+            "max": 353
+          },
+          "requestsPerSecond": 2155.6,
+          "throughputBytesPerSecond": 411622.4,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 20,
+            "p90": 29,
+            "p97_5": 43,
+            "p99": 75,
+            "max": 332
+          },
+          "requestsPerSecond": 2165.5,
+          "throughputBytesPerSecond": 413523.2,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 20,
+            "p90": 27,
+            "p97_5": 34,
+            "p99": 44,
+            "max": 415
+          },
+          "requestsPerSecond": 2270.6,
+          "throughputBytesPerSecond": 433587.2,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 23,
+            "p90": 39,
+            "p97_5": 50,
+            "p99": 72,
+            "max": 311
+          },
+          "requestsPerSecond": 1860.2,
+          "throughputBytesPerSecond": 355232,
+          "errors": 0,
+          "non2xx": 0
+        },
+        {
+          "latency": {
+            "p50": 25,
+            "p90": 34,
+            "p97_5": 44,
+            "p99": 59,
+            "max": 368
+          },
+          "requestsPerSecond": 1847.5,
+          "throughputBytesPerSecond": 352896,
+          "errors": 0,
+          "non2xx": 0
+        }
+      ]
+    }
+  ]
+}

@@ -362,7 +362,7 @@
 
 ### `p1-reproducible-benchmarks` — Benchmark publik reproducible + perbandingan yang adil
 
-*tema: perf · ukuran: L · status: open · sumber: agenda adopsi 2026-10-23: performance proof*
+*tema: perf · ukuran: L · status: done · sumber: selesai: pnpm bench:public + artefak publik (Ramonyx/Hono/Node, shared adapter, 3s warmup, 5x10s, median/spread), docs benchmarks + validasi artefak.*
 
 - **Apa**: Publikasikan benchmark HTTP/SSR yang dapat dijalankan ulang di mesin pembaca, dengan hardware, versi, metode, dan batasan. Bandingkan Ramonyx dengan minimal satu framework lain pada beban yang sama; jangan memilih hasil terbaik secara selektif.
 - **Kenapa penting untuk bersaing**: Benchmark report-only internal tidak cukup untuk klaim performa. Adopsi teknis membutuhkan angka yang bisa diverifikasi dan perbandingan yang jujur.

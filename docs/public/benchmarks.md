@@ -10,6 +10,7 @@ report the distribution (median, spread) — never a single run, never an averag
 | HTTP | requests/s, p50/p95/p99 | autocannon against the playground |
 | SSR | render time, TTFB, output size | synchronous vs streaming, in-process |
 | Security | status/error counts, RSS under abuse/soak | 6 abuse scenarios + sustained load |
+| Public framework comparison | requests/s, p50/p99 | same JSON route under Ramonyx, Hono, and Node |
 | Startup | wall/startup/load/eval | Rust runtime CLI, median of N runs |
 | Web Vitals | LCP, CLS, FCP, TTFB | Playwright on the production build |
 | Image pipeline | before/after LCP/CLS with variants | throttled CDP + cold loads |
@@ -22,6 +23,7 @@ pnpm bench:report          # compare against baseline (report-only, tolerance 25
 pnpm bench:ssr             # SSR sync vs streaming
 pnpm bench:ssr:report      # comparison artifact
 pnpm bench:security        # abuse cases + soak (RSS from /proc)
+pnpm bench:public          # public framework comparison (same JSON route)
 pnpm bench:image           # image pipeline before/after (playground)
 benchmarks/runtime-startup.sh   # Rust runtime startup (needs a release build)
 ```
@@ -57,3 +59,36 @@ environments** — it prints the mismatching fields instead of pretending.
 - Identical work per request; verify responses match.
 - Report medians and spread; keep raw artifacts.
 - No public performance claim without a runnable benchmark in the repo.
+
+## Public framework comparison
+
+`pnpm bench:public` runs the same `GET /api/hello` JSON route through **Ramonyx**, **Hono**, and a
+**Node built-in http** lower bound. All three use the same Node `http` → `fetch` adapter and the
+same autocannon configuration. The response body is checked for parity before load starts.
+
+- Scenario: routing + JSON response only. **Not** an SSR, hydration, static-asset, database,
+  TLS, or middleware benchmark.
+- Protocol: 3 s warm-up, 5 interleaved runs × 10 s, 50 connections, pipelining 1.
+- Output: `benchmarks/results/public/http-frameworks-<environment>.json` with every run,
+  median/spread, environment, and versions.
+- Defaults can be overridden with `--duration-seconds`, `--warmup-seconds`, `--repeats`,
+  `--connections`, and `--out`.
+
+### Result (maintainer machine, 2026-10-24)
+
+Linux x64, 8 vCPU, AMD Ryzen 5 7520U, Node v24.22.0, Ramonyx 2.0.1, Hono 4.13.13,
+autocannon 8.0.0. Median of five 10 s runs; ranges are min–max across runs.
+
+| Target | Requests/s (median) | Range | p50 (ms) | p99 (ms) | Errors |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Node built-in http | 2438 | 2070–2558 | 19 | 38 | 0 |
+| Hono | 2156 | 1848–2271 | 21 | 59 | 0 |
+| Ramonyx | 1805 | 1500–1938 | 26 | 47 | 0 |
+
+Raw artifact:
+[`http-frameworks-linux-x64-node24-amd-ryzen-5-7520u-with-radeon-graphics.json`](https://github.com/RamonyxJS/ramonyx/blob/main/benchmarks/results/public/http-frameworks-linux-x64-node24-amd-ryzen-5-7520u-with-radeon-graphics.json).
+
+**Interpretation limit:** this is one shared machine and a deliberately narrow scenario. It shows
+framework overhead on a minimal JSON route, not a general performance ranking. The strict internal
+gate and the SSR benchmark remain separate; do not combine these numbers with SSR or Web Vitals
+claims. Rerun on your hardware with the command above before making a decision.

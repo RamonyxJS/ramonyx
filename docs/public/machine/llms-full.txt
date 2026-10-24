@@ -2027,7 +2027,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T05:30:15.223Z",
+  "generatedAt": "2026-10-24T05:53:47.898Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2548,7 +2548,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T05:30:17.112Z",
+  "generatedAt": "2026-10-24T05:53:49.768Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2663,7 +2663,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T05:30:17.137Z",
+  "generatedAt": "2026-10-24T05:53:49.793Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2875,8 +2875,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "2.0.1",
-  "generatedAt": "2026-10-24T05:28:43.551Z",
-  "commit": "eea918475233a00649d1bf22d2141cc05a8ffc7e",
+  "generatedAt": "2026-10-24T05:47:26.125Z",
+  "commit": "d2ac81cd50a4564fad33610da54c7a0dfcf0e116",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2903,7 +2903,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
   "adrs": 9,
   "docs": 41,
   "tests": {
-    "node": 392,
+    "node": 393,
     "rust": 116,
     "e2eSpecFiles": 12
   }
@@ -3326,6 +3326,7 @@ report the distribution (median, spread) — never a single run, never an averag
 | HTTP | requests/s, p50/p95/p99 | autocannon against the playground |
 | SSR | render time, TTFB, output size | synchronous vs streaming, in-process |
 | Security | status/error counts, RSS under abuse/soak | 6 abuse scenarios + sustained load |
+| Public framework comparison | requests/s, p50/p99 | same JSON route under Ramonyx, Hono, and Node |
 | Startup | wall/startup/load/eval | Rust runtime CLI, median of N runs |
 | Web Vitals | LCP, CLS, FCP, TTFB | Playwright on the production build |
 | Image pipeline | before/after LCP/CLS with variants | throttled CDP + cold loads |
@@ -3338,6 +3339,7 @@ pnpm bench:report          # compare against baseline (report-only, tolerance 25
 pnpm bench:ssr             # SSR sync vs streaming
 pnpm bench:ssr:report      # comparison artifact
 pnpm bench:security        # abuse cases + soak (RSS from /proc)
+pnpm bench:public          # public framework comparison (same JSON route)
 pnpm bench:image           # image pipeline before/after (playground)
 benchmarks/runtime-startup.sh   # Rust runtime startup (needs a release build)
 ```
@@ -3373,6 +3375,39 @@ environments** — it prints the mismatching fields instead of pretending.
 - Identical work per request; verify responses match.
 - Report medians and spread; keep raw artifacts.
 - No public performance claim without a runnable benchmark in the repo.
+
+## Public framework comparison
+
+`pnpm bench:public` runs the same `GET /api/hello` JSON route through **Ramonyx**, **Hono**, and a
+**Node built-in http** lower bound. All three use the same Node `http` → `fetch` adapter and the
+same autocannon configuration. The response body is checked for parity before load starts.
+
+- Scenario: routing + JSON response only. **Not** an SSR, hydration, static-asset, database,
+  TLS, or middleware benchmark.
+- Protocol: 3 s warm-up, 5 interleaved runs × 10 s, 50 connections, pipelining 1.
+- Output: `benchmarks/results/public/http-frameworks-<environment>.json` with every run,
+  median/spread, environment, and versions.
+- Defaults can be overridden with `--duration-seconds`, `--warmup-seconds`, `--repeats`,
+  `--connections`, and `--out`.
+
+### Result (maintainer machine, 2026-10-24)
+
+Linux x64, 8 vCPU, AMD Ryzen 5 7520U, Node v24.22.0, Ramonyx 2.0.1, Hono 4.13.13,
+autocannon 8.0.0. Median of five 10 s runs; ranges are min–max across runs.
+
+| Target | Requests/s (median) | Range | p50 (ms) | p99 (ms) | Errors |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Node built-in http | 2438 | 2070–2558 | 19 | 38 | 0 |
+| Hono | 2156 | 1848–2271 | 21 | 59 | 0 |
+| Ramonyx | 1805 | 1500–1938 | 26 | 47 | 0 |
+
+Raw artifact:
+[`http-frameworks-linux-x64-node24-amd-ryzen-5-7520u-with-radeon-graphics.json`](https://github.com/RamonyxJS/ramonyx/blob/main/benchmarks/results/public/http-frameworks-linux-x64-node24-amd-ryzen-5-7520u-with-radeon-graphics.json).
+
+**Interpretation limit:** this is one shared machine and a deliberately narrow scenario. It shows
+framework overhead on a minimal JSON route, not a general performance ranking. The strict internal
+gate and the SSR benchmark remain separate; do not combine these numbers with SSR or Web Vitals
+claims. Rerun on your hardware with the command above before making a decision.
 
 ## docs/public/cli.md
 

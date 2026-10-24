@@ -1190,7 +1190,7 @@
       "theme": "perf",
       "priority": "p1",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Publikasikan benchmark HTTP/SSR yang dapat dijalankan ulang di mesin pembaca, dengan hardware, versi, metode, dan batasan. Bandingkan Ramonyx dengan minimal satu framework lain pada beban yang sama; jangan memilih hasil terbaik secara selektif.",
       "why": "Benchmark report-only internal tidak cukup untuk klaim performa. Adopsi teknis membutuhkan angka yang bisa diverifikasi dan perbandingan yang jujur.",
       "done": [
@@ -1203,7 +1203,7 @@
       "areas": ["benchmarks", "docs/public", "apps/docs", ".github/workflows"],
       "adrs": ["ADR-0048", "ADR-0074"],
       "competitor": "Next.js/Nuxt/Astro benchmark publik dengan metodologi terbuka.",
-      "source": "agenda adopsi 2026-10-23: performance proof",
+      "source": "selesai: pnpm bench:public + artefak publik (Ramonyx/Hono/Node, shared adapter, 3s warmup, 5x10s, median/spread), docs benchmarks + validasi artefak.",
       "strategic": true
     },
     {

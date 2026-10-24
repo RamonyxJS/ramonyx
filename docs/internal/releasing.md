@@ -35,9 +35,23 @@
 - **TERBIT — 2.0.0** (2026-10-23): hapus mode proxy dev lama dan `--dev-port`; ADR-0083;
   `createDevServer` mewajibkan `handler`. 16 paket @ 2.0.0 dengan provenance; GitHub Release
   19 aset; Worker `8f4d7a0d-e149-4b2e-b08a-05f58f31f2bd`.
-- **TERBIT — 2.0.1** (2026-10-23): patch guard `FormData` di `guardedFetch`, test listener/
-  coverage adapter, baseline coverage fitur baru, dan statistik 382 test. 16 paket @ 2.0.1;
-  GitHub Release 19 aset; Worker `0516001e-a26e-4078-80a8-df011231aeb1`.
+- **TERBIT — 2.0.2** (2026-10-24): perbaikan dev SSR — `serverOnlyPlugin` tidak lagi
+  mengganti `*.server.ts` dengan stub pada graph SSR Vite, sehingga loader/action dapat memakai
+  modul database/session di `ramonyx dev` (produksi sudah benar). Test regresi ditambahkan;
+  statistik 398 test Node. 16 paket @ 2.0.2; GitHub Release 19 aset; Worker
+  `7cedff97-e008-497f-ae8b-2b5ea653ca0a`.
+
+## Hasil rilis 2.0.2 (2026-10-24)
+
+- Tag `v2.0.2` → release workflow **success**: 16 paket @ 2.0.2 dengan attestations +
+  GitHub Release 19 aset (https://github.com/RamonyxJS/ramonyx/releases/tag/v2.0.2).
+- **CI**: main hijau — 398 test Node, Rust fmt/clippy/test, coverage, docs/e2e/security/edge
+  smoke. `release:verify` dari tarball 2.0.2 lulus (scaffold + client bundle).
+- **Registry**: paket framework + `create-ramonyx-app@2.0.2` tersedia; doc site menyajikan
+  `machine/stats.json` versi 2.0.2.
+- **Deploy**: Worker `ramonyx-site` versi `7cedff97-e008-497f-ae8b-2b5ea653ca0a`; smoke `/`,
+  `/docs`, `/docs/recipes/`, `/machine/stats.json` (2.0.2), `/machine/adrs.json` OK.
+- Runtime Rust tetap eksperimental.
 
 ## Hasil rilis 2.0.1 (2026-10-23)
 

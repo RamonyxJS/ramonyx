@@ -47,7 +47,10 @@ export interface MemoryStore extends KeyValueStore {
 
 interface MemoryEntry {
   value: unknown;
+  /** Waktu kedaluwarsa wall-clock untuk metadata publik. */
   expiresAt: number | null;
+  /** Waktu kedaluwarsa monotonik; TTL tidak boleh terpengaruh penyesuaian jam sistem. */
+  expiresAtMonotonic: number | null;
   tags: readonly string[];
   counter?: { count: number; windowStart: number };
 }
@@ -80,11 +83,11 @@ export function createMemoryStore(options: MemoryStoreOptions = {}): MemoryStore
     return true;
   };
 
-  const alive = (entry: MemoryEntry, now: number): boolean =>
-    entry.expiresAt === null || entry.expiresAt > now;
+  const alive = (entry: MemoryEntry, nowMonotonic: number): boolean =>
+    entry.expiresAtMonotonic === null || entry.expiresAtMonotonic > nowMonotonic;
 
   const sweep = (): void => {
-    const now = Date.now();
+    const now = performance.now();
     for (const [key, entry] of entries) {
       if (!alive(entry, now)) {
         remove(key);
@@ -102,7 +105,7 @@ export function createMemoryStore(options: MemoryStoreOptions = {}): MemoryStore
       if (entry === undefined) {
         return undefined;
       }
-      if (!alive(entry, Date.now())) {
+      if (!alive(entry, performance.now())) {
         remove(key);
         return undefined;
       }
@@ -112,12 +115,12 @@ export function createMemoryStore(options: MemoryStoreOptions = {}): MemoryStore
     async set<T>(key: string, value: T, setOptions: StoreSetOptions = {}): Promise<void> {
       // Set ulang memindahkan key ke akhir urutan (perilaku LRU sederhana).
       remove(key);
-      const expiresAt =
-        setOptions.ttlSeconds === undefined
-          ? null
-          : Date.now() + Math.max(0, setOptions.ttlSeconds) * 1000;
+      const ttlMs =
+        setOptions.ttlSeconds === undefined ? undefined : Math.max(0, setOptions.ttlSeconds) * 1000;
+      const expiresAt = ttlMs === undefined ? null : Date.now() + ttlMs;
+      const expiresAtMonotonic = ttlMs === undefined ? null : performance.now() + ttlMs;
       const tags = setOptions.tags ?? [];
-      entries.set(key, { value, expiresAt, tags });
+      entries.set(key, { value, expiresAt, expiresAtMonotonic, tags });
       for (const tag of tags) {
         const set = tagIndex.get(tag) ?? new Set<string>();
         set.add(key);
@@ -141,7 +144,7 @@ export function createMemoryStore(options: MemoryStoreOptions = {}): MemoryStore
       if (entry === undefined) {
         return undefined;
       }
-      if (!alive(entry, Date.now())) {
+      if (!alive(entry, performance.now())) {
         remove(key);
         return undefined;
       }
@@ -184,8 +187,9 @@ export function createMemoryStore(options: MemoryStoreOptions = {}): MemoryStore
       entries.delete(key);
       entries.set(key, {
         value: counter.count,
-        // TTL entri (get/sweep) tetap wall-clock; jendela penghitung monotonik.
+        // TTL/jendela memakai monotonik; metadata expiresAt tetap wall-clock.
         expiresAt: Date.now() + windowMs,
+        expiresAtMonotonic: now + windowMs,
         tags: [],
         counter,
       });

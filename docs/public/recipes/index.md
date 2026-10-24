@@ -14,6 +14,7 @@ touches, and a verification command; the machine-readable index is
 | Email/password + sessions | [Add Better Auth to an API route](better-auth.md) | `pnpm test` |
 | Traces and OTLP export | [Export request traces to OpenTelemetry](opentelemetry.md) | `pnpm test` |
 | Transactional email | [Send email with Resend or Postmark](email-resend-postmark.md) | `pnpm test` |
+| Hosted payments and webhooks | [Add Stripe Checkout and webhooks](stripe.md) | `pnpm test` |
 | Login/logout and protected pages | [Add session auth](auth-session.md) | `ramonyx check --json` |
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |

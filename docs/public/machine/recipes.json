@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T02:24:35.610Z",
+  "generatedAt": "2026-10-24T02:37:02.146Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -144,6 +144,20 @@
       "verify": "ramonyx check --json && ramonyx routes --json",
       "slug": "recipes/page-loader",
       "docs": "docs/public/recipes/page-loader.md"
+    },
+    {
+      "id": "stripe",
+      "title": "Add Stripe Checkout and webhooks",
+      "summary": "Create Checkout Sessions from a server route and verify Stripe webhooks before changing entitlements.",
+      "when": "The app needs hosted payments or subscriptions without handling card data itself.",
+      "files": [
+        "src/stripe.server.ts",
+        "src/routes/api/billing/checkout.ts",
+        "src/routes/api/stripe/webhook.ts"
+      ],
+      "verify": "pnpm test",
+      "slug": "recipes/stripe",
+      "docs": "docs/public/recipes/stripe.md"
     },
     {
       "id": "testing",

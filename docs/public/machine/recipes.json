@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T03:07:27.196Z",
+  "generatedAt": "2026-10-24T03:44:41.521Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -173,6 +173,22 @@
       "verify": "pnpm test",
       "slug": "recipes/stripe",
       "docs": "docs/public/recipes/stripe.md"
+    },
+    {
+      "id": "tailwind-shadcn",
+      "title": "Add Tailwind CSS and shadcn/ui",
+      "summary": "Compile Tailwind v4 ahead of time, inject the generated CSS, and copy shadcn/ui components with CVA variants.",
+      "when": "The app needs utility CSS and a copy-in React component toolkit without adding a runtime CSS dependency.",
+      "files": [
+        "src/styles.css",
+        "scripts/build-tailwind.mjs",
+        "src/lib/utils.ts",
+        "src/components/ui/button.tsx",
+        "src/routes/layout.tsx"
+      ],
+      "verify": "pnpm test",
+      "slug": "recipes/tailwind-shadcn",
+      "docs": "docs/public/recipes/tailwind-shadcn.md"
     },
     {
       "id": "testing",

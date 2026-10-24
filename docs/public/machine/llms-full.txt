@@ -2027,7 +2027,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T03:07:24.348Z",
+  "generatedAt": "2026-10-24T03:44:39.543Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2548,7 +2548,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T03:07:27.158Z",
+  "generatedAt": "2026-10-24T03:44:41.491Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2663,7 +2663,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T03:07:27.196Z",
+  "generatedAt": "2026-10-24T03:44:41.521Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2838,6 +2838,22 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "docs": "docs/public/recipes/stripe.md"
     },
     {
+      "id": "tailwind-shadcn",
+      "title": "Add Tailwind CSS and shadcn/ui",
+      "summary": "Compile Tailwind v4 ahead of time, inject the generated CSS, and copy shadcn/ui components with CVA variants.",
+      "when": "The app needs utility CSS and a copy-in React component toolkit without adding a runtime CSS dependency.",
+      "files": [
+        "src/styles.css",
+        "scripts/build-tailwind.mjs",
+        "src/lib/utils.ts",
+        "src/components/ui/button.tsx",
+        "src/routes/layout.tsx"
+      ],
+      "verify": "pnpm test",
+      "slug": "recipes/tailwind-shadcn",
+      "docs": "docs/public/recipes/tailwind-shadcn.md"
+    },
+    {
       "id": "testing",
       "title": "Test a route in-process",
       "summary": "Exercise the real handler with an in-memory host, assert SSR/API behavior, then add a browser check.",
@@ -2859,8 +2875,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "2.0.1",
-  "generatedAt": "2026-10-24T03:05:14.705Z",
-  "commit": "95682fda1b30c72ebd1a9629c356cc9c82803edb",
+  "generatedAt": "2026-10-24T03:37:56.678Z",
+  "commit": "2e918dbda09976a200a1f5653649adda568c839d",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2885,9 +2901,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     ]
   },
   "adrs": 9,
-  "docs": 38,
+  "docs": 39,
   "tests": {
-    "node": 387,
+    "node": 388,
     "rust": 116,
     "e2eSpecFiles": 12
   }
@@ -4357,6 +4373,7 @@ touches, and a verification command; the machine-readable index is
 | Transactional email | [Send email with Resend or Postmark](email-resend-postmark.md) | `pnpm test` |
 | Hosted payments and webhooks | [Add Stripe Checkout and webhooks](stripe.md) | `pnpm test` |
 | Files and metadata on Cloudflare | [Store files in R2 and metadata in KV](cloudflare-r2-kv.md) | `pnpm test:edge` |
+| Utility CSS + copy-in components | [Add Tailwind CSS and shadcn/ui](tailwind-shadcn.md) | `pnpm test` |
 | Login/logout and protected pages | [Add session auth](auth-session.md) | `ramonyx check --json` |
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |
@@ -4372,6 +4389,13 @@ ramonyx check --json      # stable diagnostics + docs links
 MCP clients can call `get_recipe` (project mode) or `get_page` with these slugs. Prefer the public
 docs over guessing; if a recipe does not fit, start from [Routing](../routing.md) and
 [SSR & Hydration](../ssr-hydration.md).
+
+## Support level
+
+These are maintained **examples**, not compatibility guarantees for third-party services. Ramonyx
+keeps the framework APIs under semver; vendor SDKs, provider payloads, Tailwind releases, and
+Cloudflare bindings remain owned by their vendors. Each recipe states its verification command and
+known limits, including where a local simulation is used instead of a live vendor account.
 
 ## docs/public/recipes/api-validation.md
 
@@ -5692,6 +5716,245 @@ localhost:3000/api/stripe/webhook`, and Stripe's test cards. Never use live keys
 - **Scope:** this recipe creates Checkout Sessions and handles two events. Customer Portal,
   subscription upgrades/proration, invoices, tax, refunds, and dispute handling remain application
   work.
+
+## docs/public/recipes/tailwind-shadcn.md
+
+---
+recipe: tailwind-shadcn
+title: Add Tailwind CSS and shadcn/ui
+summary: Compile Tailwind v4 ahead of time, inject the generated CSS, and copy shadcn/ui components with CVA variants.
+when: The app needs utility CSS and a copy-in React component toolkit without adding a runtime CSS dependency.
+files: src/styles.css, scripts/build-tailwind.mjs, src/lib/utils.ts, src/components/ui/button.tsx, src/routes/layout.tsx
+verify: pnpm test
+---
+
+# Add Tailwind CSS and shadcn/ui
+
+shadcn/ui is not a component package. It is a set of source files copied into the app, built on
+Tailwind utilities, `class-variance-authority`, `clsx`, and `tailwind-merge`.
+
+Ramonyx does not currently inject CSS assets into the document, so this recipe compiles Tailwind to
+a string at build time and injects it once from the root layout. That keeps SSR and hydration using
+exactly the same CSS. The trade-off is that the CSS string is bundled into the client entry; for a
+large design system, add a CSS asset/link pipeline later.
+
+## Install
+
+```bash
+pnpm add -D tailwindcss @tailwindcss/postcss postcss
+pnpm add class-variance-authority clsx tailwind-merge @radix-ui/react-slot
+```
+
+Tailwind/PostCSS are build-time dependencies; CVA, `clsx`, `tailwind-merge`, and Radix Slot are
+runtime dependencies because copied shadcn components import them.
+
+## Tailwind source
+
+```css
+/* src/styles.css */
+@import "tailwindcss";
+@source "./routes";
+@source "./components";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #14160f;
+  --primary: #2340c8;
+  --primary-foreground: #f7f5ee;
+  --destructive: #dc2626;
+  --accent: #f3f1e8;
+  --border: #d7d3c5;
+  --ring: #2340c8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --radius-md: 0.5rem;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+```
+
+`@source` paths are relative to this CSS file. Tailwind only generates utilities for class names it
+can find statically; dynamic string concatenation like `` `bg-${color}-500` `` is not detected. Use
+CVA variants or safelist the names explicitly.
+
+## Generated CSS module
+
+```js
+// scripts/build-tailwind.mjs
+import { readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import tailwindcss from "@tailwindcss/postcss";
+import postcss from "postcss";
+
+const root = fileURLToPath(new URL("../", import.meta.url));
+const inputPath = join(root, "src/styles.css");
+const outputPath = join(root, "src/tailwind.generated.ts");
+
+const input = await readFile(inputPath, "utf8");
+const result = await postcss([tailwindcss()]).process(input, { from: inputPath });
+await writeFile(
+  outputPath,
+  `// generated by scripts/build-tailwind.mjs — do not edit\nexport const TAILWIND_CSS = ${JSON.stringify(result.css)};\n`,
+);
+console.log(`tailwind: ${Buffer.byteLength(result.css)} bytes -> ${outputPath}`);
+```
+
+```json
+// package.json (scripts)
+{
+  "css": "node scripts/build-tailwind.mjs",
+  "dev": "pnpm css && ramonyx dev",
+  "build": "pnpm css && ramonyx build"
+}
+```
+
+Run `pnpm css` after changing classes or theme tokens. Commit `src/tailwind.generated.ts` or generate
+it in CI before `build`; do not edit it by hand.
+
+## Utilities
+
+```ts
+// src/lib/utils.ts
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
+}
+```
+
+## Button
+
+This is the shadcn/ui Button pattern with relative imports (no `@/` alias required):
+
+```tsx
+// src/components/ui/button.tsx
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+import type { ComponentProps } from "react";
+import { cn } from "../../lib/utils.ts";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive: "bg-destructive text-white hover:bg-destructive/90",
+        outline: "border border-border bg-background hover:bg-accent",
+      },
+      size: {
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3",
+        lg: "h-10 rounded-md px-6",
+      },
+    },
+    defaultVariants: { variant: "default", size: "default" },
+  },
+);
+
+export interface ButtonProps
+  extends ComponentProps<"button">,
+    VariantProps<typeof buttonVariants> {
+  readonly asChild?: boolean;
+}
+
+export function Button({
+  className,
+  variant,
+  size,
+  asChild = false,
+  ...props
+}: ButtonProps) {
+  const Comp = asChild ? Slot : "button";
+  return <Comp className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+}
+```
+
+`asChild` lets the same styles wrap an `<a>` or another interactive element without nesting buttons.
+The `cn()` helper ensures a caller's `className` can override variant utilities predictably.
+
+## Inject CSS
+
+```tsx
+// src/routes/layout.tsx
+import type { LayoutProps } from "@ramonyx/react";
+import { TAILWIND_CSS } from "../tailwind.generated.ts";
+
+export default function RootLayout({ children }: LayoutProps) {
+  return (
+    <>
+      <style>{TAILWIND_CSS}</style>
+      <main className="mx-auto max-w-3xl p-6">{children}</main>
+    </>
+  );
+}
+```
+
+The layout is rendered on the server and included in the hydration tree, so the generated CSS is
+present before first paint and survives client navigation. The default CSP allows inline styles
+(`style-src 'unsafe-inline'`); if you tighten CSP, add a nonce/styles hash policy or move this to a
+custom document/stylesheet pipeline.
+
+```tsx
+// src/routes/page.tsx
+import { Button } from "../components/ui/button.tsx";
+
+export default function Page() {
+  return (
+    <section>
+      <h1 className="text-2xl font-semibold tracking-tight">Akun</h1>
+      <Button variant="destructive" size="sm">Hapus akun</Button>
+    </section>
+  );
+}
+```
+
+## Verify
+
+```bash
+pnpm test -- tests/integrations/tailwind-shadcn.test.tsx
+pnpm css
+ramonyx build
+```
+
+The executable example [`tests/integrations/tailwind-shadcn.test.tsx`](../../../tests/integrations/tailwind-shadcn.test.tsx)
+compiles the real Tailwind PostCSS plugin against a fixture and renders the shadcn Button with React
+SSR. It asserts generated utilities, variant classes, `asChild`, and `cn()` class merging.
+
+## Limits
+
+- This recipe injects a **single global stylesheet**. It does not do per-route CSS splitting or
+  remove unused CSS beyond Tailwind's scanner.
+- `src/tailwind.generated.ts` contains the CSS as a JavaScript string. Large themes increase the
+  client bundle; a dedicated CSS asset pipeline is the next step for large apps.
+- shadcn/ui components are copied source, not a versioned package. Review upgrades and keep
+  `components.json`/CLI aliases aligned if you use the CLI.
+- Tailwind scans source text; class names built dynamically at runtime are invisible to it.
+- Keep component code client-safe. Do not import `*.server.ts`, `node:*`, or secrets from
+  `src/components/**`; Ramonyx's client-boundary lint still applies.
+- If you use `@/` imports from the shadcn CLI, add a matching TypeScript path and a bundler alias;
+  relative imports avoid that configuration in this recipe.
 
 ## docs/public/recipes/testing.md
 

@@ -50,6 +50,7 @@ This site has a search endpoint: https://context7.com/api/v2/ask?siteKey=ask_893
 - [Export request traces to OpenTelemetry](https://ramonyx.devmoon.net/docs/recipes/opentelemetry/)
 - [Add a page with a loader](https://ramonyx.devmoon.net/docs/recipes/page-loader/)
 - [Add Stripe Checkout and webhooks](https://ramonyx.devmoon.net/docs/recipes/stripe/)
+- [Add Tailwind CSS and shadcn/ui](https://ramonyx.devmoon.net/docs/recipes/tailwind-shadcn/)
 - [Test a route in-process](https://ramonyx.devmoon.net/docs/recipes/testing/)
 - [Routing](https://ramonyx.devmoon.net/docs/routing/)
 - [Security Overview](https://ramonyx.devmoon.net/docs/security/overview/)

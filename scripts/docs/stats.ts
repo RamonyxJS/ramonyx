@@ -98,6 +98,7 @@ function runNodeTests(): number {
         "apps/*/test/**/*.test.ts",
         "apps/*/test/**/*.test.tsx",
         "tests/**/*.test.ts",
+        "tests/**/*.test.tsx",
         "benchmarks/**/*.test.ts",
       ],
       { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },

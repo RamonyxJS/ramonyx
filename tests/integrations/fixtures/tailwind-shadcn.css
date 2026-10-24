@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@source "./shadcn-button.tsx";
+
+@theme {
+  --color-primary: #2340c8;
+  --color-primary-foreground: #f7f5ee;
+  --color-destructive: #dc2626;
+  --color-background: #ffffff;
+  --color-accent: #f3f1e8;
+  --color-input: #d5d2c2;
+  --color-ring: #2340c8;
+  --radius-md: 0.5rem;
+}

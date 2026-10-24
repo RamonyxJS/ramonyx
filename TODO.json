@@ -1124,7 +1124,7 @@
       "theme": "ecosystem",
       "priority": "p1",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Sediakan 5–7 integrasi resmi yang benar-benar dijalankan dan diuji: Drizzle/Prisma, Auth.js atau Better Auth, OpenTelemetry/Sentry, Resend/Postmark, Stripe, Cloudflare D1/R2/KV, serta Tailwind + shadcn/ui. Setiap integrasi berisi contoh minimal, adapter/tip yang jelas, dan smoke test.",
       "why": "Adopsi framework ditentukan oleh kemampuan memakai stack yang sudah dikenal. Ramonyx sudah kuat di core, tetapi pengguna harus merakit database/auth/email/payment sendiri; pesaing menawarkan jalur integrasi yang terdokumentasi dan teruji.",
       "done": [
@@ -1137,7 +1137,7 @@
       "areas": ["examples", "docs/public", "packages", "apps/create-app"],
       "adrs": [],
       "competitor": "Next.js ecosystem, Nuxt modules, SvelteKit adapters, Astro integrations.",
-      "source": "agenda adopsi 2026-10-23; progres: Drizzle + Cloudflare D1, Better Auth (memory test + Drizzle/D1 recipe), OpenTelemetry (middleware + hooks test), Resend + Postmark (local SDK test), Stripe (Checkout + webhook test), R2 + KV (Miniflare binding smoke).",
+      "source": "selesai: Drizzle+D1, Better Auth, OpenTelemetry, Resend+Postmark, Stripe, Cloudflare R2+KV, Tailwind+shadcn. Semua punya recipe + verifikasi executable; simulasi vs akun vendor nyata dicatat di batas masing-masing.",
       "strategic": true
     },
     {

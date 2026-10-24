@@ -16,6 +16,7 @@ touches, and a verification command; the machine-readable index is
 | Transactional email | [Send email with Resend or Postmark](email-resend-postmark.md) | `pnpm test` |
 | Hosted payments and webhooks | [Add Stripe Checkout and webhooks](stripe.md) | `pnpm test` |
 | Files and metadata on Cloudflare | [Store files in R2 and metadata in KV](cloudflare-r2-kv.md) | `pnpm test:edge` |
+| Utility CSS + copy-in components | [Add Tailwind CSS and shadcn/ui](tailwind-shadcn.md) | `pnpm test` |
 | Login/logout and protected pages | [Add session auth](auth-session.md) | `ramonyx check --json` |
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |
@@ -31,3 +32,10 @@ ramonyx check --json      # stable diagnostics + docs links
 MCP clients can call `get_recipe` (project mode) or `get_page` with these slugs. Prefer the public
 docs over guessing; if a recipe does not fit, start from [Routing](../routing.md) and
 [SSR & Hydration](../ssr-hydration.md).
+
+## Support level
+
+These are maintained **examples**, not compatibility guarantees for third-party services. Ramonyx
+keeps the framework APIs under semver; vendor SDKs, provider payloads, Tailwind releases, and
+Cloudflare bindings remain owned by their vendors. Each recipe states its verification command and
+known limits, including where a local simulation is used instead of a live vendor account.

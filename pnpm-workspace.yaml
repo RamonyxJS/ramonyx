@@ -17,3 +17,7 @@ minimumReleaseAge: 1440
 # Verifikasi perilaku: `pnpm bench:report` (menjalankan autocannon) + `pnpm audit`.
 overrides:
   hyperid: "4.0.0"
+  # Miniflare 4.20260730.0 pins older sharp/undici with high-severity advisories.
+  # The APIs used by our edge smoke are unchanged; verify with `pnpm test:edge`.
+  miniflare>sharp: "0.35.5"
+  miniflare>undici: "7.30.1"

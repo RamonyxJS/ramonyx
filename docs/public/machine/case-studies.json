@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-24",
+  "status": "collecting",
+  "minimumPublished": 3,
+  "published": 0,
+  "submission": "https://github.com/RamonyxJS/ramonyx/issues/new?template=case_study.yml",
+  "criteria": [
+    "real application running Ramonyx",
+    "owner permission for name, URL, screenshots, and quotes",
+    "metrics with method, date, environment, and raw evidence",
+    "explicit limitations and residual risk"
+  ],
+  "caseStudies": []
+}

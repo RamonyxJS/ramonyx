@@ -37,7 +37,7 @@ export const PUBLIC_STATS: PublicStats = {
     ],
   },
   adrs: 9,
-  docs: 41,
+  docs: 42,
   tests: {
     node: 393,
     rust: 116,

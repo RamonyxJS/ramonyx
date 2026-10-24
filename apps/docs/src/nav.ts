@@ -31,6 +31,11 @@ export const NAV: readonly NavSection[] = [
         label: "Templates",
         description: "Minimal, auth, Cloudflare, and docs/blog starters.",
       },
+      {
+        slug: "showcase",
+        label: "Showcase",
+        description: "Real apps, verification process, and submission guidelines.",
+      },
     ],
   },
   {

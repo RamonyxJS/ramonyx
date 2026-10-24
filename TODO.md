@@ -715,7 +715,7 @@
 
 ### `p2-showcase-case-studies` — Showcase + studi kasus produksi
 
-*tema: ecosystem · ukuran: M · status: open · sumber: agenda adopsi 2026-10-23: proof for decision makers*
+*tema: ecosystem · ukuran: M · status: open · sumber: infrastruktur siap 2026-10-24: halaman publik + issue template + machine schema kosong + playbook internal; 0 kasus nyata, menunggu 3–5 aplikasi + izin/evidence.*
 
 - **Apa**: Kumpulkan 3–5 aplikasi nyata yang memakai Ramonyx, dengan studi kasus berisi masalah, arsitektur, metrik sebelum/sesudah, dan batasan. Tampilkan di situs publik dan machine layer untuk agen.
 - **Kenapa penting untuk bersaing**: Social proof lebih meyakinkan daripada daftar fitur. Studi kasus nyata membantu calon pengguna memetakan Ramonyx ke masalah mereka.

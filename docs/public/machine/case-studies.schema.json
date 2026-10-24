@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ramonyx showcase case studies",
+  "description": "Public, permissioned case studies. Empty until real apps and evidence are verified.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "updatedAt",
+    "status",
+    "minimumPublished",
+    "published",
+    "submission",
+    "criteria",
+    "caseStudies"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "updatedAt": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "status": { "enum": ["collecting", "published"] },
+    "minimumPublished": { "type": "integer", "minimum": 1 },
+    "published": { "type": "integer", "minimum": 0 },
+    "submission": { "type": "string", "minLength": 10 },
+    "criteria": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 10 } },
+    "caseStudies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "appUrl",
+          "summary",
+          "stack",
+          "architecture",
+          "metrics",
+          "limitations",
+          "permission",
+          "verification",
+          "docs"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string", "minLength": 3 },
+          "appUrl": { "type": "string", "pattern": "^https://" },
+          "summary": { "type": "string", "minLength": 20 },
+          "stack": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "architecture": { "type": "string", "minLength": 20 },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "value", "method", "date"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "value": { "type": "string" },
+                "method": { "type": "string", "minLength": 10 },
+                "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+                "evidence": { "type": "string" }
+              }
+            }
+          },
+          "limitations": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "permission": { "type": "string", "minLength": 10 },
+          "verification": { "type": "string", "minLength": 10 },
+          "docs": { "type": "string", "pattern": "^docs/public/showcase/.+\\.md$" }
+        }
+      }
+    }
+  }
+}

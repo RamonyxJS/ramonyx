@@ -56,6 +56,7 @@ This site has a search endpoint: https://context7.com/api/v2/ask?siteKey=ask_893
 - [Security review and audit status](https://ramonyx.devmoon.net/docs/security/audit/)
 - [Security Overview](https://ramonyx.devmoon.net/docs/security/overview/)
 - [Sessions & Auth](https://ramonyx.devmoon.net/docs/sessions-and-auth/)
+- [Showcase and case studies](https://ramonyx.devmoon.net/docs/showcase/)
 - [SSR & Hydration](https://ramonyx.devmoon.net/docs/ssr-hydration/)
 - [State & Adapters](https://ramonyx.devmoon.net/docs/state-and-adapters/)
 - [Templates](https://ramonyx.devmoon.net/docs/templates/)

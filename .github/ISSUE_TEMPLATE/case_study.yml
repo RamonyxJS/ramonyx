@@ -1,0 +1,65 @@
+name: Case study submission
+description: Share a real Ramonyx app with permission and verifiable evidence.
+title: "[Case study] "
+labels: ["showcase"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for considering a case study. Do not include secrets, customer data, or private URLs.
+        Publication is opt-in and only happens after verification and written approval.
+  - type: input
+    id: app
+    attributes:
+      label: Application name and URL
+      description: Public URL, or say "private demo" and how a maintainer can request access.
+      placeholder: "Acme dashboard — https://app.example.com"
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Contact and role
+      description: Who can approve publication?
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and why Ramonyx
+      description: What constraint led to Ramonyx? What alternatives were considered?
+    validations:
+      required: true
+  - type: textarea
+    id: architecture
+    attributes:
+      label: Architecture
+      description: Deployment target, rendering model, data/auth/storage, and notable trade-offs.
+    validations:
+      required: true
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Measured results
+      description: Include metric, value, date, environment, method, and raw artifact or reproducible command.
+      placeholder: "LCP p75 1.8s on 2026-10-24, Lighthouse mobile, raw JSON: ..."
+    validations:
+      required: false
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Limitations and unfinished work
+      description: What did not improve? What is still manual or risky?
+    validations:
+      required: true
+  - type: checkboxes
+    id: permission
+    attributes:
+      label: Permission and evidence
+      options:
+        - label: I have permission to publish the app name, URL, screenshots, and quotes.
+          required: true
+        - label: Any metrics I submit have a method, date, environment, and source.
+          required: true
+        - label: I have removed secrets, customer data, and private infrastructure details.
+          required: true

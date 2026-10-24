@@ -11,6 +11,7 @@ Structured facts for humans and agents, generated from the **public** documentat
 | `glossary.json` | Terms and concept map |
 | `api.json` / `cli.json` / `config.schema.json` | Extracted API, CLI, and config reference |
 | `recipes.json` | Task recipes generated from `docs/public/recipes/*.md` |
+| `case-studies.json` | Permissioned showcase status; empty until real apps and evidence are verified |
 | `llms.txt` / `llms-full.txt` | Agent index and full public corpus |
 
 Everything here is validated in CI: schemas, evidence paths (public only), ADR index, freshness, and

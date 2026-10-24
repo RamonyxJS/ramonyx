@@ -69,6 +69,10 @@ const MACHINE_FILES: MachineFile[] = [
   { data: `${PUBLIC_MACHINE}/api.json`, schema: `${PUBLIC_MACHINE}/api.schema.json` },
   { data: `${PUBLIC_MACHINE}/cli.json`, schema: `${PUBLIC_MACHINE}/cli.schema.json` },
   { data: `${PUBLIC_MACHINE}/recipes.json`, schema: `${PUBLIC_MACHINE}/recipes.schema.json` },
+  {
+    data: `${PUBLIC_MACHINE}/case-studies.json`,
+    schema: `${PUBLIC_MACHINE}/case-studies.schema.json`,
+  },
   { data: `${PUBLIC_MACHINE}/stats.json`, schema: `${PUBLIC_MACHINE}/stats.schema.json` },
   { data: `${INTERNAL_MACHINE}/security.json`, schema: `${INTERNAL_MACHINE}/security.schema.json` },
   { data: "TODO.json", schema: `${INTERNAL_MACHINE}/todo.schema.json` },

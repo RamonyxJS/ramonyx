@@ -1224,7 +1224,7 @@
       "areas": ["docs/public", "apps/docs", "docs/public/machine"],
       "adrs": [],
       "competitor": "Next.js showcase, Nuxt showcase, Astro case studies.",
-      "source": "agenda adopsi 2026-10-23: proof for decision makers",
+      "source": "infrastruktur siap 2026-10-24: halaman publik + issue template + machine schema kosong + playbook internal; 0 kasus nyata, menunggu 3–5 aplikasi + izin/evidence.",
       "strategic": true
     }
   ],

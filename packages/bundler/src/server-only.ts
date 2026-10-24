@@ -57,7 +57,11 @@ export function serverOnlyPlugin(): Plugin {
   return {
     name: "ramonyx-server-only",
     enforce: "pre",
-    async resolveId(source, importer) {
+    async resolveId(source, importer, resolveOptions) {
+      // SSR/dev must load the real server module: only the browser graph gets the poison stub.
+      if (resolveOptions?.ssr === true) {
+        return null;
+      }
       if (!SERVER_MODULE.test(source) || importer === undefined) {
         return null;
       }

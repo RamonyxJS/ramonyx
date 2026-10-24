@@ -4,6 +4,17 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [2.0.2] — 2026-10-24
+
+### Fixed
+
+- Dev SSR now loads the real `*.server.ts` module instead of the browser poison-pill stub.
+  `serverOnlyPlugin` skips stubbing when Vite resolves the SSR graph, so applications can use
+  database/session modules from loaders/actions in `ramonyx dev` (production builds were already
+  correct).
+- Added a regression test for the SSR/client split.
+
+
 ## [2.0.1] — 2026-10-23
 
 ### Fixed

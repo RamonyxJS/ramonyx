@@ -1,10 +1,10 @@
 {
   "name": "@ramonyx/mcp-docs-server",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "MCP docs server (stdio) — tools agen untuk membaca docs/machine + docs/** Ramonyx.",
+  "description": "MCP docs server (stdio) \u2014 tools agen untuk membaca docs/machine + docs/** Ramonyx.",
   "exports": {
     ".": "./src/index.ts"
   },

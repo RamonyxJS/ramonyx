@@ -1,10 +1,10 @@
 {
   "name": "@ramonyx/plugin-image",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Plugin varian gambar Ramonyx (resize + WebP/AVIF saat build) — sharp sebagai peer opsional.",
+  "description": "Plugin varian gambar Ramonyx (resize + WebP/AVIF saat build) \u2014 sharp sebagai peer opsional.",
   "exports": {
     ".": "./src/index.ts"
   },

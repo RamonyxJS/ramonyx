@@ -9,6 +9,7 @@ import { cp, mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildEdge } from "@ramonyx/bundler";
+import { Miniflare } from "miniflare";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const appDir = join(root, "apps/playground");
@@ -130,4 +131,36 @@ try {
     server.kill("SIGKILL");
   }
   await rm(configDir, { recursive: true, force: true });
+}
+
+// Binding storage nyata: Miniflare menyediakan KV namespace + R2 bucket di atas workerd,
+// sehingga route /api/storage diuji dengan API Cloudflare, bukan shim lokal.
+console.log("→ smoke KV/R2 (Miniflare)…");
+const miniflare = new Miniflare({
+  modules: true,
+  scriptPath: join(outDir, "index.js"),
+  compatibilityDate: "2026-08-06",
+  kvNamespaces: ["KV_STORE"],
+  r2Buckets: ["R2_BUCKET"],
+});
+try {
+  const write = await miniflare.dispatchFetch("http://localhost/api/storage", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ key: "smoke", value: "dari-r2-kv" }),
+  });
+  assert(write.status === 201, `POST /api/storage status ${write.status}`);
+
+  const read = await miniflare.dispatchFetch("http://localhost/api/storage?key=smoke");
+  assert(read.status === 200, `GET /api/storage status ${read.status}`);
+  const data = (await read.json()) as { kv: string | null; r2: string | null };
+  assert(data.kv === "dari-r2-kv", `KV tidak terbaca: ${JSON.stringify(data)}`);
+  assert(data.r2 === "dari-r2-kv", `R2 tidak terbaca: ${JSON.stringify(data)}`);
+
+  const missing = await miniflare.dispatchFetch("http://localhost/api/storage?key=hilang");
+  assert(missing.status === 404, `GET /api/storage?key=hilang status ${missing.status}`);
+
+  console.log("EDGE STORAGE OK — KV + R2 binding di Miniflare/workerd");
+} finally {
+  await miniflare.dispose();
 }

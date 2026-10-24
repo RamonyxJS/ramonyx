@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T02:37:02.146Z",
+  "generatedAt": "2026-10-24T03:07:27.196Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -53,6 +53,21 @@
       "verify": "ramonyx check --json",
       "slug": "recipes/cache-revalidate",
       "docs": "docs/public/recipes/cache-revalidate.md"
+    },
+    {
+      "id": "cloudflare-r2-kv",
+      "title": "Store files in R2 and metadata in KV",
+      "summary": "Read Cloudflare KV/R2 bindings from env, stream uploads to R2, and keep small metadata/index entries in KV.",
+      "when": "The app runs on Cloudflare Workers and needs object storage plus a small, fast lookup layer.",
+      "files": [
+        "src/storage.server.ts",
+        "src/routes/api/files.ts",
+        "src/routes/api/files/[id].ts",
+        "wrangler.toml"
+      ],
+      "verify": "pnpm test:edge",
+      "slug": "recipes/cloudflare-r2-kv",
+      "docs": "docs/public/recipes/cloudflare-r2-kv.md"
     },
     {
       "id": "deploy-static-edge",

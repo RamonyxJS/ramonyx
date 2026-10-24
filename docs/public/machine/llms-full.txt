@@ -2027,7 +2027,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T02:37:00.064Z",
+  "generatedAt": "2026-10-24T03:07:24.348Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2548,7 +2548,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T02:37:02.117Z",
+  "generatedAt": "2026-10-24T03:07:27.158Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2663,7 +2663,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T02:37:02.146Z",
+  "generatedAt": "2026-10-24T03:07:27.196Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2716,6 +2716,21 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "verify": "ramonyx check --json",
       "slug": "recipes/cache-revalidate",
       "docs": "docs/public/recipes/cache-revalidate.md"
+    },
+    {
+      "id": "cloudflare-r2-kv",
+      "title": "Store files in R2 and metadata in KV",
+      "summary": "Read Cloudflare KV/R2 bindings from env, stream uploads to R2, and keep small metadata/index entries in KV.",
+      "when": "The app runs on Cloudflare Workers and needs object storage plus a small, fast lookup layer.",
+      "files": [
+        "src/storage.server.ts",
+        "src/routes/api/files.ts",
+        "src/routes/api/files/[id].ts",
+        "wrangler.toml"
+      ],
+      "verify": "pnpm test:edge",
+      "slug": "recipes/cloudflare-r2-kv",
+      "docs": "docs/public/recipes/cloudflare-r2-kv.md"
     },
     {
       "id": "deploy-static-edge",
@@ -2844,8 +2859,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "2.0.1",
-  "generatedAt": "2026-10-24T02:35:43.294Z",
-  "commit": "020a7abbeedb969aba599ad4f0b600833671b0c5",
+  "generatedAt": "2026-10-24T03:05:14.705Z",
+  "commit": "95682fda1b30c72ebd1a9629c356cc9c82803edb",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2870,7 +2885,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     ]
   },
   "adrs": 9,
-  "docs": 37,
+  "docs": 38,
   "tests": {
     "node": 387,
     "rust": 116,
@@ -4341,6 +4356,7 @@ touches, and a verification command; the machine-readable index is
 | Traces and OTLP export | [Export request traces to OpenTelemetry](opentelemetry.md) | `pnpm test` |
 | Transactional email | [Send email with Resend or Postmark](email-resend-postmark.md) | `pnpm test` |
 | Hosted payments and webhooks | [Add Stripe Checkout and webhooks](stripe.md) | `pnpm test` |
+| Files and metadata on Cloudflare | [Store files in R2 and metadata in KV](cloudflare-r2-kv.md) | `pnpm test:edge` |
 | Login/logout and protected pages | [Add session auth](auth-session.md) | `ramonyx check --json` |
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |
@@ -4643,6 +4659,192 @@ export async function action({ formData, revalidate }: {
 
 Call the page twice and assert the loader count; invalidate a tag and assert the next request
 re-reads. See [Testing](testing.md) and [Data & Caching](../data-and-caching.md).
+
+## docs/public/recipes/cloudflare-r2-kv.md
+
+---
+recipe: cloudflare-r2-kv
+title: Store files in R2 and metadata in KV
+summary: Read Cloudflare KV/R2 bindings from env, stream uploads to R2, and keep small metadata/index entries in KV.
+when: The app runs on Cloudflare Workers and needs object storage plus a small, fast lookup layer.
+files: src/storage.server.ts, src/routes/api/files.ts, src/routes/api/files/[id].ts, wrangler.toml
+verify: pnpm test:edge
+---
+
+# Store files in R2 and metadata in KV
+
+R2 is object storage for files. KV is a small, globally replicated key-value store for metadata and
+cached lookups. They are **Cloudflare bindings**, not npm packages: the Worker receives them through
+`env`, and Ramonyx exposes them with `env.getRaw()`.
+
+## Bindings
+
+```toml
+# wrangler.toml
+[[kv_namespaces]]
+binding = "KV_STORE"
+id = "your-kv-namespace-id"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "my-app-files"
+```
+
+Create the namespace/bucket with Wrangler, then bind them in the Worker. Bindings are configuration,
+not secrets; keep the R2 bucket private unless you deliberately use a public custom domain.
+
+## Adapter
+
+```ts
+// src/storage.server.ts — server-only
+import { HttpError, type EnvReader } from "ramonyx";
+
+export interface FileStore {
+  readonly kv: KVNamespace;
+  readonly bucket: R2Bucket;
+}
+
+export function fileStore(env: EnvReader): FileStore {
+  const kv = env.getRaw?.("KV_STORE") as KVNamespace | undefined;
+  const bucket = env.getRaw?.("R2_BUCKET") as R2Bucket | undefined;
+  if (kv === undefined || bucket === undefined) {
+    // Node/dev tanpa binding: jangan diam-diam memakai memori sebagai pengganti produksi.
+    throw new HttpError(503, "Cloudflare KV/R2 binding tidak tersedia");
+  }
+  return { kv, bucket };
+}
+```
+
+Add `@cloudflare/workers-types` to the app for `KVNamespace` and `R2Bucket` types. Keep that
+dependency in the app, not in `@ramonyx` core; the framework stays platform-neutral.
+
+## Upload
+
+```ts
+// src/routes/api/files.ts
+import { HttpError, route } from "ramonyx";
+import { fileStore } from "../../storage.server.ts";
+
+const MAX_BYTES = 10 * 1024 * 1024;
+const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "application/pdf"]);
+
+export const POST = route({
+  handler: async ({ env, request, json }) => {
+    const user = await requireUser(request); // authenticate first
+    const form = await request.formData();
+    const file = form.get("file");
+    if (!(file instanceof File)) {
+      return json({ error: "file wajib" }, 400);
+    }
+    if (file.size > MAX_BYTES) {
+      return json({ error: "file terlalu besar" }, 413);
+    }
+    if (!ALLOWED_TYPES.has(file.type)) {
+      return json({ error: "tipe file tidak didukung" }, 415);
+    }
+
+    const { kv, bucket } = fileStore(env);
+    // Jangan memakai nama file dari klien sebagai key: gunakan ID acak server-side.
+    const id = crypto.randomUUID();
+    const key = `uploads/${id}`;
+    const metadata = {
+      owner: user.id,
+      name: file.name.slice(0, 200),
+      type: file.type,
+      size: file.size,
+    };
+
+    await Promise.all([
+      bucket.put(key, file, {
+        httpMetadata: { contentType: file.type },
+        customMetadata: {
+          owner: user.id,
+          name: metadata.name,
+          type: file.type,
+        },
+      }),
+      // KV hanya cache/index kecil; R2 tetap sumber kebenaran objek.
+      kv.put(`file:${id}`, JSON.stringify(metadata), { expirationTtl: 86_400 }),
+    ]);
+
+    return json({ id, ...metadata }, 201);
+  },
+});
+```
+
+`requireUser` is application code. Do not trust `file.name`, `file.type`, or a client-provided key
+for authorization. A random object key prevents enumeration and overwrite attacks.
+
+## Download
+
+```ts
+// src/routes/api/files/[id].ts
+import { HttpError, route } from "ramonyx";
+import { fileStore } from "../../../storage.server.ts";
+
+export const GET = route({
+  handler: async ({ env, params, request }) => {
+    const user = await requireUser(request);
+    const { bucket } = fileStore(env);
+    const object = await bucket.get(`uploads/${params.id}`);
+    if (object === null) {
+      throw new HttpError(404, "File tidak ditemukan");
+    }
+    if (object.customMetadata?.owner !== user.id) {
+      throw new HttpError(404, "File tidak ditemukan"); // jangan bocorkan keberadaan file
+    }
+
+    return new Response(object.body, {
+      headers: {
+        "content-type": object.httpMetadata?.contentType ?? "application/octet-stream",
+        etag: object.httpEtag,
+        "cache-control": "private, max-age=60",
+        "x-content-type-options": "nosniff",
+      },
+    });
+  },
+});
+```
+
+Stream `object.body` directly; do not buffer large files. For media, use R2 range requests and return
+`206`/`Content-Range`. If files must be public, use an R2 custom domain/public bucket instead of an
+authenticated Worker route, and keep object keys unguessable.
+
+## Verify
+
+```bash
+pnpm test:edge
+ramonyx check --json
+```
+
+`pnpm test:edge` builds the playground edge artifact, runs it in workerd, then starts Miniflare with
+real KV and R2 bindings. It writes `smoke=dari-r2-kv`, reads it back through
+`GET /api/storage`, and checks missing keys return 404. The route is
+[`apps/playground/src/routes/api/storage.ts`](../../../apps/playground/src/routes/api/storage.ts);
+the smoke is [`scripts/edge-smoke.ts`](../../../scripts/edge-smoke.ts).
+
+Node development does not provide R2/KV bindings. The adapter returns 503 instead of silently using
+process memory; use Miniflare/Wrangler for local binding work.
+
+## Limits and operations
+
+- **KV is eventually consistent.** Do not use it for counters, locks, or authorization decisions.
+  Use Durable Objects or D1 for atomic state.
+- **KV has small values.** Keep metadata under its value limit; large blobs belong in R2.
+- **R2 consistency:** object writes are strongly consistent for reads after write, but listing and
+  metadata propagation can still need care. Store ownership in R2 `customMetadata` (as above), not
+  only in KV.
+- **Range/streaming:** `object.body` is a stream. For video/audio, implement `Range` parsing and
+  `bucket.get(key, { range })`; this recipe only serves full objects.
+- **Deletes:** delete R2 and KV together, and make deletion idempotent. A failed KV delete must not
+  leave an authorization path open; R2 metadata remains authoritative.
+- **Presigned URLs:** the R2 binding does not issue S3 presigned URLs. Use a public custom domain,
+  or generate signed S3 URLs with separate R2 S3 credentials.
+- **Limits:** enforce upload size before `bucket.put`; Workers request/body limits still apply.
+  This recipe buffers `FormData` metadata, so for very large uploads use a streaming/multipart
+  strategy or direct-to-R2 presigned upload.
+- **No local fallback in production:** a missing binding is a configuration error, not a reason to
+  write files to the Worker filesystem (which is ephemeral/read-only).
 
 ## docs/public/recipes/deploy-static-edge.md
 

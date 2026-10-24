@@ -62,6 +62,7 @@
     "better-auth": "1.7.12",
     "drizzle-orm": "0.45.4",
     "esbuild": "0.28.2",
+    "miniflare": "4.20260730.0",
     "postmark": "5.1.0",
     "ramonyx": "workspace:*",
     "react": "19.3.1",

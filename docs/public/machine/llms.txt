@@ -41,6 +41,7 @@ This site has a search endpoint: https://context7.com/api/v2/ask?siteKey=ask_893
 - [Add session auth](https://ramonyx.devmoon.net/docs/recipes/auth-session/)
 - [Add Better Auth to an API route](https://ramonyx.devmoon.net/docs/recipes/better-auth/)
 - [Cache loader data and invalidate it](https://ramonyx.devmoon.net/docs/recipes/cache-revalidate/)
+- [Store files in R2 and metadata in KV](https://ramonyx.devmoon.net/docs/recipes/cloudflare-r2-kv/)
 - [Deploy static or edge output](https://ramonyx.devmoon.net/docs/recipes/deploy-static-edge/)
 - [Use Drizzle with Cloudflare D1](https://ramonyx.devmoon.net/docs/recipes/drizzle-d1/)
 - [Add a dynamic route](https://ramonyx.devmoon.net/docs/recipes/dynamic-route/)

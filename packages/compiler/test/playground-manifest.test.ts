@@ -13,7 +13,9 @@ test("memindai routes playground", async () => {
   assert.deepEqual(summary, [
     "GET /api/env",
     "GET /api/hello",
+    "GET /api/storage",
     "GET /api/users/[id]",
     "POST /api/echo",
+    "POST /api/storage",
   ]);
 });

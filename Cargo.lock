@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "adler2"
-version = "2.0.2"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
@@ -1264,7 +1264,7 @@ checksum = "4d3667095d64c3ecffc96463a21157b04bf3e252f6e8d5750b20c02e33c194e3"
 
 [[package]]
 name = "js-engine"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "bytes",
  "deno_ast",
@@ -1674,7 +1674,7 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
 name = "ramonyx-runtime-cli"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "js-engine",
  "runtime-core",
@@ -1774,7 +1774,7 @@ dependencies = [
 
 [[package]]
 name = "runtime-core"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "serde_json",
 ]

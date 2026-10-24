@@ -55,7 +55,8 @@ export function csrfProtection(options: CsrfOptions = {}): Middleware {
   type FormToken = { readonly token: string; readonly tooLarge: boolean };
 
   const readFormToken = async (request: Request): Promise<FormToken> => {
-    const type = (request.headers.get("content-type") ?? "").toLowerCase();
+    const contentType = request.headers.get("content-type") ?? "";
+    const type = contentType.toLowerCase();
     if (
       !type.includes("application/x-www-form-urlencoded") &&
       !type.includes("multipart/form-data")
@@ -90,7 +91,13 @@ export function csrfProtection(options: CsrfOptions = {}): Middleware {
         }
         chunks.push(new Uint8Array(value).buffer);
       }
-      const form = await new Response(new Blob(chunks, { type })).formData();
+      // Blob.type menormalkan casing; boundary multipart peka huruf besar/kecil. Gunakan
+      // Request dengan header asli agar undici memakai boundary yang benar.
+      const form = await new Request("http://localhost/", {
+        method: "POST",
+        headers: { "content-type": contentType },
+        body: new Blob(chunks),
+      }).formData();
       const value = form.get(fieldName);
       return { token: typeof value === "string" ? value : "", tooLarge: false };
     } catch {

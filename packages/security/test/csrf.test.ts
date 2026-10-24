@@ -171,3 +171,21 @@ test("POST form streaming tanpa content-length melebihi batas → 413", async ()
   } as RequestInit);
   assert.equal((await csrfProtection({ maxFormBytes: 64 })(context(request), nextOk)).status, 413);
 });
+
+test("POST multipart memakai boundary asli (tidak boleh di-lowercase)", async () => {
+  const token = "b".repeat(64);
+  const form = new FormData();
+  form.set("_csrf", token);
+  form.set("nama", "Rina");
+  const request = new Request("http://t/", {
+    method: "POST",
+    headers: { cookie: `ramonyx-csrf=${token}` },
+    body: form,
+  });
+  assert.match(request.headers.get("content-type") ?? "", /boundary=----formdata-/);
+  const response = await csrfProtection()(context(request), async (nextRequest) => {
+    assert.equal((await (nextRequest ?? request).formData()).get("nama"), "Rina");
+    return new Response("ok");
+  });
+  assert.equal(response.status, 200);
+});

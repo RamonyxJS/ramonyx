@@ -83,7 +83,13 @@ const app = await createApp({ clientScript: "/assets/client.js" });
 
 const home = await app(new Request("http://uji/"));
 if (home.status !== 200) throw new Error("home: " + home.status);
-if (!(await home.text()).includes("Sign in")) throw new Error("form login tidak ada");
+const homeHtml = await home.text();
+if (!homeHtml.includes("Sign in")) throw new Error("form login tidak ada");
+const csrf = /name="_csrf" value="([^"]+)"/.exec(homeHtml)?.[1];
+if (!csrf) throw new Error("csrf field hilang");
+const csrfCookie = home.headers.getSetCookie()
+  .find((value) => value.startsWith("ramonyx-csrf="))?.split(";")[0];
+if (!csrfCookie) throw new Error("csrf cookie hilang");
 
 const denied = await app(new Request("http://uji/api/me"));
 if (denied.status !== 401) throw new Error("me tanpa cookie: " + denied.status);
@@ -91,29 +97,50 @@ if (denied.status !== 401) throw new Error("me tanpa cookie: " + denied.status);
 const badForm = new FormData();
 badForm.set("username", "demo");
 badForm.set("password", "salah");
-const bad = await app(new Request("http://uji/", { method: "POST", body: badForm }));
+badForm.set("_csrf", csrf);
+const bad = await app(new Request("http://uji/", {
+  method: "POST",
+  headers: { cookie: csrfCookie },
+  body: badForm,
+}));
 if (bad.status !== 400) throw new Error("bad login: " + bad.status);
 if (!(await bad.text()).includes("Invalid username or password.")) throw new Error("error login tidak tampil");
 
 const form = new FormData();
 form.set("username", "demo");
 form.set("password", "demo-password-123");
-const login = await app(new Request("http://uji/", { method: "POST", body: form }));
+form.set("_csrf", csrf);
+const login = await app(new Request("http://uji/", {
+  method: "POST",
+  headers: { cookie: csrfCookie },
+  body: form,
+}));
 if (login.status !== 303) throw new Error("login status: " + login.status);
-const cookie = login.headers.get("set-cookie");
-if (cookie === null) throw new Error("session cookie hilang");
-if (!cookie.includes("HttpOnly")) throw new Error("cookie tidak HttpOnly");
+const cookie = login.headers.getSetCookie()
+  .find((value) => value.startsWith("ramonyx_session="))?.split(";")[0];
+if (!cookie) throw new Error("session cookie hilang");
+if (!login.headers.get("set-cookie")?.includes("HttpOnly")) throw new Error("cookie tidak HttpOnly");
 
 const me = await app(new Request("http://uji/api/me", { headers: { cookie } }));
 if (me.status !== 200) throw new Error("me status: " + me.status);
 const profile = await me.json();
 if (profile.user?.username !== "demo") throw new Error("me: " + JSON.stringify(profile));
 
-const signedIn = await app(new Request("http://uji/", { headers: { cookie } }));
+const signedIn = await app(new Request("http://uji/", {
+  headers: { cookie: cookie + "; " + csrfCookie },
+}));
 const html = await signedIn.text();
 if (!html.includes("Signed in as")) throw new Error("state login tidak dirender");
+const logoutToken = /name="_csrf" value="([^"]+)"/.exec(html)?.[1];
+if (!logoutToken) throw new Error("csrf logout hilang");
 
-const logout = await app(new Request("http://uji/api/auth/logout", { method: "POST", headers: { cookie } }));
+const logoutForm = new FormData();
+logoutForm.set("_csrf", logoutToken);
+const logout = await app(new Request("http://uji/api/auth/logout", {
+  method: "POST",
+  headers: { cookie: cookie + "; " + csrfCookie },
+  body: logoutForm,
+}));
 if (logout.status !== 200) throw new Error("logout: " + logout.status);
 const cleared = logout.headers.get("set-cookie");
 if (cleared === null || !cleared.includes("Max-Age=0")) throw new Error("cookie tidak dikosongkan");
@@ -141,6 +168,7 @@ const env = {
     get: async (key) => kv.get(key) ?? null,
     put: async (key, value) => { kv.set(key, value); },
   },
+  STORAGE_TOKEN: "test-storage-token-123",
   R2_BUCKET: {
     get: async (key) => {
       const value = r2.get(key);
@@ -157,19 +185,29 @@ if (!(await home.text()).includes("Files in R2")) throw new Error("halaman templ
 const write = await handler(
   new Request("http://edge/api/storage", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", authorization: "Bearer test-storage-token-123" },
     body: JSON.stringify({ key: "demo", value: "hello" }),
   }),
   env,
 );
 if (write.status !== 201) throw new Error("write: " + write.status);
 
-const read = await handler(new Request("http://edge/api/storage?key=demo"), env);
+const read = await handler(
+  new Request("http://edge/api/storage?key=demo", {
+    headers: { authorization: "Bearer test-storage-token-123" },
+  }),
+  env,
+);
 if (read.status !== 200) throw new Error("read: " + read.status);
 const data = await read.json();
 if (data.kv !== "hello" || data.r2 !== "hello") throw new Error("binding data: " + JSON.stringify(data));
 
-const missing = await handler(new Request("http://edge/api/storage?key=missing"), env);
+const missing = await handler(
+  new Request("http://edge/api/storage?key=missing", {
+    headers: { authorization: "Bearer test-storage-token-123" },
+  }),
+  env,
+);
 if (missing.status !== 404) throw new Error("missing: " + missing.status);
 console.log("CLOUDFLARE TEMPLATE OK");
 `,

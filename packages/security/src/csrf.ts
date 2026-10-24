@@ -38,7 +38,7 @@ function readCookie(header: string | null, name: string): string | undefined {
  * - method tidak aman (POST/PUT/PATCH/DELETE): wajib cookie + header (`x-csrf-token`) cocok,
  *   jika tidak → 403.
  *
- * Verifikasi formulir (field body) menyusul — butuh koordinasi pembacaan body dengan validasi.
+ * Form tanpa JS memakai field body `_csrf`; middleware membaca clone body sebelum handler.
  */
 export function csrfProtection(options: CsrfOptions = {}): Middleware {
   const cookieName = options.cookieName ?? "ramonyx-csrf";

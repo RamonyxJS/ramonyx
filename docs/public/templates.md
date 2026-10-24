@@ -47,12 +47,14 @@ cd my-app
 pnpm install
 pnpm dlx wrangler kv namespace create KV_STORE
 pnpm dlx wrangler r2 bucket create my-app-files
+pnpm dlx wrangler secret put STORAGE_TOKEN
 # edit wrangler.toml with the namespace id
 pnpm deploy
 ```
 
 `pnpm build:edge` produces `dist/edge/index.js`; `pnpm deploy` builds and runs `wrangler deploy`.
-See [R2 + KV](recipes/cloudflare-r2-kv.md) for upload/download details and limits.
+The storage API requires `Authorization: Bearer <STORAGE_TOKEN>`. See
+[R2 + KV](recipes/cloudflare-r2-kv.md) for upload/download details and limits.
 
 ## docs-blog
 

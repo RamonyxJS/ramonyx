@@ -53,6 +53,7 @@ This site has a search endpoint: https://context7.com/api/v2/ask?siteKey=ask_893
 - [Add Tailwind CSS and shadcn/ui](https://ramonyx.devmoon.net/docs/recipes/tailwind-shadcn/)
 - [Test a route in-process](https://ramonyx.devmoon.net/docs/recipes/testing/)
 - [Routing](https://ramonyx.devmoon.net/docs/routing/)
+- [Security review and audit status](https://ramonyx.devmoon.net/docs/security/audit/)
 - [Security Overview](https://ramonyx.devmoon.net/docs/security/overview/)
 - [Sessions & Auth](https://ramonyx.devmoon.net/docs/sessions-and-auth/)
 - [SSR & Hydration](https://ramonyx.devmoon.net/docs/ssr-hydration/)

@@ -32,7 +32,7 @@ import {
 export default [
   securityHeaders(),        // CSP (with nonce), nosniff, referrer policy, frame-ancestors
   cspNonce(),               // per-request nonce injected into the hydration payload
-  csrfProtection(),         // double-submit cookie (Web Crypto HMAC, constant-time compare)
+  csrfProtection(),         // double-submit cookie (Web Crypto random token, constant-time compare)
   rateLimit({ limit: 120, windowSeconds: 60 }),  // per client; identity from the adapter
 ];
 ```
@@ -81,6 +81,8 @@ OS-level sandbox (Landlock) for plugins. It is not part of the production promis
 - Rate limiting and load shedding are process-local; multi-instance deployments need a shared
   store.
 - CSP is wired through `@ramonyx/security`; if you replace it, you own the policy.
-- CSRF protection covers double-submit verification and the hidden `_csrf` field for no-JS form
-  flows; token rotation on action re-renders is automatic.
-- The experimental runtime has not had an external security audit.
+- CSRF protection is a random double-submit cookie (not session-bound) plus the hidden `_csrf`
+  field for no-JS forms. It relies on same-site cookies; do not share a registrable domain with
+  untrusted subdomains, or bind tokens to the session in a custom middleware.
+- **No independent third-party security audit has been commissioned.** An internal review with
+  findings and residual risk is published in [Security review & audit status](audit.md).

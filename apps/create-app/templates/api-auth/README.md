@@ -6,6 +6,9 @@ A production-shaped starting point for session auth:
 - `GET /api/me` — current user or `401`
 - `POST /api/auth/logout` — revoke the cookie
 - `src/lib/auth.server.ts` — session, password verification, demo user store
+- `src/routes/middleware.ts` — security headers, CSP nonce, and CSRF (`_csrf` / `x-csrf-token`)
+  - CSRF cookie is not `Secure` by default so HTTP dev works; enable `csrfProtection({ secure: true })`
+    in production or terminate TLS with a Secure-only policy.
 
 ## Run
 
@@ -20,8 +23,8 @@ Demo credentials: `demo` / `demo-password-123`.
 
 1. Set a random `SESSION_SECRET` (32+ characters) in the environment or binding.
 2. Replace `createMemoryUserStore()` with a database/KV `UserStore`; memory loses users on restart.
-3. Add CSRF protection to state-changing forms, rate-limit login, and use a production auth provider
-   (Better Auth is documented in the integration recipes).
+3. Add login rate limiting and a production auth provider (Better Auth is documented in the
+   integration recipes). CSRF is enabled; JSON clients must send the cookie plus `x-csrf-token`.
 4. Serve over HTTPS so the session cookie's `Secure` attribute takes effect.
 
 The template deliberately keeps auth code in `src/lib/auth.server.ts`; never import it from a client

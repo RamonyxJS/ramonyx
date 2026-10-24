@@ -13,6 +13,7 @@ Edit `wrangler.toml` and replace the placeholder KV namespace ID. Create the res
 ```bash
 pnpm dlx wrangler kv namespace create KV_STORE
 pnpm dlx wrangler r2 bucket create __APP_NAME__-files
+pnpm dlx wrangler secret put STORAGE_TOKEN   # random token, 16+ chars
 ```
 
 Then:
@@ -22,11 +23,15 @@ pnpm install
 pnpm dev                 # Node: binding routes return 503
 pnpm build:edge          # dist/edge/index.js
 pnpm deploy              # build + wrangler deploy
+
+curl -H "Authorization: Bearer $STORAGE_TOKEN" \
+  https://your-worker.example/api/storage?key=demo
 ```
 
 R2/KV are Cloudflare bindings, not Node packages. Use `wrangler dev`/Miniflare or the deployed
-Worker to exercise them; plain `ramonyx dev` has no bindings. For local integration tests, the repo
-uses the edge smoke with Miniflare.
+Worker to exercise them; plain `ramonyx dev` has no bindings. The storage API requires
+`Authorization: Bearer <STORAGE_TOKEN>`; without the secret it returns 503. For local integration
+tests, the repo uses the edge smoke with Miniflare.
 
 ## Notes
 

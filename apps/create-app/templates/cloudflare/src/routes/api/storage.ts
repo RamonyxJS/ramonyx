@@ -21,6 +21,27 @@ interface R2BucketLike {
   ): Promise<unknown>;
 }
 
+function sameSecret(a: string, b: string): boolean {
+  let diff = a.length ^ b.length;
+  const length = Math.max(a.length, b.length);
+  for (let index = 0; index < length; index += 1) {
+    diff |= (a.charCodeAt(index) || 0) ^ (b.charCodeAt(index) || 0);
+  }
+  return diff === 0;
+}
+
+function authorize(env: EnvReader, request: Request): void {
+  const expected = env.get("STORAGE_TOKEN");
+  if (expected === undefined || expected.length < 16) {
+    throw new HttpError(503, "STORAGE_TOKEN belum dikonfigurasi");
+  }
+  const header = request.headers.get("authorization") ?? "";
+  const supplied = header.startsWith("Bearer ") ? header.slice(7) : "";
+  if (!sameSecret(expected, supplied)) {
+    throw new HttpError(401, "Unauthorized");
+  }
+}
+
 function bindings(env: EnvReader): { kv: KVNamespaceLike; bucket: R2BucketLike } {
   const kv = env.getRaw?.("KV_STORE") as KVNamespaceLike | undefined;
   const bucket = env.getRaw?.("R2_BUCKET") as R2BucketLike | undefined;
@@ -40,6 +61,7 @@ function keyFrom(value: unknown): string {
 
 export const GET = route({
   handler: async ({ env, request, json }) => {
+    authorize(env, request);
     const key = keyFrom(new URL(request.url).searchParams.get("key"));
     const { kv, bucket } = bindings(env);
     const [kvValue, object] = await Promise.all([kv.get(key), bucket.get(key)]);
@@ -58,6 +80,7 @@ export const GET = route({
 
 export const POST = route({
   handler: async ({ env, request, json }) => {
+    authorize(env, request);
     const body = (await request.json()) as { key?: unknown; value?: unknown };
     const key = keyFrom(body.key);
     const value = String(body.value ?? "");

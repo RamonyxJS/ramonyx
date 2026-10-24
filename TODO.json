@@ -1181,7 +1181,7 @@
       "areas": ["docs/public/security", "packages/security", "runtime", ".github/workflows"],
       "adrs": [],
       "competitor": "Framework besar mempublikasikan audit/security advisories dan proses disclosure.",
-      "source": "agenda adopsi 2026-10-23: trust gap utama",
+      "source": "review internal 2026-10-24 + brief auditor; temuan AUD-01..10 (fixed/open/accepted) di docs/public/security/audit.md; audit pihak ketiga belum dipesan.",
       "strategic": true
     },
     {

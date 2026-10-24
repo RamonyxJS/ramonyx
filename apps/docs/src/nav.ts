@@ -115,6 +115,11 @@ export const NAV: readonly NavSection[] = [
         description: "Headers, CSRF, SSRF, supply chain, and limitations.",
       },
       {
+        slug: "security/audit",
+        label: "Security review & audit",
+        description: "Internal review findings, residual risk, and audit status.",
+      },
+      {
         slug: "observability",
         label: "Observability",
         description: "Trace ids, structured logs, metrics, and sinks.",

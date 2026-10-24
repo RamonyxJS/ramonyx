@@ -2027,7 +2027,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T05:07:14.271Z",
+  "generatedAt": "2026-10-24T05:30:15.223Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2548,7 +2548,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T05:07:15.916Z",
+  "generatedAt": "2026-10-24T05:30:17.112Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2663,7 +2663,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T05:07:15.937Z",
+  "generatedAt": "2026-10-24T05:30:17.137Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2875,8 +2875,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "2.0.1",
-  "generatedAt": "2026-10-24T05:00:19.174Z",
-  "commit": "df8a3013275979f6447059490f99168515642c03",
+  "generatedAt": "2026-10-24T05:28:43.551Z",
+  "commit": "eea918475233a00649d1bf22d2141cc05a8ffc7e",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2901,7 +2901,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     ]
   },
   "adrs": 9,
-  "docs": 40,
+  "docs": 41,
   "tests": {
     "node": 392,
     "rust": 116,
@@ -6144,6 +6144,87 @@ locale (`/id/...`), keeps the default locale unprefixed, sets `<html lang>` + `h
 passes `locale` to loaders and page props. See the i18n section in the source docs for the full
 guide (translation helper, negotiation, language switcher).
 
+## docs/public/security/audit.md
+
+# Security review and audit status
+
+> **Status:** internal review completed 2026-10-24. An independent third-party audit has **not**
+> been commissioned. Nothing on this page is an independent audit result or a security guarantee.
+
+Report vulnerabilities privately via
+[SECURITY.md](https://github.com/RamonyxJS/ramonyx/blob/main/SECURITY.md).
+
+## Scope reviewed
+
+The internal review covered the Node/edge production baseline:
+
+- request limits, timeouts, load shedding, and error responses;
+- session cookies, CSRF, rate limiting, password/token primitives, and authorization helpers;
+- SSRF guard and redirect handling;
+- client/server build boundaries (`*.server.ts`, `node:*`, secret leakage);
+- Cloudflare Worker artifact, R2/KV bindings, and the public docs/waitlist deployment;
+- official templates (`api-auth`, `cloudflare`, `docs-blog`);
+- dependency audit and supply-chain policy.
+
+The experimental Rust/V8 runtime is **out of scope** for this review and remains experimental.
+
+## Findings from the internal review
+
+| ID | Severity | Status | Finding and resolution |
+| --- | --- | --- | --- |
+| AUD-01 | High | Fixed | The `cloudflare` template exposed R2/KV read/write without authentication. Added a required `STORAGE_TOKEN` bearer check (constant-time compare), edge test coverage, and deployment instructions. |
+| AUD-02 | Medium | Fixed | Public docs described CSRF as HMAC-signed; the implementation is a random double-submit token with constant-time comparison. Corrected the docs and added the session-binding limitation. |
+| AUD-03 | Medium | Fixed | `api-auth` template shipped no CSRF protection for its login/logout forms. Added `csrfProtection()`, hidden `_csrf` fields, cookie handling, and test coverage. |
+| AUD-04 | Medium | Open | CSRF form-token verification clones and parses a form body in middleware, before the handler's body-limit check. Large chunked form bodies can consume memory before the limit fires. Use the header token for JSON APIs, enforce a proxy body limit, or keep CSRF form parsing off large upload routes. |
+| AUD-05 | Medium | Open | Stateless sessions are signed, not encrypted, and have no server-side revocation. Password changes cannot invalidate already-issued cookies. Use a server-side `SessionStore` (KV/Redis/database) or an auth provider when revocation matters. |
+| AUD-06 | Medium | Accepted | `api-auth` uses an in-memory demo user store with a fixed demo password and no login rate limit. The template is a starting point; the README lists the production replacements. |
+| AUD-07 | Low | Accepted | The default CSP allows inline styles (`style-src 'unsafe-inline'`) and CSP is opt-in through middleware. Apps with a custom policy own their nonce/hash wiring. |
+| AUD-08 | Low | Accepted | HSTS and HTTPS redirects are deployment responsibilities; `securityHeaders()` does not set HSTS. |
+| AUD-09 | Low | Accepted | Node plugins run in-process and are trusted application code. Process/OS isolation applies to the experimental Rust runtime's plugin bridge, not Node plugins. |
+| AUD-10 | Informational | Accepted | In-memory rate limits and cache/session stores are per-process. Multi-instance deployments need shared adapters or an edge gateway. |
+
+## Evidence
+
+Run from the repository root:
+
+```bash
+pnpm audit --audit-level high          # no known high/critical advisories at review time
+pnpm test                              # unit, integration, fuzz, and compatibility suites
+pnpm test:coverage                     # per-package coverage gates
+pnpm test:edge                         # workerd + Miniflare R2/KV bindings
+pnpm bench:security                    # abuse cases (oversized body, traversal, malformed input)
+pnpm docs:no-leak                      # public export has no internal docs/secrets
+```
+
+Additionally reviewed: `tests/security/`, `packages/security/test/`, `tests/integrations/`, the
+repository threat model, and the release/publish pipeline.
+
+## Residual risks
+
+- The internal review is not independent and does not replace a pentest or code audit.
+- CSRF tokens are not bound to a user session; untrusted sibling subdomains can set cookies.
+  Serve the app on a dedicated registrable domain or implement session-bound tokens.
+- There is no WAF, bot protection, or shared rate limiter in the framework.
+- Secrets are only as safe as the application's bindings and build boundaries; a secret placed in a
+  shared (non-`*.server.ts`) module can still reach the client.
+- Vendor integrations (Better Auth, Stripe, email, R2/KV, Tailwind) were tested against local
+  simulators or vendor SDKs, not audited as third-party products.
+- The Rust runtime's sandbox has its own internal assessment; it is not production-ready.
+
+## Independent audit plan
+
+Not scheduled. When commissioned, the brief should include:
+
+1. the Node/edge threat model and the review scope above;
+2. source access at a pinned commit and reproducible test commands;
+3. focus on session/CSRF, SSRF, client/server boundary, Worker bindings, templates, and release
+   provenance;
+4. a written report with severity, reproduction, fixes, and residual risk;
+5. public publication of scope, findings, and fixes after remediation.
+
+Until that happens, treat this page as an **internal review and audit brief**, not an external
+certification.
+
 ## docs/public/security/overview.md
 
 # Security Overview
@@ -6180,7 +6261,7 @@ import {
 export default [
   securityHeaders(),        // CSP (with nonce), nosniff, referrer policy, frame-ancestors
   cspNonce(),               // per-request nonce injected into the hydration payload
-  csrfProtection(),         // double-submit cookie (Web Crypto HMAC, constant-time compare)
+  csrfProtection(),         // double-submit cookie (Web Crypto random token, constant-time compare)
   rateLimit({ limit: 120, windowSeconds: 60 }),  // per client; identity from the adapter
 ];
 ```
@@ -6229,9 +6310,11 @@ OS-level sandbox (Landlock) for plugins. It is not part of the production promis
 - Rate limiting and load shedding are process-local; multi-instance deployments need a shared
   store.
 - CSP is wired through `@ramonyx/security`; if you replace it, you own the policy.
-- CSRF protection covers double-submit verification and the hidden `_csrf` field for no-JS form
-  flows; token rotation on action re-renders is automatic.
-- The experimental runtime has not had an external security audit.
+- CSRF protection is a random double-submit cookie (not session-bound) plus the hidden `_csrf`
+  field for no-JS forms. It relies on same-site cookies; do not share a registrable domain with
+  untrusted subdomains, or bind tokens to the session in a custom middleware.
+- **No independent third-party security audit has been commissioned.** An internal review with
+  findings and residual risk is published in [Security review & audit status](audit.md).
 
 ## docs/public/sessions-and-auth.md
 
@@ -6982,12 +7065,14 @@ cd my-app
 pnpm install
 pnpm dlx wrangler kv namespace create KV_STORE
 pnpm dlx wrangler r2 bucket create my-app-files
+pnpm dlx wrangler secret put STORAGE_TOKEN
 # edit wrangler.toml with the namespace id
 pnpm deploy
 ```
 
 `pnpm build:edge` produces `dist/edge/index.js`; `pnpm deploy` builds and runs `wrangler deploy`.
-See [R2 + KV](recipes/cloudflare-r2-kv.md) for upload/download details and limits.
+The storage API requires `Authorization: Bearer <STORAGE_TOKEN>`. See
+[R2 + KV](recipes/cloudflare-r2-kv.md) for upload/download details and limits.
 
 ## docs-blog
 

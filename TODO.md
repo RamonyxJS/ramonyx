@@ -347,7 +347,7 @@
 
 ### `p1-independent-security-audit` — Audit keamanan independen + publikasi temuan
 
-*tema: security · ukuran: M · status: open · sumber: agenda adopsi 2026-10-23: trust gap utama*
+*tema: security · ukuran: M · status: open · sumber: review internal 2026-10-24 + brief auditor; temuan AUD-01..10 (fixed/open/accepted) di docs/public/security/audit.md; audit pihak ketiga belum dipesan.*
 
 - **Apa**: Lakukan audit keamanan eksternal pada permukaan Node/edge: session/cookie, CSRF, SSRF, boundary client/server, plugin isolation, dan deployment Worker. Publikasikan lingkup, temuan, perbaikan, serta residual risk.
 - **Kenapa penting untuk bersaing**: Klaim secure-by-default belum cukup untuk adopsi serius tanpa review independen. Audit yang jujur menaikkan kepercayaan dan menemukan bug yang tidak terlihat oleh test internal.

@@ -1,4 +1,5 @@
 import type { PageProps } from "@ramonyx/react";
+import { CSRF_REQUEST_HEADER } from "@ramonyx/security";
 import type { PageActionContext, PageLoaderContext } from "ramonyx";
 import { currentUser, login } from "../lib/auth.server.ts";
 
@@ -9,7 +10,10 @@ export const metadata = {
 
 export async function loader({ env, request }: PageLoaderContext) {
   const user = await currentUser(env, request);
-  return { user: user === null ? null : { id: user.id, username: user.username } };
+  return {
+    user: user === null ? null : { id: user.id, username: user.username },
+    csrf: request.headers.get(CSRF_REQUEST_HEADER) ?? "",
+  };
 }
 
 export async function action({ env, formData }: PageActionContext) {
@@ -39,6 +43,7 @@ export default function Account({
 
           {data.user === null ? (
             <form method="post" className="rw-form">
+              <input type="hidden" name="_csrf" value={data.csrf} />
               <label htmlFor="username">Username</label>
               <input id="username" name="username" autoComplete="username" defaultValue="demo" />
               <label htmlFor="password">Password</label>
@@ -57,6 +62,7 @@ export default function Account({
                 Signed in as <strong>{data.user.username}</strong>
               </p>
               <form method="post" action="/api/auth/logout">
+                <input type="hidden" name="_csrf" value={data.csrf} />
                 <button type="submit" className="rw-quiet">
                   Sign out
                 </button>

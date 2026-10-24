@@ -41,6 +41,25 @@ test("markdown: frontmatter dibuang, heading ber-id, blok kode ber-nama berkas",
   assert.match(indexLink.html, /href="docs\/recipes"/, "tautan index.md memakai slug direktori");
 });
 
+test("markdown: blok bash manager-aware punya empat varian", () => {
+  const rendered = renderMarkdown(
+    "```bash\nnpm install\npnpm test -- tests/x.ts # comment\nramonyx build\n```",
+  );
+  assert.match(rendered.html, /data-pm-block/);
+  for (const id of ["npm", "pnpm", "yarn", "bun"]) {
+    assert.match(rendered.html, new RegExp(`data-pm-variant="${id}"`));
+  }
+  assert.match(rendered.html, /npm install/);
+  assert.match(rendered.html, /pnpm install/);
+  assert.match(rendered.html, /yarn\n/);
+  assert.match(rendered.html, /bun install/);
+  assert.match(rendered.html, /bun run test -- tests\/x.ts # comment/);
+  assert.match(rendered.html, /ramonyx build/);
+
+  const tanpaManager = renderMarkdown("```bash\nramonyx build\n```");
+  assert.doesNotMatch(tanpaManager.html, /data-pm-block/);
+});
+
 test("katalog publik: hanya docs/public; slug internal tidak ada", () => {
   const entries = listDocs();
   assert.ok(entries.length >= 20, `jumlah dokumen publik: ${entries.length}`);

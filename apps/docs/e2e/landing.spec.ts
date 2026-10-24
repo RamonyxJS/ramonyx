@@ -79,6 +79,35 @@ test("landing: package manager selector syncs install, console, dan closing", as
   await expect(page.locator(".terminal-live-tabs [aria-selected='true']")).toHaveText("bun");
 });
 
+test("package manager persists from landing to docs and swaps bash blocks", async ({ page }) => {
+  await page.goto("/");
+  await hydrate(page);
+  await page
+    .locator(".hero-copy .pm-install")
+    .getByRole("button", { name: "bun", exact: true })
+    .click();
+  await expect(page.locator("html")).toHaveAttribute("data-pm", "bun");
+
+  await page.goto("/docs/getting-started");
+  await hydrate(page);
+  await expect(page.locator(".pm-select select")).toHaveValue("bun");
+  const block = page.locator("[data-pm-block]").first();
+  await expect(block.locator('[data-pm-variant="bun"]')).toBeVisible();
+  await expect(block.locator('[data-pm-variant="npm"]')).toBeHidden();
+
+  await page.locator(".pm-select select").selectOption("npm");
+  await expect(page.locator("html")).toHaveAttribute("data-pm", "npm");
+  await expect(block.locator('[data-pm-variant="npm"]')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem("ramonyx-pm"))).toBe("npm");
+
+  await page.reload();
+  await hydrate(page);
+  await expect(page.locator(".pm-select select")).toHaveValue("npm");
+  await expect(
+    page.locator("[data-pm-block]").first().locator('[data-pm-variant="npm"]'),
+  ).toBeVisible();
+});
+
 test("docs: halaman, ToC, prev/next, copy kode, dan alias lama", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/docs/getting-started");

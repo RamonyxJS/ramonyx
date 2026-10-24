@@ -286,6 +286,22 @@ img { max-width: 100%; height: auto; }
   font: 500 10.5px var(--font-mono); cursor: pointer;
 }
 .install .copy:hover { color: var(--ink); border-color: var(--ink); }
+.pm-select {
+  display: inline-flex; align-items: center; border: 1px solid var(--line);
+  border-radius: 999px; background: var(--paper); padding: 2px 8px;
+  font: 500 10.5px var(--font-mono); color: var(--muted);
+}
+.pm-select select {
+  appearance: none; border: 0; background: transparent; color: var(--ink);
+  font: inherit; cursor: pointer; padding: 1px 2px;
+}
+.pm-select select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[data-pm-block] .pm-variant { display: none; }
+html:not([data-pm]) [data-pm-block] [data-pm-variant="npm"],
+html[data-pm="npm"] [data-pm-block] [data-pm-variant="npm"],
+html[data-pm="pnpm"] [data-pm-block] [data-pm-variant="pnpm"],
+html[data-pm="yarn"] [data-pm-block] [data-pm-variant="yarn"],
+html[data-pm="bun"] [data-pm-block] [data-pm-variant="bun"] { display: block; }
 .pm-install { flex-wrap: wrap; row-gap: 8px; }
 .pm-tabs { display: flex; flex-wrap: wrap; gap: 4px; flex-basis: 100%; border: 0; margin: 0; padding: 0; }
 .pm-tab {

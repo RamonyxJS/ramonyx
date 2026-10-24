@@ -7,6 +7,7 @@ import { posix } from "node:path";
 import { marked, type Tokens } from "marked";
 
 import { highlightCode } from "./highlight.ts";
+import { MANAGER_IDS, managerVariants } from "./package-managers.ts";
 
 export interface TocItem {
   readonly id: string;
@@ -136,13 +137,24 @@ export function renderMarkdown(
       judul === undefined
         ? `<span class="code-lang">${kataLang}</span>`
         : `<span class="code-file">${escapeHtml(judul)}</span><span class="code-lang">${kataLang}</span>`;
-    const disorot = highlightCode(text, bahasa);
-    const isi =
-      disorot === null
-        ? `<pre class="shiki" tabindex="0"><code>${escapeHtml(text)}</code></pre>`
+
+    const highlightBlock = (source: string): string => {
+      const disorot = highlightCode(source, bahasa);
+      return disorot === null
+        ? `<pre class="shiki" tabindex="0"><code>${escapeHtml(source)}</code></pre>`
         : disorot.replace("<pre", '<pre tabindex="0"');
+    };
+
+    const variants = bahasa === "bash" ? managerVariants(text) : null;
+    const isi =
+      variants === null
+        ? highlightBlock(text)
+        : MANAGER_IDS.map(
+            (id) =>
+              `<div class="pm-variant" data-pm-variant="${id}">${highlightBlock(variants[id])}</div>`,
+          ).join("");
     return [
-      `<figure class="code" data-lang="${kataLang}">`,
+      `<figure class="code${variants === null ? "" : " pm-block"}" data-lang="${kataLang}"${variants === null ? "" : " data-pm-block"}>`,
       `<figcaption class="code-head">${namaBerkas}<button class="copy" type="button" data-copy aria-label="Copy code">Copy</button></figcaption>`,
       `<div class="code-body">${isi}</div>`,
       `</figure>`,

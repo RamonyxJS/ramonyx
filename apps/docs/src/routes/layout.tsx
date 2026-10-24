@@ -2,6 +2,10 @@ import type { LayoutProps } from "@ramonyx/react";
 
 import { CodeCopy } from "../components/code-copy.tsx";
 import { Context7Note } from "../components/context7-note.tsx";
+import {
+  PackageManagerSelect,
+  PackageManagerSync,
+} from "../components/landing/package-manager.tsx";
 import { Search } from "../components/search.tsx";
 import { ThemeToggle } from "../components/theme-toggle.tsx";
 import { isContext7DocsPath } from "../context7.ts";
@@ -16,6 +20,7 @@ export default function RootLayout({ children, path }: LayoutProps) {
         </a>
       ) : null}
       <CodeCopy />
+      <PackageManagerSync />
       <header className="topbar">
         <div className="wrap topbar-dalam">
           <a className="merek" href=".">
@@ -30,6 +35,7 @@ export default function RootLayout({ children, path }: LayoutProps) {
             <a href="https://github.com/RamonyxJS/ramonyx">GitHub</a>
           </nav>
           <div className="topbar-aksi">
+            {path === "/" ? null : <PackageManagerSelect />}
             <Search />
             <ThemeToggle />
             <a className="tombol utama" href="docs/getting-started" data-prefetch="off">

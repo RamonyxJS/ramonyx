@@ -94,7 +94,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<FetchHa
           script: clientScript,
           load: "interaction",
           bootstrap:
-            'try{const t=localStorage.getItem("ramonyx-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{};document.addEventListener("click",function(e){if(document.documentElement.classList.contains("hydrated"))return;const b=e.target instanceof Element?e.target.closest("[data-theme-toggle]"):null;if(!b)return;const d=document.documentElement;const n=d.dataset.theme==="dark"?"light":"dark";d.dataset.theme=n;try{localStorage.setItem("ramonyx-theme",n)}catch{}},true);',
+            'let pm="npm";try{const p=localStorage.getItem("ramonyx-pm");if(p==="npm"||p==="pnpm"||p==="yarn"||p==="bun")pm=p}catch{};document.documentElement.dataset.pm=pm;try{const t=localStorage.getItem("ramonyx-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch{};document.addEventListener("click",function(e){if(document.documentElement.classList.contains("hydrated"))return;const b=e.target instanceof Element?e.target.closest("[data-theme-toggle]"):null;if(!b)return;const d=document.documentElement;const n=d.dataset.theme==="dark"?"light":"dark";d.dataset.theme=n;try{localStorage.setItem("ramonyx-theme",n)}catch{}},true);',
         },
         hooks: options.hooks,
       }),

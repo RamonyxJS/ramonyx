@@ -1,14 +1,9 @@
 // Terminal hidup: tab package manager, typing, replay, copy. SSR menampilkan transkrip final;
 // typing hanya dimulai saat komponen masuk viewport dan motion diizinkan.
 import { useEffect, useRef, useState } from "react";
-
+import { MANAGERS, type Manager } from "../../package-managers.ts";
 import { useInView, useReducedMotion } from "./hooks.ts";
-import {
-  MANAGERS,
-  type Manager,
-  setPackageManager,
-  usePackageManager,
-} from "./package-manager.tsx";
+import { setPackageManager, usePackageManager } from "./package-manager.tsx";
 
 interface Line {
   readonly tone: "prompt" | "output" | "muted" | "ready";

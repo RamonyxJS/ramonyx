@@ -14,7 +14,11 @@ export function CodeCopy() {
         return;
       }
       const wadah = target.closest(".code, .kode-panel, .install");
-      const code = wadah?.querySelector("pre code, pre, code");
+      const pmBlock = target.closest("[data-pm-block]");
+      const manager = document.documentElement.dataset.pm ?? "npm";
+      const code =
+        pmBlock?.querySelector(`[data-pm-variant="${manager}"] pre code`) ??
+        wadah?.querySelector("pre code, pre, code");
       const text = code?.textContent ?? "";
       void navigator.clipboard
         .writeText(text)

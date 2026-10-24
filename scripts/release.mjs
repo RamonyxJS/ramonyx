@@ -168,13 +168,16 @@ Scaffolder aplikasi Ramonyx — SSR React + hydration, file routing \`src/routes
 ## Pemakaian
 
 \`\`\`bash
-pnpm create ramonyx-app aplikasi-saya
-# atau tanpa install:
-pnpm dlx create-ramonyx-app aplikasi-saya
+npm create ramonyx-app@latest aplikasi-saya
+# atau:
+pnpm create ramonyx-app@latest aplikasi-saya
+yarn create ramonyx-app aplikasi-saya
+bun create ramonyx-app aplikasi-saya
 \`\`\`
 
 Pilih template dengan \`--template minimal|api-auth|cloudflare|docs-blog\`.
-Lanjutkan dengan \`cd aplikasi-saya && pnpm install && pnpm dev\`.
+Lanjutkan dengan manager yang sama: \`npm install && npm run dev\`,
+\`pnpm install && pnpm dev\`, \`yarn && yarn dev\`, atau \`bun install && bun run dev\`.
 
 Repo: ${REPOSITORY} · Lisensi: MIT
 `;

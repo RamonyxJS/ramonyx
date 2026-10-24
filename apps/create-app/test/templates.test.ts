@@ -155,6 +155,11 @@ console.log("AUTH TEMPLATE OK");
 
 test("cloudflare: build edge + R2/KV binding smoke", () => {
   const target = scaffold("cf-app", "cloudflare");
+  const manifest = JSON.parse(readFileSync(join(target, "package.json"), "utf8")) as {
+    scripts?: Record<string, string>;
+  };
+  assert.match(manifest.scripts?.deploy ?? "", /npx wrangler deploy/);
+  assert.doesNotMatch(manifest.scripts?.deploy ?? "", /pnpm/);
   const output = runDevtools(target, ["build", "--target", "edge"]);
   assert.match(output, /edge: .*index\.js/);
   assert.ok(existsSync(join(target, "dist/edge/index.js")));

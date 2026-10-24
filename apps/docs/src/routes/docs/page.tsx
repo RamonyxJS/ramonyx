@@ -121,7 +121,7 @@ export default function DocsIndexPage({
             <a href="docs/getting-started">
               <span className="docs-step-num">01</span>
               <strong>Scaffold</strong>
-              <code>pnpm create ramonyx-app my-app</code>
+              <code>npm create ramonyx-app@latest my-app</code>
               <span className="docs-step-arrow" aria-hidden="true">
                 →
               </span>

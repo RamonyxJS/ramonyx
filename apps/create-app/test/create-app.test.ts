@@ -70,6 +70,9 @@ test("scaffold membuat struktur dan mengganti placeholder", () => {
   const output = runCli([target]);
 
   assert.match(output, /hello-app/);
+  for (const manager of ["npm", "pnpm", "yarn", "bun"]) {
+    assert.match(output, new RegExp(`\\b${manager}\\b`), `output menyebut ${manager}`);
+  }
   for (const relative of [
     "package.json",
     "ramonyx.config.ts",
@@ -606,6 +609,9 @@ test("help menampilkan penggunaan", () => {
   const output = runCli(["--help"]);
   assert.match(output, /create-ramonyx-app/);
   assert.match(output, /Penggunaan/);
+  for (const manager of ["npm", "pnpm", "yarn", "bun"]) {
+    assert.match(output, new RegExp(manager));
+  }
 });
 
 test("plugin dari config dimuat CLI (vite passthrough + nama dilaporkan) — ADR-0067", async () => {

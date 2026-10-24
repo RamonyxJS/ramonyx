@@ -12,22 +12,22 @@ interface Manager {
   readonly dev: string;
 }
 
-const PNPM: Manager = {
-  id: "pnpm",
-  label: "pnpm",
-  create: "pnpm create ramonyx-app my-app",
-  install: "pnpm install",
-  dev: "pnpm dev",
+const NPM: Manager = {
+  id: "npm",
+  label: "npm",
+  create: "npm create ramonyx-app@latest my-app",
+  install: "npm install",
+  dev: "npm run dev",
 };
 
 const MANAGERS: readonly Manager[] = [
-  PNPM,
+  NPM,
   {
-    id: "npm",
-    label: "npm",
-    create: "npm create ramonyx-app@latest my-app",
-    install: "npm install",
-    dev: "npm run dev",
+    id: "pnpm",
+    label: "pnpm",
+    create: "pnpm create ramonyx-app@latest my-app",
+    install: "pnpm install",
+    dev: "pnpm dev",
   },
   {
     id: "yarn",
@@ -55,8 +55,8 @@ function transcript(manager: Manager): Line[] {
     { tone: "output", text: "scaffold → my-app" },
     { tone: "muted", text: `$ cd my-app && ${manager.install}` },
     { tone: "muted", text: `$ ${manager.dev}` },
-    { tone: "muted", text: "vite   http://localhost:5173" },
-    { tone: "muted", text: "ssr    http://127.0.0.1:3000" },
+    { tone: "muted", text: "dev    http://localhost:3000" },
+    { tone: "muted", text: "devtools /__ramonyx/devtools" },
     { tone: "ready", text: "ready" },
   ];
 }
@@ -70,7 +70,7 @@ export function TypedTerminal({ compact = false }: { readonly compact?: boolean 
   const [run, setRun] = useState(0);
   const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: "120px 0px" });
   const reduced = useReducedMotion();
-  const manager = MANAGERS[managerIndex] ?? PNPM;
+  const manager = MANAGERS[managerIndex] ?? NPM;
   const timers = useRef<number[]>([]);
 
   useEffect(() => {

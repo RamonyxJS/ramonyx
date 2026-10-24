@@ -202,7 +202,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
                 <span className="install-prompt" aria-hidden="true">
                   $
                 </span>
-                <code>pnpm create ramonyx-app my-app</code>
+                <code>npm create ramonyx-app@latest my-app</code>
                 <button className="copy" type="button" data-copy aria-label="Copy install command">
                   Copy
                 </button>
@@ -218,12 +218,13 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
               </div>
               <pre>
                 <code>
-                  <span className="terminal-prompt">$</span> pnpm create ramonyx-app my-app{"\n"}
+                  <span className="terminal-prompt">$</span> npm create ramonyx-app@latest my-app
+                  {"\n"}
                   <span className="console-dim">scaffold → my-app</span>
                   {"\n"}
-                  <span className="terminal-prompt">$</span> cd my-app && pnpm dev{"\n"}
-                  <span className="console-dim">vite</span> http://localhost:5173{"\n"}
-                  <span className="console-dim">ssr </span> http://127.0.0.1:3000{"\n"}
+                  <span className="terminal-prompt">$</span> cd my-app && npm run dev{"\n"}
+                  <span className="console-dim">dev</span> http://localhost:3000{"\n"}
+                  <span className="console-dim">devtools</span> /__ramonyx/devtools{"\n"}
                   <span className="console-ready">ready</span>
                   {"\n"}
                   <span className="terminal-prompt">$</span> <span className="terminal-cursor" />
@@ -589,7 +590,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
             <span className="install-prompt" aria-hidden="true">
               $
             </span>
-            <code>pnpm create ramonyx-app my-app</code>
+            <code>npm create ramonyx-app@latest my-app</code>
             <button className="copy" type="button" data-copy aria-label="Copy install command">
               Copy
             </button>

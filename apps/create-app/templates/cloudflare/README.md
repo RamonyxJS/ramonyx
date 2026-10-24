@@ -11,22 +11,25 @@ Deploy the same Ramonyx route tree as a Cloudflare Worker with real R2/KV bindin
 Edit `wrangler.toml` and replace the placeholder KV namespace ID. Create the resources first:
 
 ```bash
-pnpm dlx wrangler kv namespace create KV_STORE
-pnpm dlx wrangler r2 bucket create __APP_NAME__-files
-pnpm dlx wrangler secret put STORAGE_TOKEN   # random token, 16+ chars
+npx wrangler kv namespace create KV_STORE
+npx wrangler r2 bucket create __APP_NAME__-files
+npx wrangler secret put STORAGE_TOKEN   # random token, 16+ chars
 ```
 
 Then:
 
 ```bash
-pnpm install
-pnpm dev                 # Node: binding routes return 503
-pnpm build:edge          # dist/edge/index.js
-pnpm deploy              # build + wrangler deploy
+npm install
+npm run dev              # Node: binding routes return 503
+npm run build:edge       # dist/edge/index.js
+npm run deploy           # build + wrangler deploy
 
 curl -H "Authorization: Bearer $STORAGE_TOKEN" \
   https://your-worker.example/api/storage?key=demo
 ```
+
+`npm` is shown for brevity. `pnpm install && pnpm dev`, `yarn && yarn dev`, and
+`bun install && bun run dev` work too; use the same manager for scripts.
 
 R2/KV are Cloudflare bindings, not Node packages. Use `wrangler dev`/Miniflare or the deployed
 Worker to exercise them; plain `ramonyx dev` has no bindings. The storage API requires

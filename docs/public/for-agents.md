@@ -100,7 +100,7 @@ controlled proxy.
 
 ### Scaffolder opt-in
 
-`pnpm create ramonyx-app <dir> --with-agent-docs` writes `AGENTS.md` and
+`npm create ramonyx-app@latest <dir> --with-agent-docs` writes `AGENTS.md` and
 `.opencode/skills/ramonyx/SKILL.md` in addition to the minimal app. Without the flag, the template
 contains no agent-specific files. After scaffolding (or in any existing app), run
 `ramonyx ai init` to regenerate the guide from the actual route map and write MCP configs.

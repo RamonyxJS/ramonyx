@@ -4,7 +4,7 @@
 and deployment model; each adds a different production-shaped slice.
 
 ```bash
-pnpm create ramonyx-app my-app --template api-auth
+npm create ramonyx-app@latest my-app --template api-auth
 # or in this repository:
 pnpm create:app my-app --template api-auth
 ```
@@ -13,10 +13,10 @@ pnpm create:app my-app --template api-auth
 
 | Template | Use it for | Verify |
 | --- | --- | --- |
-| `minimal` | First app, SSR + hydration + API + form action | `pnpm dev`, `pnpm build` |
+| `minimal` | First app, SSR + hydration + API + form action | `npm run dev`, `npm run build` |
 | `api-auth` | Server-side session login/logout, protected API, server action | in-process auth test |
-| `cloudflare` | R2 + KV bindings, Worker artifact, `wrangler.toml` | `pnpm build:edge` |
-| `docs-blog` | Blog/docs pages, dynamic posts, static export | `pnpm build:static` |
+| `cloudflare` | R2 + KV bindings, Worker artifact, `wrangler.toml` | `npm run build:edge` |
+| `docs-blog` | Blog/docs pages, dynamic posts, static export | `npm run build:static` |
 
 ## api-auth
 
@@ -25,8 +25,8 @@ Includes `src/lib/auth.server.ts`, a login server action, `GET /api/me`, and
 
 ```bash
 cd my-app
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 Demo credentials are `demo` / `demo-password-123`. Before production:
@@ -44,15 +44,15 @@ the Node dev server; use the Worker runtime or Miniflare for those routes.
 
 ```bash
 cd my-app
-pnpm install
-pnpm dlx wrangler kv namespace create KV_STORE
-pnpm dlx wrangler r2 bucket create my-app-files
-pnpm dlx wrangler secret put STORAGE_TOKEN
+npm install
+npx wrangler kv namespace create KV_STORE
+npx wrangler r2 bucket create my-app-files
+npx wrangler secret put STORAGE_TOKEN
 # edit wrangler.toml with the namespace id
-pnpm deploy
+npm run deploy
 ```
 
-`pnpm build:edge` produces `dist/edge/index.js`; `pnpm deploy` builds and runs `wrangler deploy`.
+`npm run build:edge` produces `dist/edge/index.js`; `pnpm deploy` builds and runs `wrangler deploy`.
 The storage API requires `Authorization: Bearer <STORAGE_TOKEN>`. See
 [R2 + KV](recipes/cloudflare-r2-kv.md) for upload/download details and limits.
 
@@ -62,9 +62,9 @@ Includes a typed post list, `/blog/[slug]` with `getStaticPaths()`, and a static
 
 ```bash
 cd my-app
-pnpm install
-pnpm dev
-pnpm build:static   # dist/static
+npm install
+npm run dev
+npm run build:static   # dist/static
 ```
 
 Deploy `dist/static` to Cloudflare Pages/Workers Assets, GitHub Pages, or any static host. Replace
@@ -74,14 +74,17 @@ Deploy `dist/static` to Cloudflare Pages/Workers Assets, GitHub Pages, or any st
 
 | Target | Command | Output |
 | --- | --- | --- |
-| Node server | `pnpm build && pnpm start` | `dist/client` + SSR on the configured port |
-| Static | `pnpm build:static` | `dist/static` |
-| Cloudflare Worker | `pnpm deploy` (cloudflare template) | `dist/edge/index.js` + assets |
+| Node server | `npm run build && npm start` | `dist/client` + SSR on the configured port |
+| Static | `npm run build:static` | `dist/static` |
+| Cloudflare Worker | `npm run deploy` (cloudflare template) | `dist/edge/index.js` + assets |
 | Vercel Edge | `ramonyx build --target vercel` | `dist/vercel` fetch handler |
 | Deno Deploy | `ramonyx build --target deno` | `dist/deno` fetch handler |
 
 The Vercel/Deno presets are emitted by the CLI; wire the platform's project settings to the output
 directory and provide the same env/bindings your app reads.
+
+Examples use npm. Replace `npm run <script>` with `pnpm <script>`, `yarn <script>`, or
+`bun run <script>`; see the [package-manager matrix](getting-started.md#package-managers).
 
 ## Support level
 

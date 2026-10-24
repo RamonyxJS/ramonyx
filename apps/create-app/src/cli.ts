@@ -26,9 +26,11 @@ const TEMPLATE_IDS = Object.keys(TEMPLATES) as TemplateId[];
 const USAGE = `create-ramonyx-app — buat aplikasi Ramonyx baru
 
 Penggunaan:
-  pnpm create ramonyx-app <dir>      # dari registry (setelah publikasi)
-  pnpm dlx create-ramonyx-app <dir>  # tanpa install
-  pnpm create:app <dir>              # di dalam repo (workspace)
+  npm create ramonyx-app@latest <dir>   # registry
+  pnpm create ramonyx-app@latest <dir>  # registry
+  yarn create ramonyx-app <dir>         # registry
+  bun create ramonyx-app <dir>          # registry
+  pnpm create:app <dir>                 # di dalam repo (workspace)
 
 Opsi:
   --force, -f       Timpa berkas template walau direktori tujuan tidak kosong
@@ -36,6 +38,9 @@ Opsi:
   --template <id>   Template: minimal (default), api-auth, cloudflare, docs-blog
   --list-templates  Tampilkan template yang tersedia
   --help, -h        Tampilkan bantuan ini
+
+Catatan pnpm: bila scaffold masih 1.x, pakai
+  pnpm create ramonyx-app@2.0.1 <dir>
 `;
 
 function usage(exitCode: number): never {
@@ -153,8 +158,15 @@ console.log(`✓ App "${appName}" dibuat di ${targetDir} (template: ${template})
 Langkah berikutnya:
 
   cd ${target}
-  pnpm install   # atau npm install
-  pnpm start     # http://127.0.0.1:3000
+
+Pilih SATU package manager (jangan campur lockfile):
+
+  npm install && npm run build && npm start
+  pnpm install && pnpm build && pnpm start
+  yarn && yarn build && yarn start
+  bun install && bun run build && bun run start
+
+Dev server: ganti "build && start" dengan "run dev" / "dev".
 ${
   withAgentDocs
     ? "\nAgent docs: AGENTS.md + .opencode/skills/ramonyx/SKILL.md sudah disertakan.\n"

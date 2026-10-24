@@ -7,7 +7,8 @@ tepi kepercayaan, dan benchmark/gate reproducible.
 > **Status: 2.0.1 — Single-port dev + AI-ready DX + Node framework baseline stabil** (2026-10-23, 16 paket `@ramonyx/*` +
 > `ramonyx` + `create-ramonyx-app`, **dengan provenance**). Runtime Rust/V8 tetap
 > **eksperimental** dan jalur terpisah. Aplikasi baru:
-> `pnpm create ramonyx-app aplikasi-saya` → `pnpm dev|build|start` (CLI `ramonyx`).
+> `npm create ramonyx-app@latest aplikasi-saya` → `npm run dev|build|start` (CLI `ramonyx`);
+> pnpm, Yarn, dan Bun juga didukung.
 > Verifikasi registry end-to-end: scaffold → install → build → start → SSR + API.
 > Checklist rilis (internal): [docs/internal/releasing.md](docs/internal/releasing.md).
 > API stability: [docs/public/api/versioning.md](docs/public/api/versioning.md).
@@ -16,10 +17,10 @@ tepi kepercayaan, dan benchmark/gate reproducible.
 
 ```bash
 # scaffold aplikasi baru (dari registry):
-pnpm create ramonyx-app aplikasi-saya
-cd aplikasi-saya && pnpm install && pnpm build && pnpm start
+npm create ramonyx-app@latest aplikasi-saya
+cd aplikasi-saya && npm install && npm run build && npm start
 
-# atau dari repo (kontribusi framework):
+# atau dari repo (kontribusi framework; pnpm workspace):
 corepack enable pnpm && pnpm install && pnpm dev   # Vite + SSR :3000 (satu port)
 ```
 

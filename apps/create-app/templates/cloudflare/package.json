@@ -10,7 +10,7 @@
     "start": "ramonyx start",
     "dev": "ramonyx dev",
     "build:edge": "ramonyx build --target edge",
-    "deploy": "pnpm build:edge && pnpm dlx wrangler deploy"
+    "deploy": "ramonyx build --target edge && npx wrangler deploy"
   },
   "dependencies": {
     "@ramonyx/adapter-runtime": "^2.0.1",

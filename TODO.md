@@ -317,7 +317,7 @@
 
 ### `p1-integration-kit` — Kit integrasi resmi: database, auth, observability, email, payment, edge
 
-*tema: ecosystem · ukuran: L · status: open · sumber: agenda adopsi 2026-10-23; progres: Drizzle + Cloudflare D1, Better Auth (memory test + Drizzle/D1 recipe), OpenTelemetry (middleware + hooks test).*
+*tema: ecosystem · ukuran: L · status: open · sumber: agenda adopsi 2026-10-23; progres: Drizzle + Cloudflare D1, Better Auth (memory test + Drizzle/D1 recipe), OpenTelemetry (middleware + hooks test), Resend + Postmark (local SDK test).*
 
 - **Apa**: Sediakan 5–7 integrasi resmi yang benar-benar dijalankan dan diuji: Drizzle/Prisma, Auth.js atau Better Auth, OpenTelemetry/Sentry, Resend/Postmark, Stripe, Cloudflare D1/R2/KV, serta Tailwind + shadcn/ui. Setiap integrasi berisi contoh minimal, adapter/tip yang jelas, dan smoke test.
 - **Kenapa penting untuk bersaing**: Adopsi framework ditentukan oleh kemampuan memakai stack yang sudah dikenal. Ramonyx sudah kuat di core, tetapi pengguna harus merakit database/auth/email/payment sendiri; pesaing menawarkan jalur integrasi yang terdokumentasi dan teruji.

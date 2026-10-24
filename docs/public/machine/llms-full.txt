@@ -2027,7 +2027,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T00:37:29.105Z",
+  "generatedAt": "2026-10-24T02:24:33.992Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2548,7 +2548,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T00:37:31.945Z",
+  "generatedAt": "2026-10-24T02:24:35.587Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2663,7 +2663,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T00:37:31.971Z",
+  "generatedAt": "2026-10-24T02:24:35.610Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2758,6 +2758,20 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "docs": "docs/public/recipes/dynamic-route.md"
     },
     {
+      "id": "email-resend-postmark",
+      "title": "Send transactional email with Resend or Postmark",
+      "summary": "Keep the provider behind a small server-only interface, read API keys from bindings, and send from a route or action.",
+      "when": "The app needs verification, reset, receipt, or notification email and should not hard-code one provider in route code.",
+      "files": [
+        "src/email.server.ts",
+        "src/routes/api/contact.ts",
+        "wrangler.toml"
+      ],
+      "verify": "pnpm test",
+      "slug": "recipes/email-resend-postmark",
+      "docs": "docs/public/recipes/email-resend-postmark.md"
+    },
+    {
       "id": "form-action",
       "title": "Handle a form with a server action",
       "summary": "Validate FormData, mutate on the server, redirect or return a result, and keep no-JS submission working.",
@@ -2816,8 +2830,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "2.0.1",
-  "generatedAt": "2026-10-24T00:35:28.412Z",
-  "commit": "1fc367354194faed8501e9dce7634e85be779683",
+  "generatedAt": "2026-10-24T02:23:24.052Z",
+  "commit": "91da6a3bec49fa81f36b373366266cdac9d7a111",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2842,9 +2856,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     ]
   },
   "adrs": 9,
-  "docs": 35,
+  "docs": 36,
   "tests": {
-    "node": 385,
+    "node": 386,
     "rust": 116,
     "e2eSpecFiles": 12
   }
@@ -4311,6 +4325,7 @@ touches, and a verification command; the machine-readable index is
 | SQLite persistence on Cloudflare | [Use Drizzle with Cloudflare D1](drizzle-d1.md) | `pnpm test` |
 | Email/password + sessions | [Add Better Auth to an API route](better-auth.md) | `pnpm test` |
 | Traces and OTLP export | [Export request traces to OpenTelemetry](opentelemetry.md) | `pnpm test` |
+| Transactional email | [Send email with Resend or Postmark](email-resend-postmark.md) | `pnpm test` |
 | Login/logout and protected pages | [Add session auth](auth-session.md) | `ramonyx check --json` |
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |
@@ -4832,6 +4847,185 @@ ramonyx check --json
 ```
 
 Next: [Routing](../routing.md) and [Typed Routes](../typed-routes.md).
+
+## docs/public/recipes/email-resend-postmark.md
+
+---
+recipe: email-resend-postmark
+title: Send transactional email with Resend or Postmark
+summary: Keep the provider behind a small server-only interface, read API keys from bindings, and send from a route or action.
+when: The app needs verification, reset, receipt, or notification email and should not hard-code one provider in route code.
+files: src/email.server.ts, src/routes/api/contact.ts, wrangler.toml
+verify: pnpm test
+---
+
+# Send transactional email with Resend or Postmark
+
+Email delivery is an external side effect. Keep the provider behind a tiny interface so route code
+does not depend on one SDK, and keep API keys on the server.
+
+## Install
+
+```bash
+pnpm add resend postmark
+```
+
+## Provider adapter
+
+```ts
+// src/email.server.ts — server-only
+import type { EnvReader } from "ramonyx";
+import { Models, ServerClient } from "postmark";
+import { Resend } from "resend";
+
+export interface EmailMessage {
+  readonly from: string;
+  readonly to: string;
+  readonly subject: string;
+  readonly html: string;
+  readonly text: string;
+}
+
+export interface EmailProvider {
+  send(message: EmailMessage): Promise<{ id: string }>;
+}
+
+export function resendProvider(env: EnvReader): EmailProvider {
+  const key = env.get("RESEND_API_KEY");
+  if (key === undefined) throw new Error("RESEND_API_KEY belum diatur");
+
+  const client = new Resend(key);
+  return {
+    async send(message) {
+      const { data, error } = await client.emails.send(message);
+      if (error !== null) {
+        throw new Error(`Resend gagal: ${error.message}`);
+      }
+      return { id: data.id };
+    },
+  };
+}
+
+export function postmarkProvider(env: EnvReader): EmailProvider {
+  const token = env.get("POSTMARK_SERVER_TOKEN");
+  if (token === undefined) throw new Error("POSTMARK_SERVER_TOKEN belum diatur");
+
+  const client = new ServerClient(
+    token,
+    new Models.ClientOptions.Configuration(true, "api.postmarkapp.com"),
+  );
+  const stream = env.get("POSTMARK_MESSAGE_STREAM") ?? "outbound";
+  return {
+    async send(message) {
+      const result = await client.sendEmail({
+        From: message.from,
+        To: message.to,
+        Subject: message.subject,
+        HtmlBody: message.html,
+        TextBody: message.text,
+        MessageStream: stream,
+      });
+      if (result.ErrorCode !== 0) {
+        throw new Error(`Postmark gagal: ${result.Message}`);
+      }
+      return { id: result.MessageID };
+    },
+  };
+}
+```
+
+`POSTMARK_MESSAGE_STREAM` is configuration, not a secret. Both API keys are secrets: use
+`wrangler secret put RESEND_API_KEY` / `wrangler secret put POSTMARK_SERVER_TOKEN`, or the equivalent
+secret store on your host. Never import this module from client code.
+
+## Send from a route
+
+```ts
+// src/routes/api/contact.ts
+import { HttpError, route } from "ramonyx";
+import { postmarkProvider, resendProvider } from "../../email.server.ts";
+
+function escapeHtml(value: string): string {
+  return value.replace(
+    /[&<>"']/g,
+    (char) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? char,
+  );
+}
+
+export const POST = route({
+  handler: async ({ env, request, json }) => {
+    const body = (await request.json()) as { to?: unknown; subject?: unknown; text?: unknown };
+    const to = String(body.to ?? "").trim();
+    const subject = String(body.subject ?? "").trim();
+    const text = String(body.text ?? "").trim();
+    if (to === "" || subject === "" || text === "") {
+      return json({ error: "to, subject, dan text wajib" }, 400);
+    }
+
+    const provider =
+      env.get("EMAIL_PROVIDER") === "postmark" ? postmarkProvider(env) : resendProvider(env);
+
+    try {
+      const sent = await provider.send({
+        from: env.get("EMAIL_FROM") ?? "Ramonyx <no-reply@example.test>",
+        to,
+        subject,
+        text,
+        html: `<p>${escapeHtml(text)}</p>`,
+      });
+      return json({ ok: true, id: sent.id });
+    } catch (error) {
+      // Jangan bocorkan detail provider/API ke klien. Log internal, kirim pesan generik.
+      throw new HttpError(502, "Email gagal dikirim", { cause: error });
+    }
+  },
+});
+```
+
+`escapeHtml` must escape `& < > " '` before interpolating user text into HTML. Better still, use a
+template file with explicit escaping.
+
+## Verify
+
+```bash
+pnpm test -- tests/integrations/email.test.ts
+ramonyx check --json
+```
+
+The executable example [`tests/integrations/email.test.ts`](../../../tests/integrations/email.test.ts)
+runs a local HTTP server and points both real SDKs at it:
+
+- Resend: `new Resend(key, { baseUrl })`, then asserts the `Authorization` header and payload.
+- Postmark: `new ServerClient(token, new Models.ClientOptions.Configuration(false, host))`, then
+  asserts the `X-Postmark-Server-Token` header and payload.
+
+No email or external network request is made.
+
+## Deployment notes
+
+- **Sender identity:** verify the sending domain in Resend (DNS) or the sender signature/domain in
+  Postmark before production. `From` must match the verified identity.
+- **Bindings:** on Cloudflare use `wrangler secret put`; on Node use environment variables or your
+  secret manager. `EMAIL_PROVIDER` and `EMAIL_FROM` can be plain vars.
+- **Node vs edge:** both SDKs are now fetch-based, but they are published as Node packages. If you
+  target Workers/edge, run a bundle smoke test; if the SDK pulls unsupported code, call the provider
+  HTTP endpoint with `fetch` instead of changing the rest of the adapter.
+- **Failure policy:** a provider timeout is not proof that no email was sent. Do not blindly retry
+  non-idempotent sends; record an outbox/idempotency key if duplicates matter.
+- **Do not block critical paths:** for large volumes, enqueue the send and return `202`; this
+  recipe awaits the provider so errors are visible to the caller.
+- **Bounces/complaints:** this recipe only sends. Subscribe to provider webhooks, verify signatures,
+  and suppress recipients in your own store.
+
+## Limits
+
+- Postmark requires a message stream; the default `outbound` must exist in your server.
+- Sending HTML from user input without escaping is an injection risk. Use React email/templates or
+  an explicit escaper.
+- API keys in client bundles or logs are leaked credentials. Keep `email.server.ts` server-only and
+  never log request headers/API keys.
+- This does not implement outbox, retries, rate limiting, or unsubscribe management.
 
 ## docs/public/recipes/form-action.md
 

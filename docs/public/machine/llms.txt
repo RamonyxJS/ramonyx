@@ -44,6 +44,7 @@ This site has a search endpoint: https://context7.com/api/v2/ask?siteKey=ask_893
 - [Deploy static or edge output](https://ramonyx.devmoon.net/docs/recipes/deploy-static-edge/)
 - [Use Drizzle with Cloudflare D1](https://ramonyx.devmoon.net/docs/recipes/drizzle-d1/)
 - [Add a dynamic route](https://ramonyx.devmoon.net/docs/recipes/dynamic-route/)
+- [Send transactional email with Resend or Postmark](https://ramonyx.devmoon.net/docs/recipes/email-resend-postmark/)
 - [Handle a form with a server action](https://ramonyx.devmoon.net/docs/recipes/form-action/)
 - [Export request traces to OpenTelemetry](https://ramonyx.devmoon.net/docs/recipes/opentelemetry/)
 - [Add a page with a loader](https://ramonyx.devmoon.net/docs/recipes/page-loader/)

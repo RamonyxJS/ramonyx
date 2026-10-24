@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-24T00:37:31.971Z",
+  "generatedAt": "2026-10-24T02:24:35.610Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -93,6 +93,20 @@
       "verify": "ramonyx routes --json && ramonyx check --json",
       "slug": "recipes/dynamic-route",
       "docs": "docs/public/recipes/dynamic-route.md"
+    },
+    {
+      "id": "email-resend-postmark",
+      "title": "Send transactional email with Resend or Postmark",
+      "summary": "Keep the provider behind a small server-only interface, read API keys from bindings, and send from a route or action.",
+      "when": "The app needs verification, reset, receipt, or notification email and should not hard-code one provider in route code.",
+      "files": [
+        "src/email.server.ts",
+        "src/routes/api/contact.ts",
+        "wrangler.toml"
+      ],
+      "verify": "pnpm test",
+      "slug": "recipes/email-resend-postmark",
+      "docs": "docs/public/recipes/email-resend-postmark.md"
     },
     {
       "id": "form-action",

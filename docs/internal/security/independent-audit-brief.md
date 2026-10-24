@@ -42,9 +42,10 @@ Lihat `docs/internal/security/threat-model.md` untuk diagram dan asumsi.
   + constant-time compare + test.
 - AUD-02 (Medium, fixed): dokumentasi CSRF mengklaim HMAC, implementasi token acak double-submit.
 - AUD-03 (Medium, fixed): template `api-auth` tanpa CSRF → middleware + hidden field + test.
-- AUD-04 (Medium, open): CSRF membaca form clone sebelum body limit; potensi memory DoS pada body
-  chunked besar.
-- AUD-05 (Medium, open): session stateless tidak dapat direvokasi; signed bukan encrypted.
+- AUD-04 (Medium, fixed): CSRF membaca form clone sebelum body limit; kini dibatasi
+  `maxFormBytes` + 413 dini + test streaming.
+- AUD-05 (Medium, mitigated): session stateless tidak dapat direvokasi; template `api-auth` memakai
+  server-side store + revoke; stateless tetap opsi eksplisit dengan trade-off terdokumentasi.
 - AUD-06 (Medium, accepted): demo user store/password di template `api-auth`.
 - AUD-07/08 (Low): CSP style `unsafe-inline`; HSTS deployment.
 - AUD-09 (Low): plugin Node in-process; isolasi proses hanya runtime Rust eksperimental.

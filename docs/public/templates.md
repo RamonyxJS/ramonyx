@@ -14,7 +14,7 @@ pnpm create:app my-app --template api-auth
 | Template | Use it for | Verify |
 | --- | --- | --- |
 | `minimal` | First app, SSR + hydration + API + form action | `pnpm dev`, `pnpm build` |
-| `api-auth` | Session login/logout, protected API, server action | in-process auth test |
+| `api-auth` | Server-side session login/logout, protected API, server action | in-process auth test |
 | `cloudflare` | R2 + KV bindings, Worker artifact, `wrangler.toml` | `pnpm build:edge` |
 | `docs-blog` | Blog/docs pages, dynamic posts, static export | `pnpm build:static` |
 
@@ -32,7 +32,7 @@ pnpm dev
 Demo credentials are `demo` / `demo-password-123`. Before production:
 
 - set a random `SESSION_SECRET` (32+ characters);
-- replace the in-memory user store with a database/KV `UserStore`;
+- replace the in-memory user/session stores with database/KV adapters;
 - add CSRF protection and login rate limiting;
 - use HTTPS so the `Secure` session cookie is sent;
 - or use the [Better Auth recipe](recipes/better-auth.md) for a full auth provider.

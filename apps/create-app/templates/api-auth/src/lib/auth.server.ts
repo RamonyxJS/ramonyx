@@ -1,6 +1,7 @@
 // Server-only auth demo. Replace the memory stores with a database/KV adapter before production.
 import {
   type AuthUser,
+  createMemorySessionStore,
   createMemoryUserStore,
   createSession,
   hashPassword,
@@ -9,6 +10,8 @@ import {
 import type { EnvReader } from "ramonyx";
 
 const users = createMemoryUserStore();
+// Server-side sessions make logout/revocation real. Replace with Redis/KV/DB in production.
+const sessions = createMemorySessionStore();
 const DEMO_USERNAME = "demo";
 const DEMO_PASSWORD = "demo-password-123";
 const DEV_SECRET = "dev-only-session-secret-change-me-32-chars";
@@ -39,6 +42,7 @@ function sessionSecret(env: EnvReader): string {
 export function sessionFor(env: EnvReader) {
   return createSession({
     secret: sessionSecret(env),
+    store: sessions,
     cookie: { secure: env.get("NODE_ENV") === "production" },
   });
 }
@@ -72,6 +76,6 @@ export async function login(env: EnvReader, formData: FormData): Promise<LoginRe
   return { ok: true, cookie, user };
 }
 
-export function logoutCookie(env: EnvReader): string {
-  return sessionFor(env).clear();
+export async function logoutCookie(env: EnvReader, request: Request): Promise<string> {
+  return sessionFor(env).revoke(request);
 }

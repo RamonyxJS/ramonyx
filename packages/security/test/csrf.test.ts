@@ -130,3 +130,44 @@ test("POST form dengan token salah tetap 403", async () => {
   });
   assert.equal((await csrfProtection()(context(request), nextOk)).status, 403);
 });
+
+test("POST form melebihi maxFormBytes → 413 sebelum body diproses handler", async () => {
+  const token = "a".repeat(64);
+  let called = false;
+  const request = new Request("http://t/", {
+    method: "POST",
+    headers: {
+      cookie: `ramonyx-csrf=${token}`,
+      "content-type": "application/x-www-form-urlencoded",
+      "content-length": "1024",
+    },
+    body: `_csrf=${token}&data=${"x".repeat(1024)}`,
+  });
+  const response = await csrfProtection({ maxFormBytes: 64 })(context(request), async () => {
+    called = true;
+    return new Response("ok");
+  });
+  assert.equal(response.status, 413);
+  assert.equal(called, false);
+});
+
+test("POST form streaming tanpa content-length melebihi batas → 413", async () => {
+  const token = "a".repeat(64);
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(`_csrf=${token}&data=`));
+      controller.enqueue(new TextEncoder().encode("x".repeat(512)));
+      controller.close();
+    },
+  });
+  const request = new Request("http://t/", {
+    method: "POST",
+    headers: {
+      cookie: `ramonyx-csrf=${token}`,
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body: stream,
+    duplex: "half",
+  } as RequestInit);
+  assert.equal((await csrfProtection({ maxFormBytes: 64 })(context(request), nextOk)).status, 413);
+});

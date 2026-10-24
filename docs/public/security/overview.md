@@ -83,6 +83,7 @@ OS-level sandbox (Landlock) for plugins. It is not part of the production promis
 - CSP is wired through `@ramonyx/security`; if you replace it, you own the policy.
 - CSRF protection is a random double-submit cookie (not session-bound) plus the hidden `_csrf`
   field for no-JS forms. It relies on same-site cookies; do not share a registrable domain with
-  untrusted subdomains, or bind tokens to the session in a custom middleware.
+  untrusted subdomains, or bind tokens to the session in a custom middleware. Form fallback reads at
+  most `maxFormBytes` (default 1 MiB) and returns `413` beyond it; header tokens skip body parsing.
 - **No independent third-party security audit has been commissioned.** An internal review with
   findings and residual risk is published in [Security review & audit status](audit.md).

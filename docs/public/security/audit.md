@@ -27,8 +27,8 @@ The experimental Rust/V8 runtime is **out of scope** for this review and remains
 | AUD-01 | High | Fixed | The `cloudflare` template exposed R2/KV read/write without authentication. Added a required `STORAGE_TOKEN` bearer check (constant-time compare), edge test coverage, and deployment instructions. |
 | AUD-02 | Medium | Fixed | Public docs described CSRF as HMAC-signed; the implementation is a random double-submit token with constant-time comparison. Corrected the docs and added the session-binding limitation. |
 | AUD-03 | Medium | Fixed | `api-auth` template shipped no CSRF protection for its login/logout forms. Added `csrfProtection()`, hidden `_csrf` fields, cookie handling, and test coverage. |
-| AUD-04 | Medium | Open | CSRF form-token verification clones and parses a form body in middleware, before the handler's body-limit check. Large chunked form bodies can consume memory before the limit fires. Use the header token for JSON APIs, enforce a proxy body limit, or keep CSRF form parsing off large upload routes. |
-| AUD-05 | Medium | Open | Stateless sessions are signed, not encrypted, and have no server-side revocation. Password changes cannot invalidate already-issued cookies. Use a server-side `SessionStore` (KV/Redis/database) or an auth provider when revocation matters. |
+| AUD-04 | Medium | Fixed | CSRF form-token verification could buffer a large chunked form before the handler's body limit. Added a configurable `maxFormBytes` cap (default 1 MiB), early `content-length` rejection, bounded stream reads, `413` before the handler, and tests. |
+| AUD-05 | Medium | Mitigated | Stateless sessions cannot be revoked server-side. The framework supports a `SessionStore`; the `api-auth` template now uses a server-side store and logout revokes the record, not just the cookie. Stateless mode remains an explicit opt-in with documented trade-offs. |
 | AUD-06 | Medium | Accepted | `api-auth` uses an in-memory demo user store with a fixed demo password and no login rate limit. The template is a starting point; the README lists the production replacements. |
 | AUD-07 | Low | Accepted | The default CSP allows inline styles (`style-src 'unsafe-inline'`) and CSP is opt-in through middleware. Apps with a custom policy own their nonce/hash wiring. |
 | AUD-08 | Low | Accepted | HSTS and HTTPS redirects are deployment responsibilities; `securityHeaders()` does not set HSTS. |
@@ -55,7 +55,9 @@ repository threat model, and the release/publish pipeline.
 
 - The internal review is not independent and does not replace a pentest or code audit.
 - CSRF tokens are not bound to a user session; untrusted sibling subdomains can set cookies.
-  Serve the app on a dedicated registrable domain or implement session-bound tokens.
+  Serve the app on a dedicated registrable domain or implement session-bound tokens. The form
+  fallback buffers at most `maxFormBytes` (default 1 MiB); large no-JS forms must raise that bound
+  deliberately or use the header token.
 - There is no WAF, bot protection, or shared rate limiter in the framework.
 - Secrets are only as safe as the application's bindings and build boundaries; a secret placed in a
   shared (non-`*.server.ts`) module can still reach the client.

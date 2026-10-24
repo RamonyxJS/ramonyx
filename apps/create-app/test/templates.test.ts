@@ -144,6 +144,9 @@ const logout = await app(new Request("http://uji/api/auth/logout", {
 if (logout.status !== 200) throw new Error("logout: " + logout.status);
 const cleared = logout.headers.get("set-cookie");
 if (cleared === null || !cleared.includes("Max-Age=0")) throw new Error("cookie tidak dikosongkan");
+
+const revoked = await app(new Request("http://uji/api/me", { headers: { cookie } }));
+if (revoked.status !== 401) throw new Error("session tidak direvokasi: " + revoked.status);
 console.log("AUTH TEMPLATE OK");
 `,
   );

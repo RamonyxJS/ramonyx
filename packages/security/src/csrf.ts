@@ -14,6 +14,11 @@ export interface CsrfOptions {
   readonly tokenBytes?: number;
   /** Tambahkan atribut `Secure` pada cookie (aktifkan di produksi HTTPS). */
   readonly secure?: boolean;
+  /**
+   * Batas body formulir yang dipindai untuk fallback `_csrf` (default 1 MiB).
+   * Header token tidak membaca body; naikkan hanya bila form no-JS memang lebih besar.
+   */
+  readonly maxFormBytes?: number;
 }
 
 /** Header internal berisi token aktif yang dapat dibaca loader SSR untuk field form. */
@@ -45,21 +50,53 @@ export function csrfProtection(options: CsrfOptions = {}): Middleware {
   const headerName = (options.headerName ?? "x-csrf-token").toLowerCase();
   const fieldName = options.fieldName ?? "_csrf";
   const tokenBytes = options.tokenBytes ?? 32;
+  const maxFormBytes = options.maxFormBytes ?? 1_048_576;
 
-  const readFormToken = async (request: Request): Promise<string> => {
+  type FormToken = { readonly token: string; readonly tooLarge: boolean };
+
+  const readFormToken = async (request: Request): Promise<FormToken> => {
     const type = (request.headers.get("content-type") ?? "").toLowerCase();
     if (
       !type.includes("application/x-www-form-urlencoded") &&
       !type.includes("multipart/form-data")
     ) {
-      return "";
+      return { token: "", tooLarge: false };
     }
+    const declared = request.headers.get("content-length");
+    if (declared !== null) {
+      const length = Number(declared);
+      if (Number.isFinite(length) && length > maxFormBytes) {
+        return { token: "", tooLarge: true };
+      }
+    }
+
+    const body = request.clone().body;
+    if (body === null) {
+      return { token: "", tooLarge: false };
+    }
+    const reader = body.getReader();
+    const chunks: ArrayBuffer[] = [];
+    let total = 0;
     try {
-      const form = await request.clone().formData();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value === undefined) continue;
+        total += value.byteLength;
+        if (total > maxFormBytes) {
+          // Jangan await cancel: tee pada body streaming dapat menunggu cabang lain.
+          void reader.cancel().catch(() => undefined);
+          return { token: "", tooLarge: true };
+        }
+        chunks.push(new Uint8Array(value).buffer);
+      }
+      const form = await new Response(new Blob(chunks, { type })).formData();
       const value = form.get(fieldName);
-      return typeof value === "string" ? value : "";
+      return { token: typeof value === "string" ? value : "", tooLarge: false };
     } catch {
-      return "";
+      return { token: "", tooLarge: false };
+    } finally {
+      reader.releaseLock();
     }
   };
 
@@ -70,7 +107,14 @@ export function csrfProtection(options: CsrfOptions = {}): Middleware {
       let supplied = context.request.headers.get(headerName) ?? "";
       if (existing === undefined || !timingSafeEqual(existing, supplied)) {
         // Progressive enhancement: form tanpa JS mengirim token di body, bukan header.
-        supplied = await readFormToken(context.request);
+        const formToken = await readFormToken(context.request);
+        if (formToken.tooLarge) {
+          return new Response(JSON.stringify({ error: "Payload Too Large" }), {
+            status: 413,
+            headers: { "content-type": "application/json; charset=utf-8" },
+          });
+        }
+        supplied = formToken.token;
       }
       if (existing === undefined || !timingSafeEqual(existing, supplied)) {
         return new Response(JSON.stringify({ error: "CSRF token tidak valid" }), {

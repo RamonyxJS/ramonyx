@@ -63,7 +63,7 @@ A map of implemented capabilities to their documentation. Status: ✅ implemente
 | CLI (`dev`, `build`, `start --watch`, `add/remove`, `doctor`) | [CLI](cli.md) |
 | Dev server + HMR | [CLI](cli.md) |
 | Devtools panel (dev-only) | [Devtools Panel](devtools.md) |
-| Scaffolder (`create-ramonyx-app`) | [Getting Started](getting-started.md) |
+| Scaffolder (`create-ramonyx-app`) + templates | [Templates](templates.md) |
 | Typed routes codegen | [Typed Routes](typed-routes.md) |
 | Observability (trace id, logs, metrics) | [Observability](observability.md) |
 | Static export / SSG | [Deployment](deployment.md) |

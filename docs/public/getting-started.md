@@ -12,7 +12,8 @@ pnpm dev        # Vite + SSR (http://localhost:3000, satu port)
 
 With Bun, the same app runs as `bun install && bun run dev`; with npm, `npm install && npm run dev`.
 Open <http://localhost:3000>. The scaffold ships with a page, an API route, validation, actions,
-security middleware, and hydration — all runnable.
+security middleware, and hydration — all runnable. Pick a production-shaped starting point with
+`--template api-auth`, `cloudflare`, or `docs-blog`; see [Templates](templates.md).
 
 `ramonyx` is a project-local binary. For a one-off command use `pnpm exec ramonyx …`,
 `bunx ramonyx …`, or `npx ramonyx …`; a bare `ramonyx` is not on the shell `PATH`.

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "version": "2.0.1",
-  "generatedAt": "2026-10-24T03:37:56.678Z",
-  "commit": "2e918dbda09976a200a1f5653649adda568c839d",
+  "generatedAt": "2026-10-24T05:00:19.174Z",
+  "commit": "df8a3013275979f6447059490f99168515642c03",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -27,9 +27,9 @@
     ]
   },
   "adrs": 9,
-  "docs": 39,
+  "docs": 40,
   "tests": {
-    "node": 388,
+    "node": 392,
     "rust": 116,
     "e2eSpecFiles": 12
   }

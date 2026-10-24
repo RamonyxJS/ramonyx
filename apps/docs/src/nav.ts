@@ -26,6 +26,11 @@ export const NAV: readonly NavSection[] = [
         label: "What's Included",
         description: "Capability map with honest boundaries.",
       },
+      {
+        slug: "templates",
+        label: "Templates",
+        description: "Minimal, auth, Cloudflare, and docs/blog starters.",
+      },
     ],
   },
   {

@@ -11,7 +11,17 @@ import { fileURLToPath } from "node:url";
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const templateDir = join(packageRoot, "template");
+const templatesDir = join(packageRoot, "templates");
 const agentTemplateDir = join(packageRoot, "template-agent");
+
+const TEMPLATES = {
+  minimal: "Welcome screen: SSR + hydration + API + form action",
+  "api-auth": "Session auth: login/logout, protected API, server action",
+  cloudflare: "Cloudflare Worker: R2 + KV binding example and wrangler config",
+  "docs-blog": "Static content: blog index + dynamic posts + SSG export",
+} as const;
+type TemplateId = keyof typeof TEMPLATES;
+const TEMPLATE_IDS = Object.keys(TEMPLATES) as TemplateId[];
 
 const USAGE = `create-ramonyx-app — buat aplikasi Ramonyx baru
 
@@ -23,6 +33,8 @@ Penggunaan:
 Opsi:
   --force, -f       Timpa berkas template walau direktori tujuan tidak kosong
   --with-agent-docs Sertakan AGENTS.md + skill agent opt-in (tidak default)
+  --template <id>   Template: minimal (default), api-auth, cloudflare, docs-blog
+  --list-templates  Tampilkan template yang tersedia
   --help, -h        Tampilkan bantuan ini
 `;
 
@@ -35,13 +47,44 @@ function usage(exitCode: number): never {
 const args = process.argv.slice(2);
 let force = false;
 let withAgentDocs = false;
+let template: TemplateId = "minimal";
 let target: string | undefined;
 
-for (const arg of args) {
+for (let index = 0; index < args.length; index += 1) {
+  const arg = args[index] ?? "";
+  const next = (): string => {
+    const value = args[index + 1];
+    if (value === undefined || value.startsWith("-")) {
+      console.error(`error: ${arg} membutuhkan nilai`);
+      usage(1);
+    }
+    index += 1;
+    return value;
+  };
+
   if (arg === "--force" || arg === "-f") {
     force = true;
   } else if (arg === "--with-agent-docs") {
     withAgentDocs = true;
+  } else if (arg === "--list-templates") {
+    for (const id of TEMPLATE_IDS) console.log(`${id.padEnd(12)} ${TEMPLATES[id]}`);
+    process.exit(0);
+  } else if (arg === "--template") {
+    const value = next() as TemplateId;
+    if (!TEMPLATE_IDS.includes(value)) {
+      console.error(`error: template tidak dikenal: ${value}`);
+      console.error(`tersedia: ${TEMPLATE_IDS.join(", ")}`);
+      usage(1);
+    }
+    template = value;
+  } else if (arg.startsWith("--template=")) {
+    const value = arg.slice("--template=".length) as TemplateId;
+    if (!TEMPLATE_IDS.includes(value)) {
+      console.error(`error: template tidak dikenal: ${value}`);
+      console.error(`tersedia: ${TEMPLATE_IDS.join(", ")}`);
+      usage(1);
+    }
+    template = value;
   } else if (arg === "--help" || arg === "-h") {
     usage(0);
   } else if (arg.startsWith("-")) {
@@ -93,11 +136,19 @@ function copy(source: string, destination: string): void {
 }
 
 copy(templateDir, targetDir);
+if (template !== "minimal") {
+  const overlay = join(templatesDir, template);
+  if (!existsSync(overlay)) {
+    console.error(`error: berkas template ${template} tidak ditemukan di ${overlay}`);
+    process.exit(1);
+  }
+  copy(overlay, targetDir);
+}
 if (withAgentDocs) {
   copy(agentTemplateDir, targetDir);
 }
 
-console.log(`✓ App "${appName}" dibuat di ${targetDir}
+console.log(`✓ App "${appName}" dibuat di ${targetDir} (template: ${template})
 
 Langkah berikutnya:
 

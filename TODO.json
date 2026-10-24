@@ -1146,7 +1146,7 @@
       "theme": "ecosystem",
       "priority": "p1",
       "size": "L",
-      "status": "open",
+      "status": "done",
       "what": "Sediakan 3–5 template produksi yang lebih lengkap dari welcome screen: SaaS starter, dashboard admin, API + auth, Cloudflare-native, dan docs/blog. Tambahkan pilihan template pada create-ramonyx-app dan tombol/instruksi deploy satu klik untuk Node, Cloudflare, Vercel, dan Deno.",
       "why": "Pengguna menilai framework dari hasil pertama yang bisa di-deploy, bukan dari API. Template yang teruji memperpendek time-to-first-deploy dan menjadi bukti nyata integrasi.",
       "done": [
@@ -1159,7 +1159,7 @@
       "areas": ["apps/create-app", "examples", "docs/public/deployment.md", ".github/workflows"],
       "adrs": [],
       "competitor": "create-next-app examples, Nuxt templates, SvelteKit skeleton, Astro themes.",
-      "source": "agenda adopsi 2026-10-23: activation membutuhkan template yang bisa langsung deploy",
+      "source": "selesai: 4 template (minimal, api-auth, cloudflare, docs-blog), --template/--list-templates, build Node/edge/static smoke, release staging templates.",
       "strategic": true
     },
     {

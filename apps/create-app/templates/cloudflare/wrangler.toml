@@ -1,0 +1,15 @@
+name = "__APP_NAME__"
+main = "dist/edge/index.js"
+compatibility_date = "2026-10-18"
+
+# Static client assets produced by `ramonyx build --target edge`.
+[assets]
+directory = "dist/client"
+
+[[kv_namespaces]]
+binding = "KV_STORE"
+id = "replace-with-your-kv-namespace-id"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "__APP_NAME__-files"

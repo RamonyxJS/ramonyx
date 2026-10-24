@@ -1,0 +1,33 @@
+{
+  "name": "__APP_NAME__",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "ramonyx build",
+    "start": "ramonyx start",
+    "dev": "ramonyx dev"
+  },
+  "dependencies": {
+    "@ramonyx/adapter-runtime": "^2.0.1",
+    "@ramonyx/bundler": "^2.0.1",
+    "@ramonyx/compiler": "^2.0.1",
+    "@ramonyx/devtools": "^2.0.1",
+    "@ramonyx/react": "^2.0.1",
+    "@ramonyx/security": "^2.0.1",
+    "@ramonyx/server": "^2.0.1",
+    "@ramonyx/ssr": "^2.0.1",
+    "ramonyx": "^2.0.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
+  },
+  "imports": {
+    "#routes": "./.ramonyx/routes.ts"
+  }
+}

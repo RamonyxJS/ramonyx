@@ -173,7 +173,8 @@ pnpm create ramonyx-app aplikasi-saya
 pnpm dlx create-ramonyx-app aplikasi-saya
 \`\`\`
 
-Lanjutkan dengan \`cd aplikasi-saya && pnpm install && pnpm build && pnpm start\`.
+Pilih template dengan \`--template minimal|api-auth|cloudflare|docs-blog\`.
+Lanjutkan dengan \`cd aplikasi-saya && pnpm install && pnpm dev\`.
 
 Repo: ${REPOSITORY} · Lisensi: MIT
 `;
@@ -198,6 +199,7 @@ function stageCreateApp(releaseVersion) {
     `--outfile=${join(staging, "dist", "cli.js")}`,
   ]);
   cpSync(join(sourceDir, "template"), join(staging, "template"), { recursive: true });
+  cpSync(join(sourceDir, "templates"), join(staging, "templates"), { recursive: true });
   cpSync(join(sourceDir, "template-agent"), join(staging, "template-agent"), {
     recursive: true,
   });
@@ -211,7 +213,7 @@ function stageCreateApp(releaseVersion) {
     license: "MIT",
     type: "module",
     bin: { "create-ramonyx-app": "dist/cli.js" },
-    files: ["dist", "template", "template-agent", "README.md", "LICENSE"],
+    files: ["dist", "template", "templates", "template-agent", "README.md", "LICENSE"],
     engines: { node: ">=24" },
     publishConfig: { access: "public" },
     repository: REPOSITORY,

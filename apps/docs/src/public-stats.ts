@@ -37,9 +37,9 @@ export const PUBLIC_STATS: PublicStats = {
     ],
   },
   adrs: 9,
-  docs: 39,
+  docs: 40,
   tests: {
-    node: 388,
+    node: 392,
     rust: 116,
     e2eSpecFiles: 12,
   },

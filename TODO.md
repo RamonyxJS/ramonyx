@@ -332,7 +332,7 @@
 
 ### `p1-production-templates` — Template produksi + one-click deploy (SaaS, dashboard, API/auth, edge, docs/blog)
 
-*tema: ecosystem · ukuran: L · status: open · sumber: agenda adopsi 2026-10-23: activation membutuhkan template yang bisa langsung deploy*
+*tema: ecosystem · ukuran: L · status: done · sumber: selesai: 4 template (minimal, api-auth, cloudflare, docs-blog), --template/--list-templates, build Node/edge/static smoke, release staging templates.*
 
 - **Apa**: Sediakan 3–5 template produksi yang lebih lengkap dari welcome screen: SaaS starter, dashboard admin, API + auth, Cloudflare-native, dan docs/blog. Tambahkan pilihan template pada create-ramonyx-app dan tombol/instruksi deploy satu klik untuk Node, Cloudflare, Vercel, dan Deno.
 - **Kenapa penting untuk bersaing**: Pengguna menilai framework dari hasil pertama yang bisa di-deploy, bukan dari API. Template yang teruji memperpendek time-to-first-deploy dan menjadi bukti nyata integrasi.

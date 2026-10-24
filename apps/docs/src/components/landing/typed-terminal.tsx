@@ -3,47 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useInView, useReducedMotion } from "./hooks.ts";
-
-interface Manager {
-  readonly id: string;
-  readonly label: string;
-  readonly create: string;
-  readonly install: string;
-  readonly dev: string;
-}
-
-const NPM: Manager = {
-  id: "npm",
-  label: "npm",
-  create: "npm create ramonyx-app@latest my-app",
-  install: "npm install",
-  dev: "npm run dev",
-};
-
-const MANAGERS: readonly Manager[] = [
-  NPM,
-  {
-    id: "pnpm",
-    label: "pnpm",
-    create: "pnpm create ramonyx-app@latest my-app",
-    install: "pnpm install",
-    dev: "pnpm dev",
-  },
-  {
-    id: "yarn",
-    label: "yarn",
-    create: "yarn create ramonyx-app my-app",
-    install: "yarn",
-    dev: "yarn dev",
-  },
-  {
-    id: "bun",
-    label: "bun",
-    create: "bun create ramonyx-app my-app",
-    install: "bun install",
-    dev: "bun run dev",
-  },
-];
+import {
+  MANAGERS,
+  type Manager,
+  setPackageManager,
+  usePackageManager,
+} from "./package-manager.tsx";
 
 interface Line {
   readonly tone: "prompt" | "output" | "muted" | "ready";
@@ -62,7 +27,6 @@ function transcript(manager: Manager): Line[] {
 }
 
 export function TypedTerminal({ compact = false }: { readonly compact?: boolean }) {
-  const [managerIndex, setManagerIndex] = useState(0);
   const [phase, setPhase] = useState<"idle" | "typing" | "done">("idle");
   const [typed, setTyped] = useState("");
   const [lineCount, setLineCount] = useState(0);
@@ -70,7 +34,7 @@ export function TypedTerminal({ compact = false }: { readonly compact?: boolean 
   const [run, setRun] = useState(0);
   const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: "120px 0px" });
   const reduced = useReducedMotion();
-  const manager = MANAGERS[managerIndex] ?? NPM;
+  const manager = usePackageManager();
   const timers = useRef<number[]>([]);
 
   useEffect(() => {
@@ -167,15 +131,15 @@ export function TypedTerminal({ compact = false }: { readonly compact?: boolean 
     <div ref={ref} className={`terminal-live ${compact ? "terminal-compact" : ""}`}>
       <div className="terminal-live-bar">
         <div className="terminal-live-tabs" role="tablist" aria-label="Package manager">
-          {MANAGERS.map((item, index) => (
+          {MANAGERS.map((item) => (
             <button
               key={item.id}
               type="button"
               role="tab"
-              aria-selected={managerIndex === index}
-              className={managerIndex === index ? "is-active" : ""}
+              aria-selected={manager.id === item.id}
+              className={manager.id === item.id ? "is-active" : ""}
               onClick={() => {
-                setManagerIndex(index);
+                setPackageManager(item.id);
                 if (phase !== "idle") {
                   restart();
                 }
@@ -183,10 +147,12 @@ export function TypedTerminal({ compact = false }: { readonly compact?: boolean 
               onKeyDown={(event) => {
                 if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
                   event.preventDefault();
+                  const current = MANAGERS.findIndex((entry) => entry.id === manager.id);
                   const next =
-                    (managerIndex + (event.key === "ArrowRight" ? 1 : -1) + MANAGERS.length) %
+                    (current + (event.key === "ArrowRight" ? 1 : -1) + MANAGERS.length) %
                     MANAGERS.length;
-                  setManagerIndex(next);
+                  const nextManager = MANAGERS[next];
+                  if (nextManager !== undefined) setPackageManager(nextManager.id);
                   if (phase !== "idle") {
                     restart();
                   }

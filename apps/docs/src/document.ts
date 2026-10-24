@@ -286,6 +286,16 @@ img { max-width: 100%; height: auto; }
   font: 500 10.5px var(--font-mono); cursor: pointer;
 }
 .install .copy:hover { color: var(--ink); border-color: var(--ink); }
+.pm-install { flex-wrap: wrap; row-gap: 8px; }
+.pm-tabs { display: flex; flex-wrap: wrap; gap: 4px; flex-basis: 100%; border: 0; margin: 0; padding: 0; }
+.pm-tab {
+  background: transparent; border: 1px solid transparent; border-radius: 999px;
+  color: var(--muted); cursor: pointer; font: 500 10.5px var(--font-mono);
+  padding: 2px 9px;
+}
+.pm-tab:hover { color: var(--ink); border-color: var(--line-2); }
+.pm-tab[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.pm-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .hero-visual { position: relative; }
 .terminal-bingkai { position: relative; z-index: 0; }
@@ -1575,6 +1585,9 @@ html.js .rail-help { display: inline-flex; gap: 8px; align-items: center; }
 .closing-install code { color: var(--accent-ink); }
 .closing-install .copy { color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent-ink) 30%, transparent); }
 .closing-install .copy:hover { color: var(--accent-ink); border-color: var(--accent-ink); }
+.closing .pm-tab { color: rgba(255, 255, 255, 0.62); }
+.closing .pm-tab:hover { color: #fff; border-color: rgba(255, 255, 255, 0.35); }
+.closing .pm-tab[aria-pressed="true"] { background: #fff; border-color: #fff; color: #04050c; }
 
 /* ── Micro ──────────────────────────────────────────────── */
 .magnetic { display: inline-block; will-change: transform; }

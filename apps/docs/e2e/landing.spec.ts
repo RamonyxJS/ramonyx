@@ -53,6 +53,32 @@ test("landing: hero, bukti dari machine layer, tema, pencarian Cmd+K", async ({ 
   await expect(page).toHaveURL(/\/docs\/routing\/?$/);
 });
 
+test("landing: package manager selector syncs install, console, dan closing", async ({ page }) => {
+  await page.goto("/");
+  await hydrate(page);
+  const heroInstall = page.locator(".hero-copy .pm-install");
+  await expect(heroInstall.locator("code")).toHaveText("npm create ramonyx-app@latest my-app");
+
+  await heroInstall.getByRole("button", { name: "pnpm", exact: true }).click();
+  await expect(heroInstall.getByRole("button", { name: "pnpm", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(heroInstall.locator("code")).toHaveText("pnpm create ramonyx-app@latest my-app");
+  await expect(page.locator(".hero-console code")).toContainText(
+    "pnpm create ramonyx-app@latest my-app",
+  );
+  await expect(page.locator(".closing-install code")).toHaveText(
+    "pnpm create ramonyx-app@latest my-app",
+  );
+  await expect(page.locator(".terminal-live-tabs [aria-selected='true']")).toHaveText("pnpm");
+
+  await page.locator(".closing-install").getByRole("button", { name: "bun", exact: true }).click();
+  await expect(heroInstall.locator("code")).toHaveText("bun create ramonyx-app my-app");
+  await expect(page.locator(".hero-console code")).toContainText("bun create ramonyx-app my-app");
+  await expect(page.locator(".terminal-live-tabs [aria-selected='true']")).toHaveText("bun");
+});
+
 test("docs: halaman, ToC, prev/next, copy kode, dan alias lama", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/docs/getting-started");

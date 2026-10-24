@@ -7,6 +7,7 @@ import { CursorGlow, Magnetic } from "../components/landing/interactions.tsx";
 import { LandingNav } from "../components/landing/landing-nav.tsx";
 import { LandingReveal } from "../components/landing/landing-reveal.tsx";
 import { LimitsDemo } from "../components/landing/limits-demo.tsx";
+import { HeroConsole, PackageManagerCommand } from "../components/landing/package-manager.tsx";
 import { ParticleField } from "../components/landing/particle-field.tsx";
 import { RouteDemo } from "../components/landing/route-demo.tsx";
 import { ScrollFx } from "../components/landing/scroll-fx.tsx";
@@ -198,44 +199,9 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
                   See the stack <span aria-hidden="true">↓</span>
                 </a>
               </div>
-              <div className="install">
-                <span className="install-prompt" aria-hidden="true">
-                  $
-                </span>
-                <code>npm create ramonyx-app@latest my-app</code>
-                <button className="copy" type="button" data-copy aria-label="Copy install command">
-                  Copy
-                </button>
-              </div>
+              <PackageManagerCommand />
             </div>
-            <div className="hero-console">
-              <div className="console-bar">
-                <i />
-                <i />
-                <i />
-                <span>~/my-app</span>
-                <span className="console-live">live</span>
-              </div>
-              <pre>
-                <code>
-                  <span className="terminal-prompt">$</span> npm create ramonyx-app@latest my-app
-                  {"\n"}
-                  <span className="console-dim">scaffold → my-app</span>
-                  {"\n"}
-                  <span className="terminal-prompt">$</span> cd my-app && npm run dev{"\n"}
-                  <span className="console-dim">dev</span> http://localhost:3000{"\n"}
-                  <span className="console-dim">devtools</span> /__ramonyx/devtools{"\n"}
-                  <span className="console-ready">ready</span>
-                  {"\n"}
-                  <span className="terminal-prompt">$</span> <span className="terminal-cursor" />
-                </code>
-              </pre>
-              <div className="console-foot">
-                <span>streaming</span>
-                <span>1 MiB · 10 s · 100</span>
-                <span>Node / static / edge</span>
-              </div>
-            </div>
+            <HeroConsole />
           </div>
         </div>
         <div className="hero-scroll" aria-hidden="true">
@@ -586,15 +552,7 @@ export default function Landing({ data, action }: PageProps<LandingData>) {
               </a>
             </Magnetic>
           </div>
-          <div className="install closing-install">
-            <span className="install-prompt" aria-hidden="true">
-              $
-            </span>
-            <code>npm create ramonyx-app@latest my-app</code>
-            <button className="copy" type="button" data-copy aria-label="Copy install command">
-              Copy
-            </button>
-          </div>
+          <PackageManagerCommand className="closing-install" />
         </div>
       </section>
     </main>

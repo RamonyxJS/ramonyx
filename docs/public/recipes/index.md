@@ -12,6 +12,7 @@ touches, and a verification command; the machine-readable index is
 | JSON endpoint with validation | [Add an API route with validation](api-validation.md) | `ramonyx routes --json` |
 | SQLite persistence on Cloudflare | [Use Drizzle with Cloudflare D1](drizzle-d1.md) | `pnpm test` |
 | Email/password + sessions | [Add Better Auth to an API route](better-auth.md) | `pnpm test` |
+| Traces and OTLP export | [Export request traces to OpenTelemetry](opentelemetry.md) | `pnpm test` |
 | Login/logout and protected pages | [Add session auth](auth-session.md) | `ramonyx check --json` |
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |

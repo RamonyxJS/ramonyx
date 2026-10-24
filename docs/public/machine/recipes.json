@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T16:18:07.117Z",
+  "generatedAt": "2026-10-24T00:37:31.971Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -105,6 +105,19 @@
       "verify": "ramonyx check --json && ramonyx dev",
       "slug": "recipes/form-action",
       "docs": "docs/public/recipes/form-action.md"
+    },
+    {
+      "id": "opentelemetry",
+      "title": "Export request traces to OpenTelemetry",
+      "summary": "Wrap requests in an OTel span and turn Ramonyx loader/render/invalidation hooks into child spans.",
+      "when": "The app needs traces, span timing, or OTLP export without replacing the framework's hooks and metrics.",
+      "files": [
+        "src/observability.server.ts",
+        "src/app.ts"
+      ],
+      "verify": "pnpm test",
+      "slug": "recipes/opentelemetry",
+      "docs": "docs/public/recipes/opentelemetry.md"
     },
     {
       "id": "page-loader",

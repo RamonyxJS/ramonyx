@@ -2027,7 +2027,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T16:18:04.282Z",
+  "generatedAt": "2026-10-24T00:37:29.105Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2548,7 +2548,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T16:18:07.090Z",
+  "generatedAt": "2026-10-24T00:37:31.945Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2663,7 +2663,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T16:18:07.117Z",
+  "generatedAt": "2026-10-24T00:37:31.971Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2770,6 +2770,19 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "docs": "docs/public/recipes/form-action.md"
     },
     {
+      "id": "opentelemetry",
+      "title": "Export request traces to OpenTelemetry",
+      "summary": "Wrap requests in an OTel span and turn Ramonyx loader/render/invalidation hooks into child spans.",
+      "when": "The app needs traces, span timing, or OTLP export without replacing the framework's hooks and metrics.",
+      "files": [
+        "src/observability.server.ts",
+        "src/app.ts"
+      ],
+      "verify": "pnpm test",
+      "slug": "recipes/opentelemetry",
+      "docs": "docs/public/recipes/opentelemetry.md"
+    },
+    {
       "id": "page-loader",
       "title": "Add a page with a loader",
       "summary": "Create a server-rendered page whose data is loaded on each request and embedded in the hydration payload.",
@@ -2803,8 +2816,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "2.0.1",
-  "generatedAt": "2026-10-23T16:15:47.708Z",
-  "commit": "1012fab979ebeaf1dce5c044b0733643c3317a2a",
+  "generatedAt": "2026-10-24T00:35:28.412Z",
+  "commit": "1fc367354194faed8501e9dce7634e85be779683",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2829,9 +2842,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     ]
   },
   "adrs": 9,
-  "docs": 34,
+  "docs": 35,
   "tests": {
-    "node": 384,
+    "node": 385,
     "rust": 116,
     "e2eSpecFiles": 12
   }
@@ -4133,7 +4146,8 @@ the framework only emits method/path/status/duration/trace id.
 ## Notes & limitations
 
 - `traceId` is a correlation id, not a full W3C `traceparent`; native OpenTelemetry spans are not
-  built in (candidate if there is demand).
+  built in. Use the [OpenTelemetry recipe](recipes/opentelemetry.md) to add request, loader, render,
+  and invalidation spans without changing the core hooks.
 - Metrics are process-local: multi-instance deployments should scrape each instance or aggregate in
   your platform.
 - The hooks are zero-cost when unused; the helpers are edge-safe (no `node:*`).
@@ -4296,6 +4310,7 @@ touches, and a verification command; the machine-readable index is
 | JSON endpoint with validation | [Add an API route with validation](api-validation.md) | `ramonyx routes --json` |
 | SQLite persistence on Cloudflare | [Use Drizzle with Cloudflare D1](drizzle-d1.md) | `pnpm test` |
 | Email/password + sessions | [Add Better Auth to an API route](better-auth.md) | `pnpm test` |
+| Traces and OTLP export | [Export request traces to OpenTelemetry](opentelemetry.md) | `pnpm test` |
 | Login/logout and protected pages | [Add session auth](auth-session.md) | `ramonyx check --json` |
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |
@@ -4884,6 +4899,167 @@ ramonyx dev
 
 Submit the form with JavaScript disabled and enabled. Read [SSR & Hydration](../ssr-hydration.md)
 and [Data & Caching](../data-and-caching.md).
+
+## docs/public/recipes/opentelemetry.md
+
+---
+recipe: opentelemetry
+title: Export request traces to OpenTelemetry
+summary: Wrap requests in an OTel span and turn Ramonyx loader/render/invalidation hooks into child spans.
+when: The app needs traces, span timing, or OTLP export without replacing the framework's hooks and metrics.
+files: src/observability.server.ts, src/app.ts
+verify: pnpm test
+---
+
+# Export request traces to OpenTelemetry
+
+Ramonyx already exposes request lifecycle hooks and metrics. OpenTelemetry is added as an
+**application adapter**: middleware owns the request span, hooks emit child spans, and the OTel SDK
+owns export and sampling.
+
+## Install
+
+```bash
+pnpm add @opentelemetry/api
+# Pick the SDK/exporter for your runtime, for example:
+pnpm add @opentelemetry/sdk-node @opentelemetry/exporter-trace-otlp-http
+```
+
+The executable test uses `@opentelemetry/sdk-trace` with an in-memory exporter, so no collector is
+needed. In production, initialize an OTel SDK before the app starts; `@opentelemetry/sdk-node` also
+installs the async context manager required for parent/child spans.
+
+## Adapter
+
+```ts
+// src/observability.server.ts — server-only
+import { context, SpanStatusCode, trace, type Tracer } from "@opentelemetry/api";
+import type { AppHooks, Middleware } from "ramonyx";
+
+/** Request span: wraps the whole middleware chain and activates its context. */
+export function otelMiddleware(tracer: Tracer = trace.getTracer("my-app")): Middleware {
+  return async (middlewareContext, next) => {
+    const path = new URL(middlewareContext.request.url).pathname;
+    const span = tracer.startSpan(`${middlewareContext.request.method} ${path}`, {
+      attributes: {
+        "http.request.method": middlewareContext.request.method,
+        "url.path": path,
+      },
+    });
+    const active = trace.setSpan(context.active(), span);
+    try {
+      const response = await context.with(active, () => next());
+      span.setAttribute("http.response.status_code", response.status);
+      if (response.status >= 500) span.setStatus({ code: SpanStatusCode.ERROR });
+      return response;
+    } catch (error) {
+      span.recordException(error instanceof Error ? error : new Error(String(error)));
+      span.setStatus({ code: SpanStatusCode.ERROR });
+      throw error;
+    } finally {
+      span.end();
+    }
+  };
+}
+
+/** Child spans from framework hooks; the active request context supplies the parent. */
+export function otelHooks(tracer: Tracer = trace.getTracer("my-app")): AppHooks {
+  return {
+    onLoaderEnd({ path, durationMs, cached }) {
+      tracer
+        .startSpan("ramonyx.loader", {
+          attributes: {
+            "url.path": path,
+            "ramonyx.duration_ms": durationMs,
+            "ramonyx.cached": cached,
+          },
+        })
+        .end();
+    },
+    onRenderEnd({ path, durationMs, status, streaming }) {
+      tracer
+        .startSpan("ramonyx.render", {
+          attributes: {
+            "url.path": path,
+            "ramonyx.duration_ms": durationMs,
+            "http.response.status_code": status,
+            "ramonyx.streaming": streaming,
+          },
+        })
+        .end();
+    },
+    onInvalidate({ paths, tags, reason }) {
+      tracer
+        .startSpan("ramonyx.cache.invalidate", {
+          attributes: {
+            "ramonyx.reason": reason,
+            "ramonyx.tags": tags?.join(",") ?? "",
+            "ramonyx.paths": paths?.join(",") ?? "",
+          },
+        })
+        .end();
+    },
+  };
+}
+```
+
+## Wire the app
+
+```ts
+// src/app.ts
+import { trace } from "@opentelemetry/api";
+import { mergeHooks } from "ramonyx";
+import { otelHooks, otelMiddleware } from "./observability.server.ts";
+
+const tracer = trace.getTracer("my-app");
+const hooks = mergeHooks(options.hooks, otelHooks(tracer));
+
+const handler = createHandler({
+  routes: [
+    ...apiRoutes,
+    ...createPageRoutes({ pages, renderer, client, hooks }),
+  ],
+  // Keep OTel first: it wraps every route and folder middleware.
+  middleware: [otelMiddleware(tracer), ...otherMiddleware],
+  hooks,
+});
+```
+
+The same `hooks` must be passed to both `createHandler` and `createPageRoutes`. If only one receives
+it, page loaders/renders will not emit spans.
+
+## Verify
+
+```bash
+pnpm test -- tests/integrations/opentelemetry.test.ts
+ramonyx check --json
+```
+
+The executable example [`tests/integrations/opentelemetry.test.ts`](../../../tests/integrations/opentelemetry.test.ts)
+creates a real handler, sends a request, and asserts that `ramonyx.loader` and `ramonyx.render`
+spans have the request span as parent.
+
+## Sentry
+
+Sentry is an application choice, not part of this adapter. Two workable paths:
+
+- Send OTLP to your collector or observability backend from your OTel exporter.
+- Initialize `@sentry/node` separately and call `Sentry.captureException` in the route/action
+  error path where the error object is available. `onRequestEnd` only carries the status code, so
+  it is not a replacement for capturing the exception itself.
+
+## Limits
+
+- `onRenderEnd` fires when a streaming render **starts**, not when the stream finishes; the span
+  measures time to response, not full stream duration.
+- Hooks must be synchronous and fast. Do not flush/export on the request path; use a batch processor
+  and shut it down during process termination.
+- `@opentelemetry/api` is edge-safe, but most Node SDKs/exporters are not. On Workers, use an
+  exporter supported by that runtime or send spans through your platform's OTLP sink.
+- This adds no automatic instrumentation for D1, fetch, or database calls. Add those with the
+  relevant OTel instrumentation package if needed.
+- Metrics (`createMetrics()`) remain a local JSON snapshot; this recipe does not convert them to
+  OTel metrics.
 
 ## docs/public/recipes/page-loader.md
 

@@ -81,7 +81,8 @@ the framework only emits method/path/status/duration/trace id.
 ## Notes & limitations
 
 - `traceId` is a correlation id, not a full W3C `traceparent`; native OpenTelemetry spans are not
-  built in (candidate if there is demand).
+  built in. Use the [OpenTelemetry recipe](recipes/opentelemetry.md) to add request, loader, render,
+  and invalidation spans without changing the core hooks.
 - Metrics are process-local: multi-instance deployments should scrape each instance or aggregate in
   your platform.
 - The hooks are zero-cost when unused; the helpers are edge-safe (no `node:*`).

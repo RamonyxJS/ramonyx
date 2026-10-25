@@ -4,6 +4,21 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [2.1.0] — 2026-10-25
+
+### Added
+
+- `buildClient()` mirrors the hashed client entry and chunks into `dist/client/assets/**` so
+  `/assets/client-*.js` works on Node and static/edge hosts without custom app build scripts.
+  `mirrorClientAssets()` is exported for advanced tooling and tested.
+- Client navigation now scrolls to `#hash` targets after soft navigation and initial hydration.
+- `PendingButton` accepts `formId` to scope pending state to a specific form (matching
+  `useActionStatus({ formId })`) without leaking the prop to the DOM.
+- Real-world audit of Midman and Rama Portfolio, plus public deployment/action guidance.
+
+### Changed
+
+- Deployment docs now distinguish `public/**` (root static files) from hashed `/assets/**`.
 ## [2.0.2] — 2026-10-24
 
 ### Fixed

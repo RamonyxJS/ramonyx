@@ -37,7 +37,7 @@ version. The examples use `2.0.1`; substitute your installed version (never `@la
 
 ```bash
 # Claude Code (project-aware)
-claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@2.0.2 --app .
+claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@2.1.0 --app .
 ```
 
 ```json
@@ -46,7 +46,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@2.0.2 --app .
   "mcpServers": {
     "ramonyx-docs": {
       "command": "npx",
-      "args": ["-y", "@ramonyx/mcp-docs-server@2.0.2", "--app", "."]
+      "args": ["-y", "@ramonyx/mcp-docs-server@2.1.0", "--app", "."]
     }
   }
 }
@@ -58,7 +58,7 @@ claude mcp add ramonyx-docs -- npx -y @ramonyx/mcp-docs-server@2.0.2 --app .
   "mcp": {
     "ramonyx-docs": {
       "type": "local",
-      "command": ["npx", "-y", "@ramonyx/mcp-docs-server@2.0.2", "--app", "."],
+      "command": ["npx", "-y", "@ramonyx/mcp-docs-server@2.1.0", "--app", "."],
       "enabled": true
     }
   }

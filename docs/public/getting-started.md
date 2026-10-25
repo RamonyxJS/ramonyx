@@ -34,16 +34,16 @@ pnpm may reuse an old `create-ramonyx-app` from its cache and scaffold a **1.x**
 
 ```bash
 node -p "require('./package.json').dependencies['@ramonyx/devtools']"
-# expected: ^2.0.2
+# expected: ^2.1.0
 ```
 
 If it prints `^1.0.0`, remove the directory and pin the scaffold version exactly:
 
 ```bash
-pnpm create ramonyx-app@2.0.2 my-app
+pnpm create ramonyx-app@2.1.0 my-app
 ```
 
-You can also use `pnpm dlx --package create-ramonyx-app@2.0.2 create-ramonyx-app my-app`.
+You can also use `pnpm dlx --package create-ramonyx-app@2.1.0 create-ramonyx-app my-app`.
 A 1.x app still runs, but its dev server uses the removed two-port proxy (`5173` → `3000`); it is
 not a 2.x single-port app. Pick a production-shaped starting point with
 `--template api-auth`, `cloudflare`, or `docs-blog`; see [Templates](templates.md).

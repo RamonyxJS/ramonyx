@@ -41,6 +41,15 @@
   statistik 398 test Node. 16 paket @ 2.0.2; GitHub Release 19 aset; Worker
   `7cedff97-e008-497f-ae8b-2b5ea653ca0a`.
 
+## Persiapan 2.1.0 (2026-10-25)
+
+- Perubahan: mirror client assets untuk static/edge host, hash navigation di client, dan
+  `PendingButton formId`; audit aplikasi nyata Midman + Rama Portfolio.
+- Gate: lint, typecheck, test, docs:stats --node-only, docs:generate, docs:validate, no-leak,
+  test:docs, release, release:verify, dry-run publish 16 tarball.
+- Update aplikasi Midman/Rama setelah tarball terverifikasi: hapus workaround mirror/public copy,
+  hapus HashBoot di Rama, gunakan `PendingButton formId`, lalu smoke deploy.
+
 ## Hasil rilis 2.0.2 (2026-10-24)
 
 - Tag `v2.0.2` → release workflow **success**: 16 paket @ 2.0.2 dengan attestations +

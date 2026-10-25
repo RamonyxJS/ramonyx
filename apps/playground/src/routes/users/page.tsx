@@ -20,6 +20,8 @@ export default function UsersPage({ data }: PageProps<{ users: { id: string; nam
       </ul>
       <p>
         <a href="/">Kembali</a>
+        {" · "}
+        <a href="/#hash-target">Lompat ke hash target</a>
       </p>
     </>
   );

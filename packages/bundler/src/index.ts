@@ -18,7 +18,7 @@ export {
   fontPreloadTag,
 } from "./assets.ts";
 export type { BuildClientOptions, BuildClientResult } from "./build.ts";
-export { buildClient, readClientScript } from "./build.ts";
+export { buildClient, mirrorClientAssets, readClientScript } from "./build.ts";
 export type { DevServer, DevServerOptions } from "./dev.ts";
 export { createDevServer } from "./dev.ts";
 export type { BuildEdgeOptions, BuildEdgeResult } from "./edge.ts";

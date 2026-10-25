@@ -76,6 +76,11 @@ export default function HomePage({
           </li>
         ))}
       </ul>
+      <section id="hash-target" style={{ marginTop: "1600px" }}>
+        <h2>Hash target</h2>
+        <p>Target untuk menguji scroll hash setelah navigasi.</p>
+      </section>
+      <div id="hash-target-spacer" style={{ height: "1200px" }} />
     </>
   );
 }

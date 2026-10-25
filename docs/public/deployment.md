@@ -19,6 +19,11 @@ export default defineConfig({ server: { port: 3000, host: "0.0.0.0" } });
 
 Production notes:
 
+- `public/**` is copied to the root of `dist/client` by the Vite build. Favicons, fonts,
+  robots.txt, and images with stable paths belong there.
+- Hashed client files are available at both `dist/client/client-*.js` (Node's `/assets`
+  prefix strips to root) and `dist/client/assets/client-*.js` (static hosts that serve the
+  output directory at root). `buildClient()` mirrors the entry and chunks automatically.
 - Serve `dist/client/assets/**` with `immutable` cache headers (the CLI's `start` does this for you).
 - The Node adapter compresses responses with brotli/gzip and appends per-chunk for streaming.
 - Keep the process behind a reverse proxy for TLS; the runtime verifies TLS for outbound `fetch`.

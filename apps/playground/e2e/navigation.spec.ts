@@ -34,3 +34,25 @@ test("soft navigation tanpa full reload (sentinel bertahan, back/forward)", asyn
   expect(await page.evaluate(readSentinel)).toBe(42);
   expect(await page.evaluate(readPayloadPath)).toBe("/users");
 });
+
+test("hash target digulir setelah soft navigation dan initial load", async ({ page }) => {
+  await page.goto("/users");
+  await page.getByRole("link", { name: "Lompat ke hash target" }).click();
+  await expect(page).toHaveURL(/\/#hash-target$/);
+  await expect
+    .poll(async () =>
+      page
+        .locator("#hash-target")
+        .evaluate((element) => Math.round(element.getBoundingClientRect().top)),
+    )
+    .toBeLessThan(20);
+
+  await page.goto("/#hash-target");
+  await expect
+    .poll(async () =>
+      page
+        .locator("#hash-target")
+        .evaluate((element) => Math.round(element.getBoundingClientRect().top)),
+    )
+    .toBeLessThan(20);
+});

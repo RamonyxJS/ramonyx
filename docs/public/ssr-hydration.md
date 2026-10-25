@@ -242,6 +242,11 @@ const [optimistic, setOptimistic] = useOptimisticForm({ name: "" });
   <PendingButton pendingText="Saving…">Save</PendingButton>
 </form>;
 
+// Multiple forms on one page: scope the pending state to one form id.
+<form id="delete-note" method="post">
+  <PendingButton formId="delete-note" pendingText="Deleting…">Delete</PendingButton>
+</form>;
+
 {optimistic.name ? <p>Optimistic: {optimistic.name}</p> : null}
 ```
 

@@ -74,15 +74,18 @@ export function useOptimisticForm<T extends Record<string, string>>(
 
 export interface PendingButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly pendingText?: ReactNode;
+  /** Cocokkan id/name form agar tombol lain di halaman tidak ikut pending. */
+  readonly formId?: string;
 }
 
 /** Tombol submit dengan `aria-busy` + disabled selama action berjalan. */
 export function PendingButton({
   pendingText = "Mengirim…",
+  formId,
   children,
   ...rest
 }: PendingButtonProps): ReactElement {
-  const { pending } = useActionStatus();
+  const { pending } = useActionStatus(formId === undefined ? undefined : { formId });
   return createElement(
     "button",
     {

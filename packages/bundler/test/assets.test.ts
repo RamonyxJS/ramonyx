@@ -11,6 +11,7 @@ import {
   collectAssets,
   createAssetResolver,
   fontPreloadTag,
+  mirrorClientAssets,
   readAssetManifest,
   writeAssetManifest,
 } from "../src/index.ts";
@@ -190,6 +191,21 @@ test("collectAssets + prosesor (ADR-0079): varian ber-hash, metadata, manifest, 
     assert.equal(image?.src, `/assets/${entry?.file}`);
     assert.equal(image?.srcSet, `${variantUrl} 400w`);
     assert.deepEqual(image?.sources, [{ type: "image/webp", srcSet: `${variantUrl} 400w` }]);
+  } finally {
+    await rm(workDir, { recursive: true, force: true });
+  }
+});
+
+test("mirrorClientAssets: entry + chunks tersedia di /assets untuk static host", async () => {
+  await rm(workDir, { recursive: true, force: true });
+  const outDir = `${workDir}/dist/client`;
+  await mkdir(`${outDir}/chunks`, { recursive: true });
+  await writeFile(`${outDir}/client-abc.js`, "ENTRY");
+  await writeFile(`${outDir}/chunks/page-abc.js`, "CHUNK");
+  try {
+    await mirrorClientAssets(outDir, "client-abc.js");
+    assert.equal(await readFile(`${outDir}/assets/client-abc.js`, "utf8"), "ENTRY");
+    assert.equal(await readFile(`${outDir}/assets/chunks/page-abc.js`, "utf8"), "CHUNK");
   } finally {
     await rm(workDir, { recursive: true, force: true });
   }

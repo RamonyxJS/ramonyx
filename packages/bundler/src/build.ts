@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { generateClientEntry, lintClientBoundaries } from "@ramonyx/compiler";
 import { errorHint, type LoadedPage } from "@ramonyx/core";
@@ -114,6 +114,24 @@ async function assertBundleBrowserSafe(outDir: string): Promise<void> {
   }
 }
 
+/**
+ * Mirror the hashed client entry + chunks into `<outDir>/assets/**`.
+ *
+ * Node's `serveStatic({ prefix: "/assets" })` strips the prefix, while static hosts
+ * (notably Cloudflare Workers Assets) serve the output directory at its root. Copying
+ * here makes the same `/assets/client-*.js` URL work on both without an app-level build
+ * script. Idempotent and safe when the public directory already contains `assets/`.
+ */
+export async function mirrorClientAssets(outDir: string, clientFile: string): Promise<void> {
+  const assetsDir = join(outDir, "assets");
+  await mkdir(assetsDir, { recursive: true });
+  await cp(join(outDir, clientFile), join(assetsDir, clientFile));
+  const chunksDir = join(outDir, "chunks");
+  if (existsSync(chunksDir)) {
+    await cp(chunksDir, join(assetsDir, "chunks"), { recursive: true });
+  }
+}
+
 export async function buildClient(options: BuildClientOptions): Promise<BuildClientResult> {
   const outDir = join(options.appDir, options.outDir ?? "dist/client");
   const entryDir = join(options.appDir, ".ramonyx");
@@ -171,6 +189,10 @@ export async function buildClient(options: BuildClientOptions): Promise<BuildCli
   if (clientFile === undefined) {
     throw new Error(`build klien tidak menghasilkan client-<hash>.js di ${outDir}`);
   }
+
+  // Edge static hosts serve the client directory at root; Node strips `/assets`.
+  // Mirror the hashed entry + chunks so both deployment models share one URL contract.
+  await mirrorClientAssets(outDir, clientFile);
 
   // Pipeline aset (ADR-0069): pindai `src/assets/**` → salin ber-hash + catat di manifest.
   const assetsDir =

@@ -15,3 +15,11 @@ test("PendingButton: output server default submit + atribut diteruskan", () => {
   assert.match(html, />Kirim<\/button>/);
   assert.doesNotMatch(html, /aria-busy/);
 });
+
+test("PendingButton: formId adalah opsi client, bukan atribut DOM", () => {
+  const html = renderToStaticMarkup(
+    createElement(PendingButton, { formId: "delete-form" }, "Hapus"),
+  );
+  assert.doesNotMatch(html, /formId|formid/);
+  assert.match(html, /type="submit"/);
+});

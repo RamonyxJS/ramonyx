@@ -466,6 +466,9 @@ export function hydrateAll(registry: ClientRegistry): void {
       // Marker setelah effect klien terpasang (bukan hanya hydrateRoot).
       window.requestAnimationFrame(() => {
         document.documentElement.classList.add("hydrated");
+        if (window.location.hash.length > 1) {
+          scrollToHash(window.location.href, "auto");
+        }
       });
     };
     // Biarkan paint pertama (LCP) selesai sebelum pekerjaan hydration penuh.
@@ -490,6 +493,19 @@ export interface ClientNavigation {
 const PREFETCH_TTL_MS = 30_000;
 const PREFETCH_MAX_ENTRIES = 8;
 const PREFETCH_MAX_CONCURRENT = 2;
+
+/** Scroll to a hash target after a soft navigation; browser handles same-page hashes. */
+function scrollToHash(url: string, behavior: ScrollBehavior = "auto"): void {
+  const hash = new URL(url, window.location.href).hash;
+  if (hash.length > 1) {
+    const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (target !== null) {
+      target.scrollIntoView({ block: "start", behavior });
+      return;
+    }
+  }
+  window.scrollTo({ top: 0, behavior });
+}
 
 function readPayloadFromDocument(doc: Document): HydrationPayload | null {
   const text = doc.getElementById(PAYLOAD_SCRIPT_ID)?.textContent ?? "";
@@ -698,7 +714,7 @@ export function enableClientNavigation(registry: ClientRegistry): ClientNavigati
     container.setAttribute("tabindex", "-1");
     container.focus({ preventScroll: true });
     if (scroll) {
-      window.scrollTo(0, 0);
+      window.requestAnimationFrame(() => scrollToHash(url, "auto"));
     }
     observeLinks();
   };

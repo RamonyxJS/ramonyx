@@ -45,7 +45,7 @@ jobs:
           toolchain: ${{ steps.rust.outputs.channel }}
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 12.14.0
       - name: Install

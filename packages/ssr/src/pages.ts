@@ -441,6 +441,7 @@ async function renderPage(
   const loaderGraph = createLoaderGraph();
   const concretePath = fillRouteParams(page.path, params) ?? page.path;
   const docLocale = documentLocaleAttributes(locale, i18n);
+  let metadata = page.page.metadata;
 
   try {
     const loader = page.page.loader;
@@ -508,7 +509,23 @@ async function renderPage(
       }
     }
 
-    const configuredStatus = statusOverride ?? page.page.metadata?.status;
+    const generateMetadata = page.page.generateMetadata;
+    if (generateMetadata !== undefined) {
+      const generated = await generateMetadata({
+        data,
+        params,
+        query: context.query,
+        request: context.request,
+        env: context.env,
+        log,
+        assets,
+        locale,
+        load: (key, fn) => loaderGraph.load(key, fn),
+      });
+      metadata = { ...page.page.metadata, ...generated };
+    }
+
+    const configuredStatus = statusOverride ?? metadata?.status;
     const status =
       typeof configuredStatus === "number" &&
       Number.isInteger(configuredStatus) &&
@@ -537,8 +554,8 @@ async function renderPage(
     }
     const useStreaming = streaming && renderStream !== undefined && !deferredNavigation;
 
-    const title = page.page.metadata?.title ?? "";
-    const headParts = [metadataHead(page.page.metadata, context.request)];
+    const title = metadata?.title ?? "";
+    const headParts = [metadataHead(metadata, context.request)];
     if (i18n !== undefined && locale !== undefined) {
       headParts.push(hreflangLinks(context.request, concretePath, i18n));
     }
@@ -686,7 +703,7 @@ async function renderPage(
         });
         return htmlResponse(
           documentRenderer({
-            title: page.page.metadata?.title ?? "",
+            title: metadata?.title ?? "",
             body,
             status: publicError.status,
             assets,

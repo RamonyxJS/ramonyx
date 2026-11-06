@@ -48,6 +48,23 @@ export type PageLoader<P = unknown, Q = unknown, D = unknown> = (
   context: PageLoaderContext<P, Q>,
 ) => D | Promise<D>;
 
+/**
+ * Konteks `generateMetadata` halaman: konteks loader + data hasil loader. `load` memakai graf
+ * per-request yang sama dengan loader, sehingga pekerjaan ber-key sama tidak diulang.
+ */
+export interface PageMetadataContext<P = unknown, Q = unknown, D = unknown>
+  extends PageLoaderContext<P, Q> {
+  readonly data: D;
+}
+
+/**
+ * Metadata per request dari data loader/DB — ADR-0084. Nilai yang dikembalikan digabung di atas
+ * `metadata` statis (field yang tidak diisi tetap memakai nilai statis).
+ */
+export type PageMetadataGenerator<P = unknown, Q = unknown, D = unknown> = (
+  context: PageMetadataContext<P, Q, D>,
+) => PageMetadata | Promise<PageMetadata>;
+
 /** Konteks action halaman (mutasi lewat POST — ADR-0057). */
 export interface PageActionContext<P = Record<string, string>> {
   readonly params: P;
@@ -116,6 +133,8 @@ export interface PageModule {
   readonly default?: unknown;
   readonly loader?: PageLoader<Record<string, string>, unknown, unknown>;
   readonly metadata?: PageMetadata;
+  /** Metadata per request (setelah loader selesai) — ADR-0084. */
+  readonly generateMetadata?: PageMetadataGenerator<Record<string, string>, unknown, unknown>;
   /**
    * `false` → halaman tidak pernah diprerender (mis. isinya bergantung request);
    * `true`/tidak diisi → ikut `ramonyx build --static` bila rutenya statis (ADR-0056).

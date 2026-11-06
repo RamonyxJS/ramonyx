@@ -140,7 +140,7 @@ export async function buildClient(options: BuildClientOptions): Promise<BuildCli
   const boundaryViolations = await lintClientBoundaries(options.pages);
   if (boundaryViolations.length > 0) {
     throw new Error(
-      "Batas server/client dilanggar (ADR-0063): modul halaman/layout/error mengimpor API server:\n" +
+      "Batas server/client dilanggar (ADR-0063): modul dalam graph bundle klien mengimpor API server:\n" +
         boundaryViolations
           .map((violation) => `  - ${violation.file} → ${violation.specifier}`)
           .join("\n") +

@@ -288,7 +288,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     },
     {
       "id": "head-metadata",
-      "name": "Metadata halaman (title, description, canonical, OG/Twitter, robots) + injeksi <head>",
+      "name": "Metadata halaman statis + dinamis per request (description, canonical, OG/Twitter, robots, generateMetadata)",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
@@ -302,9 +302,10 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "packages/ssr/test/pages.test.ts"
       ],
       "limitations": [
-        "Origin kanonik dari request (di belakang proxy: pastikan header benar)"
+        "Origin kanonik dari request (di belakang proxy: pastikan header benar)",
+        "Metadata dinamis tidak mengubah entri sitemap statis (createSeoRoutes)"
       ],
-      "docs": "docs/public/ssr-hydration.md"
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "schema-validation",
@@ -2027,7 +2028,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-25T11:56:58.440Z",
+  "generatedAt": "2026-11-06T01:05:54.970Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -2157,6 +2158,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
         "PageLoader",
         "PageLoaderContext",
         "PageMetadata",
+        "PageMetadataContext",
+        "PageMetadataGenerator",
         "PageModule",
         "REMOTE_ADDRESS_HEADER",
         "TROUBLESHOOTING_URL",
@@ -2549,7 +2552,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-25T11:57:00.311Z",
+  "generatedAt": "2026-11-06T01:05:56.665Z",
   "usage": "ramonyx — CLI pengembangan Ramonyx\n\nPemakaian:\n  ramonyx dev              Vite + HMR + SSR pada satu port (default :3000)\n  ramonyx build            Bundel klien → dist/client (jalankan sebelum start produksi)\n  ramonyx build --static   Bundel klien + prerender halaman → dist/static (hosting statis)\n  ramonyx build --target edge\n                           Bundel server edge/serverless → dist/edge (kontrak fetch handler)\n  ramonyx start            Server produksi (NODE_ENV=production, SSR)\n  ramonyx start --watch    Restart server saat src/** berubah\n  ramonyx add <nama[@versi]> --registry <path|url>\n                           Pasang plugin + verifikasi integritas/signature\n  ramonyx remove <nama>    Hapus plugin + lock entry\n  ramonyx doctor           Diagnostik konfigurasi & lingkungan\n  ramonyx routes           Daftar halaman + route API (manifest)\n  ramonyx check            Periksa config, entry, route, dan batas client/server\n  ramonyx ai               init|sync: AGENTS.md + adapter agen + konfigurasi MCP\n  ramonyx version          Versi CLI\n  ramonyx help             Bantuan ini\n\nOpsi:\n  --app <dir>       Direktori aplikasi (default: direktori kerja saat ini)\n  --config <path>   Path config (default: <app>/ramonyx.config.ts)\n  --port <n>        Override port dev/start\n  --static          (build) Prerender rute statis + getStaticPaths → dist/static\n  --target <nama>   (build) Target: edge | vercel | deno (dist/<target>, fetch handler)\n  --watch           (build/start) Bangun ulang atau restart server saat src/** berubah\n  --registry <path|url>  (add/remove) Registry plugin JSON\n  --public-key <path>     (add) Public key Ed25519 PEM untuk verifikasi signature\n  --agents <list>   (ai) Adapter: claude,cursor,copilot,opencode (default semua)\n  --no-mcp          (ai) Jangan tulis konfigurasi MCP\n  --force           (ai) Timpa berkas yang sudah ada (termasuk AGENTS.md tanpa marker)\n  --dry-run         (ai) Laporkan aksi tanpa menulis\n  --json            (doctor/routes/check/ai) Output JSON yang dapat dibaca mesin\n\nKonvensi:\n  src/app.ts        mengekspor createApp(options?) → FetchHandler\n  src/routes        halaman (page.tsx/layout.tsx/error.tsx) + API (api/*.ts)\n  ramonyx.config.ts default export { app?, server? } (opsional)\n\n",
   "commands": [
     {
@@ -2664,7 +2667,7 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 ```json
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-25T11:57:00.334Z",
+  "generatedAt": "2026-11-06T01:05:56.692Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -2825,6 +2828,21 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
       "docs": "docs/public/recipes/page-loader.md"
     },
     {
+      "id": "pwa",
+      "title": "Add installable PWA support",
+      "summary": "Ship a web app manifest, a root-scoped service worker, and an offline fallback without adding a framework dependency.",
+      "when": "The app should be installable and keep a useful shell available when the network drops.",
+      "files": [
+        "public/manifest.webmanifest",
+        "public/sw.js",
+        "public/pwa.js",
+        "src/document.ts"
+      ],
+      "verify": "ramonyx build && ramonyx start",
+      "slug": "recipes/pwa",
+      "docs": "docs/public/recipes/pwa.md"
+    },
+    {
       "id": "stripe",
       "title": "Add Stripe Checkout and webhooks",
       "summary": "Create Checkout Sessions from a server route and verify Stripe webhooks before changing entitlements.",
@@ -2876,8 +2894,8 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
 {
   "schemaVersion": 1,
   "version": "2.1.0",
-  "generatedAt": "2026-10-25T11:55:28.359Z",
-  "commit": "3fe79975266e0b512b5077d1b707325a668a60e0",
+  "generatedAt": "2026-11-06T01:04:28.364Z",
+  "commit": "2dd95d91a5f7b834e5e06946876b51c5f1a8bf02",
   "node": "v24.22.0",
   "packages": {
     "workspace": 15,
@@ -2902,9 +2920,9 @@ Context7 library: https://context7.com/websites/ramonyx_devmoon_net
     ]
   },
   "adrs": 9,
-  "docs": 42,
+  "docs": 43,
   "tests": {
-    "node": 400,
+    "node": 404,
     "rust": 116,
     "e2eSpecFiles": 12
   }
@@ -3008,6 +3026,11 @@ Invalid schema input → `400` with `issues`; invalid output → `500`.
 Other exports: `HttpError`, `defineConfig`, `resolveConfig`, `mergeHooks`, `formDataToObject`,
 `createCache`, `createMemoryStore`, `createTranslator`, `negotiateLocale`, `localePath`,
 `parseAcceptLanguage`.
+
+Page modules may export `metadata` (static) and/or `generateMetadata(context)` for per-request
+head metadata. The generator receives the loader context plus `data`, and may be async; see
+[routing.md](../routing.md#dynamic-metadata). Types: `PageMetadata`, `PageMetadataContext`,
+`PageMetadataGenerator`, `PageModule`.
 
 ## SSR — `@ramonyx/ssr`
 
@@ -4453,6 +4476,7 @@ touches, and a verification command; the machine-readable index is
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |
 | Static/edge deployment | [Deploy static or edge output](deploy-static-edge.md) | `ramonyx build --static` |
+| Installable app + offline shell | [Add installable PWA support](pwa.md) | `ramonyx build && ramonyx start` |
 
 ## Use with an agent
 
@@ -5619,6 +5643,175 @@ ramonyx dev             # request the page in a browser
 
 Next: [Routing](../routing.md) and [SSR & Hydration](../ssr-hydration.md).
 
+## docs/public/recipes/pwa.md
+
+---
+recipe: pwa
+title: Add installable PWA support
+summary: Ship a web app manifest, a root-scoped service worker, and an offline fallback without adding a framework dependency.
+when: The app should be installable and keep a useful shell available when the network drops.
+files: public/manifest.webmanifest, public/sw.js, public/pwa.js, src/document.ts
+verify: ramonyx build && ramonyx start
+---
+
+# Add installable PWA support
+
+PWA support is an application concern: icons, cache policy, and offline UX differ per product.
+Ramonyx only needs to serve the files and let the client register the worker. Keep the worker at
+the site root so its scope covers the whole app.
+
+## 1. Manifest and icons
+
+Create `public/manifest.webmanifest`:
+
+```json title="public/manifest.webmanifest"
+{
+  "name": "Acme Workspace",
+  "short_name": "Acme",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
+```
+
+Files in `public/**` are copied to the static root by the build. Do not put the manifest under
+`/assets/**`; those filenames are content-hashed.
+
+## 2. Root-scoped service worker
+
+`public/sw.js` is served as `/sw.js`, so its scope is `/`. This example is deliberately small:
+
+```js title="public/sw.js"
+const VERSION = "v1";
+const SHELL = `/offline.html`;
+const ASSET_CACHE = `assets-${VERSION}`;
+const PAGE_CACHE = `pages-${VERSION}`;
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(PAGE_CACHE).then((cache) => cache.add(SHELL)));
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key !== ASSET_CACHE && key !== PAGE_CACHE)
+          .map((key) => caches.delete(key)),
+      ),
+    ),
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+  if (request.method !== "GET" || url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith("/admin") || url.pathname.startsWith("/api/")) return;
+
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(PAGE_CACHE).then((cache) => cache.put(request, copy));
+          return response;
+        })
+        .catch(async () => (await caches.match(request)) ?? caches.match(SHELL)),
+    );
+    return;
+  }
+
+  if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/icons/")) {
+    event.respondWith(
+      caches.match(request).then(
+        (cached) =>
+          cached ??
+          fetch(request).then((response) => {
+            if (response.ok) {
+              const copy = response.clone();
+              caches.open(ASSET_CACHE).then((cache) => cache.put(request, copy));
+            }
+            return response;
+          }),
+      ),
+    );
+  }
+});
+```
+
+Add `public/offline.html` with a plain HTML fallback. The worker never caches non-GET requests,
+cross-origin responses, admin pages, or API responses.
+
+## 3. Register from the app
+
+Register only in the browser and only after load. `public/pwa.js`:
+
+```js title="public/pwa.js"
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((error) => {
+      console.warn("Service worker registration failed", error);
+    });
+  });
+}
+```
+
+Load it once from the document shell. A custom `src/document.ts` can add the manifest and module
+script to every page:
+
+```ts title="src/document.ts"
+import { defaultDocument } from "@ramonyx/ssr";
+
+export function document(options) {
+  return defaultDocument({
+    ...options,
+    head: [
+      '<link rel="manifest" href="/manifest.webmanifest" />',
+      '<script type="module" src="/pwa.js"></script>',
+      options.head ?? "",
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  });
+}
+```
+
+Pass it to `createPageRoutes({ document })` (or through `createApp` if your template already wires
+one). Keep the registration out of `src/routes/**` so it does not run during SSR.
+
+## Verify
+
+```bash
+ramonyx build
+ramonyx start
+```
+
+In the browser, check **Application → Manifest** and **Application → Service Workers**. Install
+the app, reload once online, then switch DevTools to offline and open a cached page. The offline
+fallback should appear for an uncached navigation.
+
+## Limits
+
+- Bump `VERSION` when the worker changes; otherwise old caches stay active.
+- This is a cache-first shell, not a full offline data layer. Do not cache authenticated HTML or
+  JSON responses.
+- Hashed `/assets/**` files are safe to cache indefinitely per build, but the worker itself must be
+  refreshed and the old cache deleted.
+- Safari/iOS install UX and icon requirements differ; test the real device before promising
+  installability.
+- Service workers require HTTPS (or `localhost`). The Ramonyx edge worker and Node production
+  server already provide HTTPS at the hosting layer.
+
 ## docs/public/recipes/stripe.md
 
 ---
@@ -6122,7 +6315,8 @@ A page module exports:
 | `default` | React component receiving `PageProps` |
 | `loader` | server-only data loading (GET) |
 | `action` | form mutation handler (POST to the same path) |
-| `metadata` | title/description/status/robots/canonical/head |
+| `metadata` | static title/description/status/robots/canonical/head |
+| `generateMetadata` | per-request metadata from loader data (async allowed) |
 | `revalidate` | cache TTL in seconds (ISR-lite) |
 | `cacheTags` | tags for on-demand invalidation |
 | `prerender` / `getStaticPaths` | static generation control |
@@ -6143,6 +6337,47 @@ export async function loader({ params, query, request, env, log }) {
 
 The loader context also exposes `assets` (asset resolver) and `locale` (when i18n routing is
 enabled). Loader data is embedded in the hydration payload — keep it JSON-serializable.
+
+## Dynamic metadata
+
+Use `generateMetadata` when the `<head>` depends on loader data or the request. It runs on the
+server after the loader and before status/head/body rendering (also before streaming starts):
+
+```ts
+export async function loader({ params, env }) {
+  const product = await getProduct(env, params.slug);
+  if (product === null) throw new HttpError(404, "Not found");
+  return { product };
+}
+
+export async function generateMetadata({ data, params, request }) {
+  const { product } = data;
+  return {
+    title: `${product.name} — Store`,
+    description: product.summary,
+    canonical: `${new URL(request.url).origin}/products/${params.slug}`,
+    image: product.coverUrl,
+    type: "product",
+    ...(product.private ? { robots: "noindex" } : {}),
+  };
+}
+```
+
+- The result is shallow-merged over the static `metadata` export; omitted fields keep their
+  static values, while `undefined` removes one.
+- The context also has `load`, backed by the **same request graph as the loader**. If the loader
+  populated a key, asking for that key again in `generateMetadata` returns the cached result
+  instead of repeating the query.
+- `status` from the generated object controls the response (same 100–599 validation).
+- `generateMetadata` is not run in the browser. Soft navigation still updates `<head>` from the
+  server response.
+- Return only JSON-safe primitive values; metadata is HTML-escaped by the renderer.
+- Dynamic metadata does not change `sitemap.xml`; `createSeoRoutes` still uses the static route
+  manifest and `getStaticPaths`.
+- Prefer a lightweight query, or share it through `load` — metadata runs before the response
+  starts, including for streaming pages.
+- Deferred (`defer()`) values are not resolved for metadata; use regular loader fields that are
+  available immediately.
 
 ## API routes
 
@@ -6948,6 +7183,11 @@ export async function loader() {
   action (`context.revalidate`), or the cache instance.
 - The default cache is in-memory per process; the store interface is pluggable for multi-instance
   deployments.
+
+Metadata can use the same loader result through `generateMetadata({ data, ... })`. It runs on
+the server after the loader and before the head/body (and before streaming starts), so soft
+navigation receives the correct `<head>` in the same response. See
+[routing.md](routing.md#dynamic-metadata).
 
 ## Server actions
 

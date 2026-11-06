@@ -23,6 +23,8 @@ export interface RouteManifestEntry {
   readonly loader: boolean;
   readonly action: boolean;
   readonly actionSchema: boolean;
+  /** Halaman mengekspor `generateMetadata` (ADR-0084). */
+  readonly dynamicMetadata: boolean;
   readonly getStaticPaths: boolean;
   readonly prerender: boolean | null;
   readonly revalidate: number | null;
@@ -175,6 +177,7 @@ function pageEntry(appDir: string, page: LoadedPage): RouteManifestEntry {
     loader: typeof page.page.loader === "function",
     action: typeof page.page.action === "function",
     actionSchema: page.page.actionSchema !== undefined,
+    dynamicMetadata: typeof page.page.generateMetadata === "function",
     getStaticPaths: typeof page.page.getStaticPaths === "function",
     prerender: page.page.prerender ?? null,
     revalidate: typeof page.page.revalidate === "number" ? page.page.revalidate : null,

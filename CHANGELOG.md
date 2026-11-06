@@ -4,6 +4,12 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+### Added
+
+- `generateMetadata(context)` page export for per-request metadata derived from loader data,
+  query, request, and shared `load` graph (ADR-0084). Generated fields shallow-merge over static
+  `metadata`; dynamic `status`, canonical, OG/Twitter, and robots apply before SSR/streaming.
+
 ## [2.1.0] — 2026-10-25
 
 ### Added

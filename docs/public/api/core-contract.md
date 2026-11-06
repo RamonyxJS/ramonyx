@@ -49,6 +49,11 @@ Other exports: `HttpError`, `defineConfig`, `resolveConfig`, `mergeHooks`, `form
 `createCache`, `createMemoryStore`, `createTranslator`, `negotiateLocale`, `localePath`,
 `parseAcceptLanguage`.
 
+Page modules may export `metadata` (static) and/or `generateMetadata(context)` for per-request
+head metadata. The generator receives the loader context plus `data`, and may be async; see
+[routing.md](../routing.md#dynamic-metadata). Types: `PageMetadata`, `PageMetadataContext`,
+`PageMetadataGenerator`, `PageModule`.
+
 ## SSR — `@ramonyx/ssr`
 
 ```ts

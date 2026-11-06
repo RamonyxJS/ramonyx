@@ -208,6 +208,11 @@ export async function loader() {
 - The default cache is in-memory per process; the store interface is pluggable for multi-instance
   deployments.
 
+Metadata can use the same loader result through `generateMetadata({ data, ... })`. It runs on
+the server after the loader and before the head/body (and before streaming starts), so soft
+navigation receives the correct `<head>` in the same response. See
+[routing.md](routing.md#dynamic-metadata).
+
 ## Server actions
 
 An `action` export turns a page into a mutation endpoint (POST to the same URL). It receives

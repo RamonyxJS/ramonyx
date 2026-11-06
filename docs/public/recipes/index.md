@@ -21,6 +21,7 @@ touches, and a verification command; the machine-readable index is
 | Loader caching + invalidation | [Cache loader data and invalidate it](cache-revalidate.md) | `ramonyx check --json` |
 | In-process route tests | [Test a route in-process](testing.md) | `pnpm test` |
 | Static/edge deployment | [Deploy static or edge output](deploy-static-edge.md) | `ramonyx build --static` |
+| Installable app + offline shell | [Add installable PWA support](pwa.md) | `ramonyx build && ramonyx start` |
 
 ## Use with an agent
 

@@ -19,10 +19,10 @@ Kode bisnis, data pelanggan, secret, dan konfigurasi akun tidak masuk repo Ramon
 | 2 | `public/` sebenarnya sudah disalin Vite ke `dist/client`, tetapi tidak didokumentasikan sebagai kontrak. Kedua app menyalin ulang. | Build `buildClient` tanpa script app menghasilkan `dist/client/fonts/**`. | Dokumentasi | Hapus salinan manual saat update app; dokumentasikan di deployment. |
 | 3 | Hash anchor setelah soft navigation / hydration sebelumnya menjadi tanggung jawab app. | Rama memakai `HashBoot`; tanpa itu `#pengalaman` bisa berhenti di posisi awal. | **Fixed di client** | Client navigation sekarang scroll ke target hash; initial hydration juga. Aplikasi dapat menghapus `HashBoot` setelah upgrade. |
 | 4 | `PendingButton` tidak bisa mencocokkan form tertentu, sementara `useActionStatus` bisa. | Kedua app membuat `SubmitButton` sendiri karena `PendingButton` tidak menerima `formId`. | **Fixed** | `PendingButton` menerima `formId` dan tidak meneruskannya ke DOM. |
-| 5 | Metadata halaman masih statis; field SEO di admin Rama tidak dapat mengubah `<head>` per request. | `PageMetadata` dibaca dari module route, bukan data loader. | Backlog P2 | Desain `generateMetadata`/`metadata(data)` per-request dengan test SSR. |
+| 5 | Metadata halaman masih statis; field SEO di admin Rama tidak dapat mengubah `<head>` per request. | `PageMetadata` dibaca dari module route, bukan data loader. | **Fixed** | `generateMetadata` per-request (ADR-0084); Rama memakai `seo_title`/`seo_description` dari D1. |
 | 6 | HTML `Ctrl+U` sangat panjang karena body React SSR satu baris. | `devmoon.net`: 722 baris, baris body ±20 KB; payload ±11 KB. | Bukan bug | Pertimbangkan formatter dev-only; produksi tetap compact. |
-| 7 | PWA masih app-level (manifest, SW, offline, ikon). | Midman memelihara `src/pwa.ts` dan route middleware sendiri. | Backlog P2 | Recipe/helper opsional; jangan masukkan ke core. |
-| 8 | Diagnostik batas server/client sudah berguna, tetapi baru muncul saat build. | Rama pernah mengimpor helper dari `*.server.ts` ke komponen. | Backlog P2 | Pertimbangkan lint/analyzer yang menunjuk export server sebelum bundling. |
+| 7 | PWA masih app-level (manifest, SW, offline, ikon). | Midman memelihara `src/pwa.ts` dan route middleware sendiri. | **Recipe** | `docs/public/recipes/pwa.md`; tetap app-level, tanpa API core baru. |
+| 8 | Diagnostik batas server/client sudah berguna, tetapi baru muncul saat build. | Rama pernah mengimpor helper dari `*.server.ts` ke komponen. | **Sebagian** | Lint menelusuri impor relatif transitif (`node:*`/`server-only`) dan menunjuk file penyebab. Penggunaan export server dari komponen belum dianalisis statis. |
 | 9 | D1/auth/CSRF/rate-limit adalah pola berulang di app. | Midman dan Rama memiliki adapter serupa. | Bukan core | Pertahankan sebagai integration kit/resep; jangan menambah coupling core. |
 
 ## Yang sudah baik dan tidak perlu diubah
@@ -47,9 +47,13 @@ Kode bisnis, data pelanggan, secret, dan konfigurasi akun tidak masuk repo Ramon
 ### Fase 2 — DX dan metadata
 
 1. Dev-only HTML source formatter atau endpoint debug.
-2. `generateMetadata`/metadata function yang menerima data loader.
-3. Diagnostik batas server/client lebih awal.
-4. PWA recipe (bukan core).
+2. **Selesai** — `generateMetadata` menerima data loader + konteks request, berbagi graf `load`
+   (ADR-0084); test SSR untuk merge, status, query, dan error generator.
+3. **Sebagian** — `lintClientBoundaries` menelusuri graph impor relatif (bukan hanya file halaman)
+   sehingga pelanggaran `node:*`/`server-only` di komponen tertunjuk sebelum bundling;
+   penggunaan export `*.server.ts` dari komponen masih lolos (bundler memakai stub).
+4. **Selesai** — recipe PWA di `docs/public/recipes/pwa.md` (manifest, root-scoped service
+   worker, offline fallback, batas cache); tidak menambah API core.
 
 ### Fase 3 — update aplikasi
 

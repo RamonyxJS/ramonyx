@@ -26,7 +26,8 @@ A page module exports:
 | `default` | React component receiving `PageProps` |
 | `loader` | server-only data loading (GET) |
 | `action` | form mutation handler (POST to the same path) |
-| `metadata` | title/description/status/robots/canonical/head |
+| `metadata` | static title/description/status/robots/canonical/head |
+| `generateMetadata` | per-request metadata from loader data (async allowed) |
 | `revalidate` | cache TTL in seconds (ISR-lite) |
 | `cacheTags` | tags for on-demand invalidation |
 | `prerender` / `getStaticPaths` | static generation control |
@@ -47,6 +48,47 @@ export async function loader({ params, query, request, env, log }) {
 
 The loader context also exposes `assets` (asset resolver) and `locale` (when i18n routing is
 enabled). Loader data is embedded in the hydration payload — keep it JSON-serializable.
+
+## Dynamic metadata
+
+Use `generateMetadata` when the `<head>` depends on loader data or the request. It runs on the
+server after the loader and before status/head/body rendering (also before streaming starts):
+
+```ts
+export async function loader({ params, env }) {
+  const product = await getProduct(env, params.slug);
+  if (product === null) throw new HttpError(404, "Not found");
+  return { product };
+}
+
+export async function generateMetadata({ data, params, request }) {
+  const { product } = data;
+  return {
+    title: `${product.name} — Store`,
+    description: product.summary,
+    canonical: `${new URL(request.url).origin}/products/${params.slug}`,
+    image: product.coverUrl,
+    type: "product",
+    ...(product.private ? { robots: "noindex" } : {}),
+  };
+}
+```
+
+- The result is shallow-merged over the static `metadata` export; omitted fields keep their
+  static values, while `undefined` removes one.
+- The context also has `load`, backed by the **same request graph as the loader**. If the loader
+  populated a key, asking for that key again in `generateMetadata` returns the cached result
+  instead of repeating the query.
+- `status` from the generated object controls the response (same 100–599 validation).
+- `generateMetadata` is not run in the browser. Soft navigation still updates `<head>` from the
+  server response.
+- Return only JSON-safe primitive values; metadata is HTML-escaped by the renderer.
+- Dynamic metadata does not change `sitemap.xml`; `createSeoRoutes` still uses the static route
+  manifest and `getStaticPaths`.
+- Prefer a lightweight query, or share it through `load` — metadata runs before the response
+  starts, including for streaming pages.
+- Deferred (`defer()`) values are not resolved for metadata; use regular loader fields that are
+  available immediately.
 
 ## API routes
 

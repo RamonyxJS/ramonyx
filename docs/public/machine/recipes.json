@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-25T11:57:00.334Z",
+  "generatedAt": "2026-11-06T01:05:56.692Z",
   "recipes": [
     {
       "id": "api-validation",
@@ -159,6 +159,21 @@
       "verify": "ramonyx check --json && ramonyx routes --json",
       "slug": "recipes/page-loader",
       "docs": "docs/public/recipes/page-loader.md"
+    },
+    {
+      "id": "pwa",
+      "title": "Add installable PWA support",
+      "summary": "Ship a web app manifest, a root-scoped service worker, and an offline fallback without adding a framework dependency.",
+      "when": "The app should be installable and keep a useful shell available when the network drops.",
+      "files": [
+        "public/manifest.webmanifest",
+        "public/sw.js",
+        "public/pwa.js",
+        "src/document.ts"
+      ],
+      "verify": "ramonyx build && ramonyx start",
+      "slug": "recipes/pwa",
+      "docs": "docs/public/recipes/pwa.md"
     },
     {
       "id": "stripe",

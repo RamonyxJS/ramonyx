@@ -32,6 +32,40 @@ test("lint boundaries: node builtin + server-only; *.server.ts tetap diizinkan",
   }
 });
 
+test("lint boundaries: impor node transitif dari komponen ikut dilaporkan", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "ramonyx-boundary-"));
+  try {
+    const pageFile = join(dir, "page.tsx");
+    const cardFile = join(dir, "card.tsx");
+    const serverFile = join(dir, "db.server.ts");
+    await writeFile(
+      pageFile,
+      'import { Card } from "./card.tsx";\nexport default function Page() { return Card; }\n',
+    );
+    await writeFile(
+      cardFile,
+      'import { readFile } from "node:fs/promises";\nimport { db } from "./db.server.ts";\nexport function Card() { return [readFile, db]; }\n',
+    );
+    await writeFile(
+      serverFile,
+      'import { readFile } from "node:fs/promises";\nexport const db = readFile;\n',
+    );
+
+    const violations = await lintClientBoundaries([page(pageFile)]);
+    assert.deepEqual(
+      violations.map((violation) => ({
+        file: violation.file,
+        specifier: violation.specifier,
+        reason: violation.reason,
+      })),
+      [{ file: cardFile, specifier: "node:fs/promises", reason: "node-builtin" }],
+      "hanya file penyebab yang dilaporkan; db.server.ts tidak ditelusuri",
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("lint boundaries: impor aman dan komentar tidak dilaporkan", async () => {
   const dir = await mkdtemp(join(tmpdir(), "ramonyx-boundary-"));
   try {

@@ -1200,6 +1200,22 @@
       "features": [
         "dev-server-hmr"
       ]
+    },
+    {
+      "id": "ADR-0084",
+      "file": "0084-dynamic-metadata.md",
+      "title": "Metadata Dinamis per Request dari Data Loader (`generateMetadata`)",
+      "status": "accepted",
+      "statusDetail": "Accepted (2026-10-25)",
+      "date": "2026-10-25",
+      "decision": "Ekspor generateMetadata(context) di modul halaman menerima konteks loader + data; dijalankan SSR setelah loader dan sebelum head/status/streaming; hasil digabung dangkal di atas metadata statis; error masuk jalur error halaman; load berbagi graf per-request; sitemap tetap statis.",
+      "related": [
+        "ADR-0059",
+        "ADR-0008"
+      ],
+      "features": [
+        "head-metadata"
+      ]
     }
   ]
 }

@@ -439,6 +439,40 @@ test("streaming: isi dokumen identik dengan jalur sinkron (paritas, termasuk hyd
   assert.equal(streamedHtml, syncHtml);
 });
 
+test("streaming: generateMetadata selesai sebelum renderStream/byte pertama", async () => {
+  let metadataDone = false;
+  const renderer: Renderer = {
+    name: "stream-metadata",
+    render: async (element) => describeElement(element),
+    renderStream: async (element) => {
+      assert.equal(metadataDone, true, "metadata harus selesai sebelum body distream");
+      const bytes = new TextEncoder().encode(describeElement(element));
+      return new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(bytes);
+          controller.close();
+        },
+      });
+    },
+  };
+  const page = basePage("/produk/[slug]", {
+    default: Page,
+    loader: async ({ params }) => ({ name: params.slug === "kopi" ? "Kopi" : "Lain" }),
+    generateMetadata: async ({ data }) => {
+      await Promise.resolve();
+      metadataDone = true;
+      return { title: `${(data as { name: string }).name} — Detail` };
+    },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer, streaming: true }),
+  });
+
+  const html = await (await handler(new Request("http://test.local/produk/kopi"))).text();
+  assert.equal(metadataDone, true);
+  assert.match(html, /<title>Kopi — Detail<\/title>/);
+});
+
 test("streaming: prefix + body pertama terkirim sebelum body selesai (aliran sungguhan)", async () => {
   const encoder = new TextEncoder();
   let release = (): void => {};
@@ -747,6 +781,82 @@ test("metadata: description/canonical/OG/Twitter/robots disuntikkan ke <head>", 
     /<link rel="icon" href="data:image\/svg\+xml,.*" type="image\/svg\+xml" \/>/,
     "dokumen default menyediakan ikon agar tidak ada 404 favicon.ico",
   );
+});
+
+test("generateMetadata: data loader, merge metadata statis, query, canonical, status", async () => {
+  let productLoads = 0;
+  const page = basePage("/produk/[slug]", {
+    default: Page,
+    metadata: {
+      title: "Fallback",
+      description: "Deskripsi statis",
+      image: "/og-default.png",
+    },
+    loader: async ({ params, load }) => {
+      if (load === undefined) throw new Error("load graph tidak tersedia");
+      const product = await load(`produk:${params.slug}`, async () => {
+        productLoads += 1;
+        return { name: params.slug === "hilang" ? "Tidak ada" : "Kopi" };
+      });
+      return { product };
+    },
+    generateMetadata: async ({ params, query, request, load }) => {
+      if (load === undefined) throw new Error("load graph tidak tersedia");
+      // Graf loader yang sama → tidak query ulang.
+      const product = await load(`produk:${params.slug}`, async () => ({
+        name: "salah",
+      }));
+      const preview = (query as { preview?: string }).preview === "1";
+      return {
+        title: `${product.name} — ${params.slug}`,
+        description: undefined,
+        canonical: `${new URL(request.url).origin}/produk/${params.slug}`,
+        type: "product",
+        robots: preview ? "noindex" : "index",
+        status: params.slug === "hilang" ? 404 : 200,
+      };
+    },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+
+  const response = await handler(new Request("https://contoh.dev/produk/kopi?preview=1"));
+  const html = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.equal(productLoads, 1, "loader dan generateMetadata berbagi graf load");
+  assert.match(html, /<title>Kopi — kopi<\/title>/);
+  assert.ok(html.includes('<meta name="robots" content="noindex" />'));
+  assert.ok(html.includes('<link rel="canonical" href="https://contoh.dev/produk/kopi" />'));
+  assert.ok(html.includes('<meta property="og:type" content="product" />'));
+  assert.ok(
+    html.includes('<meta property="og:image" content="https://contoh.dev/og-default.png" />'),
+  );
+  assert.ok(!html.includes('name="description"'), "description: undefined menghapus nilai statis");
+
+  const missing = await handler(new Request("https://contoh.dev/produk/hilang"));
+  assert.equal(missing.status, 404);
+  assert.match(await missing.text(), /<title>Tidak ada — hilang<\/title>/);
+});
+
+test("generateMetadata: error generator masuk jalur error page", async () => {
+  const page = basePage("/rusak", {
+    default: Page,
+    metadata: { title: "Statis" },
+    generateMetadata: () => {
+      throw new Error("metadata gagal");
+    },
+  });
+  const handler = createHandler({
+    routes: createPageRoutes({ pages: [page], renderer: fakeRenderer() }),
+  });
+
+  const response = await handler(new Request("http://test.local/rusak"));
+  assert.equal(response.status, 500);
+  const html = await response.text();
+  assert.match(html, /<title>500<\/title>/);
+  assert.ok(html.includes("metadata gagal"));
 });
 
 test("metadata.head dengan ikon kustom tidak ditimpa ikon default", async () => {

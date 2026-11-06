@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-25T11:56:58.440Z",
+  "generatedAt": "2026-11-06T01:05:54.970Z",
   "packages": [
     {
       "name": "@ramonyx/adapter-runtime",
@@ -130,6 +130,8 @@
         "PageLoader",
         "PageLoaderContext",
         "PageMetadata",
+        "PageMetadataContext",
+        "PageMetadataGenerator",
         "PageModule",
         "REMOTE_ADDRESS_HEADER",
         "TROUBLESHOOTING_URL",

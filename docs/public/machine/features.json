@@ -274,7 +274,7 @@
     },
     {
       "id": "head-metadata",
-      "name": "Metadata halaman (title, description, canonical, OG/Twitter, robots) + injeksi <head>",
+      "name": "Metadata halaman statis + dinamis per request (description, canonical, OG/Twitter, robots, generateMetadata)",
       "status": "implemented",
       "since": "0.2.0",
       "priority": "p1",
@@ -288,9 +288,10 @@
         "packages/ssr/test/pages.test.ts"
       ],
       "limitations": [
-        "Origin kanonik dari request (di belakang proxy: pastikan header benar)"
+        "Origin kanonik dari request (di belakang proxy: pastikan header benar)",
+        "Metadata dinamis tidak mengubah entri sitemap statis (createSeoRoutes)"
       ],
-      "docs": "docs/public/ssr-hydration.md"
+      "docs": "docs/public/routing.md"
     },
     {
       "id": "schema-validation",

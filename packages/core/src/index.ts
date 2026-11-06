@@ -40,6 +40,8 @@ export {
   type PageLoader,
   type PageLoaderContext,
   type PageMetadata,
+  type PageMetadataContext,
+  type PageMetadataGenerator,
   type PageModule,
 } from "./page.ts";
 export { fillRouteParams, hasDynamicSegment } from "./params.ts";

@@ -40,6 +40,11 @@
   modul database/session di `ramonyx dev` (produksi sudah benar). Test regresi ditambahkan;
   statistik 398 test Node. 16 paket @ 2.0.2; GitHub Release 19 aset; Worker
   `7cedff97-e008-497f-ae8b-2b5ea653ca0a`.
+- **TERBIT — 2.2.0** (2026-11-06): metadata dinamis dari loader (ADR-0084), recipe PWA,
+  dan lint batas client transitif. 16 paket @ 2.2.0 + `create-ramonyx-app@2.2.0` dengan
+  provenance; GitHub Release v2.2.0 (19 aset); workflow `42142882076` **success**; registry
+  16/16 `latest=2.2.0` dengan attestation. Rama Portfolio sudah upgrade dan `<head>` live
+  (home + work/writing detail) memakai canonical/OG dinamis.
 
 ## Persiapan 2.2.0 (2026-11-06)
 
@@ -49,8 +54,8 @@
 - Gate: lint, typecheck, test 404 Node, docs:stats --node-only, docs:generate, docs:validate,
   docs:no-leak, test:docs (18 e2e), release (17 artefak), release:verify, dry-run publish 16
   tarball.
-- Setelah terbit: update Rama Portfolio ke 2.2.0 dan pakai `seo_title`/`seo_description` D1 di
-  `generateMetadata`; smoke `<head>` live.
+- **Selesai**: Rama Portfolio upgrade ke 2.2.0; home memakai `seo_title`/`seo_description` D1,
+  detail work/writing memakai judul/ringkasan/canonical/OG; smoke `<head>` live lolos.
 
 ## Persiapan 2.1.0 (2026-10-25)
 

@@ -4,11 +4,22 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/); versi mengikut
 
 ## [Unreleased]
 
+## [2.2.0] — 2026-11-06
+
 ### Added
 
 - `generateMetadata(context)` page export for per-request metadata derived from loader data,
   query, request, and shared `load` graph (ADR-0084). Generated fields shallow-merge over static
   `metadata`; dynamic `status`, canonical, OG/Twitter, and robots apply before SSR/streaming.
+- PWA recipe covering a web app manifest, root-scoped service worker, offline fallback, and
+  cache boundaries (application-level, no new core API).
+- Route manifest now reports `dynamicMetadata` for pages that export `generateMetadata`.
+
+### Changed
+
+- Client-boundary lint now traverses relative imports transitively, so a `node:*` or
+  `server-only` violation inside a component points at that component before bundling.
+  `*.server.ts` modules remain stubbed and are not traversed.
 
 ## [2.1.0] — 2026-10-25
 

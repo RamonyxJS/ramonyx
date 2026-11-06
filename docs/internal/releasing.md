@@ -41,6 +41,17 @@
   statistik 398 test Node. 16 paket @ 2.0.2; GitHub Release 19 aset; Worker
   `7cedff97-e008-497f-ae8b-2b5ea653ca0a`.
 
+## Persiapan 2.2.0 (2026-11-06)
+
+- Perubahan: `generateMetadata(context)` untuk metadata per request dari data loader (ADR-0084);
+  recipe PWA; lint batas client menelusuri impor relatif transitif; route manifest melaporkan
+  `dynamicMetadata`.
+- Gate: lint, typecheck, test 404 Node, docs:stats --node-only, docs:generate, docs:validate,
+  docs:no-leak, test:docs (18 e2e), release (17 artefak), release:verify, dry-run publish 16
+  tarball.
+- Setelah terbit: update Rama Portfolio ke 2.2.0 dan pakai `seo_title`/`seo_description` D1 di
+  `generateMetadata`; smoke `<head>` live.
+
 ## Persiapan 2.1.0 (2026-10-25)
 
 - Perubahan: mirror client assets untuk static/edge host, hash navigation di client, dan

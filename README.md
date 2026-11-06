@@ -4,7 +4,7 @@ Framework full-stack TypeScript (Node ≥ 24) + runtime Rust/V8 **eksperimental*
 SSR React (+ streaming), hydration + soft navigation, middleware security, validasi schema di
 tepi kepercayaan, dan benchmark/gate reproducible.
 
-> **Status: 2.1.0 — Edge asset mirror + hash navigation + action pending DX** (2026-10-23, 16 paket `@ramonyx/*` +
+> **Status: 2.2.0 — Dynamic metadata from loaders + PWA recipe + boundary diagnostics** (2026-11-06, 16 paket `@ramonyx/*` +
 > `ramonyx` + `create-ramonyx-app`, **dengan provenance**). Runtime Rust/V8 tetap
 > **eksperimental** dan jalur terpisah. Aplikasi baru:
 > `npm create ramonyx-app@latest aplikasi-saya` → `npm run dev|build|start` (CLI `ramonyx`);
